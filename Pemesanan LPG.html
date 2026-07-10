@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <script>window["__codeletBootstrap__"] = JSON.parse('{"A":"A","B":"20260710-05-9ed98a3"}');</script>
+    <script src="/_sdk/f432b76fb310b513.telemetry_sdk.js"
+        integrity="sha512-9FJQ55EKmmqhyyik8BhrMVfm0+iYYfb8uOlRsjtkxJMEI97qOVEI4PnHohDjQAtvAep0IOEpdQ64eki0sz62ug=="></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pemesanan LPG 3 KG</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .islamic-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0L40 20L20 40L0 20Z' fill='none' stroke='%23d4af37' stroke-opacity='0.06'/%3E%3C/svg%3E");
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 16px;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a2e1f, #0f1a12);
+            border: 1px solid #d4af37;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 420px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .gold-btn {
+            background: linear-gradient(135deg, #b8860b, #d4af37);
+            color: #000;
+            font-weight: 700;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        .sidebar-item:hover {
+            background: #1a2e1f;
+            color: #e5e7eb;
+        }
+
+        .sidebar-item.active {
+            background: linear-gradient(135deg, #b8860b22, #d4af3722);
+            color: #d4af37 !important;
+            border: 1px solid #d4af3744;
+        }
+
+        .admin-section {
+            display: none;
+        }
+
+        .admin-section.active {
+            display: block;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid #4b5563;
+            background: rgba(31, 41, 55, 0.5);
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .input-field:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #d4af37;
+        }
+
+        .input-field:disabled {
+            background: rgba(55, 65, 81, 0.5);
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .input-field::placeholder {
+            color: #6b7280;
+        }
+
+        @media (max-width: 1023px) {
+            .admin-sidebar {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 40;
+                flex-direction: row;
+                padding: 8px 12px;
+                border-top: 1px solid rgba(75, 85, 99, 0.5);
+            }
+
+            .admin-sidebar .sidebar-item {
+                flex-direction: column;
+                gap: 2px;
+                padding: 8px 6px;
+                font-size: 10px;
+                flex: 1;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .admin-sidebar .sidebar-item i {
+                margin: 0 auto;
+            }
+        }
+    </style>
+    <script src="/_sdk/9432170dbd2ae0df.resizing_sdk.js" type="text/javascript"
+        integrity="sha512-FeT+58sb1f9ejWPWFjCbJvTT+SDwGV+ngrHUnlO7TWEOoqwOLj6p256kO3vOL7DIWl1cIgrobiof8v2bOigwPg=="></script>
+</head>
+
+<body data-template-id="__page-root" class="min-h-screen islamic-pattern">
+    <!-- Duplicate Warning Modal -->
+    <div id="modal-duplicate-warning" class="modal-overlay hidden">
+        <div class="modal-content" style="border-color: #ef4444; box-shadow: 0 0 20px rgba(239,68,68,0.4);">
+            <h2 class="text-xl font-bold text-red-400 mb-3">🚨 DUPLIKAT TERDETEKSI</h2>
+            <div class="bg-red-900/30 border-l-4 border-red-500 p-3 rounded mb-3">
+                <p class="text-red-200 text-sm">Nama atau No KK/NIK <strong>sudah terdaftar hari ini</strong>. Tidak
+                    diperbolehkan dalam 24 jam.</p>
+            </div>
+            <div class="bg-red-900/20 p-3 rounded mb-4">
+                <p class="text-red-200 text-xs">1. Gunakan data yang berbeda<br>
+                    2. Atau coba lagi besok</p>
+            </div><button type="button" id="btn-duplicate-ok"
+                class="w-full py-2.5 rounded-lg bg-red-600 text-white font-semibold text-sm">Saya Mengerti</button>
+        </div>
+    </div><!-- Delete Confirmation Modal -->
+    <div id="modal-delete-confirm" class="modal-overlay hidden">
+        <div class="modal-content" style="border-color: #ef4444; box-shadow: 0 0 20px rgba(239,68,68,0.4);">
+            <h2 class="text-lg font-bold text-red-400 mb-3">🗑️ HAPUS PESANAN</h2>
+            <div class="bg-red-900/30 border-l-4 border-red-500 p-3 rounded mb-4">
+                <p class="text-red-200 text-sm">Apakah Anda yakin ingin menghapus pesanan <strong
+                        id="delete-confirm-name">ini</strong>? Tindakan tidak dapat dibatalkan.</p>
+            </div>
+            <div class="flex gap-2"><button type="button" id="btn-delete-yes"
+                    class="flex-1 py-2.5 rounded-lg bg-red-600 text-white font-semibold text-sm hover:bg-red-700 transition">Ya,
+                    Hapus</button> <button type="button" id="btn-delete-no"
+                    class="flex-1 py-2.5 rounded-lg bg-gray-700 text-gray-200 font-semibold text-sm hover:bg-gray-600 transition">Batal</button>
+            </div>
+        </div>
+    </div><!-- Verify Payment Modal -->
+    <div id="modal-verify-payment" class="modal-overlay hidden">
+        <div class="modal-content" style="border-color: #3b82f6; box-shadow: 0 0 20px rgba(59,130,246,0.4);">
+            <h2 class="text-lg font-bold text-blue-400 mb-3">🔍 VERIFIKASI PEMBAYARAN</h2>
+            <div class="bg-blue-900/30 border border-blue-600 rounded-lg p-3 mb-3">
+                <p class="text-blue-300 text-xs font-semibold mb-1">Data Pemesan:</p>
+                <p class="text-blue-100 font-bold text-sm" id="verify-nama">-</p>
+                <div class="mt-2 pt-2 border-t border-blue-800">
+                    <p class="text-blue-300 text-xs">KK: <span id="verify-kk" class="font-mono text-blue-100">-</span>
+                    </p>
+                    <p class="text-blue-300 text-xs mt-1">NIK: <span id="verify-nik"
+                            class="font-mono text-blue-100">-</span></p>
+                </div>
+            </div>
+            <p class="text-blue-200 text-center text-sm mb-3">Apakah data sudah benar?</p>
+            <div class="flex gap-2">
+                <button type="button" id="btn-confirm-paid"
+                    class="flex-1 py-2.5 rounded-lg bg-blue-600 text-white font-semibold text-sm">✓ Konfirmasi</button>
+                <button type="button" id="btn-cancel-paid"
+                    class="flex-1 py-2.5 rounded-lg bg-gray-700 text-gray-200 font-semibold text-sm">Batal</button>
+            </div>
+        </div>
+    </div><!-- Success Modal -->
+    <div id="modal-kk-reminder" class="modal-overlay hidden">
+        <div class="modal-content" style="border-color: #10b981; box-shadow: 0 0 20px rgba(16,185,129,0.4);">
+            <h2 class="text-xl font-bold text-emerald-400 mb-3">✓ BERHASIL</h2>
+            <div class="bg-emerald-900/30 border border-emerald-600 rounded-lg p-3 mb-3">
+                <p class="text-white font-bold text-sm mb-2">✓ Syarat Pengambilan:</p>
+                <ul class="text-emerald-300 text-sm space-y-2 list-disc pl-4">
+                    <li class="font-semibold">Wajib membawa bukti KK (foto/fotokopi)</li>
+                    <li>Foto di HP atau fotokopi dari kertas</li>
+                    <li>Tanpa bukti KK tidak dilayani</li>
+                </ul>
+            </div>
+            <div class="bg-red-900/20 border border-red-700 rounded-lg p-3 mb-4">
+                <p class="text-red-300 text-sm font-semibold">⚠️ DILARANG membawa KK asli</p>
+                <p class="text-red-200 text-xs mt-1">Gunakan foto atau fotokopi saja untuk keamanan dokumen Anda</p>
+            </div><button type="button" id="btn-kk-ok"
+                class="w-full py-2.5 rounded-lg bg-emerald-600 text-white font-bold text-sm">✓ Saya Memahami</button>
+        </div>
+    </div><!-- Admin Password Modal -->
+    <div id="modal-admin-password" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 class="text-lg font-bold text-yellow-500 mb-3">🔐 Password Admin</h2><input id="input-admin-password"
+                type="password" class="input-field mb-2" placeholder="Masukkan password" autocomplete="off">
+            <p id="modal-password-error" class="text-red-400 text-xs mb-3"></p>
+            <div class="flex gap-2">
+                <button type="button" id="btn-password-ok"
+                    class="flex-1 py-2.5 rounded-lg gold-btn text-sm">Masuk</button> <button type="button"
+                    id="btn-password-cancel"
+                    class="flex-1 py-2.5 rounded-lg bg-gray-700 text-gray-200 font-semibold text-sm">Batal</button>
+            </div>
+        </div>
+    </div><!-- Help Modal Order -->
+    <div id="modal-help-order" class="modal-overlay hidden">
+        <div class="modal-content relative">
+            <button class="absolute top-3 right-3 text-yellow-500 text-xl" id="btn-close-help-order">✕</button>
+            <h2 class="text-lg font-bold text-yellow-500 mb-3">📋 Panduan Pemesanan</h2>
+            <div class="text-gray-300 text-sm space-y-2">
+                <p class="font-semibold text-gray-200">Cara Memesan:</p>
+                <ol class="list-decimal pl-4 space-y-1">
+                    <li>Tunggu waktu pembukaan</li>
+                    <li>Isi data lengkap</li>
+                    <li>Masukkan KK &amp; NIK (16 digit)</li>
+                    <li>Klik "Pesan Sekarang"</li>
+                </ol>
+                <p class="font-semibold text-gray-200 pt-2">Persyaratan:</p>
+                <ul class="list-disc pl-4 space-y-1">
+                    <li>Wajib bawa bukti KK</li>
+                    <li>1 pemesanan = 1 tabung</li>
+                    <li>Tidak boleh data sama dalam 24 jam</li>
+                </ul>
+            </div>
+        </div>
+    </div><!-- Help Modal Admin -->
+    <div id="modal-help-admin" class="modal-overlay hidden">
+        <div class="modal-content relative">
+            <button class="absolute top-3 right-3 text-yellow-500 text-xl" id="btn-close-help-admin">✕</button>
+            <h2 class="text-lg font-bold text-yellow-500 mb-4">⚙️ Panduan Admin</h2>
+            <div class="text-gray-300 text-sm space-y-4">
+                <!-- Dashboard Section -->
+                <div class="bg-gray-800/50 border border-yellow-700/30 rounded-lg p-3">
+                    <p class="font-bold text-yellow-400 mb-2">📊 Dashboard</p>
+                    <ul class="space-y-1.5 text-xs text-gray-300 ml-3">
+                        <li><strong>Total Kuota:</strong> Jumlah tabung LPG yang tersedia hari ini</li>
+                        <li><strong>Pesanan:</strong> Jumlah pemesanan yang sudah masuk</li>
+                        <li><strong>Sisa Stok:</strong> Kuota dikurangi pesanan (auto-update)</li>
+                        <li><strong>Sudah Bayar:</strong> Jumlah pemesan yang sudah mengkonfirmasi pembayaran</li>
+                        <li><strong>Belum Bayar:</strong> Jumlah pemesan yang belum melunasi</li>
+                        <li><strong>Total Nominal:</strong> Pendapatan dari pemesan yang sudah bayar (harga × jumlah)
+                        </li>
+                        <li class="pt-1 border-t border-gray-700"><strong>⚠️ Daftar Belum Bayar:</strong> List real-time
+                            pemesan yang belum lunas</li>
+                    </ul>
+                </div><!-- List Pemesan Section -->
+                <div class="bg-gray-800/50 border border-yellow-700/30 rounded-lg p-3">
+                    <p class="font-bold text-yellow-400 mb-2">📋 List Pemesan</p>
+                    <ul class="space-y-1.5 text-xs text-gray-300 ml-3">
+                        <li><strong>Cari Nama:</strong> Gunakan kolom pencarian untuk menemukan pemesan spesifik</li>
+                        <li><strong>Tandai Bayar:</strong> Klik tombol "Tandai Bayar" untuk konfirmasi pembayaran
+                            pemesan</li>
+                        <li><strong>Verifikasi:</strong> Sistem akan menampilkan modal verifikasi dengan data pemesan
+                            sebelum update</li>
+                        <li><strong>Hapus:</strong> Klik tombol "Hapus" untuk menghapus pesanan dari list</li>
+                        <li class="pt-1 border-t border-gray-700"><strong>Status Badge:</strong> Hijau (Lunas) atau
+                            Kuning (Belum Bayar)</li>
+                    </ul>
+                </div><!-- Pengaturan Section -->
+                <div class="bg-gray-800/50 border border-yellow-700/30 rounded-lg p-3">
+                    <p class="font-bold text-yellow-400 mb-2">⚙️ Pengaturan</p>
+                    <ul class="space-y-1.5 text-xs text-gray-300 ml-3">
+                        <li><strong>Tanggal Buka:</strong> Pilih tanggal dimulainya pemesanan</li>
+                        <li><strong>Jam Buka:</strong> Atur jam tepat pembukaan pemesanan (HH:MM)</li>
+                        <li><strong>Kuota LPG:</strong> Total tabung LPG yang disediakan hari ini</li>
+                        <li><strong>Harga/Tabung:</strong> Harga per tabung (format Rp tanpa titik)</li>
+                        <li><strong>Maks. Tabung per KK/Hari:</strong> Batas pemesanan per nomor KK dalam 1 hari</li>
+                        <li class="pt-1 border-t border-gray-700"><strong>Simpan Pengaturan:</strong> Klik untuk
+                            menyimpan semua perubahan</li>
+                        <li><strong>Reset Semua Data:</strong> Tombol untuk menghapus seluruh pesanan (hati-hati!)</li>
+                    </ul>
+                </div><!-- Password Section -->
+                <div class="bg-gray-800/50 border border-yellow-700/30 rounded-lg p-3">
+                    <p class="font-bold text-yellow-400 mb-2">🔐 Password</p>
+                    <ul class="space-y-1.5 text-xs text-gray-300 ml-3">
+                        <li><strong>Password Lama:</strong> Masukkan password admin yang saat ini aktif</li>
+                        <li><strong>Password Baru:</strong> Buat password baru minimal 4 karakter</li>
+                        <li><strong>Konfirmasi:</strong> Ulangi password baru untuk memastikan kecocokan</li>
+                        <li class="pt-1 border-t border-gray-700"><strong>Ubah Password:</strong> Klik untuk update
+                            password</li>
+                        <li class="text-red-400 font-semibold">⚠️ Simpan password baru di tempat aman!</li>
+                    </ul>
+                </div><!-- Tips Section -->
+                <div class="bg-emerald-900/20 border border-emerald-700/50 rounded-lg p-3">
+                    <p class="font-bold text-emerald-400 mb-2">💡 Tips Penggunaan</p>
+                    <ul class="space-y-1 text-xs text-emerald-300 ml-3">
+                        <li>✓ Atur pengaturan SEBELUM pembukaan pemesanan</li>
+                        <li>✓ Monitor dashboard untuk melihat status real-time</li>
+                        <li>✓ Update status pembayaran segera saat pemesan membayar</li>
+                        <li>✓ Gunakan fitur reset hanya saat perlu ulang dari awal</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div><!-- PAGE 1: Order Form -->
+    <div id="page-order" class="page active w-full min-h-screen">
+        <div class="w-full max-w-lg mx-auto px-4 py-5 sm:py-8">
+            <header class="flex items-center justify-between mb-5 sm:mb-8">
+                <h1 data-template-id="app-title" class="canva-text font-bold text-xl sm:text-2xl md:text-3xl"></h1>
+                <div class="flex items-center gap-2">
+                    <button id="btn-help-order" type="button"
+                        class="p-2 rounded-lg bg-white/10 border border-yellow-700/30 hover:bg-yellow-700/20 transition"
+                        aria-label="Bantuan"><i data-lucide="help-circle"
+                            style="width:18px;height:18px;color:#d4af37;"></i></button> <button id="btn-admin"
+                        type="button"
+                        class="p-2 rounded-lg bg-white/10 border border-yellow-700/30 hover:bg-yellow-700/20 transition"
+                        aria-label="Admin"><i data-lucide="lock"
+                            style="width:18px;height:18px;color:#d4af37;"></i></button>
+                </div>
+            </header>
+            <div data-template-id="countdown-section" class="canva-card rounded-xl p-4 sm:p-5 mb-4 text-center">
+                <p data-template-id="countdown-label" class="canva-text text-xs sm:text-sm mb-2"></p>
+                <div id="countdown-display" class="text-lg sm:text-2xl font-bold tracking-wide" style="color:#d4af37;">
+                    --
+                </div>
+            </div>
+            <div id="stock-empty-notice"
+                class="hidden mb-4 p-4 rounded-xl bg-red-900/30 border border-red-700/50 text-center">
+                <p class="text-base font-bold text-red-400">🚨 STOK HABIS</p>
+                <p class="text-xs text-red-300 mt-1">Kuota telah mencapai batas maksimal</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div data-template-id="quota-card" class="canva-card rounded-lg p-3 sm:p-4 text-center">
+                    <p class="text-xs text-gray-400 mb-1">Sisa Kuota</p>
+                    <p id="quota-remaining" class="text-xl sm:text-2xl font-bold" style="color:#d4af37;">-</p>
+                </div>
+                <div data-template-id="price-card" class="canva-card rounded-lg p-3 sm:p-4 text-center">
+                    <p class="text-xs text-gray-400 mb-1">Harga/Tabung</p>
+                    <p id="price-display" class="text-xl sm:text-2xl font-bold" style="color:#d4af37;">-</p>
+                </div>
+            </div>
+            <div data-template-id="max-nik-info" class="canva-card rounded-lg p-3 mb-4 border-l-4"
+                style="border-color:#d4af37;">
+                <p class="text-xs text-gray-400 mb-0.5">Batasan per Hari:</p>
+                <p class="text-sm font-semibold" style="color:#d4af37;">Maksimal <span id="max-nik-value">-</span> NIK
+                    per 1 KK</p>
+            </div>
+            <form id="order-form" class="space-y-3 mb-6">
+                <div>
+                    <label data-template-id="label-nama" class="canva-text block text-xs sm:text-sm mb-1"
+                        for="inp-nama"></label> <input id="inp-nama" type="text" required class="input-field"
+                        placeholder="Nama Lengkap">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label data-template-id="label-nomor1" class="canva-text block text-xs sm:text-sm mb-1"
+                            for="inp-nomor1"></label> <input id="inp-nomor1" type="tel" required maxlength="16"
+                            inputmode="numeric" class="input-field" placeholder="16 digit">
+                    </div>
+                    <div>
+                        <label data-template-id="label-nomor2" class="canva-text block text-xs sm:text-sm mb-1"
+                            for="inp-nomor2"></label> <input id="inp-nomor2" type="tel" required maxlength="16"
+                            inputmode="numeric" class="input-field" placeholder="16 digit">
+                    </div>
+                </div>
+                <div>
+                    <label data-template-id="label-jumlah" class="canva-text block text-xs sm:text-sm mb-1"
+                        for="inp-jumlah"></label> <input id="inp-jumlah" type="number" value="1" readonly
+                        class="input-field cursor-not-allowed opacity-60">
+                </div><button id="btn-submit" data-template-id="btn-pesan" type="submit"
+                    class="canva-button w-full py-3 rounded-lg font-semibold text-sm sm:text-base transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"></button>
+                <p id="order-msg" class="text-xs text-center hidden"></p>
+            </form>
+            <h2 data-template-id="list-title" class="canva-text font-semibold mb-3 text-base sm:text-lg"></h2>
+            <div id="order-list" class="space-y-2"></div>
+        </div>
+    </div><!-- PAGE 2: Admin -->
+    <div id="page-admin" class="page w-full min-h-screen">
+        <div class="flex flex-col lg:flex-row min-h-screen w-full">
+            <!-- Sidebar -->
+            <aside
+                class="admin-sidebar flex lg:flex-col lg:w-60 lg:min-h-screen lg:border-r lg:border-gray-700/50 lg:p-4"
+                data-template-id="sidebar-bg">
+                <div class="hidden lg:flex items-center justify-between mb-5 pb-4 border-b border-gray-700/50">
+                    <h2 data-template-id="admin-title" class="canva-text font-bold text-sm"></h2><button
+                        id="btn-help-admin" type="button"
+                        class="p-1.5 rounded-lg bg-white/10 border border-yellow-700/30 hover:bg-yellow-700/20"
+                        aria-label="Bantuan"><i data-lucide="help-circle"
+                            style="width:14px;height:14px;color:#d4af37;"></i></button>
+                </div>
+                <div class="sidebar-item active" data-section="dashboard"><i data-lucide="layout-dashboard"
+                        style="width:16px;height:16px;"></i><span data-template-id="nav-dashboard"
+                        class="canva-text"></span>
+                </div>
+                <div class="sidebar-item" data-section="kelola"><i data-lucide="clipboard-list"
+                        style="width:16px;height:16px;"></i><span data-template-id="nav-kelola"
+                        class="canva-text"></span>
+                </div>
+                <div class="sidebar-item" data-section="pemesanan"><i data-lucide="settings"
+                        style="width:16px;height:16px;"></i><span data-template-id="nav-pemesanan"
+                        class="canva-text"></span>
+                </div>
+                <div class="sidebar-item" data-section="password"><i data-lucide="key"
+                        style="width:16px;height:16px;"></i><span data-template-id="nav-password"
+                        class="canva-text"></span>
+                </div>
+            </aside><!-- Main content -->
+            <main class="flex-1 w-full px-4 py-5 pb-28 lg:pb-6 lg:px-6 overflow-y-auto relative">
+                <div class="flex items-center justify-between mb-5">
+                    <button id="btn-help-admin-mobile" type="button"
+                        class="lg:hidden p-2 rounded-lg bg-white/10 border border-yellow-700/30" aria-label="Bantuan"><i
+                            data-lucide="help-circle" style="width:16px;height:16px;color:#d4af37;"></i></button>
+                    <button id="btn-back" type="button"
+                        class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/10 border border-red-700/50 hover:bg-red-700/20 transition text-red-400 font-semibold text-xs sm:text-sm ml-auto"><i
+                            data-lucide="log-out" style="width:14px;height:14px;"></i><span>Keluar</span></button>
+                </div><!-- Dashboard -->
+                <section id="section-dashboard" class="admin-section active">
+                    <h3 data-template-id="dashboard-title" class="canva-text font-semibold mb-4 text-base sm:text-lg">
+                    </h3>
+                    <div data-template-id="recap-card"
+                        class="canva-card rounded-xl p-4 grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
+                        <div class="text-center">
+                            <p class="text-xs text-gray-400 mb-1">Total Kuota</p>
+                            <p id="recap-total" class="text-xl font-bold" style="color:#d4af37;">-</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-xs text-gray-400 mb-1">Pesanan</p>
+                            <p id="recap-sold" class="text-xl font-bold" style="color:#d4af37;">-</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-xs text-gray-400 mb-1">Sisa Stok</p>
+                            <p id="recap-remaining" class="text-xl font-bold" style="color:#d4af37;">-</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-xs text-gray-400 mb-1">Sudah Bayar</p>
+                            <p id="recap-paid" class="text-xl font-bold" style="color:#10b981;">-</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-xs text-gray-400 mb-1">Belum Bayar</p>
+                            <p id="recap-unpaid" class="text-xl font-bold" style="color:#f97316;">-</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-xs text-gray-400 mb-1">Total Nominal</p>
+                            <p id="recap-revenue" class="text-xl font-bold" style="color:#10b981;">-</p>
+                        </div>
+                    </div>
+                    <h3 data-template-id="unpaid-title" class="canva-text font-semibold mb-3 text-sm sm:text-base"></h3>
+                    <div id="unpaid-orders" class="space-y-2"></div>
+                </section><!-- Kelola -->
+                <section id="section-kelola" class="admin-section">
+                    <h3 data-template-id="kelola-title" class="canva-text font-semibold mb-3 text-base sm:text-lg"></h3>
+                    <input id="search-input" type="text" placeholder="Cari nama..." class="input-field mb-3">
+                    <div id="admin-order-list" class="space-y-2"></div>
+                </section><!-- Pengaturan -->
+                <section id="section-pemesanan" class="admin-section">
+                    <form id="settings-form" data-template-id="settings-card"
+                        class="canva-card rounded-xl p-4 mb-5 space-y-3 w-full sm:max-w-md">
+                        <h3 data-template-id="settings-title" class="canva-text font-semibold mb-2 text-base"></h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div><label class="block text-xs text-gray-400 mb-1" for="set-tanggal">Tanggal
+                                    Buka</label><input id="set-tanggal" type="date" class="input-field text-xs">
+                            </div>
+                            <div><label class="block text-xs text-gray-400 mb-1" for="set-jam">Jam Buka</label><input
+                                    id="set-jam" type="time" class="input-field text-xs">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div><label class="block text-xs text-gray-400 mb-1" for="set-kuota">Kuota LPG</label><input
+                                    id="set-kuota" type="number" min="0" class="input-field text-xs">
+                            </div>
+                            <div><label class="block text-xs text-gray-400 mb-1"
+                                    for="set-harga">Harga/Tabung</label><input id="set-harga" type="number" min="0"
+                                    class="input-field text-xs">
+                            </div>
+                        </div>
+                        <div><label class="block text-xs text-gray-400 mb-1" for="set-max-kk">Maks. Tabung per
+                                KK/Hari</label><input id="set-max-kk" type="number" min="1" class="input-field text-xs">
+                        </div><button data-template-id="btn-save-settings" type="submit"
+                            class="canva-button w-full py-2.5 rounded-lg font-semibold text-sm transition hover:opacity-90"></button>
+                        <p id="settings-msg" class="text-xs text-center hidden"></p>
+                    </form><button id="btn-reset" data-template-id="btn-reset" type="button"
+                        class="canva-button w-full sm:max-w-md py-2.5 rounded-lg font-semibold text-sm transition hover:opacity-90"></button>
+                    <div id="reset-confirm" class="hidden mt-2 flex gap-2 w-full sm:max-w-md">
+                        <button id="btn-reset-yes" type="button"
+                            class="flex-1 py-2 rounded-lg bg-red-700 text-white font-semibold text-xs">Ya, Hapus
+                            Semua</button> <button id="btn-reset-no" type="button"
+                            class="flex-1 py-2 rounded-lg bg-gray-700 text-white font-semibold text-xs">Batal</button>
+                    </div>
+                </section><!-- Password -->
+                <section id="section-password" class="admin-section">
+                    <form id="password-form" data-template-id="password-card"
+                        class="canva-card rounded-xl p-4 space-y-3 w-full sm:max-w-md">
+                        <h3 data-template-id="password-title" class="canva-text font-semibold mb-2 text-base"></h3>
+                        <div><label class="block text-xs text-gray-400 mb-1" for="inp-old-password">Password
+                                Lama</label><input id="inp-old-password" type="password" class="input-field"
+                                placeholder="Password lama" autocomplete="off">
+                        </div>
+                        <div><label class="block text-xs text-gray-400 mb-1" for="inp-new-password">Password
+                                Baru</label><input id="inp-new-password" type="password" class="input-field"
+                                placeholder="Password baru" autocomplete="off">
+                        </div>
+                        <div><label class="block text-xs text-gray-400 mb-1"
+                                for="inp-confirm-password">Konfirmasi</label><input id="inp-confirm-password"
+                                type="password" class="input-field" placeholder="Konfirmasi password"
+                                autocomplete="off">
+                        </div><button data-template-id="btn-change-password" type="submit"
+                            class="canva-button w-full py-2.5 rounded-lg font-semibold text-sm transition hover:opacity-90"></button>
+                        <p id="password-msg" class="text-xs text-center hidden"></p>
+                    </form>
+                </section>
+            </main>
+        </div>
+    </div>
+    <script src="/_sdk/0179d719c431a79e.data_sdk.js"
+        integrity="sha512-OsRvJkI5GkC3MJQcgotQYotpzrMSX415GiKKgvYdxQEEkzD/fdchShO2FMSy0PJr/tiINMXOk5Vl2zAgg6bUiA=="></script>
+    <script src="/_sdk/719055fef2a85d14.editing_sdk.js"
+        integrity="sha512-kFqrdGgIiTOsu307feB5Cy3JVP9IayftsmCIZ0csxYBGuBmJQPhyvcnmKR8F0fTW97h5s1gAvz3SumI8zJ6OxQ=="></script>
+    <script>
+        let allData = [];
+        let settings = null;
+        let countdownInterval = null;
+        let adminPassword = 'admin123';
+        let pendingPaymentRecord = null;
+
+        // Help modals
+        document.getElementById('btn-help-order').addEventListener('click', () => document.getElementById('modal-help-order').classList.remove('hidden'));
+        document.getElementById('btn-close-help-order').addEventListener('click', () => document.getElementById('modal-help-order').classList.add('hidden'));
+        document.getElementById('btn-help-admin').addEventListener('click', () => document.getElementById('modal-help-admin').classList.remove('hidden'));
+        document.getElementById('btn-help-admin-mobile').addEventListener('click', () => document.getElementById('modal-help-admin').classList.remove('hidden'));
+        document.getElementById('btn-close-help-admin').addEventListener('click', () => document.getElementById('modal-help-admin').classList.add('hidden'));
+        ['modal-help-order', 'modal-help-admin'].forEach(id => {
+            document.getElementById(id).addEventListener('click', e => { if (e.target === e.currentTarget) e.target.classList.add('hidden'); });
+        });
+
+        // Sidebar navigation with proper active state styling
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.addEventListener('click', function () {
+                // Remove active class from all items and sections
+                document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+                document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+                // Add active class to clicked item and corresponding section
+                this.classList.add('active');
+                const target = document.getElementById('section-' + this.dataset.section);
+                if (target) target.classList.add('active');
+
+                // Update text colors for all sidebar items
+                document.querySelectorAll('.sidebar-item span').forEach(span => {
+                    span.style.color = '';
+                });
+                this.querySelector('span').style.color = '#d4af37';
+            });
+        });
+
+        // Modal handlers
+        document.getElementById('btn-duplicate-ok').addEventListener('click', () => document.getElementById('modal-duplicate-warning').classList.add('hidden'));
+        document.getElementById('btn-kk-ok').addEventListener('click', () => document.getElementById('modal-kk-reminder').classList.add('hidden'));
+        document.getElementById('btn-cancel-paid').addEventListener('click', () => { document.getElementById('modal-verify-payment').classList.add('hidden'); pendingPaymentRecord = null; });
+        document.getElementById('btn-delete-no').addEventListener('click', () => { document.getElementById('modal-delete-confirm').classList.add('hidden'); pendingDeleteRecord = null; });
+        let pendingDeleteRecord = null;
+        document.getElementById('btn-confirm-paid').addEventListener('click', async () => {
+            if (!pendingPaymentRecord) return;
+            const btn = document.getElementById('btn-confirm-paid');
+            btn.disabled = true; btn.textContent = 'Memproses...';
+            await window.dataSdk.update({ ...pendingPaymentRecord, sudah_bayar: true });
+            btn.disabled = false; btn.textContent = '✓ Konfirmasi';
+            document.getElementById('modal-verify-payment').classList.add('hidden');
+            pendingPaymentRecord = null;
+        });
+
+        // Admin password
+        document.getElementById('btn-admin').addEventListener('click', () => {
+            document.getElementById('modal-admin-password').classList.remove('hidden');
+            document.getElementById('input-admin-password').value = '';
+            document.getElementById('modal-password-error').textContent = '';
+            document.getElementById('input-admin-password').focus();
+        });
+        document.getElementById('btn-password-ok').addEventListener('click', () => {
+            if (document.getElementById('input-admin-password').value === adminPassword) {
+                document.getElementById('modal-admin-password').classList.add('hidden');
+                document.getElementById('page-order').classList.remove('active');
+                document.getElementById('page-admin').classList.add('active');
+                // Reset all sidebar items and sections
+                document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+                document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+                // Set dashboard as active
+                document.querySelector('.sidebar-item[data-section="dashboard"]').classList.add('active');
+                document.getElementById('section-dashboard').classList.add('active');
+                // Update text colors for all sidebar items
+                document.querySelectorAll('.sidebar-item span').forEach(span => {
+                    span.style.color = '';
+                });
+                document.querySelector('.sidebar-item[data-section="dashboard"] span').style.color = '#d4af37';
+            } else {
+                document.getElementById('modal-password-error').textContent = 'Password salah';
+            }
+        });
+        document.getElementById('btn-password-cancel').addEventListener('click', () => document.getElementById('modal-admin-password').classList.add('hidden'));
+        document.getElementById('input-admin-password').addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('btn-password-ok').click(); });
+
+        // Back
+        document.getElementById('btn-back').addEventListener('click', () => {
+            document.getElementById('page-admin').classList.remove('active');
+            document.getElementById('page-order').classList.add('active');
+        });
+
+        // Auto capitalize
+        document.getElementById('inp-nama').addEventListener('input', function () {
+            const pos = this.selectionStart;
+            this.value = this.value.replace(/\b\w/g, c => c.toUpperCase());
+            this.setSelectionRange(pos, pos);
+        });
+
+        // Digits only
+        ['inp-nomor1', 'inp-nomor2'].forEach(id => {
+            document.getElementById(id).addEventListener('input', function () { this.value = this.value.replace(/\D/g, '').slice(0, 16); });
+        });
+
+        // Data handler
+        const handler = {
+            onDataChanged(data) {
+                allData = data;
+                settings = data.find(r => r.type === 'settings') || null;
+                updateUI();
+            }
+        };
+
+        function getOrders() { return allData.filter(r => r.type === 'order'); }
+
+        function updateUI() {
+            if (settings) {
+                document.getElementById('set-tanggal').value = settings.tanggal_buka || '';
+                document.getElementById('set-jam').value = settings.jam_buka || '';
+                document.getElementById('set-kuota').value = settings.kuota || '';
+                document.getElementById('set-harga').value = settings.harga_per_tabung || '';
+                document.getElementById('set-max-kk').value = settings.max_per_kk || 2;
+            }
+            updateCountdown();
+            updateFormLock();
+            updateQuotaAndPrice();
+            renderOrderList();
+            renderAdminList();
+            updateRecap();
+        }
+
+        function updateCountdown() {
+            clearInterval(countdownInterval);
+            const display = document.getElementById('countdown-display');
+            if (!settings || !settings.tanggal_buka || !settings.jam_buka) { display.textContent = 'Belum diatur'; return; }
+            const target = new Date(settings.tanggal_buka + 'T' + settings.jam_buka + ':00');
+            let wasOpen = false;
+            function tick() {
+                const diff = target - new Date();
+                const isNowOpen = diff <= 0;
+                if (isNowOpen) {
+                    display.textContent = '🟢 BUKA';
+                    if (!wasOpen) {
+                        wasOpen = true;
+                        updateFormLock();
+                    }
+                    return;
+                }
+                const d = Math.floor(diff / 86400000), h = Math.floor((diff % 86400000) / 3600000), m = Math.floor((diff % 3600000) / 60000), s = Math.floor((diff % 60000) / 1000);
+                display.textContent = d + 'h ' + h + 'j ' + m + 'm ' + s + 'd';
+            }
+            tick(); countdownInterval = setInterval(tick, 1000);
+        }
+
+        function isOpen() {
+            if (!settings || !settings.tanggal_buka || !settings.jam_buka) return false;
+            return new Date() >= new Date(settings.tanggal_buka + 'T' + settings.jam_buka + ':00');
+        }
+
+        function getQuotaLeft() {
+            if (!settings || !settings.kuota) return 0;
+            return Math.max(0, Number(settings.kuota) - getOrders().length);
+        }
+
+        function updateFormLock() {
+            const canOrder = isOpen() && getQuotaLeft() > 0;
+            document.getElementById('inp-nama').disabled = !canOrder;
+            document.getElementById('inp-nomor1').disabled = !canOrder;
+            document.getElementById('inp-nomor2').disabled = !canOrder;
+            document.getElementById('btn-submit').disabled = !canOrder;
+            document.getElementById('stock-empty-notice').classList.toggle('hidden', getQuotaLeft() > 0);
+        }
+
+        function updateQuotaAndPrice() {
+            document.getElementById('quota-remaining').textContent = getQuotaLeft();
+            const price = settings ? Number(settings.harga_per_tabung) || 0 : 0;
+            document.getElementById('price-display').textContent = price > 0 ? 'Rp ' + price.toLocaleString('id-ID') : '-';
+            document.getElementById('max-nik-value').textContent = settings ? (Number(settings.max_per_kk) || 2) : 2;
+        }
+
+        function renderOrderList() {
+            const container = document.getElementById('order-list');
+            const orders = getOrders();
+            if (!orders.length) { container.innerHTML = '<p class="text-gray-500 text-sm text-center">Belum ada pemesanan</p>'; return; }
+            container.innerHTML = orders.map(o =>
+                '<div class="flex justify-between items-center px-3 py-2.5 rounded-lg bg-gray-800/40 border border-gray-700">' +
+                '<span class="text-white text-sm truncate mr-2">' + esc(o.nama_lengkap) + '</span>' +
+                '<span class="text-xs px-2 py-0.5 rounded flex-shrink-0 ' + (o.sudah_bayar ? 'bg-green-800 text-green-300' : 'bg-red-900 text-red-300') + '">' +
+                (o.sudah_bayar ? 'Lunas' : 'Belum') + '</span></div>'
+            ).join('');
+        }
+
+        function renderAdminList() {
+            const container = document.getElementById('admin-order-list');
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const orders = getOrders().filter(o => (o.nama_lengkap || '').toLowerCase().includes(search));
+            if (!orders.length) { container.innerHTML = '<p class="text-gray-500 text-sm text-center">Tidak ada data</p>'; return; }
+            container.innerHTML = orders.map(o =>
+                '<div class="p-3 rounded-xl bg-gray-800/50 border border-gray-700 space-y-1.5">' +
+                '<p class="font-semibold text-white text-sm">' + esc(o.nama_lengkap) + '</p>' +
+                '<p class="text-xs text-gray-400">KK: ' + esc(o.nomor_unik_1) + ' | NIK: ' + esc(o.nomor_unik_2) + '</p>' +
+                '<div class="flex gap-2">' +
+                '<button type="button" onclick="markPaid(\'' + o.__backendId + '\')" class="flex-1 py-1.5 rounded-lg text-xs font-semibold ' +
+                (o.sudah_bayar ? 'bg-green-800 text-green-200' : 'bg-yellow-700 text-white') + '">' +
+                (o.sudah_bayar ? '✓ Lunas' : 'Tandai Bayar') + '</button>' +
+                '<button type="button" onclick="deleteOrder(\'' + o.__backendId + '\')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-800 text-white">Hapus</button></div></div>'
+            ).join('');
+        }
+
+        document.getElementById('search-input').addEventListener('input', renderAdminList);
+
+        function updateRecap() {
+            const orders = getOrders();
+            const totalQuota = settings ? Number(settings.kuota) || 0 : 0;
+            const price = settings ? Number(settings.harga_per_tabung) || 0 : 0;
+            const paid = orders.filter(o => o.sudah_bayar).length;
+            document.getElementById('recap-total').textContent = totalQuota;
+            document.getElementById('recap-sold').textContent = orders.length;
+            document.getElementById('recap-remaining').textContent = Math.max(0, totalQuota - orders.length);
+            document.getElementById('recap-paid').textContent = paid;
+            document.getElementById('recap-unpaid').textContent = orders.length - paid;
+            document.getElementById('recap-revenue').textContent = 'Rp ' + (paid * price).toLocaleString('id-ID');
+            // Unpaid list
+            const unpaid = orders.filter(o => !o.sudah_bayar);
+            const uc = document.getElementById('unpaid-orders');
+            uc.innerHTML = unpaid.length ? unpaid.map(o => '<div class="p-3 rounded-lg bg-orange-900/20 border border-orange-700/50"><p class="text-white text-sm font-semibold">' + esc(o.nama_lengkap) + '</p></div>').join('') : '<p class="text-gray-500 text-xs text-center">Semua sudah bayar</p>';
+        }
+
+        // Order submit
+        document.getElementById('order-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msg = document.getElementById('order-msg');
+            if (!isOpen()) { showMsg(msg, 'Pemesanan belum dibuka', 'text-red-400'); return; }
+            if (getQuotaLeft() <= 0) { showMsg(msg, 'Kuota habis', 'text-red-400'); return; }
+            if (allData.filter(r => r.type === 'order').length >= 999) { showMsg(msg, 'Batas maksimum tercapai', 'text-red-400'); return; }
+
+            const nama = document.getElementById('inp-nama').value.trim();
+            const n1 = document.getElementById('inp-nomor1').value;
+            const n2 = document.getElementById('inp-nomor2').value;
+            if (n1.length !== 16 || n2.length !== 16) { showMsg(msg, 'Nomor harus 16 digit', 'text-red-400'); return; }
+
+            const today = new Date().toISOString().split('T')[0];
+            const todayOrders = getOrders().filter(o => (o.tanggal_buka || '').startsWith(today));
+            const maxKK = settings && settings.max_per_kk ? Number(settings.max_per_kk) : 2;
+            if (todayOrders.some(o => o.nomor_unik_2 === n2) || todayOrders.filter(o => o.nomor_unik_1 === n1).length >= maxKK) {
+                document.getElementById('modal-duplicate-warning').classList.remove('hidden'); return;
+            }
+
+            const btn = document.getElementById('btn-submit');
+            btn.disabled = true;
+            const result = await window.dataSdk.create({
+                type: 'order', nama_lengkap: nama, nomor_unik_1: n1, nomor_unik_2: n2,
+                jumlah_tabung: 1, sudah_bayar: false, tanggal_buka: today,
+                jam_buka: '', kuota: 0, harga_per_tabung: 0, max_per_kk: 0
+            });
+            btn.disabled = false;
+            if (result.isOk) { e.target.reset(); document.getElementById('inp-jumlah').value = 1; document.getElementById('modal-kk-reminder').classList.remove('hidden'); }
+            else { showMsg(msg, 'Gagal memesan', 'text-red-400'); }
+        });
+
+        // Settings
+        document.getElementById('settings-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msg = document.getElementById('settings-msg');
+            const data = {
+                type: 'settings', nama_lengkap: '', nomor_unik_1: '', nomor_unik_2: '',
+                jumlah_tabung: 0, sudah_bayar: false,
+                tanggal_buka: document.getElementById('set-tanggal').value,
+                jam_buka: document.getElementById('set-jam').value,
+                kuota: Number(document.getElementById('set-kuota').value) || 0,
+                harga_per_tabung: Number(document.getElementById('set-harga').value) || 0,
+                max_per_kk: Number(document.getElementById('set-max-kk').value) || 2
+            };
+            const btn = e.target.querySelector('button[type="submit"]'); btn.disabled = true;
+            const result = settings ? await window.dataSdk.update({ ...settings, ...data }) : await window.dataSdk.create(data);
+            btn.disabled = false;
+            showMsg(msg, result.isOk ? 'Tersimpan!' : 'Gagal', result.isOk ? 'text-green-400' : 'text-red-400');
+        });
+
+        window.markPaid = function (id) {
+            const record = allData.find(r => r.__backendId === id);
+            if (!record || record.sudah_bayar) return;
+            pendingPaymentRecord = record;
+            document.getElementById('verify-nama').textContent = record.nama_lengkap;
+            document.getElementById('verify-kk').textContent = record.nomor_unik_1;
+            document.getElementById('verify-nik').textContent = record.nomor_unik_2;
+            document.getElementById('modal-verify-payment').classList.remove('hidden');
+        };
+
+        window.deleteOrder = async function (id) {
+            const record = allData.find(r => r.__backendId === id);
+            if (record) {
+                pendingDeleteRecord = record;
+                document.getElementById('delete-confirm-name').textContent = record.nama_lengkap;
+                document.getElementById('modal-delete-confirm').classList.remove('hidden');
+            }
+        };
+
+        document.getElementById('btn-delete-yes').addEventListener('click', async () => {
+            if (!pendingDeleteRecord) return;
+            const btn = document.getElementById('btn-delete-yes');
+            btn.disabled = true; btn.textContent = 'Menghapus...';
+            await window.dataSdk.delete(pendingDeleteRecord);
+            btn.disabled = false; btn.textContent = 'Ya, Hapus';
+            document.getElementById('modal-delete-confirm').classList.add('hidden');
+            pendingDeleteRecord = null;
+        });
+
+        document.getElementById('btn-reset').addEventListener('click', () => document.getElementById('reset-confirm').classList.remove('hidden'));
+        document.getElementById('btn-reset-no').addEventListener('click', () => document.getElementById('reset-confirm').classList.add('hidden'));
+        document.getElementById('btn-reset-yes').addEventListener('click', async () => {
+            for (const o of getOrders()) await window.dataSdk.delete(o);
+            document.getElementById('reset-confirm').classList.add('hidden');
+        });
+
+        // Change password
+        document.getElementById('password-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const msg = document.getElementById('password-msg');
+            const oldP = document.getElementById('inp-old-password').value;
+            const newP = document.getElementById('inp-new-password').value;
+            const conf = document.getElementById('inp-confirm-password').value;
+            if (oldP !== adminPassword) { showMsg(msg, 'Password lama salah', 'text-red-400'); return; }
+            if (newP.length < 4) { showMsg(msg, 'Minimal 4 karakter', 'text-red-400'); return; }
+            if (newP !== conf) { showMsg(msg, 'Konfirmasi tidak cocok', 'text-red-400'); return; }
+            adminPassword = newP; e.target.reset();
+            showMsg(msg, 'Password berhasil diubah!', 'text-green-400');
+        });
+
+        function showMsg(el, text, cls) { el.textContent = text; el.className = 'text-xs text-center ' + cls; el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 3000); }
+        function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+        (async () => {
+            await window.dataSdk.init(handler);
+            lucide.createIcons();
+        })();
+    </script>
+    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'a18dcb0ed1d2926c',t:'MTc4MzY2Nzg5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+</body>
+
+</html>

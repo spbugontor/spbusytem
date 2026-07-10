@@ -1,0 +1,33 @@
+{
+  "rules": {
+    "settings": {
+      // Siapapun bisa membaca pengaturan (tanggal buka, kuota, dll)
+      ".read": true,
+      // Hanya admin yang sudah login yang bisa mengubah pengaturan
+      ".write": "auth != null"
+    },
+    "orders": {
+      // Siapapun bisa membaca daftar pesanan (untuk menghitung kuota & cek duplikat)
+      ".read": true,
+      // Admin bisa memanipulasi seluruh node orders (hapus semua)
+      ".write": "auth != null",
+      "$orderId": {
+        // User publik hanya bisa MENGISI data baru di orderId yang belum ada
+        ".write": "!data.exists() && newData.exists()",
+        // Validasi struktur data pesanan yang masuk
+        ".validate": "newData.hasChildren(['nama', 'kk', 'nik', 'sudah_bayar', 'tanggal'])",
+        "kk": {
+          ".validate": "newData.isString() && newData.val().length === 16"
+        },
+        "nik": {
+          ".validate": "newData.isString() && newData.val().length === 16"
+        },
+        "sudah_bayar": {
+          // Secara default saat pesan, harus false
+          // Hanya admin yang bisa mengubah menjadi true
+          ".validate": "auth != null || newData.val() === false"
+        }
+      }
+    }
+  }
+}
