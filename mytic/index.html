@@ -13,7 +13,7 @@
     rel="stylesheet">
 
   <!-- CSS -->
-  <link rel="stylesheet" href="css/style.css?v=20260711b">
+  <link rel="stylesheet" href="css/style.css?v=20260711c">
 </head>
 
 <body>
@@ -28,6 +28,21 @@
          LOGIN SCREEN
          ========================================== -->
     <div id="screen-login" class="login-screen fade-in">
+      
+      <!-- BRANDING HEADER (Outside Card) -->
+      <div style="text-align: center; color: white; margin-bottom: 1.5rem; z-index: 10;">
+        <div style="background: rgba(255,255,255,0.2); width: 64px; height: 64px; border-radius: 1rem; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+          <!-- Shield Icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+            stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+        </div>
+        <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.025em; line-height: 1.2;">MyTIC</h1>
+        <p style="font-size: 1.1rem; font-weight: 600; opacity: 0.95;">SPBU GONTOR</p>
+        <p style="font-size: 0.9rem; opacity: 0.85; font-style: italic; margin-top: 0.25rem;">"Let's Do The Best, Allahu Akbar!"</p>
+      </div>
+
       <div class="login-card">
         <div class="login-tabs">
           <button id="tab-employee" class="login-tab active">Karyawan</button>
@@ -35,17 +50,6 @@
         </div>
 
         <div class="login-body">
-          <div class="login-header">
-            <div class="login-icon">
-              <!-- Shield Icon -->
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              </svg>
-            </div>
-            <h1 style="font-size: 1.5rem; font-weight: 800;">MyTIC</h1>
-            <p style="font-size: 0.75rem; opacity: 0.9;">SPBU 54.634.25 GONTOR</p>
-          </div>
 
           <!-- Karyawan Login Form -->
           <div id="form-login-employee" class="fade-in">
@@ -156,8 +160,8 @@
   </div>
 
   <!-- MODULES (Firebase + App Logic) -->
-  <script type="module" src="js/firebase-config.js?v=20260711b"></script>
-  <script type="module" src="js/app.js?v=20260711b"></script>
+  <script type="module" src="js/firebase-config.js?v=20260711c"></script>
+  <script type="module" src="js/app.js?v=20260711c"></script>
 </body>
 
 </html>
