@@ -544,7 +544,10 @@ function renderRatings() {
   return `<div class="fade-in">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
       <h3 class="text-xl font-bold">Penilaian Kinerja</h3>
-      <button class="btn btn-primary" onclick="window._showRatingForm()">+ Tambah Penilaian</button>
+      <div>
+        <button class="btn btn-secondary" style="margin-right:0.5rem" onclick="window._exportRatingsPDF()">Export PDF</button>
+        <button class="btn btn-primary" onclick="window._showRatingForm()">+ Tambah Penilaian</button>
+      </div>
     </div>
     ${ratings.length===0?'<div class="card"><p class="text-muted">Belum ada penilaian.</p></div>':
     ratings.map(r => {
@@ -1204,6 +1207,61 @@ window._saveRating = async () => {
   hideModal();
 };
 window._deleteRating = async (key) => { if (confirm('Hapus penilaian?')) { await remove(ref(db, 'ratings/' + key)); showToast('Dihapus!', 'success'); } };
+
+window._exportRatingsPDF = () => {
+  const ratings = getRatings();
+  if (ratings.length === 0) {
+    showToast('Belum ada data untuk diexport', 'warning');
+    return;
+  }
+  
+  let html = `
+    <div style="text-align:center;margin-bottom:20px;border-bottom:2px solid #000;padding-bottom:10px;">
+      <h2>Rekap Penilaian Kinerja Karyawan</h2>
+      <p>SPBU GONTOR</p>
+      <p>Tanggal Cetak: ${fmtDate(new Date().toISOString())}</p>
+    </div>
+    <table style="width:100%;border-collapse:collapse;margin-top:20px;font-family:sans-serif;">
+      <thead>
+        <tr>
+          <th style="border:1px solid #000;padding:8px;text-align:left;">Nama Karyawan</th>
+          <th style="border:1px solid #000;padding:8px;text-align:center;">Tanggal</th>
+          <th style="border:1px solid #000;padding:8px;text-align:center;">Skor Rata-Rata</th>
+          <th style="border:1px solid #000;padding:8px;text-align:left;">Catatan Evaluasi</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+  
+  ratings.forEach(r => {
+    const emp = getUserByEmpId(r.emp_id);
+    const avg = r.scores ? (Object.values(r.scores).reduce((s,v)=>s+v,0)/Object.values(r.scores).length).toFixed(1) : '0';
+    html += `
+      <tr>
+        <td style="border:1px solid #000;padding:8px;">${esc(emp?emp.name:r.emp_id)}</td>
+        <td style="border:1px solid #000;padding:8px;text-align:center;">${fmtDate(r.date)}</td>
+        <td style="border:1px solid #000;padding:8px;text-align:center;"><strong>${avg}/5</strong></td>
+        <td style="border:1px solid #000;padding:8px;">${esc(r.note || '-')}</td>
+      </tr>
+    `;
+  });
+  
+  html += \`</tbody></table>
+    <div style="margin-top:50px;text-align:right;">
+      <p>Mengetahui,</p>
+      <br><br><br>
+      <p><strong>Manajemen SPBU GONTOR</strong></p>
+    </div>\`;
+  
+  const printArea = document.getElementById('print-area');
+  if (printArea) {
+    printArea.innerHTML = html;
+    window.print();
+    setTimeout(() => { printArea.innerHTML = ''; }, 1000);
+  } else {
+    showToast('Elemen print-area tidak ditemukan. Harap update index.html', 'error');
+  }
+};
 
 // --- CRITERIA CRUD ---
 window._showCriteriaForm = (key) => {

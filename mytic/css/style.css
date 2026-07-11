@@ -716,3 +716,28 @@ tr:hover td { background: var(--surface-hover); }
   color: var(--primary);
   flex-shrink: 0;
 }
+
+/* -------------------------------------
+   PRINT / PDF EXPORT
+------------------------------------- */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #print-area, #print-area * {
+    visibility: visible;
+  }
+  #print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    display: block !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  #app, #toast-container {
+    display: none !important;
+  }
+}
