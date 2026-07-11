@@ -166,6 +166,14 @@ body {
   position: relative;
 }
 
+#screen-main {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  height: 100vh;
+  overflow: hidden;
+}
+
 /* Sidebar */
 .sidebar {
   width: 260px;
