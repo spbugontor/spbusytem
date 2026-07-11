@@ -172,6 +172,7 @@ function loginSuccess() {
   $('screen-login').classList.add('hidden');
   $('screen-main').classList.remove('hidden');
   $('screen-main').style.display = 'flex';
+  $('nav-mobile').classList.remove('hidden');
   $('display-user-name').textContent = currentUser.name;
   $('display-user-role').textContent = currentUser.role === 'admin' ? 'Manajemen' : currentUser.position;
   $('display-mobile-name').textContent = currentUser.name;
@@ -185,6 +186,7 @@ function doLogout(msg = true) {
   signOut(auth);
   $('screen-login').classList.remove('hidden');
   $('screen-main').classList.add('hidden');
+  $('nav-mobile').classList.add('hidden');
   $('inp-mgmt-pin').value = '';
   $('inp-emp-pin').value = '';
   if (msg) showToast('Anda telah keluar', 'info');

@@ -13,7 +13,7 @@
     rel="stylesheet">
 
   <!-- CSS -->
-  <link rel="stylesheet" href="css/style.css?v=20260711">
+  <link rel="stylesheet" href="css/style.css?v=20260711b">
 </head>
 
 <body>
@@ -146,17 +146,18 @@
         </main>
       </div>
 
-      <!-- MOBILE BOTTOM NAV -->
-      <nav id="nav-mobile" class="mobile-nav">
-        <!-- Dynamic mobile links injected by JS -->
-      </nav>
-
     </div>
+
+    <!-- MOBILE BOTTOM NAV (outside screen-main to avoid overflow issues) -->
+    <nav id="nav-mobile" class="mobile-nav hidden">
+      <!-- Dynamic mobile links injected by JS -->
+    </nav>
+
   </div>
 
   <!-- MODULES (Firebase + App Logic) -->
-  <script type="module" src="js/firebase-config.js?v=20260711"></script>
-  <script type="module" src="js/app.js?v=20260711"></script>
+  <script type="module" src="js/firebase-config.js?v=20260711b"></script>
+  <script type="module" src="js/app.js?v=20260711b"></script>
 </body>
 
 </html>
