@@ -219,15 +219,55 @@ const EMP_MENU = [
 function setupNavigation() {
   const isAdmin = currentUser.role === 'admin';
   const menu = isAdmin ? ADMIN_MENU : EMP_MENU;
-  let dHTML = '', mHTML = '';
+  let dHTML = '';
   menu.forEach(m => {
     dHTML += `<a class="nav-item" data-target="${m.id}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg>${m.label}</a>`;
-    mHTML += `<a class="mobile-nav-item" data-target="${m.id}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg><span>${m.label}</span></a>`;
   });
   $('nav-desktop').innerHTML = dHTML;
+
+  // Mobile: show max 4 items + "Lainnya" button
+  const MAX_MOBILE = 4;
+  const mobileMain = menu.slice(0, MAX_MOBILE);
+  const mobileMore = menu.slice(MAX_MOBILE);
+  let mHTML = '';
+  mobileMain.forEach(m => {
+    mHTML += `<a class="mobile-nav-item" data-target="${m.id}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg><span>${m.label}</span></a>`;
+  });
+  if (mobileMore.length > 0) {
+    mHTML += `<a class="mobile-nav-item" onclick="window._toggleMoreMenu()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg><span>Lainnya</span></a>`;
+  }
   $('nav-mobile').innerHTML = mHTML;
+
+  // Build "more" popup
+  let existingMore = document.getElementById('more-menu-popup');
+  if (existingMore) existingMore.remove();
+  if (mobileMore.length > 0) {
+    const popup = document.createElement('div');
+    popup.id = 'more-menu-popup';
+    popup.className = 'more-menu-popup hidden';
+    popup.innerHTML = `<div class="more-menu-backdrop" onclick="window._toggleMoreMenu()"></div>
+      <div class="more-menu-panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem;border-bottom:1px solid var(--border)">
+          <strong style="font-size:0.95rem">Menu Lainnya</strong>
+          <button onclick="window._toggleMoreMenu()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted)">✕</button>
+        </div>
+        <div style="padding:0.75rem">${mobileMore.map(m =>
+          `<a class="more-menu-item" data-target="${m.id}" onclick="window._toggleMoreMenu()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg>
+            <span>${m.label}</span>
+          </a>`
+        ).join('')}</div>
+      </div>`;
+    document.body.appendChild(popup);
+  }
+
   document.querySelectorAll('[data-target]').forEach(el => el.addEventListener('click', () => switchSection(el.getAttribute('data-target'))));
 }
+
+window._toggleMoreMenu = () => {
+  const popup = document.getElementById('more-menu-popup');
+  if (popup) popup.classList.toggle('hidden');
+};
 
 function switchSection(id) {
   currentSection = id;
