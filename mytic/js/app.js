@@ -556,8 +556,9 @@ function renderRatings() {
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div><strong>${esc(emp?emp.name:r.emp_id)}</strong><br><span class="text-xs text-muted">Periode: ${fmtMonthYear(r.date)}</span></div>
           <div style="text-align:right"><span style="font-size:1.5rem;font-weight:800;color:${color}">${avg}</span><span class="text-xs text-muted">/5</span><br>
-          <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.25rem">
-            <button class="btn btn-outline-primary" style="padding:0.2rem 0.5rem;font-size:0.65rem;" onclick="window._exportSingleRatingPDF('${r._key}')">Cetak PDF</button>
+          <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.25rem;flex-wrap:wrap;">
+            <button class="btn btn-outline-primary" style="padding:0.2rem 0.5rem;font-size:0.65rem;" onclick="window._downloadSingleRatingPDF('${r._key}')">Unduh PDF</button>
+            <button class="btn btn-outline-primary" style="padding:0.2rem 0.5rem;font-size:0.65rem;" onclick="window._exportSingleRatingPDF('${r._key}')">Cetak</button>
             <button class="btn btn-outline-danger" style="padding:0.2rem 0.5rem;font-size:0.65rem;" onclick="window._deleteRating('${r._key}')">Hapus</button>
           </div>
           </div>
@@ -1210,11 +1211,11 @@ window._saveRating = async () => {
 };
 window._deleteRating = async (key) => { if (confirm('Hapus penilaian?')) { await remove(ref(db, 'ratings/' + key)); showToast('Dihapus!', 'success'); } };
 
-window._exportSingleRatingPDF = (key) => {
+window._generateRatingPDFHtml = (key) => {
   const rating = allData.ratings[key];
   if (!rating) {
     showToast('Data penilaian tidak ditemukan', 'error');
-    return;
+    return null;
   }
   
   const emp = getUserByEmpId(rating.emp_id);
@@ -1292,7 +1293,12 @@ window._exportSingleRatingPDF = (key) => {
       </tr>
     </table>
   `;
-  
+  return html;
+};
+
+window._exportSingleRatingPDF = (key) => {
+  const html = _generateRatingPDFHtml(key);
+  if (!html) return;
   const printArea = document.getElementById('print-area');
   if (printArea) {
     printArea.innerHTML = html;
@@ -1301,6 +1307,40 @@ window._exportSingleRatingPDF = (key) => {
   } else {
     showToast('Elemen print-area tidak ditemukan', 'error');
   }
+};
+
+window._downloadSingleRatingPDF = (key) => {
+  if (typeof html2pdf === 'undefined') {
+    showToast('Library PDF sedang dimuat, coba sebentar lagi', 'warning');
+    return;
+  }
+  
+  const html = _generateRatingPDFHtml(key);
+  if (!html) return;
+  
+  const rating = allData.ratings[key];
+  const emp = getUserByEmpId(rating.emp_id);
+  const empName = emp ? emp.name : rating.emp_id;
+  const filename = `Evaluasi_${empName.replace(/\s+/g, '_')}_${rating.date}.pdf`;
+  
+  const opt = {
+    margin:       10,
+    filename:     filename,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  
+  showToast('Menyiapkan file unduhan...', 'info');
+  html2pdf().set(opt).from(div).save().then(() => {
+    showToast('PDF berhasil diunduh!', 'success');
+  }).catch(e => {
+    console.error(e);
+    showToast('Gagal mengunduh PDF', 'error');
+  });
 };
 
 // --- CRITERIA CRUD ---
