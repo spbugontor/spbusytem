@@ -21,13 +21,13 @@ function getUserByKey(key) { const u = allData.users[key]; return u ? { ...u, _k
 function getUserByUsername(uname) { return getUsers().find(u => u.username === uname); }
 function getUserByEmpId(eid) { return getUsers().find(u => u.emp_id === eid); }
 
-function getTxns(empId) { return Object.entries(allData.transactions).filter(([, v]) => v.emp_id === empId).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (b.date || '').localeCompare(a.date || '')); }
+function getTxns(empId) { return Object.entries(allData.transactions).filter(([, v]) => v.emp_id === empId).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (b.date || '').localeCompare(a.date || '') || b._key.localeCompare(a._key)); }
 function calcBalance(empId) { let b = 0; getTxns(empId).forEach(t => { if (t.type === 'debit') b += (t.amount || 0); else b -= (t.amount || 0); }); return b; }
 
-function getLeaves(empId) { return Object.entries(allData.leaves).filter(([, v]) => empId ? v.emp_id === empId : true).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (b.date || '').localeCompare(a.date || '')); }
-function getSavings(empId) { return Object.entries(allData.savings).filter(([, v]) => empId ? v.emp_id === empId : true).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (b.date || '').localeCompare(a.date || '')); }
-function getViolations(empId) { return Object.entries(allData.violations).filter(([, v]) => empId ? v.emp_id === empId : true).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (b.date || '').localeCompare(a.date || '')); }
-function getRatings(empId) { return Object.entries(allData.ratings).filter(([, v]) => empId ? v.emp_id === empId : true).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (b.date || '').localeCompare(a.date || '')); }
+function getLeaves(empId) { return Object.entries(allData.leaves).filter(([, v]) => empId ? v.emp_id === empId : true).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (b.date || '').localeCompare(a.date || '') || b._key.localeCompare(a._key)); }
+function getSavings(empId) { return Object.entries(allData.savings).filter(([, v]) => empId ? v.emp_id === empId : true).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (b.date || '').localeCompare(a.date || '') || b._key.localeCompare(a._key)); }
+function getViolations(empId) { return Object.entries(allData.violations).filter(([, v]) => empId ? v.emp_id === empId : true).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (b.date || '').localeCompare(a.date || '') || b._key.localeCompare(a._key)); }
+function getRatings(empId) { return Object.entries(allData.ratings).filter(([, v]) => empId ? v.emp_id === empId : true).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (b.date || '').localeCompare(a.date || '') || b._key.localeCompare(a._key)); }
 function getCriteria(pos) { return Object.entries(allData.criteria).filter(([, v]) => pos ? (v.position === pos || v.position === 'Semua') : true).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (a.name || '').localeCompare(b.name || '')); }
 function getLeaveTypes() { return Object.entries(allData.leave_types).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (a.name || '').localeCompare(b.name || '')); }
 function getPinHistory(empId) { return Object.entries(allData.pin_history || {}).filter(([, v]) => empId ? v.emp_id === empId : true).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || '')); }
