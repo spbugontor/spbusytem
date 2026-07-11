@@ -569,6 +569,26 @@ tr:hover td { background: var(--surface-hover); }
 @keyframes toastSlideIn { to { transform: translateX(0); } }
 @keyframes toastSlideOut { to { transform: translateX(120%); opacity: 0; } }
 
+/* Password toggle */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.password-wrapper .form-input {
+  padding-right: 2.5rem;
+}
+.password-toggle {
+  position: absolute;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem;
+  line-height: 1;
+}
+
 /* -------------------------------------
    RESPONSIVE (MOBILE)
 ------------------------------------- */
@@ -578,8 +598,54 @@ tr:hover td { background: var(--surface-hover); }
   .mobile-nav { display: flex; }
   .topbar { display: none; }
   .content-wrapper { padding: 1rem; padding-bottom: 5rem; }
-  .dashboard-grid { grid-template-columns: 1fr; gap: 1rem; }
+  .dashboard-grid { grid-template-columns: 1fr 1fr !important; gap: 0.75rem; }
+  .stat-value { font-size: 1.25rem; }
+
+  /* Force all inline grids to stack on mobile */
+  [style*="grid-template-columns: 1fr 1fr 1fr"],
+  [style*="grid-template-columns:1fr 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+  [style*="grid-template-columns: 1fr 1fr"],
+  [style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Employee card layout */
+  .card [style*="display:flex"][style*="gap:1rem"] {
+    flex-wrap: wrap;
+  }
+
+  /* Buttons wrap */
+  [style*="display:flex"][style*="gap:0.5rem"] {
+    flex-wrap: wrap;
+  }
+
+  /* Login card */
+  .login-card { max-width: 100%; margin: 0 0.5rem; }
+  .login-body { padding: 1.25rem; }
+
+  /* Modal */
+  .modal-content { max-width: 95vw; max-height: 85vh; }
+  .modal-body [style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Toast */
   .toast-container { bottom: 5rem; left: 1rem; right: 1rem; align-items: center; }
   .toast { width: 100%; transform: translateY(150%); animation: toastSlideInMobile 0.3s forwards; }
   @keyframes toastSlideInMobile { to { transform: translateY(0); } }
+}
+
+@media (max-width: 480px) {
+  .dashboard-grid { grid-template-columns: 1fr !important; }
+  .stat-card { padding: 1rem; }
+  .stat-value { font-size: 1.125rem; }
+  .card { padding: 1rem; }
+  .content-wrapper { padding: 0.75rem; padding-bottom: 5rem; }
+  .btn { padding: 0.5rem 1rem; font-size: 0.8rem; }
+
+  /* Mobile nav items smaller text */
+  .mobile-nav-item { font-size: 0.6rem; }
+  .mobile-nav-item svg { width: 18px; height: 18px; }
 }
