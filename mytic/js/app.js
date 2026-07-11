@@ -750,10 +750,9 @@ function renderEmpRatings() {
       const color = avg >= 4.5 ? 'var(--success)' : avg >= 3.5 ? 'var(--info)' : avg >= 2.5 ? 'var(--warning)' : 'var(--danger)';
       return `<div class="card" style="margin-bottom:0.75rem">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <span class="text-muted text-sm">${fmtDate(r.date)}</span>
+          <span class="text-muted text-sm">Periode: ${fmtMonthYear(r.date)}</span>
           <span style="font-size:1.5rem;font-weight:800;color:${color}">${avg}/5</span>
         </div>
-        ${r.scores?`<div style="margin-top:0.75rem">${Object.entries(r.scores).map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:0.25rem 0;font-size:0.8rem"><span>${esc(k)}</span><strong>${v}/5</strong></div>`).join('')}</div>`:''}
         ${r.note?`<p class="text-xs text-muted mt-2" style="border-top:1px solid var(--border);padding-top:0.5rem">"${esc(r.note)}"</p>`:''}
       </div>`;
     }).join('')}
