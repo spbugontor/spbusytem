@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>MyTIC - Sistem Manajemen Karyawan</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- App Wrapper -->
+  <div id="app">
+
+    <!-- ==========================================
+         LOGIN SCREEN
+         ========================================== -->
+    <div id="screen-login" class="login-screen fade-in">
+      <div class="login-card">
+        <div class="login-tabs">
+          <button id="tab-employee" class="login-tab active">Karyawan</button>
+          <button id="tab-management" class="login-tab">Manajemen</button>
+        </div>
+
+        <div class="login-body">
+          <div class="login-header">
+            <div class="login-icon">
+              <!-- Shield Icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
+            <h1 style="font-size: 1.5rem; font-weight: 800;">MyTIC</h1>
+            <p style="font-size: 0.75rem; opacity: 0.9;">SPBU 54.634.25 GONTOR</p>
+          </div>
+
+          <!-- Karyawan Login Form -->
+          <div id="form-login-employee" class="fade-in">
+            <div class="form-group">
+              <label class="form-label" for="inp-emp-username">Pilih Karyawan</label>
+              <select id="inp-emp-username" class="form-input form-select">
+                <option value="">-- Memuat data... --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inp-emp-pin">PIN (6 Digit)</label>
+              <div class="password-wrapper">
+                <input id="inp-emp-pin" type="password" inputmode="numeric" maxlength="6" class="form-input" placeholder="••••••" style="letter-spacing: 0.2em;">
+                <button type="button" class="password-toggle" onclick="window._togglePassword(this)">👁️</button>
+              </div>
+            </div>
+            <button id="btn-login-emp" class="btn btn-primary" style="width: 100%;">Masuk Karyawan</button>
+          </div>
+
+          <!-- Management Login Form -->
+          <div id="form-login-management" class="fade-in hidden">
+            <div class="form-group">
+              <label class="form-label" for="inp-mgmt-username">Email</label>
+              <input id="inp-mgmt-username" type="email" class="form-input" placeholder="contoh@email.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inp-mgmt-pin">PIN Akses</label>
+              <div class="password-wrapper">
+                <input id="inp-mgmt-pin" type="password" class="form-input" placeholder="••••••">
+                <button type="button" class="password-toggle" onclick="window._togglePassword(this)">👁️</button>
+              </div>
+            </div>
+            <button id="btn-login-mgmt" class="btn btn-primary" style="width: 100%;">Masuk Manajemen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         MAIN DASHBOARD AREA (HIDDEN UNTIL LOGIN)
+         ========================================== -->
+    <div id="screen-main" class="main-area hidden fade-in" style="flex: 1; flex-direction: row; height: 100vh;">
+
+      <!-- SIDEBAR (DESKTOP) -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h1 class="sidebar-brand">MyTIC</h1>
+          <p class="sidebar-subtitle">SPBU GONTOR</p>
+        </div>
+        <div class="sidebar-user">
+          <div class="sidebar-user-avatar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+              stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </div>
+          <div>
+            <div id="display-user-name" style="font-size: 0.875rem; font-weight: 700;">Nama User</div>
+            <div id="display-user-role"
+              style="font-size: 0.65rem; font-weight: 600; opacity: 0.8; text-transform: uppercase;">Jabatan</div>
+          </div>
+        </div>
+        <nav id="nav-desktop" class="sidebar-nav">
+          <!-- Dynamic nav links injected by JS based on role -->
+        </nav>
+        <button id="btn-logout-sidebar" class="btn btn-outline-danger"
+          style="margin: 1rem; border-color: rgba(255,255,255,0.2); color: #FCA5A5;">
+          Keluar Sistem
+        </button>
+      </aside>
+
+      <!-- MOBILE HEADER -->
+      <header class="mobile-header">
+        <div>
+          <h1 style="font-size: 1rem; font-weight: 800;">MyTIC</h1>
+          <p id="display-mobile-name" style="font-size: 0.65rem; opacity: 0.9;">Nama User</p>
+        </div>
+        <button id="btn-logout-mobile"
+          style="background: rgba(255,0,0,0.2); border: none; padding: 0.5rem; border-radius: 50%; color: white;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" x2="9" y1="12" y2="12" />
+          </svg>
+        </button>
+      </header>
+
+      <!-- CONTENT AREA -->
+      <div class="main-area">
+        <header class="topbar">
+          <h2 id="topbar-title" class="page-title">Dashboard</h2>
+        </header>
+
+        <main id="content-wrapper" class="content-wrapper">
+          <!-- Content injected here by JS depending on active section -->
+        </main>
+      </div>
+
+      <!-- MOBILE BOTTOM NAV -->
+      <nav id="nav-mobile" class="mobile-nav">
+        <!-- Dynamic mobile links injected by JS -->
+      </nav>
+
+    </div>
+  </div>
+
+  <!-- MODULES (Firebase + App Logic) -->
+  <script type="module" src="js/firebase-config.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+
+</html>
