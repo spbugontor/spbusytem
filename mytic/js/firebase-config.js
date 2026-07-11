@@ -4,13 +4,13 @@ import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, brows
 
 // KONFIGURASI FIREBASE
 const firebaseConfig = {
-  apiKey: "AIzaSyD5igspuFUZzbCb8nUTUE2EKG8m2eopJgc",
-  authDomain: "mytic-38cc8.firebaseapp.com",
-  databaseURL: "https://mytic-38cc8-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "mytic-38cc8",
-  storageBucket: "mytic-38cc8.firebasestorage.app",
-  messagingSenderId: "771809724207",
-  appId: "1:771809724207:web:9fc8d944cd9215167703da"
+  apiKey: "AIzaSyBBcb3lbQJQ30BZZoBV4j5l1mTwPfsVh2o",
+  authDomain: "spbu-system.firebaseapp.com",
+  databaseURL: "https://spbu-system-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "spbu-system",
+  storageBucket: "spbu-system.firebasestorage.app",
+  messagingSenderId: "397973887906",
+  appId: "1:397973887906:web:7e7a2f502db9efa3df70fb"
 };
 
 // Initialize Firebase
