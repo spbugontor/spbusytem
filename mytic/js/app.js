@@ -13,6 +13,7 @@ let allData = { users: {}, transactions: {}, leaves: {}, savings: {}, violations
 function esc(s) { if (!s) return ''; return String(s).replace(/[&<>"']/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[t])); }
 function fmt(n) { return 'Rp ' + (parseInt(n) || 0).toLocaleString('id-ID'); }
 function fmtDate(d) { if (!d) return '-'; try { return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }); } catch { return d; } }
+function fmtMonthYear(d) { if (!d) return '-'; try { const [y,m] = d.split('-'); const date = new Date(y, parseInt(m)-1, 1); return date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }); } catch { return d; } }
 function today() { return new Date().toISOString().split('T')[0]; }
 
 function getUsers() { return Object.entries(allData.users).map(([k, v]) => ({ ...v, _key: k })); }
@@ -544,10 +545,7 @@ function renderRatings() {
   return `<div class="fade-in">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
       <h3 class="text-xl font-bold">Penilaian Kinerja</h3>
-      <div>
-        <button class="btn btn-secondary" style="margin-right:0.5rem" onclick="window._exportRatingsPDF()">Export PDF</button>
-        <button class="btn btn-primary" onclick="window._showRatingForm()">+ Tambah Penilaian</button>
-      </div>
+      <button class="btn btn-primary" onclick="window._showRatingForm()">+ Tambah Penilaian</button>
     </div>
     ${ratings.length===0?'<div class="card"><p class="text-muted">Belum ada penilaian.</p></div>':
     ratings.map(r => {
@@ -556,9 +554,13 @@ function renderRatings() {
       const color = avg >= 4.5 ? 'var(--success)' : avg >= 3.5 ? 'var(--info)' : avg >= 2.5 ? 'var(--warning)' : 'var(--danger)';
       return `<div class="card" style="margin-bottom:0.75rem">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <div><strong>${esc(emp?emp.name:r.emp_id)}</strong><br><span class="text-xs text-muted">${fmtDate(r.date)}</span></div>
+          <div><strong>${esc(emp?emp.name:r.emp_id)}</strong><br><span class="text-xs text-muted">Periode: ${fmtMonthYear(r.date)}</span></div>
           <div style="text-align:right"><span style="font-size:1.5rem;font-weight:800;color:${color}">${avg}</span><span class="text-xs text-muted">/5</span><br>
-          <button class="btn btn-outline-danger" style="padding:0.2rem 0.5rem;font-size:0.65rem;margin-top:0.25rem" onclick="window._deleteRating('${r._key}')">Hapus</button></div>
+          <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.25rem">
+            <button class="btn btn-outline-primary" style="padding:0.2rem 0.5rem;font-size:0.65rem;" onclick="window._exportSingleRatingPDF('${r._key}')">Cetak PDF</button>
+            <button class="btn btn-outline-danger" style="padding:0.2rem 0.5rem;font-size:0.65rem;" onclick="window._deleteRating('${r._key}')">Hapus</button>
+          </div>
+          </div>
         </div>
         ${r.note ? `<p class="text-xs text-muted mt-2" style="border-top:1px solid var(--border);padding-top:0.5rem">"${esc(r.note)}"</p>` : ''}
       </div>`;
@@ -1186,7 +1188,7 @@ window._showRatingForm = () => {
   showModal(`<div class="modal-header"><h3 class="modal-title">Tambah Penilaian</h3><button class="modal-close" onclick="window._hideModal()">✕</button></div>
     <div class="modal-body">
       <div class="form-group"><label class="form-label">Pilih Karyawan</label><select id="rf-emp" class="form-input form-select">${users.map(u=>`<option value="${u.emp_id}">${esc(u.name)} (${esc(u.position)})</option>`).join('')}</select></div>
-      <div class="form-group"><label class="form-label">Tanggal</label><input id="rf-date" type="date" value="${today()}" class="form-input"></div>
+      <div class="form-group"><label class="form-label">Bulan Penilaian</label><input id="rf-date" type="month" value="${today().substring(0,7)}" class="form-input"></div>
       <p class="form-label">Skor Kriteria (1-5)</p>
       ${criteria.map(c => `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border)">
         <span class="text-sm">${esc(c.name)}</span>
@@ -1208,50 +1210,88 @@ window._saveRating = async () => {
 };
 window._deleteRating = async (key) => { if (confirm('Hapus penilaian?')) { await remove(ref(db, 'ratings/' + key)); showToast('Dihapus!', 'success'); } };
 
-window._exportRatingsPDF = () => {
-  const ratings = getRatings();
-  if (ratings.length === 0) {
-    showToast('Belum ada data untuk diexport', 'warning');
+window._exportSingleRatingPDF = (key) => {
+  const rating = allData.ratings[key];
+  if (!rating) {
+    showToast('Data penilaian tidak ditemukan', 'error');
     return;
   }
   
+  const emp = getUserByEmpId(rating.emp_id);
+  const empName = emp ? emp.name : rating.emp_id;
+  const empPos = emp ? emp.position : '-';
+  const avg = rating.scores ? (Object.values(rating.scores).reduce((s,v)=>s+v,0)/Object.values(rating.scores).length).toFixed(1) : '0';
+  
   let html = `
     <div style="text-align:center;margin-bottom:20px;border-bottom:2px solid #000;padding-bottom:10px;">
-      <h2>Rekap Penilaian Kinerja Karyawan</h2>
-      <p>SPBU GONTOR</p>
-      <p>Tanggal Cetak: ${fmtDate(new Date().toISOString())}</p>
+      <h2>Laporan Evaluasi Kinerja Karyawan</h2>
+      <p style="font-size:1.2rem;font-weight:bold;">SPBU GONTOR</p>
     </div>
-    <table style="width:100%;border-collapse:collapse;margin-top:20px;font-family:sans-serif;">
+    
+    <table style="width:100%;margin-bottom:20px;font-family:sans-serif;font-size:0.9rem;">
+      <tr>
+        <td style="width:120px;"><strong>Nama Karyawan</strong></td>
+        <td>: ${esc(empName)}</td>
+      </tr>
+      <tr>
+        <td><strong>Jabatan</strong></td>
+        <td>: ${esc(empPos)}</td>
+      </tr>
+      <tr>
+        <td><strong>Periode Penilaian</strong></td>
+        <td>: ${fmtMonthYear(rating.date)}</td>
+      </tr>
+    </table>
+
+    <table style="width:100%;border-collapse:collapse;margin-top:10px;font-family:sans-serif;font-size:0.9rem;">
       <thead>
         <tr>
-          <th style="border:1px solid #000;padding:8px;text-align:left;">Nama Karyawan</th>
-          <th style="border:1px solid #000;padding:8px;text-align:center;">Tanggal</th>
-          <th style="border:1px solid #000;padding:8px;text-align:center;">Skor Rata-Rata</th>
-          <th style="border:1px solid #000;padding:8px;text-align:left;">Catatan Evaluasi</th>
+          <th style="border:1px solid #000;padding:8px;text-align:left;background:#f0f0f0;">Kriteria Penilaian</th>
+          <th style="border:1px solid #000;padding:8px;text-align:center;width:100px;background:#f0f0f0;">Skor (1-5)</th>
         </tr>
       </thead>
       <tbody>
   `;
   
-  ratings.forEach(r => {
-    const emp = getUserByEmpId(r.emp_id);
-    const avg = r.scores ? (Object.values(r.scores).reduce((s,v)=>s+v,0)/Object.values(r.scores).length).toFixed(1) : '0';
-    html += `
-      <tr>
-        <td style="border:1px solid #000;padding:8px;">${esc(emp?emp.name:r.emp_id)}</td>
-        <td style="border:1px solid #000;padding:8px;text-align:center;">${fmtDate(r.date)}</td>
-        <td style="border:1px solid #000;padding:8px;text-align:center;"><strong>${avg}/5</strong></td>
-        <td style="border:1px solid #000;padding:8px;">${esc(r.note || '-')}</td>
-      </tr>
-    `;
-  });
+  if (rating.scores) {
+    Object.entries(rating.scores).forEach(([crit, score]) => {
+      html += `
+        <tr>
+          <td style="border:1px solid #000;padding:8px;">${esc(crit)}</td>
+          <td style="border:1px solid #000;padding:8px;text-align:center;">${score}</td>
+        </tr>
+      `;
+    });
+  }
   
-  html += `</tbody></table>
-    <div style="margin-top:50px;text-align:right;">
-      <p>Mengetahui,</p>
-      <br><br><br>
-      <p><strong>Manajemen SPBU GONTOR</strong></p>
-    </div>`;
+  html += `
+        <tr>
+          <td style="border:1px solid #000;padding:8px;text-align:right;"><strong>Rata-Rata:</strong></td>
+          <td style="border:1px solid #000;padding:8px;text-align:center;font-size:1.1rem;"><strong>${avg}</strong></td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div style="margin-top:20px;font-family:sans-serif;font-size:0.9rem;">
+      <strong>Catatan Evaluasi:</strong>
+      <p style="border:1px solid #000;padding:10px;min-height:50px;margin-top:5px;">${esc(rating.note || 'Tidak ada catatan.')}</p>
+    </div>
+
+    <table style="width:100%;margin-top:50px;text-align:center;font-family:sans-serif;font-size:0.9rem;">
+      <tr>
+        <td style="width:50%;">
+          <p>Karyawan,</p>
+          <br><br><br><br>
+          <p><strong>(${esc(empName)})</strong></p>
+        </td>
+        <td style="width:50%;">
+          <p>Manajemen SPBU GONTOR,</p>
+          <br><br><br><br>
+          <p><strong>(..................................)</strong></p>
+        </td>
+      </tr>
+    </table>
+  `;
   
   const printArea = document.getElementById('print-area');
   if (printArea) {
@@ -1259,7 +1299,7 @@ window._exportRatingsPDF = () => {
     window.print();
     setTimeout(() => { printArea.innerHTML = ''; }, 1000);
   } else {
-    showToast('Elemen print-area tidak ditemukan. Harap update index.html', 'error');
+    showToast('Elemen print-area tidak ditemukan', 'error');
   }
 };
 
