@@ -593,10 +593,13 @@ tr:hover td { background: var(--surface-hover); }
    RESPONSIVE (MOBILE)
 ------------------------------------- */
 @media (max-width: 1024px) {
-  .sidebar { display: none; }
-  .mobile-header { display: flex; }
-  .mobile-nav { display: flex; }
-  .topbar { display: none; }
+  #screen-main {
+    flex-direction: column !important;
+  }
+  .sidebar { display: none !important; }
+  .mobile-header { display: flex !important; }
+  .mobile-nav { display: flex !important; }
+  .topbar { display: none !important; }
   .content-wrapper { padding: 1rem; padding-bottom: 5rem; }
   .dashboard-grid { grid-template-columns: 1fr 1fr !important; gap: 0.75rem; }
   .stat-value { font-size: 1.25rem; }
