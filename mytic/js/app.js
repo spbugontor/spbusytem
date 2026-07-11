@@ -1246,12 +1246,12 @@ window._exportRatingsPDF = () => {
     `;
   });
   
-  html += \`</tbody></table>
+  html += `</tbody></table>
     <div style="margin-top:50px;text-align:right;">
       <p>Mengetahui,</p>
       <br><br><br>
       <p><strong>Manajemen SPBU GONTOR</strong></p>
-    </div>\`;
+    </div>`;
   
   const printArea = document.getElementById('print-area');
   if (printArea) {
