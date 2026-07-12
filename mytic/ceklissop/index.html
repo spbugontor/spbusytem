@@ -6,8 +6,10 @@
     <title>Ceklis SOP Harian SPBU Gontor</title>
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=1">
+    <link rel="stylesheet" href="css/style.css?v=2">
 </head>
 <body data-template-id="__page-root" class="min-h-screen">
     <!-- Toast -->
@@ -39,9 +41,9 @@
                 <div>
                     <label for="shift" class="canva-text block mb-1 font-medium">Shift</label>
                     <select id="shift" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none">
-                        <option value="Pagi">Pagi</option>
-                        <option value="Siang">Siang</option>
-                        <option value="Malam">Malam</option>
+                        <option value="Shift 1">Shift 1</option>
+                        <option value="Shift 2">Shift 2</option>
+                        <option value="Shift 3">Shift 3</option>
                     </select>
                 </div>
             </div>
@@ -115,10 +117,35 @@
                 </div>
                 <button class="w-full py-1 rounded-lg font-medium text-sm bg-blue-600 text-white hover:bg-blue-700" onclick="applyCustomDateFilter()">Terapkan</button>
             </div>
+
+            <!-- Grafik SOP Sering Dilanggar -->
+            <div class="bg-white border rounded-lg p-4">
+                <h3 class="font-bold text-sm mb-3 text-gray-700">📊 SOP Paling Sering Tidak Dipenuhi</h3>
+                <div style="position:relative; height:280px;">
+                    <canvas id="chart-sop-violations"></canvas>
+                </div>
+                <p id="chart-empty" class="text-center text-xs text-gray-400 py-4 hidden">Belum ada data untuk grafik</p>
+            </div>
+
             <div id="rekap-container" class="space-y-3"></div>
             <p id="empty-rekap" class="canva-text text-center opacity-60 py-4 hidden">Belum ada data untuk periode ini</p>
             
-            <button class="canva-button w-full py-2 rounded-lg font-medium text-sm mt-4 text-red-600 border border-red-600 bg-white hover:bg-red-50" onclick="showResetConfirm()">Reset Data</button>
+            <!-- Tombol Unduh PDF Bulanan -->
+            <button id="btn-download-monthly-pdf" class="canva-button w-full py-2 rounded-lg font-medium text-sm mt-2 bg-blue-600 text-white hover:bg-blue-700" onclick="downloadMonthlyPDF()">📄 Unduh Rekap Bulanan (PDF)</button>
+
+            <button class="canva-button w-full py-2 rounded-lg font-medium text-sm mt-2 text-red-600 border border-red-600 bg-white hover:bg-red-50" onclick="showResetConfirm()">🗑️ Reset Data</button>
+        </div>
+
+        <!-- MONTHLY RECAP MODAL -->
+        <div id="monthly-recap-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 max-w-sm mx-auto space-y-4">
+                <h3 class="font-bold text-lg text-amber-600">⚠️ Data Bulan Lalu Belum Di-reset</h3>
+                <p class="text-sm text-gray-600">Terdapat <strong id="old-data-count">0</strong> data ceklis dari bulan lalu. Unduh rekap PDF terlebih dahulu, lalu data lama akan otomatis dihapus.</p>
+                <div class="flex gap-3">
+                    <button class="flex-1 py-2 rounded-lg font-medium bg-gray-200 text-gray-800" onclick="closeMonthlyModal()">Nanti Saja</button> 
+                    <button id="btn-recap-reset" class="flex-1 py-2 rounded-lg font-medium bg-blue-600 text-white font-bold" onclick="downloadAndResetOldData()">📄 Unduh & Reset</button>
+                </div>
+            </div>
         </div>
 
         <!-- RESET MODAL -->
@@ -146,6 +173,9 @@
         </div>
     </main>
     
-    <script type="module" src="js/app.js?v=1"></script>
+    <!-- Hidden PDF Print Area -->
+    <div id="pdf-print-area" style="display:none;"></div>
+
+    <script type="module" src="js/app.js?v=2"></script>
 </body>
 </html>

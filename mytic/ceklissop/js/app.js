@@ -13,6 +13,8 @@ let editingSopRecord = null;
 let currentRekapFilter = 'hari';
 let customStartDate = null;
 let customEndDate = null;
+let sopViolationChart = null;
+let monthlyCheckDone = false;
 
 // Helpers to get typed records
 function getChecklists() { return allRecords.filter(r => r.type === 'checklist'); }
@@ -42,6 +44,9 @@ window.showResetConfirm = showResetConfirm;
 window.hideResetConfirm = hideResetConfirm;
 window.closeDeleteModal = closeDeleteModal;
 window.confirmResetData = confirmResetData;
+window.downloadMonthlyPDF = downloadMonthlyPDF;
+window.closeMonthlyModal = closeMonthlyModal;
+window.downloadAndResetOldData = downloadAndResetOldData;
 
 // Navigation
 function showPage(page) {
@@ -52,7 +57,11 @@ function showPage(page) {
     if (page === 'karyawan') renderKaryawan();
     if (page === 'sop') renderSopList();
     if (page === 'ceklis') { populateOperatorSelect(); renderChecklist(); }
-    if (page === 'rekap') renderRekap(currentRekapFilter);
+    if (page === 'rekap') {
+        renderRekap(currentRekapFilter);
+        renderViolationChart();
+        checkOldMonthlyData();
+    }
 }
 
 // === CEKLIS ===
@@ -330,6 +339,7 @@ function switchFilter(filter) {
     });
     document.getElementById('custom-date-section').classList.toggle('hidden', filter !== 'custom');
     renderRekap(filter);
+    renderViolationChart();
 }
 
 function applyCustomDateFilter() {
@@ -338,6 +348,7 @@ function applyCustomDateFilter() {
     if (!s || !e) { showFeedback('⚠️ Pilih tanggal mulai dan akhir', 'text-red-600'); return; }
     customStartDate = new Date(s); customEndDate = new Date(e); customEndDate.setHours(23, 59, 59, 999);
     renderRekap('custom');
+    renderViolationChart();
 }
 
 function getDateRange(filter) {
@@ -395,6 +406,281 @@ async function confirmResetData() {
     showFeedback('✅ Data rekapan berhasil dihapus!', 'text-green-600');
 }
 
+// === GRAFIK SOP SERING DILANGGAR ===
+function renderViolationChart() {
+    const { start, end } = getDateRange(currentRekapFilter);
+    const checklists = getChecklists().filter(r => { const d = new Date(r.date); return d >= start && d <= end; });
+    const chartEmpty = document.getElementById('chart-empty');
+    const canvas = document.getElementById('chart-sop-violations');
+    
+    if (!checklists.length) {
+        if (sopViolationChart) { sopViolationChart.destroy(); sopViolationChart = null; }
+        canvas.style.display = 'none';
+        chartEmpty.classList.remove('hidden');
+        return;
+    }
+    canvas.style.display = 'block';
+    chartEmpty.classList.add('hidden');
+    
+    // Collect all SOP items and count how many times each was NOT checked
+    const violationCount = {};
+    checklists.forEach(r => {
+        const cat = r.category || 'Mobil';
+        const allSopItems = getSopItems(cat);
+        let checkedArr = [];
+        try { checkedArr = JSON.parse(r.checklist_data || '[]'); } catch(e) {}
+        allSopItems.forEach(item => {
+            if (!checkedArr.includes(item)) {
+                violationCount[item] = (violationCount[item] || 0) + 1;
+            }
+        });
+    });
+    
+    // Sort by most violated and take top 10
+    const sorted = Object.entries(violationCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+    
+    if (!sorted.length) {
+        if (sopViolationChart) { sopViolationChart.destroy(); sopViolationChart = null; }
+        canvas.style.display = 'none';
+        chartEmpty.classList.remove('hidden');
+        return;
+    }
+    
+    const labels = sorted.map(([name]) => name.length > 25 ? name.substring(0, 25) + '...' : name);
+    const values = sorted.map(([, count]) => count);
+    const colors = sorted.map((_, i) => {
+        const hue = 0 + (i * 15);
+        return `hsla(${hue}, 80%, 55%, 0.85)`;
+    });
+    
+    if (sopViolationChart) sopViolationChart.destroy();
+    sopViolationChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Jumlah Pelanggaran',
+                data: values,
+                backgroundColor: colors,
+                borderColor: colors.map(c => c.replace('0.85', '1')),
+                borderWidth: 1,
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: (items) => sorted[items[0].dataIndex][0],
+                        label: (item) => `Tidak dipenuhi: ${item.raw}x`
+                    }
+                }
+            },
+            scales: {
+                x: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { display: false } },
+                y: { ticks: { font: { size: 10 } }, grid: { display: false } }
+            }
+        }
+    });
+}
+
+// === REKAP BULANAN PDF ===
+function getMonthName(m) {
+    return ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'][m];
+}
+
+function buildPdfContent(checklists, monthLabel) {
+    const grouped = {};
+    checklists.forEach(r => {
+        if (!grouped[r.operator_name]) grouped[r.operator_name] = { scores: [], records: [] };
+        grouped[r.operator_name].scores.push(r.score);
+        grouped[r.operator_name].records.push(r);
+    });
+
+    const sorted = Object.entries(grouped).map(([name, d]) => ({
+        name,
+        avg: Math.round(d.scores.reduce((a, b) => a + b, 0) / d.scores.length),
+        count: d.records.length,
+        min: Math.min(...d.scores),
+        max: Math.max(...d.scores)
+    })).sort((a, b) => b.avg - a.avg);
+
+    const violationCount = {};
+    checklists.forEach(r => {
+        const cat = r.category || 'Mobil';
+        const allSopItems = getSopItems(cat);
+        let checkedArr = [];
+        try { checkedArr = JSON.parse(r.checklist_data || '[]'); } catch(e) {}
+        allSopItems.forEach(item => {
+            if (!checkedArr.includes(item)) {
+                violationCount[item] = (violationCount[item] || 0) + 1;
+            }
+        });
+    });
+    const topViolations = Object.entries(violationCount).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+    return `
+    <div style="font-family:'DM Sans',Arial,sans-serif; padding:20px; max-width:700px; margin:auto;">
+        <div style="text-align:center; margin-bottom:24px;">
+            <h1 style="font-size:20px; font-weight:700; color:#1e3a5f; margin:0;">Rekap Ceklis SOP Bulanan</h1>
+            <p style="font-size:14px; color:#666; margin:4px 0 0;">SPBU Gontor — ${monthLabel}</p>
+            <p style="font-size:11px; color:#999; margin:2px 0 0;">Dicetak: ${new Date().toLocaleDateString('id-ID', { day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit' })}</p>
+        </div>
+
+        <h2 style="font-size:14px; font-weight:700; color:#1e3a5f; border-bottom:2px solid #1e40af; padding-bottom:4px; margin-bottom:12px;">Ringkasan per Karyawan</h2>
+        <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:20px;">
+            <thead>
+                <tr style="background:#1e40af; color:white;">
+                    <th style="padding:8px 6px; text-align:left;">#</th>
+                    <th style="padding:8px 6px; text-align:left;">Nama</th>
+                    <th style="padding:8px 6px; text-align:center;">Penilaian</th>
+                    <th style="padding:8px 6px; text-align:center;">Rata-rata</th>
+                    <th style="padding:8px 6px; text-align:center;">Min</th>
+                    <th style="padding:8px 6px; text-align:center;">Maks</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${sorted.map((d, i) => `<tr style="background:${i % 2 === 0 ? '#f8fafc' : '#fff'}; border-bottom:1px solid #e2e8f0;">
+                    <td style="padding:6px;">${i + 1}</td>
+                    <td style="padding:6px; font-weight:500;">${d.name}</td>
+                    <td style="padding:6px; text-align:center;">${d.count}x</td>
+                    <td style="padding:6px; text-align:center; font-weight:700; color:${d.avg >= 80 ? '#16a34a' : d.avg >= 50 ? '#ca8a04' : '#dc2626'};">${d.avg}%</td>
+                    <td style="padding:6px; text-align:center;">${d.min}%</td>
+                    <td style="padding:6px; text-align:center;">${d.max}%</td>
+                </tr>`).join('')}
+            </tbody>
+        </table>
+
+        ${topViolations.length > 0 ? `
+        <h2 style="font-size:14px; font-weight:700; color:#1e3a5f; border-bottom:2px solid #dc2626; padding-bottom:4px; margin-bottom:12px;">SOP Paling Sering Tidak Dipenuhi</h2>
+        <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:20px;">
+            <thead>
+                <tr style="background:#dc2626; color:white;">
+                    <th style="padding:8px 6px; text-align:left;">#</th>
+                    <th style="padding:8px 6px; text-align:left;">Item SOP</th>
+                    <th style="padding:8px 6px; text-align:center;">Tidak Dipenuhi</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${topViolations.map(([name, count], i) => `<tr style="background:${i % 2 === 0 ? '#fef2f2' : '#fff'}; border-bottom:1px solid #fecaca;">
+                    <td style="padding:6px;">${i + 1}</td>
+                    <td style="padding:6px;">${name}</td>
+                    <td style="padding:6px; text-align:center; font-weight:700; color:#dc2626;">${count}x</td>
+                </tr>`).join('')}
+            </tbody>
+        </table>
+        ` : ''}
+
+        <div style="text-align:center; font-size:10px; color:#aaa; margin-top:24px; border-top:1px solid #e2e8f0; padding-top:12px;">
+            Total Penilaian: ${checklists.length} &bull; Digenerate otomatis oleh Sistem Ceklis SOP SPBU Gontor
+        </div>
+    </div>`;
+}
+
+function downloadMonthlyPDF() {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    end.setHours(23, 59, 59, 999);
+    const checklists = getChecklists().filter(r => { const d = new Date(r.date); return d >= start && d <= end; });
+    
+    if (!checklists.length) {
+        showFeedback('⚠️ Belum ada data bulan ini untuk diunduh', 'text-red-600');
+        return;
+    }
+    
+    const monthLabel = getMonthName(now.getMonth()) + ' ' + now.getFullYear();
+    generateAndDownloadPDF(checklists, monthLabel, `Rekap_SOP_${monthLabel.replace(' ', '_')}`);
+}
+
+function generateAndDownloadPDF(checklists, monthLabel, filename) {
+    const printArea = document.getElementById('pdf-print-area');
+    printArea.innerHTML = buildPdfContent(checklists, monthLabel);
+    printArea.style.display = 'block';
+    
+    html2pdf().set({
+        margin: [10, 10, 10, 10],
+        filename: filename + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(printArea).save().then(() => {
+        printArea.style.display = 'none';
+        printArea.innerHTML = '';
+        showFeedback('✅ PDF berhasil diunduh!', 'text-green-600');
+    });
+}
+
+// === CEK DATA BULAN LALU & AUTO RESET ===
+function getOldMonthChecklists() {
+    const now = new Date();
+    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    return getChecklists().filter(r => new Date(r.date) < thisMonthStart);
+}
+
+function checkOldMonthlyData() {
+    if (monthlyCheckDone) return;
+    const oldData = getOldMonthChecklists();
+    if (oldData.length > 0) {
+        document.getElementById('old-data-count').textContent = oldData.length;
+        document.getElementById('monthly-recap-modal').classList.remove('hidden');
+    }
+    monthlyCheckDone = true;
+}
+
+function closeMonthlyModal() {
+    document.getElementById('monthly-recap-modal').classList.add('hidden');
+}
+
+async function downloadAndResetOldData() {
+    const oldData = getOldMonthChecklists();
+    if (!oldData.length) { closeMonthlyModal(); return; }
+    
+    const oldest = oldData.reduce((a, b) => new Date(a.date) < new Date(b.date) ? a : b);
+    const dt = new Date(oldest.date);
+    const monthLabel = getMonthName(dt.getMonth()) + ' ' + dt.getFullYear();
+    const filename = `Rekap_SOP_${monthLabel.replace(' ', '_')}`;
+    
+    const btn = document.getElementById('btn-recap-reset');
+    btn.disabled = true; btn.textContent = '⏳ Mengunduh...';
+    
+    const printArea = document.getElementById('pdf-print-area');
+    printArea.innerHTML = buildPdfContent(oldData, monthLabel);
+    printArea.style.display = 'block';
+    
+    try {
+        await html2pdf().set({
+            margin: [10, 10, 10, 10],
+            filename: filename + '.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        }).from(printArea).save();
+        
+        printArea.style.display = 'none';
+        printArea.innerHTML = '';
+        
+        btn.textContent = '🗑️ Menghapus data lama...';
+        for (const r of oldData) {
+            await remove(ref(db, 'ceklissop/records/' + r._key));
+        }
+        
+        showFeedback('✅ Rekap diunduh & data lama berhasil dihapus!', 'text-green-600');
+    } catch(e) {
+        console.error(e);
+        showFeedback('❌ Terjadi kesalahan', 'text-red-600');
+    }
+    
+    btn.disabled = false; btn.textContent = '📄 Unduh & Reset';
+    closeMonthlyModal();
+}
+
 // === INIT FIREBASE LISTENER ===
 onValue(ref(db, 'ceklissop'), (snapshot) => {
     const data = snapshot.val() || {};
@@ -417,7 +703,10 @@ onValue(ref(db, 'ceklissop'), (snapshot) => {
     if (activePage === 'karyawan') renderKaryawan();
     if (activePage === 'sop') renderSopList();
     if (activePage === 'ceklis') { populateOperatorSelect(); renderChecklist(); }
-    if (activePage === 'rekap') renderRekap(currentRekapFilter);
+    if (activePage === 'rekap') {
+        renderRekap(currentRekapFilter);
+        renderViolationChart();
+    }
     
     if (lucide) lucide.createIcons();
 });
