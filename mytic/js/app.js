@@ -1,4 +1,4 @@
-import { db, auth, ref, onValue, set, push, remove, update, get, child, signInWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence } from './firebase-config.js?v=20260712c';
+import { db, auth, ref, onValue, set, push, remove, update, get, child, signInWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence } from './firebase-config.js?v=20260712d';
 
 // ==========================================
 // STATE
@@ -206,7 +206,8 @@ const ADMIN_MENU = [
   { id: 'savings', label: 'Tabungan', icon: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z' },
   { id: 'ratings', label: 'Penilaian', icon: 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z' },
   { id: 'criteria', label: 'Kriteria', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
-  { id: 'leaderboard', label: 'Leaderboard', icon: 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z' }
+  { id: 'leaderboard', label: 'Leaderboard', icon: 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z' },
+  { id: 'settings', label: 'Pengaturan', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' }
 ];
 
 const EMP_MENU = [
@@ -296,6 +297,7 @@ function renderCurrentSection() {
       case 'ratings': html = renderRatings(); break;
       case 'criteria': html = renderCriteriaPage(); break;
       case 'leaderboard': html = renderLeaderboard(); break;
+      case 'settings': html = renderSettings(); break;
       default: html = renderAdminDashboard();
     }
   } else {
@@ -641,6 +643,50 @@ function renderLeaderboard() {
 }
 
 // ==========================================
+// SETTINGS (ADMIN)
+// ==========================================
+function renderSettings() {
+  const s = allData.settings || {};
+  const ep = s.emp_profile_edit || {};
+  return `<div class="fade-in">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <h3 class="text-xl font-bold">Pengaturan Sistem</h3>
+    </div>
+    
+    <div class="card mb-4">
+      <h3 class="card-title mb-4">Izin Edit Profil Karyawan</h3>
+      <p class="text-sm text-muted mb-4">Pilih data mana saja yang diizinkan untuk diubah sendiri oleh karyawan melalui akun mereka.</p>
+      
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <label style="display:flex;align-items:center;gap:0.75rem;cursor:pointer">
+          <input type="checkbox" id="set-edit-name" ${ep.name ? 'checked' : ''} style="width:1.25rem;height:1.25rem;">
+          <span style="font-weight:600;">Izinkan Edit Nama</span>
+        </label>
+        
+        <label style="display:flex;align-items:center;gap:0.75rem;cursor:pointer">
+          <input type="checkbox" id="set-edit-phone" ${ep.phone ? 'checked' : ''} style="width:1.25rem;height:1.25rem;">
+          <span style="font-weight:600;">Izinkan Edit No. Telepon</span>
+        </label>
+        
+        <label style="display:flex;align-items:center;gap:0.75rem;cursor:pointer">
+          <input type="checkbox" id="set-edit-email" ${ep.email ? 'checked' : ''} style="width:1.25rem;height:1.25rem;">
+          <span style="font-weight:600;">Izinkan Edit Email</span>
+        </label>
+        
+        <label style="display:flex;align-items:center;gap:0.75rem;cursor:pointer">
+          <input type="checkbox" id="set-edit-dob" ${ep.dob ? 'checked' : ''} style="width:1.25rem;height:1.25rem;">
+          <span style="font-weight:600;">Izinkan Edit Tanggal Lahir</span>
+        </label>
+      </div>
+
+      <div style="margin-top:2rem;">
+        <button class="btn btn-primary" onclick="window._saveSettings()">Simpan Pengaturan</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ==========================================
 // EMPLOYEE VIEWS
 // ==========================================
 function renderEmpDashboard() {
@@ -765,24 +811,58 @@ function renderEmpRatings() {
 function renderEmpProfile() {
   const emp = getUserByUsername(currentUser.username);
   if (!emp) return '<div class="card"><p class="text-muted">Data tidak ditemukan.</p></div>';
+  
+  const s = allData.settings || {};
+  const ep = s.emp_profile_edit || {};
+  
   return `<div class="fade-in">
     <div class="card" style="text-align:center;padding:2rem;margin-bottom:1rem">
       <div style="width:80px;height:80px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;margin:0 auto 1rem">${(emp.name||'?')[0]}</div>
       <h2 class="text-xl font-bold">${esc(emp.name)}</h2>
       <p class="text-muted">${esc(emp.position)} • ${esc(emp.emp_id)}</p>
     </div>
-    <div class="card"><h3 class="card-title mb-4">Informasi Detail</h3>
+
+    <div class="card"><h3 class="card-title mb-4">Informasi & Edit Profil</h3>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-        <div><p class="form-label">Username</p><p class="font-semibold text-sm">${esc(emp.username)}</p></div>
-        <div><p class="form-label">Jenis Kelamin</p><p class="font-semibold text-sm">${esc(emp.gender||'-')}</p></div>
-        <div><p class="form-label">Tanggal Lahir</p><p class="font-semibold text-sm">${fmtDate(emp.date_of_birth)}</p></div>
-        <div><p class="form-label">No. Telepon</p><p class="font-semibold text-sm">${esc(emp.phone||'-')}</p></div>
-        <div><p class="form-label">Email</p><p class="font-semibold text-sm">${esc(emp.email||'-')}</p></div>
-        <div><p class="form-label">Jenis Kontrak</p><p class="font-semibold text-sm">${esc(emp.contract_type||'-')}</p></div>
-        <div><p class="form-label">Kontrak Mulai</p><p class="font-semibold text-sm">${fmtDate(emp.contract_start)}</p></div>
-        <div><p class="form-label">Kontrak Berakhir</p><p class="font-semibold text-sm">${fmtDate(emp.contract_end)}</p></div>
+        <div class="form-group">
+          <label class="form-label">Nama Lengkap ${!ep.name ? '<span class="text-xs text-muted">(Terkunci)</span>' : ''}</label>
+          <input id="pe-name" class="form-input" value="${esc(emp.name)}" ${!ep.name ? 'disabled' : ''}>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Username <span class="text-xs text-muted">(Terkunci)</span></label>
+          <input class="form-input" value="${esc(emp.username)}" disabled>
+        </div>
+        <div class="form-group">
+          <label class="form-label">No. Telepon ${!ep.phone ? '<span class="text-xs text-muted">(Terkunci)</span>' : ''}</label>
+          <input id="pe-phone" class="form-input" value="${esc(emp.phone||'')}" ${!ep.phone ? 'disabled' : ''}>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email ${!ep.email ? '<span class="text-xs text-muted">(Terkunci)</span>' : ''}</label>
+          <input id="pe-email" class="form-input" value="${esc(emp.email||'')}" ${!ep.email ? 'disabled' : ''}>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tanggal Lahir ${!ep.dob ? '<span class="text-xs text-muted">(Terkunci)</span>' : ''}</label>
+          <input id="pe-dob" type="date" class="form-input" value="${emp.date_of_birth||''}" ${!ep.dob ? 'disabled' : ''}>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Jenis Kelamin <span class="text-xs text-muted">(Terkunci)</span></label>
+          <input class="form-input" value="${esc(emp.gender||'-')}" disabled>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Jenis Kontrak <span class="text-xs text-muted">(Terkunci)</span></label>
+          <input class="form-input" value="${esc(emp.contract_type||'-')}" disabled>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Masa Kontrak <span class="text-xs text-muted">(Terkunci)</span></label>
+          <input class="form-input" value="${fmtDate(emp.contract_start)} s/d ${fmtDate(emp.contract_end)}" disabled>
+        </div>
       </div>
+      ${(ep.name || ep.phone || ep.email || ep.dob) ? `
+      <div style="margin-top:1.5rem">
+        <button class="btn btn-primary" onclick="window._updateEmployeeProfile()">Simpan Perubahan Profil</button>
+      </div>` : ''}
     </div>
+
     <div class="card mt-4"><h3 class="card-title mb-4">Ubah PIN</h3>
       <div class="form-group"><label class="form-label">PIN Lama</label><div class="password-wrapper"><input id="cp-old" type="password" inputmode="numeric" maxlength="6" class="form-input" placeholder="••••••"><button type="button" class="password-toggle" onclick="window._togglePassword(this)">👁️</button></div></div>
       <div class="form-group"><label class="form-label">PIN Baru</label><div class="password-wrapper"><input id="cp-new" type="password" inputmode="numeric" maxlength="6" class="form-input" placeholder="••••••"><button type="button" class="password-toggle" onclick="window._togglePassword(this)">👁️</button></div></div>
@@ -1227,6 +1307,7 @@ window._generateRatingPDFHtml = (key) => {
   const emp = getUserByEmpId(rating.emp_id);
   const empName = emp ? emp.name : rating.emp_id;
   const empPos = emp ? emp.position : '-';
+  const empGender = emp ? emp.gender : 'Semua';
   const avg = rating.scores ? (Object.values(rating.scores).reduce((s,v)=>s+v,0)/Object.values(rating.scores).length).toFixed(1) : '0';
 
   // --- Hitung data Izin/Cuti ---
@@ -1238,8 +1319,8 @@ window._generateRatingPDFHtml = (key) => {
     return sum + Math.max(1, Math.ceil((e - s) / (1000*60*60*24)) + 1);
   }, 0);
 
-  // Sisa cuti per jenis
-  const leaveTypes = getLeaveTypes();
+  // Sisa cuti per jenis (Filtered by gender)
+  const leaveTypes = getLeaveTypes().filter(t => !t.gender || t.gender === 'Semua' || t.gender === empGender);
   let leaveQuotaRows = '';
   leaveTypes.forEach(t => {
     if (t.quota > 0) {
@@ -1250,10 +1331,10 @@ window._generateRatingPDFHtml = (key) => {
       });
       const remaining = t.quota - taken;
       leaveQuotaRows += `<tr>
-        <td style="border:1px solid #000;padding:6px;">${esc(t.name)}</td>
-        <td style="border:1px solid #000;padding:6px;text-align:center;">${t.quota} hari</td>
-        <td style="border:1px solid #000;padding:6px;text-align:center;">${taken} hari</td>
-        <td style="border:1px solid #000;padding:6px;text-align:center;font-weight:bold;color:${remaining<=0?'red':'#065F46'}">${remaining} hari</td>
+        <td style="border:1px solid #000;padding:4px;">${esc(t.name)}</td>
+        <td style="border:1px solid #000;padding:4px;text-align:center;">${t.quota} hari</td>
+        <td style="border:1px solid #000;padding:4px;text-align:center;">${taken} hari</td>
+        <td style="border:1px solid #000;padding:4px;text-align:center;font-weight:bold;color:${remaining<=0?'red':'#065F46'}">${remaining} hari</td>
       </tr>`;
     }
   });
@@ -1262,15 +1343,15 @@ window._generateRatingPDFHtml = (key) => {
   const balance = calcBalance(rating.emp_id);
 
   let html = `
-    <div style="font-family:sans-serif;font-size:0.9rem;padding:10px;">
-    <div style="text-align:center;margin-bottom:20px;border-bottom:2px solid #000;padding-bottom:10px;">
-      <h2 style="margin:0 0 5px 0;">Laporan Evaluasi Kinerja Karyawan</h2>
-      <p style="font-size:1.2rem;font-weight:bold;margin:0;">SPBU GONTOR</p>
+    <div style="font-family:sans-serif;font-size:0.8rem;padding:0;">
+    <div style="text-align:center;margin-bottom:10px;border-bottom:1px solid #000;padding-bottom:5px;">
+      <h2 style="margin:0 0 2px 0;font-size:1.1rem;">Laporan Evaluasi Kinerja Karyawan</h2>
+      <p style="font-size:1rem;font-weight:bold;margin:0;">SPBU GONTOR</p>
     </div>
     
-    <table style="width:100%;margin-bottom:20px;">
+    <table style="width:100%;margin-bottom:10px;">
       <tr>
-        <td style="width:140px;"><strong>Nama Karyawan</strong></td>
+        <td style="width:120px;"><strong>Nama Karyawan</strong></td>
         <td>: ${esc(empName)}</td>
       </tr>
       <tr>
@@ -1283,12 +1364,12 @@ window._generateRatingPDFHtml = (key) => {
       </tr>
     </table>
 
-    <h3 style="margin:15px 0 10px;border-bottom:1px solid #999;padding-bottom:5px;">A. Penilaian Kinerja</h3>
-    <table style="width:100%;border-collapse:collapse;">
+    <h3 style="margin:10px 0 5px;border-bottom:1px dotted #999;font-size:0.9rem;">A. Penilaian Kinerja</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:0.75rem;">
       <thead>
         <tr>
-          <th style="border:1px solid #000;padding:8px;text-align:left;background:#f0f0f0;">Kriteria Penilaian</th>
-          <th style="border:1px solid #000;padding:8px;text-align:center;width:100px;background:#f0f0f0;">Skor (1-5)</th>
+          <th style="border:1px solid #000;padding:4px;text-align:left;background:#f0f0f0;">Kriteria Penilaian</th>
+          <th style="border:1px solid #000;padding:4px;text-align:center;width:80px;background:#f0f0f0;">Skor (1-5)</th>
         </tr>
       </thead>
       <tbody>
@@ -1298,8 +1379,8 @@ window._generateRatingPDFHtml = (key) => {
     Object.entries(rating.scores).forEach(([crit, score]) => {
       html += `
         <tr>
-          <td style="border:1px solid #000;padding:8px;">${esc(crit)}</td>
-          <td style="border:1px solid #000;padding:8px;text-align:center;">${score}</td>
+          <td style="border:1px solid #000;padding:4px;">${esc(crit)}</td>
+          <td style="border:1px solid #000;padding:4px;text-align:center;">${score}</td>
         </tr>
       `;
     });
@@ -1307,56 +1388,56 @@ window._generateRatingPDFHtml = (key) => {
   
   html += `
         <tr>
-          <td style="border:1px solid #000;padding:8px;text-align:right;"><strong>Rata-Rata:</strong></td>
-          <td style="border:1px solid #000;padding:8px;text-align:center;font-size:1.1rem;"><strong>${avg}</strong></td>
+          <td style="border:1px solid #000;padding:4px;text-align:right;"><strong>Rata-Rata:</strong></td>
+          <td style="border:1px solid #000;padding:4px;text-align:center;font-size:0.9rem;"><strong>${avg}</strong></td>
         </tr>
       </tbody>
     </table>
     
-    <div style="margin-top:15px;">
+    <div style="margin-top:10px;">
       <strong>Catatan Evaluasi:</strong>
-      <p style="border:1px solid #000;padding:10px;min-height:40px;margin-top:5px;">${esc(rating.note || 'Tidak ada catatan.')}</p>
+      <p style="border:1px solid #000;padding:6px;min-height:30px;margin-top:2px;">${esc(rating.note || 'Tidak ada catatan.')}</p>
     </div>
 
-    <h3 style="margin:20px 0 10px;border-bottom:1px solid #999;padding-bottom:5px;">B. Rekapitulasi Izin/Cuti (Tahun ${currentYear})</h3>
-    <table style="width:100%;border-collapse:collapse;margin-bottom:10px;">
+    <h3 style="margin:10px 0 5px;border-bottom:1px dotted #999;font-size:0.9rem;">B. Rekap Izin/Cuti (Tahun ${currentYear})</h3>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:5px;font-size:0.75rem;">
       <tr>
-        <td style="width:180px;"><strong>Total Hari Izin/Cuti Diambil</strong></td>
+        <td style="width:150px;"><strong>Total Izin/Cuti Diambil</strong></td>
         <td>: <strong>${totalLeaveDays} hari</strong></td>
       </tr>
     </table>
     ${leaveQuotaRows ? `
-    <table style="width:100%;border-collapse:collapse;">
+    <table style="width:100%;border-collapse:collapse;font-size:0.75rem;">
       <thead>
         <tr>
-          <th style="border:1px solid #000;padding:6px;text-align:left;background:#f0f0f0;">Jenis Cuti</th>
-          <th style="border:1px solid #000;padding:6px;text-align:center;background:#f0f0f0;">Jatah</th>
-          <th style="border:1px solid #000;padding:6px;text-align:center;background:#f0f0f0;">Terpakai</th>
-          <th style="border:1px solid #000;padding:6px;text-align:center;background:#f0f0f0;">Sisa</th>
+          <th style="border:1px solid #000;padding:4px;text-align:left;background:#f0f0f0;">Jenis Cuti</th>
+          <th style="border:1px solid #000;padding:4px;text-align:center;background:#f0f0f0;">Jatah</th>
+          <th style="border:1px solid #000;padding:4px;text-align:center;background:#f0f0f0;">Terpakai</th>
+          <th style="border:1px solid #000;padding:4px;text-align:center;background:#f0f0f0;">Sisa</th>
         </tr>
       </thead>
       <tbody>${leaveQuotaRows}</tbody>
-    </table>` : '<p style="color:#666;font-style:italic;">Tidak ada jenis cuti dengan jatah/kuota.</p>'}
+    </table>` : '<p style="color:#666;font-style:italic;font-size:0.75rem;">Tidak ada jenis cuti terdaftar.</p>'}
 
-    <h3 style="margin:20px 0 10px;border-bottom:1px solid #999;padding-bottom:5px;">C. Tunggakan</h3>
-    <table style="width:100%;border-collapse:collapse;">
+    <h3 style="margin:10px 0 5px;border-bottom:1px dotted #999;font-size:0.9rem;">C. Tunggakan</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:0.75rem;">
       <tr>
-        <td style="width:180px;"><strong>Total Tunggakan</strong></td>
+        <td style="width:150px;"><strong>Total Tunggakan</strong></td>
         <td>: <strong style="color:${balance > 0 ? 'red' : '#065F46'}">${fmt(balance)}</strong></td>
       </tr>
     </table>
 
-    <table style="width:100%;margin-top:50px;text-align:center;">
+    <table style="width:100%;margin-top:20px;text-align:center;font-size:0.8rem;">
       <tr>
         <td style="width:50%;">
           <p>Karyawan,</p>
-          <br><br><br><br>
+          <br><br><br>
           <p><strong>(${esc(empName)})</strong></p>
         </td>
         <td style="width:50%;">
-          <p>Manajemen SPBU GONTOR,</p>
-          <br><br><br><br>
-          <p><strong>(..................................)</strong></p>
+          <p>Manajemen,</p>
+          <br><br><br>
+          <p><strong>(...............................)</strong></p>
         </td>
       </tr>
     </table>
@@ -1496,7 +1577,53 @@ window._saveCriteria = async (key) => {
 };
 window._deleteCriteria = async (key) => { if (confirm('Hapus kriteria?')) { await remove(ref(db, 'criteria/' + key)); showToast('Dihapus!', 'success'); } };
 
+window._saveSettings = async () => {
+  const settingsData = {
+    emp_profile_edit: {
+      name: $('set-edit-name').checked,
+      phone: $('set-edit-phone').checked,
+      email: $('set-edit-email').checked,
+      dob: $('set-edit-dob').checked
+    }
+  };
+  await set(ref(db, 'settings'), settingsData);
+  showToast('Pengaturan berhasil disimpan!', 'success');
+};
+
 // --- CHANGE PIN (Employee) ---
+window._updateEmployeeProfile = async () => {
+  const emp = getUserByUsername(currentUser.username); if (!emp) return;
+  const s = allData.settings || {};
+  const ep = s.emp_profile_edit || {};
+  
+  const updates = {};
+  if (ep.name) updates.name = $('pe-name').value.trim();
+  if (ep.phone) updates.phone = $('pe-phone').value.trim();
+  if (ep.email) updates.email = $('pe-email').value.trim();
+  if (ep.dob) updates.date_of_birth = $('pe-dob').value;
+  
+  if (Object.keys(updates).length === 0) {
+    showToast('Tidak ada data yang bisa diubah', 'warning');
+    return;
+  }
+  
+  if (updates.name === '') { showToast('Nama tidak boleh kosong', 'error'); return; }
+  
+  await update(ref(db, 'users/' + emp._key), updates);
+  
+  // Update currentUser local session so UI updates instantly
+  if (updates.name) currentUser.name = updates.name;
+  sessionStorage.setItem('mytic_emp_session', JSON.stringify(currentUser));
+  
+  // Update header UI
+  const hd = document.getElementById('display-mobile-name');
+  if (hd) hd.textContent = currentUser.name;
+  
+  showToast('Profil berhasil diperbarui!', 'success');
+  // Refresh view
+  switchSection('emp-profile');
+};
+
 window._changePin = async () => {
   const emp = getUserByUsername(currentUser.username); if (!emp) return;
   const oldPin = $('cp-old').value.trim();
