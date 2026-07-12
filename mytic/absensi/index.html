@@ -114,8 +114,15 @@
     <!-- ==================== VIEW: PILIH KARYAWAN ==================== -->
     <div id="view-select" class="view active">
       <h2 class="section-title">Pilih Karyawan</h2>
-      <div id="employee-list" class="emp-grid"></div>
-      <p id="no-employees" class="no-data hidden">Belum ada karyawan. Hubungi admin untuk menambahkan.</p>
+      <div id="employee-list" class="emp-grid mb-6"></div>
+      <p id="no-employees" class="no-data hidden mb-6">Belum ada karyawan. Hubungi admin untuk menambahkan.</p>
+      
+      <div class="card" style="margin-top:2rem;">
+        <h3 class="section-title" style="font-size:1.1rem; text-align:center; margin-bottom:1rem;">🏆 Karyawan Paling Disiplin Bulan Ini</h3>
+        <div id="leaderboard-list">
+          <!-- Leaderboard will be populated here -->
+        </div>
+      </div>
     </div>
 
     <!-- ==================== VIEW: PANEL KARYAWAN ==================== -->
@@ -233,7 +240,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-  <script type="module" src="js/firebase-config.js?v=8"></script>
-  <script type="module" src="js/app.js?v=8"></script>
+  <script type="module" src="js/firebase-config.js?v=9"></script>
+  <script type="module" src="js/app.js?v=9"></script>
 </body>
 </html>

@@ -148,6 +148,50 @@ function renderEmployeeList() {
       if (emp) { currentEmployee = emp; openEmployeePanel(); }
     });
   });
+  renderLeaderboard();
+}
+
+function renderLeaderboard() {
+  const container = $('leaderboard-list');
+  if (!container) return;
+  const emps = getEmployees();
+  const recs = getRecords();
+  const targetDate = new Date();
+  const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+  const y = targetDate.getFullYear();
+  const prefix = `${y}-${m}`;
+  const monthRecs = recs.filter(r => r.date && r.date.startsWith(prefix));
+  
+  const scores = emps.map(emp => {
+    const empRecs = monthRecs.filter(r => r.emp_name === emp.name);
+    let score = 0;
+    let present = 0;
+    empRecs.forEach(r => {
+      if (r.clock_in && r.clock_in !== '-') {
+        present++;
+        if ((r.late_minutes || 0) === 0) score += 10; // Tepat waktu
+        else score += 5; // Terlambat
+      } else {
+        if (['Sakit','Izin','Cuti'].includes(r.status)) score += 2; // Keterangan sah
+      }
+    });
+    return { name: emp.name, score, present };
+  }).filter(e => e.score > 0 || e.present > 0).sort((a, b) => b.score - a.score);
+
+  if (scores.length === 0) {
+    container.innerHTML = '<p class="text-center text-sm text-muted">Belum ada data absensi bulan ini</p>';
+    return;
+  }
+
+  container.innerHTML = scores.slice(0, 3).map((s, i) => `
+    <div class="leaderboard-item rank-${i + 1}">
+      <div class="leaderboard-rank">#${i + 1}</div>
+      <div class="leaderboard-info">
+        <div class="leaderboard-name">${esc(s.name)}</div>
+        <div class="leaderboard-score">${s.score} Poin (${s.present} Kehadiran)</div>
+      </div>
+    </div>
+  `).join('');
 }
 
 // ==========================================
