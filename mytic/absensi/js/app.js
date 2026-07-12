@@ -298,18 +298,29 @@ $('btn-back').addEventListener('click', () => {
   currentEmployee = null;
 });
 
-// Admin trigger: 5x tap logo
-let tapCount = 0, tapTimer = null;
-$('admin-trigger').addEventListener('click', () => {
-  tapCount++;
-  clearTimeout(tapTimer);
-  tapTimer = setTimeout(() => { tapCount = 0; }, 2000);
-  if (tapCount >= 5) {
-    tapCount = 0;
+// Admin trigger: PIN based
+$('btn-admin-lock').addEventListener('click', () => {
+  $('pin-input').value = '';
+  $('pin-overlay').classList.add('active');
+  setTimeout(() => $('pin-input').focus(), 100);
+});
+
+$('pin-cancel').addEventListener('click', () => {
+  $('pin-overlay').classList.remove('active');
+});
+
+$('pin-submit').addEventListener('click', () => {
+  const pin = $('pin-input').value.trim();
+  const correctPin = allData.settings?.admin_pin || '123456'; // Default PIN if not set
+  if (pin === correctPin) {
+    $('pin-overlay').classList.remove('active');
     showView('view-admin');
     renderAdminDashboard();
     renderAdminEmployees();
     renderMessagesForm();
+    showToast('Akses Admin Diberikan', 'success');
+  } else {
+    showToast('PIN Salah!', 'error');
   }
 });
 
