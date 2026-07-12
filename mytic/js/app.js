@@ -1,4 +1,4 @@
-import { db, auth, ref, onValue, set, push, remove, update, get, child, signInWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence } from './firebase-config.js?v=20260712d';
+import { db, auth, ref, onValue, set, push, remove, update, get, child, signInWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence } from './firebase-config.js?v=20260712f';
 
 // ==========================================
 // STATE
@@ -357,9 +357,13 @@ function renderEmployees() {
     </div>
     <div id="emp-form-area"></div>
     ${users.length === 0 ? '<div class="card" style="text-align:center;padding:3rem"><p class="text-muted">Belum ada karyawan. Klik Tambah.</p></div>' :
-    users.map(e => `<div class="card" style="margin-bottom:0.75rem">
+    users.map(e => {
+      const avatarHtml = e.profile_picture 
+        ? `<img src="${e.profile_picture}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">` 
+        : `<div style="width:44px;height:44px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem">${(e.name || '?')[0]}</div>`;
+      return `<div class="card" style="margin-bottom:0.75rem">
       <div style="display:flex;align-items:center;gap:1rem">
-        <div style="width:44px;height:44px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem">${(e.name || '?')[0]}</div>
+        ${avatarHtml}
         <div style="flex:1;min-width:0"><strong>${esc(e.name)}</strong><br><span class="text-xs text-muted">${esc(e.position)} • ${esc(e.emp_id)} • ${esc(e.username)}</span></div>
         <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
           <button class="btn btn-secondary" style="padding:0.5rem 0.75rem;font-size:0.75rem" onclick="window._showEmpDetail('${e._key}')">Detail</button>
@@ -367,7 +371,8 @@ function renderEmployees() {
           <button class="btn btn-outline-danger" style="padding:0.5rem 0.75rem;font-size:0.75rem" onclick="window._deleteEmp('${e._key}')">Hapus</button>
         </div>
       </div>
-    </div>`).join('')}
+    </div>`;
+    }).join('')}
   </div>`;
 }
 
@@ -664,6 +669,11 @@ function renderSettings() {
         </label>
         
         <label style="display:flex;align-items:center;gap:0.75rem;cursor:pointer">
+          <input type="checkbox" id="set-edit-photo" ${ep.photo ? 'checked' : ''} style="width:1.25rem;height:1.25rem;">
+          <span style="font-weight:600;">Izinkan Edit Foto Profil</span>
+        </label>
+        
+        <label style="display:flex;align-items:center;gap:0.75rem;cursor:pointer">
           <input type="checkbox" id="set-edit-phone" ${ep.phone ? 'checked' : ''} style="width:1.25rem;height:1.25rem;">
           <span style="font-weight:600;">Izinkan Edit No. Telepon</span>
         </label>
@@ -815,11 +825,22 @@ function renderEmpProfile() {
   const s = allData.settings || {};
   const ep = s.emp_profile_edit || {};
   
+  const avatarHtml = emp.profile_picture 
+    ? `<img src="${emp.profile_picture}" alt="Profil" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin:0 auto 1rem;border:2px solid var(--primary);">`
+    : `<div style="width:80px;height:80px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;margin:0 auto 1rem">${(emp.name||'?')[0]}</div>`;
+
   return `<div class="fade-in">
-    <div class="card" style="text-align:center;padding:2rem;margin-bottom:1rem">
-      <div style="width:80px;height:80px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;margin:0 auto 1rem">${(emp.name||'?')[0]}</div>
+    <div class="card" style="text-align:center;padding:2rem;margin-bottom:1rem;position:relative;">
+      ${avatarHtml}
       <h2 class="text-xl font-bold">${esc(emp.name)}</h2>
       <p class="text-muted">${esc(emp.position)} • ${esc(emp.emp_id)}</p>
+      ${ep.photo ? `
+      <div style="margin-top:1rem;">
+        <label for="pe-photo" class="btn btn-secondary" style="cursor:pointer;padding:0.4rem 0.8rem;font-size:0.8rem;">Ubah Foto</label>
+        <input type="file" id="pe-photo" accept="image/*" style="display:none" onchange="window._handlePhotoSelect(event)">
+      </div>
+      <p id="pe-photo-name" class="text-xs text-muted mt-2"></p>
+      ` : ''}
     </div>
 
     <div class="card"><h3 class="card-title mb-4">Informasi & Edit Profil</h3>
@@ -1313,13 +1334,11 @@ window._generateRatingPDFHtml = (key) => {
   // --- Hitung data Izin/Cuti ---
   const currentYear = new Date().getFullYear();
   const empLeaves = getLeaves(rating.emp_id);
-  const approvedLeaves = empLeaves.filter(l => l.status === 'Disetujui' && new Date(l.start_date).getFullYear() === currentYear);
-  const totalLeaveDays = approvedLeaves.reduce((sum, l) => {
-    const s = new Date(l.start_date); const e = new Date(l.end_date);
-    return sum + Math.max(1, Math.ceil((e - s) / (1000*60*60*24)) + 1);
-  }, 0);
+  const ratingMonth = rating.date; // e.g. "2026-07"
+  const approvedLeavesBulanIni = empLeaves.filter(l => l.status === 'Disetujui' && l.start_date.startsWith(ratingMonth));
+  const totalIzinBulanIni = approvedLeavesBulanIni.length;
 
-  // Sisa cuti per jenis (Filtered by gender)
+  // Sisa cuti per jenis (Filtered by gender, for the whole year)
   const leaveTypes = getLeaveTypes().filter(t => !t.gender || t.gender === 'Semua' || t.gender === empGender);
   let leaveQuotaRows = '';
   leaveTypes.forEach(t => {
@@ -1399,11 +1418,11 @@ window._generateRatingPDFHtml = (key) => {
       <p style="border:1px solid #000;padding:6px;min-height:30px;margin-top:2px;">${esc(rating.note || 'Tidak ada catatan.')}</p>
     </div>
 
-    <h3 style="margin:10px 0 5px;border-bottom:1px dotted #999;font-size:0.9rem;">B. Rekap Izin/Cuti (Tahun ${currentYear})</h3>
+    <h3 style="margin:10px 0 5px;border-bottom:1px dotted #999;font-size:0.9rem;">B. Rekap Izin/Cuti</h3>
     <table style="width:100%;border-collapse:collapse;margin-bottom:5px;font-size:0.75rem;">
       <tr>
-        <td style="width:150px;"><strong>Total Izin/Cuti Diambil</strong></td>
-        <td>: <strong>${totalLeaveDays} hari</strong></td>
+        <td style="width:180px;"><strong>Izin Disetujui (Bulan Ini)</strong></td>
+        <td>: <strong>${totalIzinBulanIni} kali</strong></td>
       </tr>
     </table>
     ${leaveQuotaRows ? `
@@ -1581,6 +1600,7 @@ window._saveSettings = async () => {
   const settingsData = {
     emp_profile_edit: {
       name: $('set-edit-name').checked,
+      photo: $('set-edit-photo').checked,
       phone: $('set-edit-phone').checked,
       email: $('set-edit-email').checked,
       dob: $('set-edit-dob').checked
@@ -1591,6 +1611,35 @@ window._saveSettings = async () => {
 };
 
 // --- CHANGE PIN (Employee) ---
+window._tempProfilePhoto = null;
+window._handlePhotoSelect = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const max_size = 300;
+  const reader = new FileReader();
+  reader.onload = (readerEvent) => {
+    const img = new Image();
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+      if (width > height) {
+        if (width > max_size) { height = Math.round(height * max_size / width); width = max_size; }
+      } else {
+        if (height > max_size) { width = Math.round(width * max_size / height); height = max_size; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      window._tempProfilePhoto = canvas.toDataURL('image/jpeg', 0.8);
+      const nameEl = document.getElementById('pe-photo-name');
+      if (nameEl) nameEl.textContent = 'Foto siap diunggah. Klik Simpan Perubahan Profil.';
+    };
+    img.src = readerEvent.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
 window._updateEmployeeProfile = async () => {
   const emp = getUserByUsername(currentUser.username); if (!emp) return;
   const s = allData.settings || {};
@@ -1601,13 +1650,14 @@ window._updateEmployeeProfile = async () => {
   if (ep.phone) updates.phone = $('pe-phone').value.trim();
   if (ep.email) updates.email = $('pe-email').value.trim();
   if (ep.dob) updates.date_of_birth = $('pe-dob').value;
+  if (window._tempProfilePhoto) updates.profile_picture = window._tempProfilePhoto;
   
   if (Object.keys(updates).length === 0) {
     showToast('Tidak ada data yang bisa diubah', 'warning');
     return;
   }
   
-  if (updates.name === '') { showToast('Nama tidak boleh kosong', 'error'); return; }
+  if (ep.name && updates.name === '') { showToast('Nama tidak boleh kosong', 'error'); return; }
   
   await update(ref(db, 'users/' + emp._key), updates);
   
@@ -1619,6 +1669,7 @@ window._updateEmployeeProfile = async () => {
   const hd = document.getElementById('display-mobile-name');
   if (hd) hd.textContent = currentUser.name;
   
+  window._tempProfilePhoto = null; // reset
   showToast('Profil berhasil diperbarui!', 'success');
   // Refresh view
   switchSection('emp-profile');
