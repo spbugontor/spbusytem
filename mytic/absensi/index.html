@@ -63,7 +63,7 @@
         <h3 class="modal-title">Akses Admin</h3>
         <p class="modal-message">Masukkan PIN admin untuk melanjutkan</p>
         <div class="form-group">
-          <input id="pin-input" type="password" class="form-input" placeholder="Masukkan PIN" maxlength="20" style="text-align:center;font-size:1.25rem;letter-spacing:0.25rem;">
+          <input id="pin-input" type="password" class="form-input" placeholder="Masukkan PIN" maxlength="6" pattern="[0-9]*" inputmode="numeric" style="text-align:center;font-size:1.25rem;letter-spacing:0.25rem;">
         </div>
         <div class="flex gap-4 justify-center" style="margin-top:1rem;">
           <button id="pin-cancel" class="btn btn-secondary">Batal</button>
@@ -193,10 +193,15 @@
         <div id="report-content"></div>
       </div>
 
-      <!-- Tab: Pesan -->
+      <!-- Tab: Pesan & Sistem -->
       <div id="tab-messages" class="tab-content hidden">
-        <h3 class="section-title" style="font-size:1.1rem;">Pengaturan Pesan Absen</h3>
+        <h3 class="section-title" style="font-size:1.1rem;">Pengaturan Sistem</h3>
         <div class="card">
+          <div class="form-group">
+            <label class="form-label">PIN Admin Baru (Maks 6 digit)</label>
+            <input id="setting-pin" type="password" class="form-input" maxlength="6" pattern="[0-9]*" inputmode="numeric" placeholder="Biarkan kosong jika tidak ingin mengubah">
+          </div>
+          <hr style="border:0;border-top:1px solid var(--border);margin:1.5rem 0;">
           <div class="form-group">
             <label class="form-label">Pesan Tepat Waktu</label>
             <textarea id="msg-on-time" class="form-textarea" rows="3" placeholder="Pesan saat tepat waktu..."></textarea>
@@ -219,7 +224,7 @@
 
   </main>
 
-  <script type="module" src="js/firebase-config.js?v=2"></script>
-  <script type="module" src="js/app.js?v=2"></script>
+  <script type="module" src="js/firebase-config.js?v=3"></script>
+  <script type="module" src="js/app.js?v=3"></script>
 </body>
 </html>

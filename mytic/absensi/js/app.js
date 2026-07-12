@@ -69,10 +69,13 @@ function showModal(title, message, isLate) {
   $('modal-overlay').classList.add('active');
 }
 let confirmCallback = null;
-function showConfirm(title, message, cb) {
+function showConfirm(title, message, cb, btnText = 'Yakin', isDanger = false) {
   confirmCallback = cb;
   $('confirm-title').textContent = title;
   $('confirm-message').textContent = message;
+  const btn = $('confirm-ok');
+  btn.textContent = btnText;
+  btn.className = isDanger ? 'btn btn-danger' : 'btn btn-primary';
   $('confirm-overlay').classList.add('active');
 }
 
@@ -217,7 +220,13 @@ $('btn-clock-in').addEventListener('click', () => {
     </button>
   `).join('');
   optContainer.querySelectorAll('.shift-option').forEach(btn => {
-    btn.addEventListener('click', () => doClockIn(btn.dataset.shift));
+    btn.addEventListener('click', () => {
+      const shiftKey = btn.dataset.shift;
+      const sName = shiftKey === 'admin' ? 'Admin' : 'Shift ' + shiftKey;
+      showConfirm('Konfirmasi Masuk', `Apakah Anda yakin ingin absen masuk untuk ${sName}?`, () => {
+        doClockIn(shiftKey);
+      });
+    });
   });
   $('shift-overlay').classList.add('active');
 });
@@ -291,6 +300,7 @@ function showView(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   $(id).classList.add('active');
   $('btn-back').classList.toggle('hidden', id === 'view-select');
+  $('btn-admin-lock').classList.toggle('hidden', id !== 'view-select');
   render();
 }
 $('btn-back').addEventListener('click', () => {
@@ -307,6 +317,10 @@ $('btn-admin-lock').addEventListener('click', () => {
 
 $('pin-cancel').addEventListener('click', () => {
   $('pin-overlay').classList.remove('active');
+});
+
+$('pin-input').addEventListener('keyup', (e) => {
+  if (e.key === 'Enter') $('pin-submit').click();
 });
 
 $('pin-submit').addEventListener('click', () => {
@@ -467,7 +481,7 @@ function renderAdminEmployees() {
         const recs = getRecords(name);
         for (const r of recs) { await remove(ref(db, 'absensi/records/' + r._key)); }
         showToast(`${name} dihapus`, 'success');
-      });
+      }, 'Hapus', true);
     });
   });
 }
@@ -605,7 +619,8 @@ $('btn-reset-data').addEventListener('click', () => {
     for (const r of toDelete) { await remove(ref(db, 'absensi/records/' + r._key)); }
     showToast(`${toDelete.length} data dihapus`, 'success');
     renderReport();
-  });
+  }, 'Hapus', true);
+});
 });
 
 // ==========================================
@@ -622,13 +637,22 @@ $('btn-save-messages').addEventListener('click', async () => {
   const onTime = $('msg-on-time').value.trim() || 'MasyaAllah kamu datang tepat waktu, semangat kerjanya {nama}!';
   const late = $('msg-late').value.trim() || 'Astaghfirullah {nama} terlambat {terlambat}, besok datang lebih awal ya';
   const clockOut = $('msg-clock-out').value.trim() || 'Alhamdulillah {nama}, hati-hati di jalan ya, semoga selamat sampai tujuan';
-
-  await update(ref(db, 'absensi/settings'), {
+  
+  const updates = {
     msg_on_time: onTime,
     msg_late: late,
     msg_clock_out: clockOut
-  });
-  showToast('Pesan berhasil disimpan!', 'success');
+  };
+  
+  const newPin = $('setting-pin').value.trim();
+  if (newPin && newPin.length <= 6) {
+    updates.admin_pin = newPin;
+  }
+
+  await update(ref(db, 'absensi/settings'), updates);
+  
+  $('setting-pin').value = ''; // clear input after saving
+  showToast('Pengaturan berhasil disimpan!', 'success');
 });
 
 // Init
