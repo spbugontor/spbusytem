@@ -621,7 +621,6 @@ $('btn-reset-data').addEventListener('click', () => {
     renderReport();
   }, 'Hapus', true);
 });
-});
 
 // ==========================================
 // ADMIN: PESAN
