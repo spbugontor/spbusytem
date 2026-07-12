@@ -209,7 +209,7 @@ $('btn-clock-in').addEventListener('click', () => {
   const existing = getRecords(currentEmployee.name).find(r => r.date === today && r.clock_in && r.clock_in !== '-');
   if (existing) { showToast('Sudah absen masuk hari ini', 'warning'); return; }
   const hasNote = getRecords(currentEmployee.name).find(r => r.date === today && (r.clock_in === '-' || !r.clock_in) && ['Sakit','Izin','Cuti','Libur','Lainnya'].includes(r.status));
-  if (hasNote) { showToast('Admin sudah memberikan keterangan hari ini', 'warning'); return; }
+  if (hasNote) { showToast('Manajemen sudah memberikan keterangan hari ini', 'warning'); return; }
   
   // Build shift options
   const optContainer = $('shift-options');
