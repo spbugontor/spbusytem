@@ -1,4 +1,4 @@
-import { db, auth, ref, onValue, set, push, remove, update, get, child, signInWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence } from './firebase-config.js?v=20260712f';
+import { db, auth, ref, onValue, set, push, remove, update, get, child, signInWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence } from './firebase-config.js?v=20260712g';
 
 // ==========================================
 // STATE
@@ -835,9 +835,10 @@ function renderEmpProfile() {
       <h2 class="text-xl font-bold">${esc(emp.name)}</h2>
       <p class="text-muted">${esc(emp.position)} • ${esc(emp.emp_id)}</p>
       ${ep.photo ? `
-      <div style="margin-top:1rem;">
+      <div style="margin-top:1rem;display:flex;gap:0.5rem;justify-content:center;">
         <label for="pe-photo" class="btn btn-secondary" style="cursor:pointer;padding:0.4rem 0.8rem;font-size:0.8rem;">Ubah Foto</label>
         <input type="file" id="pe-photo" accept="image/*" style="display:none" onchange="window._handlePhotoSelect(event)">
+        ${emp.profile_picture ? `<button class="btn btn-outline-danger" style="padding:0.4rem 0.8rem;font-size:0.8rem;" onclick="window._deleteEmployeePhoto()">Hapus</button>` : ''}
       </div>
       <p id="pe-photo-name" class="text-xs text-muted mt-2"></p>
       ` : ''}
@@ -1638,6 +1639,19 @@ window._handlePhotoSelect = (e) => {
     img.src = readerEvent.target.result;
   };
   reader.readAsDataURL(file);
+};
+
+window._deleteEmployeePhoto = async () => {
+  if (!confirm('Hapus foto profil dan kembali ke avatar bawaan?')) return;
+  const emp = getUserByUsername(currentUser.username); if (!emp) return;
+  await update(ref(db, 'users/' + emp._key), { profile_picture: null });
+  if (currentUser.profile_picture) {
+    delete currentUser.profile_picture;
+    sessionStorage.setItem('mytic_emp_session', JSON.stringify(currentUser));
+  }
+  showToast('Foto profil dihapus', 'success');
+  window._tempProfilePhoto = null;
+  switchSection('emp-profile');
 };
 
 window._updateEmployeeProfile = async () => {
