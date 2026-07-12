@@ -221,6 +221,7 @@ $('btn-clock-in').addEventListener('click', () => {
   `).join('');
   optContainer.querySelectorAll('.shift-option').forEach(btn => {
     btn.addEventListener('click', () => {
+      $('shift-overlay').classList.remove('active');
       const shiftKey = btn.dataset.shift;
       const sName = shiftKey === 'admin' ? 'Admin' : 'Shift ' + shiftKey;
       showConfirm('Konfirmasi Masuk', `Apakah Anda yakin ingin absen masuk untuk ${sName}?`, () => {
