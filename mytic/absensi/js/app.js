@@ -354,6 +354,7 @@ document.querySelectorAll('.tab-btn').forEach(tab => {
 // ==========================================
 // ADMIN: DASHBOARD
 // ==========================================
+let disciplineChart = null;
 function renderAdminDashboard() {
   const today = todayStr();
   const emps = getEmployees();
@@ -402,6 +403,47 @@ function renderAdminDashboard() {
         sel.disabled = false;
         showToast(`${sel.dataset.name}: ${sel.value}`, 'success');
       });
+    });
+  }
+
+  // Render Chart
+  const targetDate = new Date();
+  const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+  const y = targetDate.getFullYear();
+  const prefix = `${y}-${m}`;
+  const monthRecs = recs.filter(r => r.date && r.date.startsWith(prefix));
+  
+  let onTimeCount = 0, lateCount = 0, absentNoteCount = 0;
+  monthRecs.forEach(r => {
+    if (r.clock_in && r.clock_in !== '-') {
+      if ((r.late_minutes || 0) > 0) lateCount++;
+      else onTimeCount++;
+    } else {
+      absentNoteCount++;
+    }
+  });
+
+  const ctx = $('discipline-chart');
+  if (ctx) {
+    if (disciplineChart) disciplineChart.destroy();
+    disciplineChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Tepat Waktu', 'Terlambat', 'Sakit/Izin/Cuti/Libur'],
+        datasets: [{
+          data: [onTimeCount, lateCount, absentNoteCount],
+          backgroundColor: ['#059669', '#D97706', '#0284C7'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '65%',
+        plugins: {
+          legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+        }
+      }
     });
   }
 }
@@ -587,6 +629,81 @@ function renderReport() {
     </div>`;
   }).join('');
 }
+
+// Unduh PDF
+$('btn-download-pdf').addEventListener('click', () => {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  
+  const period = $('report-period').value;
+  const dateVal = $('report-date').value;
+  if (!dateVal) { showToast('Pilih tanggal/periode terlebih dahulu', 'warning'); return; }
+
+  doc.setFontSize(16);
+  doc.text('Laporan Rekap Absensi SPBU Gontor', 14, 20);
+  doc.setFontSize(10);
+  doc.text(`Periode: ${period === 'daily' ? 'Harian' : (period === 'weekly' ? 'Mingguan' : 'Bulanan')} (${dateVal})`, 14, 28);
+  doc.text(`Dicetak pada: ${fmtDateID(todayStr())}`, 14, 34);
+
+  const emps = getEmployees();
+  const targetDate = new Date(dateVal);
+  let filtered = getRecords().filter(r => r.date);
+
+  if (period === 'daily') {
+    filtered = filtered.filter(r => r.date === dateVal);
+  } else if (period === 'weekly') {
+    const start = new Date(targetDate);
+    start.setDate(start.getDate() - start.getDay());
+    const end = new Date(start);
+    end.setDate(end.getDate() + 6);
+    const startStr = start.toISOString().slice(0, 10);
+    const endStr = end.toISOString().slice(0, 10);
+    filtered = filtered.filter(r => r.date >= startStr && r.date <= endStr);
+  } else {
+    const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+    const y = targetDate.getFullYear();
+    const prefix = `${y}-${m}`;
+    filtered = filtered.filter(r => r.date.startsWith(prefix));
+  }
+
+  const grouped = {};
+  emps.forEach(e => { grouped[e.name] = { present: 0, late: 0, sick: 0, leave: 0, off: 0, permit: 0, other: 0 }; });
+  filtered.forEach(r => {
+    if (!grouped[r.emp_name]) grouped[r.emp_name] = { present: 0, late: 0, sick: 0, leave: 0, off: 0, permit: 0, other: 0 };
+    const g = grouped[r.emp_name];
+    if (r.clock_in && r.clock_in !== '-') {
+      g.present++;
+      if ((r.late_minutes || 0) > 0) g.late++;
+    } else {
+      if (r.status === 'Sakit') g.sick++;
+      else if (r.status === 'Izin') g.permit++;
+      else if (r.status === 'Cuti') g.leave++;
+      else if (r.status === 'Libur') g.off++;
+      else g.other++;
+    }
+  });
+
+  const names = Object.keys(grouped).filter(n => {
+    const g = grouped[n];
+    return g.present + g.late + g.sick + g.permit + g.leave + g.off + g.other > 0 || emps.find(e => e.name === n);
+  });
+
+  const tableData = names.map((name, i) => {
+    const s = grouped[name];
+    return [ i + 1, name, s.present, s.late, s.sick, s.permit, s.leave, s.off ];
+  });
+
+  doc.autoTable({
+    startY: 40,
+    head: [['No', 'Nama Karyawan', 'Hadir', 'Terlambat', 'Sakit', 'Izin', 'Cuti', 'Libur']],
+    body: tableData,
+    theme: 'grid',
+    headStyles: { fillColor: [79, 70, 229] }
+  });
+
+  doc.save(`Rekap_Absensi_${dateVal}.pdf`);
+  showToast('PDF berhasil diunduh', 'success');
+});
 
 // Reset Data
 $('btn-reset-data').addEventListener('click', () => {

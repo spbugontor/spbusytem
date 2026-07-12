@@ -147,6 +147,11 @@
 
       <!-- Tab: Dashboard -->
       <div id="tab-dashboard" class="tab-content">
+        <h3 class="section-title" style="font-size:1.1rem;">Statistik Kedisiplinan Bulan Ini</h3>
+        <div class="card mb-4" style="height:250px;position:relative;">
+          <canvas id="discipline-chart"></canvas>
+        </div>
+        
         <h3 class="section-title" style="font-size:1.1rem;">Belum Absen Hari Ini</h3>
         <div id="dashboard-absent"></div>
         <p id="all-present" class="no-data hidden" style="color:var(--success);">✓ Semua karyawan sudah absen hari ini</p>
@@ -187,6 +192,7 @@
               <option value="monthly">Bulanan</option>
             </select>
             <input id="report-date" type="date" class="form-input" style="flex:1;min-width:140px;">
+            <button id="btn-download-pdf" class="btn btn-primary" style="white-space:nowrap;flex:1;">Unduh PDF</button>
             <button id="btn-reset-data" class="btn btn-danger" style="white-space:nowrap;">Reset Data</button>
           </div>
         </div>
@@ -224,7 +230,10 @@
 
   </main>
 
-  <script type="module" src="js/firebase-config.js?v=6"></script>
-  <script type="module" src="js/app.js?v=6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <script type="module" src="js/firebase-config.js?v=8"></script>
+  <script type="module" src="js/app.js?v=8"></script>
 </body>
 </html>
