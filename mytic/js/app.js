@@ -1,4 +1,4 @@
-import { db, auth, ref, onValue, set, push, remove, update, get, child, signInWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence } from './firebase-config.js?v=20260712b';
+import { db, auth, ref, onValue, set, push, remove, update, get, child, signInWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence } from './firebase-config.js?v=20260712c';
 
 // ==========================================
 // STATE
@@ -543,9 +543,12 @@ function renderRatings() {
   const ratings = getRatings();
   const users = getUsers();
   return `<div class="fade-in">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:0.5rem">
       <h3 class="text-xl font-bold">Penilaian Kinerja</h3>
-      <button class="btn btn-primary" onclick="window._showRatingForm()">+ Tambah Penilaian</button>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+        ${ratings.length > 0 ? `<button class="btn btn-outline-primary" onclick="window._downloadAllRatingsPDF()">Unduh Semua PDF</button>` : ''}
+        <button class="btn btn-primary" onclick="window._showRatingForm()">+ Tambah Penilaian</button>
+      </div>
     </div>
     ${ratings.length===0?'<div class="card"><p class="text-muted">Belum ada penilaian.</p></div>':
     ratings.map(r => {
@@ -1138,12 +1141,16 @@ window._saveSaving = async (empId) => {
 window._showMassSavingForm = () => {
   const area = $('mass-sav-form-area'); if(!area) return;
   const users = getUsers();
-  const cm = new Date().toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+  const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const now = new Date();
+  const curMonthIdx = now.getMonth();
+  const curYear = now.getFullYear();
+  const monthOptions = months.map((m, i) => `<option value="${m} ${curYear}" ${i === curMonthIdx ? 'selected' : ''}>${m} ${curYear}</option>`).join('');
   area.innerHTML = `<div class="card mb-4" style="background:var(--success-bg);border:1px solid var(--success)">
     <h3 class="card-title mb-4" style="color:#065F46">Input Tabungan Massal</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem">
       <div class="form-group"><label class="form-label">Jumlah (Rp)</label><input id="msf-amt" type="number" inputmode="numeric" class="form-input" placeholder="Misal: 50000"></div>
-      <div class="form-group"><label class="form-label">Bulan</label><input id="msf-month" class="form-input" value="${cm}"></div>
+      <div class="form-group"><label class="form-label">Bulan</label><select id="msf-month" class="form-input form-select">${monthOptions}</select></div>
       <div class="form-group"><label class="form-label">Tanggal</label><input id="msf-date" type="date" class="form-input" value="${today()}"></div>
     </div>
     <div class="form-group">
@@ -1221,16 +1228,49 @@ window._generateRatingPDFHtml = (key) => {
   const empName = emp ? emp.name : rating.emp_id;
   const empPos = emp ? emp.position : '-';
   const avg = rating.scores ? (Object.values(rating.scores).reduce((s,v)=>s+v,0)/Object.values(rating.scores).length).toFixed(1) : '0';
-  
+
+  // --- Hitung data Izin/Cuti ---
+  const currentYear = new Date().getFullYear();
+  const empLeaves = getLeaves(rating.emp_id);
+  const approvedLeaves = empLeaves.filter(l => l.status === 'Disetujui' && new Date(l.start_date).getFullYear() === currentYear);
+  const totalLeaveDays = approvedLeaves.reduce((sum, l) => {
+    const s = new Date(l.start_date); const e = new Date(l.end_date);
+    return sum + Math.max(1, Math.ceil((e - s) / (1000*60*60*24)) + 1);
+  }, 0);
+
+  // Sisa cuti per jenis
+  const leaveTypes = getLeaveTypes();
+  let leaveQuotaRows = '';
+  leaveTypes.forEach(t => {
+    if (t.quota > 0) {
+      let taken = 0;
+      empLeaves.filter(l => l.leave_type === t.name && l.status !== 'Ditolak' && new Date(l.start_date).getFullYear() === currentYear).forEach(l => {
+        const s = new Date(l.start_date); const e = new Date(l.end_date);
+        taken += Math.max(1, Math.ceil((e - s) / (1000*60*60*24)) + 1);
+      });
+      const remaining = t.quota - taken;
+      leaveQuotaRows += `<tr>
+        <td style="border:1px solid #000;padding:6px;">${esc(t.name)}</td>
+        <td style="border:1px solid #000;padding:6px;text-align:center;">${t.quota} hari</td>
+        <td style="border:1px solid #000;padding:6px;text-align:center;">${taken} hari</td>
+        <td style="border:1px solid #000;padding:6px;text-align:center;font-weight:bold;color:${remaining<=0?'red':'#065F46'}">${remaining} hari</td>
+      </tr>`;
+    }
+  });
+
+  // --- Hitung Tunggakan ---
+  const balance = calcBalance(rating.emp_id);
+
   let html = `
+    <div style="font-family:sans-serif;font-size:0.9rem;padding:10px;">
     <div style="text-align:center;margin-bottom:20px;border-bottom:2px solid #000;padding-bottom:10px;">
-      <h2>Laporan Evaluasi Kinerja Karyawan</h2>
-      <p style="font-size:1.2rem;font-weight:bold;">SPBU GONTOR</p>
+      <h2 style="margin:0 0 5px 0;">Laporan Evaluasi Kinerja Karyawan</h2>
+      <p style="font-size:1.2rem;font-weight:bold;margin:0;">SPBU GONTOR</p>
     </div>
     
-    <table style="width:100%;margin-bottom:20px;font-family:sans-serif;font-size:0.9rem;">
+    <table style="width:100%;margin-bottom:20px;">
       <tr>
-        <td style="width:120px;"><strong>Nama Karyawan</strong></td>
+        <td style="width:140px;"><strong>Nama Karyawan</strong></td>
         <td>: ${esc(empName)}</td>
       </tr>
       <tr>
@@ -1243,7 +1283,8 @@ window._generateRatingPDFHtml = (key) => {
       </tr>
     </table>
 
-    <table style="width:100%;border-collapse:collapse;margin-top:10px;font-family:sans-serif;font-size:0.9rem;">
+    <h3 style="margin:15px 0 10px;border-bottom:1px solid #999;padding-bottom:5px;">A. Penilaian Kinerja</h3>
+    <table style="width:100%;border-collapse:collapse;">
       <thead>
         <tr>
           <th style="border:1px solid #000;padding:8px;text-align:left;background:#f0f0f0;">Kriteria Penilaian</th>
@@ -1272,12 +1313,40 @@ window._generateRatingPDFHtml = (key) => {
       </tbody>
     </table>
     
-    <div style="margin-top:20px;font-family:sans-serif;font-size:0.9rem;">
+    <div style="margin-top:15px;">
       <strong>Catatan Evaluasi:</strong>
-      <p style="border:1px solid #000;padding:10px;min-height:50px;margin-top:5px;">${esc(rating.note || 'Tidak ada catatan.')}</p>
+      <p style="border:1px solid #000;padding:10px;min-height:40px;margin-top:5px;">${esc(rating.note || 'Tidak ada catatan.')}</p>
     </div>
 
-    <table style="width:100%;margin-top:50px;text-align:center;font-family:sans-serif;font-size:0.9rem;">
+    <h3 style="margin:20px 0 10px;border-bottom:1px solid #999;padding-bottom:5px;">B. Rekapitulasi Izin/Cuti (Tahun ${currentYear})</h3>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:10px;">
+      <tr>
+        <td style="width:180px;"><strong>Total Hari Izin/Cuti Diambil</strong></td>
+        <td>: <strong>${totalLeaveDays} hari</strong></td>
+      </tr>
+    </table>
+    ${leaveQuotaRows ? `
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr>
+          <th style="border:1px solid #000;padding:6px;text-align:left;background:#f0f0f0;">Jenis Cuti</th>
+          <th style="border:1px solid #000;padding:6px;text-align:center;background:#f0f0f0;">Jatah</th>
+          <th style="border:1px solid #000;padding:6px;text-align:center;background:#f0f0f0;">Terpakai</th>
+          <th style="border:1px solid #000;padding:6px;text-align:center;background:#f0f0f0;">Sisa</th>
+        </tr>
+      </thead>
+      <tbody>${leaveQuotaRows}</tbody>
+    </table>` : '<p style="color:#666;font-style:italic;">Tidak ada jenis cuti dengan jatah/kuota.</p>'}
+
+    <h3 style="margin:20px 0 10px;border-bottom:1px solid #999;padding-bottom:5px;">C. Tunggakan</h3>
+    <table style="width:100%;border-collapse:collapse;">
+      <tr>
+        <td style="width:180px;"><strong>Total Tunggakan</strong></td>
+        <td>: <strong style="color:${balance > 0 ? 'red' : '#065F46'}">${fmt(balance)}</strong></td>
+      </tr>
+    </table>
+
+    <table style="width:100%;margin-top:50px;text-align:center;">
       <tr>
         <td style="width:50%;">
           <p>Karyawan,</p>
@@ -1291,6 +1360,7 @@ window._generateRatingPDFHtml = (key) => {
         </td>
       </tr>
     </table>
+    </div>
   `;
   return html;
 };
@@ -1339,6 +1409,56 @@ window._downloadSingleRatingPDF = (key) => {
   }).catch(e => {
     console.error(e);
     showToast('Gagal mengunduh PDF', 'error');
+  });
+};
+
+window._downloadAllRatingsPDF = () => {
+  if (typeof html2pdf === 'undefined') {
+    showToast('Library PDF sedang dimuat, coba sebentar lagi', 'warning');
+    return;
+  }
+
+  const ratings = getRatings();
+  if (ratings.length === 0) {
+    showToast('Belum ada data penilaian', 'warning');
+    return;
+  }
+
+  // Build combined HTML with page breaks between employees
+  let combinedHtml = '';
+  ratings.forEach((r, idx) => {
+    const pageHtml = _generateRatingPDFHtml(r._key);
+    if (pageHtml) {
+      if (idx > 0) {
+        combinedHtml += '<div style="page-break-before:always;"></div>';
+      }
+      combinedHtml += pageHtml;
+    }
+  });
+
+  if (!combinedHtml) {
+    showToast('Tidak ada data yang bisa di-export', 'error');
+    return;
+  }
+
+  const opt = {
+    margin:       10,
+    filename:     `Evaluasi_Semua_Karyawan_${today()}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak:    { mode: ['css'] }
+  };
+
+  const div = document.createElement('div');
+  div.innerHTML = combinedHtml;
+
+  showToast('Menyiapkan file unduhan massal...', 'info');
+  html2pdf().set(opt).from(div).save().then(() => {
+    showToast('PDF massal berhasil diunduh!', 'success');
+  }).catch(e => {
+    console.error(e);
+    showToast('Gagal mengunduh PDF massal', 'error');
   });
 };
 
