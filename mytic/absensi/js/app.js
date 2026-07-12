@@ -817,4 +817,8 @@ $('btn-save-messages').addEventListener('click', async () => {
 });
 
 // Init
-renderEmployeeList();
+if (window.location.search.includes('admin=true')) {
+  showView('view-admin');
+} else {
+  renderEmployeeList();
+}
