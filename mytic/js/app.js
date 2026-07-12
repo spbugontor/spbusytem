@@ -1,4 +1,4 @@
-import { db, auth, ref, onValue, set, push, remove, update, get, child, signInWithEmailAndPassword, signOut, onAuthStateChanged, browserLocalPersistence, setPersistence } from './firebase-config.js';
+import { db, auth, ref, onValue, set, push, remove, update, get, child, signInWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence } from './firebase-config.js';
 
 // ==========================================
 // STATE
@@ -75,14 +75,14 @@ function hideModal() { const m = $('global-modal'); if (m) m.classList.remove('s
 // ==========================================
 function init() {
   setupEventListeners();
-  setPersistence(auth, browserLocalPersistence).catch(console.error);
+  setPersistence(auth, browserSessionPersistence).catch(console.error);
 
   onAuthStateChanged(auth, user => {
     if (user) {
       currentUser = { role: 'admin', name: 'Manajemen', username: 'admin' };
       loginSuccess();
     } else {
-      const s = localStorage.getItem('mytic_emp_session');
+      const s = sessionStorage.getItem('mytic_emp_session');
       if (s) { currentUser = JSON.parse(s); loginSuccess(); }
       else doLogout(false);
     }
@@ -157,7 +157,7 @@ async function handleEmpLogin() {
         if (u.username === username && u.pin === pin) {
           found = true;
           currentUser = { role: 'employee', id: key, username: u.username, name: u.name, position: u.position, emp_id: u.emp_id };
-          localStorage.setItem('mytic_emp_session', JSON.stringify(currentUser));
+          sessionStorage.setItem('mytic_emp_session', JSON.stringify(currentUser));
           loginSuccess();
           showToast(`Selamat datang, ${u.name}`, 'success');
           break;
@@ -183,7 +183,7 @@ function loginSuccess() {
 
 function doLogout(msg = true) {
   currentUser = null;
-  localStorage.removeItem('mytic_emp_session');
+  sessionStorage.removeItem('mytic_emp_session');
   signOut(auth);
   $('screen-login').classList.remove('hidden');
   $('screen-main').classList.add('hidden');
@@ -1390,7 +1390,7 @@ window._changePin = async () => {
   await set(push(ref(db, 'pin_history')), { emp_id: emp.emp_id, old_pin: oldPin, new_pin: newPin, timestamp: timestamp });
   // Update local session
   currentUser.pin = newPin;
-  localStorage.setItem('mytic_emp_session', JSON.stringify(currentUser));
+  sessionStorage.setItem('mytic_emp_session', JSON.stringify(currentUser));
   showToast('PIN berhasil diubah!', 'success');
   $('cp-old').value = ''; $('cp-new').value = ''; $('cp-confirm').value = '';
 };
