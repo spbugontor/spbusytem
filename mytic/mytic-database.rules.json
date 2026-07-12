@@ -1,6 +1,52 @@
 {
   "rules": {
-    ".read": true,
-    ".write": true
+    // ==========================================
+    // RULES UNTUK SISTEM PEMESANAN LPG
+    // ==========================================
+    "settings": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "orders": {
+      ".read": true,
+      ".write": "auth != null",
+      "$orderId": {
+        ".write": "!data.exists() && newData.exists()",
+        ".validate": "newData.hasChildren(['nama', 'kk', 'nik', 'sudah_bayar', 'tanggal'])",
+        "kk": {
+          ".validate": "newData.isString() && newData.val().length === 16"
+        },
+        "nik": {
+          ".validate": "newData.isString() && newData.val().length === 16"
+        },
+        "sudah_bayar": {
+          ".validate": "auth != null || newData.val() === false"
+        }
+      }
+    },
+
+    // ==========================================
+    // RULES UNTUK SISTEM MyTIC (Karyawan)
+    // ==========================================
+    "users": { ".read": true, ".write": true },
+    "positions": { ".read": true, ".write": true },
+    "leave_types": { ".read": true, ".write": true },
+    "criteria": { ".read": true, ".write": true },
+    "leaves": { ".read": true, ".write": true },
+    "transactions": { ".read": true, ".write": true },
+    "savings": { ".read": true, ".write": true },
+    "violations": { ".read": true, ".write": true },
+    "ratings": { ".read": true, ".write": true },
+    "pin_history": { ".read": true, ".write": true },
+
+    // ==========================================
+    // RULES UNTUK SISTEM ABSENSI KARYAWAN
+    // ==========================================
+    "absensi": { ".read": true, ".write": true },
+
+    // ==========================================
+    // RULES UNTUK SISTEM CEKLIS SOP KARYAWAN
+    // ==========================================
+    "ceklissop": { ".read": true, ".write": true }
   }
 }
