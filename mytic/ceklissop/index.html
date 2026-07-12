@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ceklis SOP Harian SPBU Gontor</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=1">
+</head>
+<body data-template-id="__page-root" class="min-h-screen">
+    <!-- Toast -->
+    <div id="toast-container" style="position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px;"></div>
+
+    <header class="p-4 shadow-sm bg-white" data-template-id="header-bg">
+        <div class="max-w-lg mx-auto relative">
+            <!-- Back button to MyTIC -->
+            <a href="../index.html" class="absolute left-0 top-1/2 -translate-y-1/2 p-2 bg-gray-100 hover:bg-gray-200 rounded-full" title="Kembali ke Beranda">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </a>
+            <h1 data-template-id="app-title" class="canva-text font-bold text-center text-xl text-blue-900">Ceklis SOP Harian</h1>
+            <p data-template-id="app-subtitle" class="canva-text text-center mt-1 opacity-80 text-sm">SPBU Gontor</p>
+        </div>
+    </header>
+    
+    <nav class="max-w-lg mx-auto flex border-b bg-white">
+        <button id="nav-ceklis" class="nav-btn flex-1 nav-active" onclick="showPage('ceklis')">📋 Ceklis</button>
+        <button id="nav-karyawan" class="nav-btn flex-1" onclick="showPage('karyawan')">👷 Karyawan</button> 
+        <button id="nav-sop" class="nav-btn flex-1" onclick="showPage('sop')">📝 Kelola SOP</button> 
+        <button id="nav-rekap" class="nav-btn flex-1" onclick="showPage('rekap')">📊 Rekap</button>
+    </nav>
+
+    <main class="max-w-lg mx-auto p-4">
+        <!-- PAGE: CEKLIS -->
+        <div id="page-ceklis" class="space-y-4">
+            <div class="space-y-3">
+                <div>
+                    <label for="operator" class="canva-text block mb-1 font-medium">Operator</label> 
+                    <select id="operator" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none"></select>
+                </div>
+                <div>
+                    <label for="shift" class="canva-text block mb-1 font-medium">Shift</label>
+                    <select id="shift" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none">
+                        <option value="Pagi">Pagi</option>
+                        <option value="Siang">Siang</option>
+                        <option value="Malam">Malam</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="flex gap-2">
+                <button id="tab-mobil" class="tab-active flex-1 py-2 rounded-lg font-medium" onclick="switchTab('Mobil')">🚗 Mobil</button> 
+                <button id="tab-motor" class="tab-inactive flex-1 py-2 rounded-lg font-medium" onclick="switchTab('Motor')">🏍️ Motor</button>
+            </div>
+            
+            <div id="checklist-container" class="space-y-2"></div>
+            
+            <div class="text-center py-3">
+                <span class="canva-text font-medium">Skor SOP:</span> 
+                <span id="score-display" class="text-2xl font-bold text-blue-700 ml-2">0%</span>
+            </div>
+            
+            <button id="submit-btn" class="canva-button w-full py-3 rounded-lg font-bold text-lg bg-blue-600 text-white hover:bg-blue-700 transition" onclick="submitChecklist()">Kirim Penilaian</button>
+            
+            <div class="mt-6">
+                <h2 class="canva-text font-bold mb-3">Riwayat Penilaian Hari Ini</h2>
+                <div id="history-list" class="space-y-2"></div>
+                <p id="empty-history" class="canva-text text-center opacity-60 py-4 hidden">Belum ada riwayat hari ini</p>
+            </div>
+        </div>
+
+        <!-- PAGE: KARYAWAN -->
+        <div id="page-karyawan" class="space-y-4 hidden">
+            <h2 class="canva-text font-bold text-lg">Kelola Karyawan</h2>
+            <div class="flex gap-2">
+                <input id="karyawan-input" type="text" class="flex-1 border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-400" placeholder="Nama Karyawan"> 
+                <button id="btn-add-karyawan" class="canva-button px-4 py-2 rounded-lg font-medium bg-blue-600 text-white" onclick="addKaryawan()">Tambah</button>
+            </div>
+            <div id="karyawan-list" class="space-y-2"></div>
+            <p id="empty-karyawan" class="canva-text text-center opacity-60 py-4 hidden">Belum ada data karyawan</p>
+        </div>
+
+        <!-- PAGE: KELOLA SOP -->
+        <div id="page-sop" class="space-y-4 hidden">
+            <h2 class="canva-text font-bold text-lg">Kelola Item SOP</h2>
+            <div class="flex gap-2">
+                <button id="sop-tab-mobil" class="tab-active flex-1 py-2 rounded-lg font-medium" onclick="switchSopTab('Mobil')">🚗 Mobil</button> 
+                <button id="sop-tab-motor" class="tab-inactive flex-1 py-2 rounded-lg font-medium" onclick="switchSopTab('Motor')">🏍️ Motor</button>
+            </div>
+            <div class="flex gap-2">
+                <input id="sop-input" type="text" class="flex-1 border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-400" placeholder="Deskripsi aturan SOP"> 
+                <button id="btn-add-sop" class="canva-button px-4 py-2 rounded-lg font-medium bg-blue-600 text-white" onclick="addSopItem()">Tambah</button>
+            </div>
+            <div id="sop-list" class="space-y-2"></div>
+            <p id="empty-sop" class="canva-text text-center opacity-60 py-4 hidden">Belum ada aturan SOP</p>
+        </div>
+
+        <!-- PAGE: REKAP -->
+        <div id="page-rekap" class="space-y-4 hidden">
+            <h2 class="canva-text font-bold text-lg">Rekap Penilaian</h2>
+            <div class="flex gap-2 flex-wrap">
+                <button id="filter-hari" class="tab-active flex-1 min-w-fit py-2 rounded-lg font-medium text-sm" onclick="switchFilter('hari')">📅 Harian</button> 
+                <button id="filter-minggu" class="tab-inactive flex-1 min-w-fit py-2 rounded-lg font-medium text-sm" onclick="switchFilter('minggu')">📆 Mingguan</button> 
+                <button id="filter-bulan" class="tab-inactive flex-1 min-w-fit py-2 rounded-lg font-medium text-sm" onclick="switchFilter('bulan')">📈 Bulanan</button> 
+                <button id="filter-custom" class="tab-inactive flex-1 min-w-fit py-2 rounded-lg font-medium text-sm" onclick="switchFilter('custom')">📋 Custom</button>
+            </div>
+            <div id="custom-date-section" class="hidden space-y-2 bg-gray-50 p-3 rounded-lg">
+                <div class="flex gap-2">
+                    <div class="flex-1">
+                        <label for="custom-start" class="block text-xs font-medium mb-1 text-gray-700">Tanggal Mulai</label>
+                        <input id="custom-start" type="date" class="w-full border rounded-lg px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-blue-400">
+                    </div>
+                    <div class="flex-1">
+                        <label for="custom-end" class="block text-xs font-medium mb-1 text-gray-700">Tanggal Akhir</label>
+                        <input id="custom-end" type="date" class="w-full border rounded-lg px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-blue-400">
+                    </div>
+                </div>
+                <button class="w-full py-1 rounded-lg font-medium text-sm bg-blue-600 text-white hover:bg-blue-700" onclick="applyCustomDateFilter()">Terapkan</button>
+            </div>
+            <div id="rekap-container" class="space-y-3"></div>
+            <p id="empty-rekap" class="canva-text text-center opacity-60 py-4 hidden">Belum ada data untuk periode ini</p>
+            
+            <button class="canva-button w-full py-2 rounded-lg font-medium text-sm mt-4 text-red-600 border border-red-600 bg-white hover:bg-red-50" onclick="showResetConfirm()">Reset Data</button>
+        </div>
+
+        <!-- RESET MODAL -->
+        <div id="reset-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 max-w-sm mx-auto space-y-4">
+                <h3 class="canva-text font-bold text-lg">Reset Rekapitulasi?</h3>
+                <p class="canva-text text-sm">Tindakan ini akan menghapus semua riwayat ceklis dan tidak dapat dikembalikan lagi. Yakin ingin melanjutkan?</p>
+                <div class="flex gap-3">
+                    <button class="canva-button flex-1 py-2 rounded-lg font-medium bg-gray-200" onclick="hideResetConfirm()">Batal</button> 
+                    <button id="reset-confirm-btn" class="flex-1 py-2 rounded-lg font-medium bg-red-600 text-white font-bold" onclick="confirmResetData()">🗑️ Hapus Semua</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- DELETE MODAL -->
+        <div id="delete-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 max-w-sm mx-auto space-y-4">
+                <h3 id="delete-modal-title" class="font-bold text-lg text-gray-800"></h3>
+                <p id="delete-modal-message" class="text-sm text-gray-600"></p>
+                <div class="flex gap-3">
+                    <button class="flex-1 py-2 rounded-lg font-medium bg-gray-200 text-gray-800" onclick="closeDeleteModal()">Batal</button> 
+                    <button id="delete-confirm-btn" class="flex-1 py-2 rounded-lg font-medium bg-red-600 text-white font-bold">Hapus</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script type="module" src="js/app.js?v=1"></script>
+</body>
+</html>

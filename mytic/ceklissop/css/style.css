@@ -1,0 +1,33 @@
+body {
+    font-family: 'DM Sans', sans-serif;
+}
+
+.tab-active {
+    background: #1e40af;
+    color: #fff;
+}
+
+.tab-inactive {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.check-item {
+    transition: all 0.2s;
+}
+
+.check-item.checked {
+    background: #dcfce7;
+    border-color: #16a34a;
+}
+
+.nav-active {
+    border-bottom: 3px solid #1e40af;
+    color: #1e40af;
+    font-weight: 700;
+}
+
+.nav-btn {
+    padding: 10px 4px;
+    font-size: 14px;
+}
