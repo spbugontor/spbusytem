@@ -540,6 +540,10 @@ function renderAdminDashboard() {
 
 }
 
+// Date filter event listeners for donut chart
+$('dash-start').addEventListener('change', () => renderAdminDashboard());
+$('dash-end').addEventListener('change', () => renderAdminDashboard());
+
 // ==========================================
 // ADMIN: KELOLA KARYAWAN
 // ==========================================
