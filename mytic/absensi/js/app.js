@@ -214,7 +214,7 @@ function renderLeaderboard() {
   }
 
   const generateListHTML = (list, isTop3) => list.map((s, i) => `
-    <div class="leaderboard-item rank-${i + 1}" style="${!isTop3 ? 'background:#f8fafc;box-shadow:none;border:1px solid #e2e8f0;margin-bottom:0.5rem;' : ''}">
+    <div class="leaderboard-item rank-${i + 1}" data-emp="${esc(s.name)}" style="cursor:pointer;${!isTop3 ? 'background:#f8fafc;box-shadow:none;border:1px solid #e2e8f0;margin-bottom:0.5rem;' : ''}">
       <div class="leaderboard-rank" style="${!isTop3 && i >= 3 ? 'background:#94a3b8;color:#fff;' : ''}">#${i + 1}</div>
       <div class="leaderboard-info">
         <div class="leaderboard-name">${esc(s.name)}</div>
@@ -227,7 +227,81 @@ function renderLeaderboard() {
   const adminContainer = $('admin-leaderboard-list');
   if (adminContainer) {
     adminContainer.innerHTML = generateListHTML(scores, false);
+    adminContainer.querySelectorAll('.leaderboard-item').forEach(item => {
+      item.addEventListener('click', () => showLeaderboardDetail(item.dataset.emp));
+    });
   }
+}
+
+function showLeaderboardDetail(empName) {
+  const recs = getRecords(empName);
+  const targetDate = new Date();
+  const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+  const y = targetDate.getFullYear();
+  const d = String(targetDate.getDate()).padStart(2, '0');
+  const startStr = `${y}-${m}-01`;
+  const endStr = `${y}-${m}-${d}`;
+  
+  const monthRecs = recs.filter(r => r.date && r.date >= startStr && r.date <= endStr);
+  
+  let onTime = 0, late = 0, absent = 0, totalLateMins = 0;
+  monthRecs.forEach(r => {
+    if (r.clock_in && r.clock_in !== '-') {
+      if ((r.late_minutes || 0) > 0) { late++; totalLateMins += (r.late_minutes || 0); }
+      else onTime++;
+    } else {
+      absent++;
+    }
+  });
+  
+  $('detail-title').textContent = `📋 Rincian: ${empName}`;
+  
+  let html = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:1rem;">
+      <div class="card" style="text-align:center;padding:0.75rem;">
+        <div style="font-size:1.5rem;font-weight:800;color:var(--success);">${onTime}</div>
+        <div style="font-size:0.75rem;color:var(--text-secondary);">Tepat Waktu</div>
+      </div>
+      <div class="card" style="text-align:center;padding:0.75rem;">
+        <div style="font-size:1.5rem;font-weight:800;color:var(--warning);">${late}</div>
+        <div style="font-size:0.75rem;color:var(--text-secondary);">Terlambat</div>
+      </div>
+      <div class="card" style="text-align:center;padding:0.75rem;">
+        <div style="font-size:1.5rem;font-weight:800;color:var(--info);">${absent}</div>
+        <div style="font-size:0.75rem;color:var(--text-secondary);">Izin/Sakit/Cuti</div>
+      </div>
+      <div class="card" style="text-align:center;padding:0.75rem;">
+        <div style="font-size:1.5rem;font-weight:800;color:var(--danger);">${totalLateMins}m</div>
+        <div style="font-size:0.75rem;color:var(--text-secondary);">Total Telat</div>
+      </div>
+    </div>
+    <h4 style="font-size:0.9rem;margin-bottom:0.5rem;color:var(--text);">Riwayat Bulan Ini</h4>
+  `;
+  
+  if (monthRecs.length === 0) {
+    html += '<p class="text-sm text-muted">Belum ada data bulan ini.</p>';
+  } else {
+    html += '<div style="max-height:250px;overflow-y:auto;">';
+    monthRecs.sort((a, b) => b.date.localeCompare(a.date)).forEach(r => {
+      const statusColor = (!r.clock_in || r.clock_in === '-') ? 'var(--info)' : ((r.late_minutes || 0) > 0 ? 'var(--warning)' : 'var(--success)');
+      const statusText = (!r.clock_in || r.clock_in === '-') ? (r.note || r.status || 'Tidak Hadir') : ((r.late_minutes || 0) > 0 ? `Telat ${r.late_minutes}m` : 'Tepat Waktu');
+      const clockIn = (r.clock_in && r.clock_in !== '-') ? r.clock_in : '-';
+      const clockOut = (r.clock_out && r.clock_out !== '-') ? r.clock_out : '-';
+      
+      html += `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border);font-size:0.8rem;">
+          <div>
+            <div style="font-weight:600;color:var(--text);">${fmtDateID(r.date)}</div>
+            <div style="color:var(--text-muted);font-size:0.7rem;">${r.shift || '-'} | Masuk: ${clockIn} | Pulang: ${clockOut}</div>
+          </div>
+          <span style="color:${statusColor};font-weight:600;font-size:0.75rem;white-space:nowrap;">${statusText}</span>
+        </div>`;
+    });
+    html += '</div>';
+  }
+  
+  $('detail-content').innerHTML = html;
+  $('detail-overlay').classList.add('active');
 }
 
 // ==========================================
@@ -365,6 +439,7 @@ $('btn-clock-out').addEventListener('click', async () => {
 // MODALS
 // ==========================================
 $('modal-close').addEventListener('click', () => $('modal-overlay').classList.remove('active'));
+$('detail-close').addEventListener('click', () => $('detail-overlay').classList.remove('active'));
 $('confirm-ok').addEventListener('click', () => {
   $('confirm-overlay').classList.remove('active');
   if (confirmCallback) { confirmCallback(); confirmCallback = null; }
