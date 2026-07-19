@@ -208,15 +208,42 @@ function renderLeaderboard() {
     return;
   }
 
-  container.innerHTML = scores.slice(0, 3).map((s, i) => `
-    <div class="leaderboard-item rank-${i + 1}">
-      <div class="leaderboard-rank">#${i + 1}</div>
+  const formatTimeInfo = (sec) => {
+    if (sec === 0) return 'Tepat waktu';
+    const isEarly = sec < 0;
+    let absSec = Math.abs(sec);
+    const h = Math.floor(absSec / 3600);
+    absSec %= 3600;
+    const m = Math.floor(absSec / 60);
+    const s = absSec % 60;
+    
+    let parts = [];
+    if (h > 0) parts.push(`${h}j`);
+    if (m > 0 || h > 0) parts.push(`${m}m`);
+    parts.push(`${s}d`);
+    
+    const timeStr = parts.join(' ');
+    return isEarly ? `Lebih awal: ${timeStr}` : `Telat: ${timeStr}`;
+  };
+
+  const generateListHTML = (list, isTop3) => list.map((s, i) => `
+    <div class="leaderboard-item rank-${i + 1}" style="${!isTop3 ? 'background:#f8fafc;box-shadow:none;border:1px solid #e2e8f0;margin-bottom:0.5rem;' : ''}">
+      <div class="leaderboard-rank" style="${!isTop3 && i >= 3 ? 'background:#94a3b8;color:#fff;' : ''}">#${i + 1}</div>
       <div class="leaderboard-info">
         <div class="leaderboard-name">${esc(s.name)}</div>
-        <div class="leaderboard-score">${s.score} Poin (${s.present} Kehadiran)</div>
+        <div class="leaderboard-score" style="color:var(--text-secondary);font-weight:normal;font-size:0.8rem;">
+          ${formatTimeInfo(s.totalSecLate)}
+        </div>
       </div>
     </div>
   `).join('');
+
+  container.innerHTML = generateListHTML(scores.slice(0, 3), true);
+  
+  const adminContainer = $('admin-leaderboard-list');
+  if (adminContainer) {
+    adminContainer.innerHTML = generateListHTML(scores, false);
+  }
 }
 
 // ==========================================
