@@ -169,10 +169,8 @@ function renderLeaderboard() {
   const y = targetDate.getFullYear();
   const d = String(targetDate.getDate()).padStart(2, '0');
   
-  const startInput = $('dash-start');
-  const endInput = $('dash-end');
-  const startStr = startInput && startInput.value ? startInput.value : `${y}-${m}-01`;
-  const endStr = endInput && endInput.value ? endInput.value : `${y}-${m}-${d}`;
+  const startStr = `${y}-${m}-01`;
+  const endStr = `${y}-${m}-${d}`;
   
   const monthRecs = recs.filter(r => r.date && r.date >= startStr && r.date <= endStr);
   
@@ -539,9 +537,7 @@ function renderAdminDashboard() {
       }
     });
   }
-  
-  // Also update leaderboard when dashboard dates change
-  renderLeaderboard();
+
 }
 
 // ==========================================
