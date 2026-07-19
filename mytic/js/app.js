@@ -1657,10 +1657,24 @@ window._downloadAllRatingsPDF = () => {
 window._showCriteriaForm = (key) => {
   const c = key ? (() => { const v = allData.criteria[key]; return v ? { ...v, _key: key } : null; })() : null;
   const area = $('crit-form-area'); if (!area) return;
+  
+  const allCrits = getCriteria();
+  const uniqueIndicators = [...new Set(allCrits.map(x => x.indicator || 'Umum'))];
+  const currentInd = c?.indicator || 'Umum';
+  if (!uniqueIndicators.includes(currentInd)) uniqueIndicators.push(currentInd);
+  if (uniqueIndicators.length === 0) uniqueIndicators.push('Umum');
+  
   area.innerHTML = `<div class="card mb-4 fade-in" style="border:2px solid var(--primary)">
     <h3 class="card-title mb-4">${c?'Edit':'Tambah'} Kriteria</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-      <div class="form-group"><label class="form-label">Nama Indikator</label><input id="cf-indicator" class="form-input" value="${esc(c?.indicator||'Umum')}" placeholder="Misal: Kedisiplinan"></div>
+      <div class="form-group">
+        <label class="form-label">Nama Indikator</label>
+        <select id="cf-indicator-select" class="form-input form-select mb-2" onchange="document.getElementById('cf-indicator').style.display = this.value === '__NEW__' ? 'block' : 'none';">
+          ${uniqueIndicators.map(ind => `<option value="${esc(ind)}" ${ind === currentInd ? 'selected' : ''}>${esc(ind)}</option>`).join('')}
+          <option value="__NEW__">+ Tambah Indikator Baru</option>
+        </select>
+        <input id="cf-indicator" class="form-input" value="" placeholder="Ketik nama indikator baru..." style="display:none;">
+      </div>
       <div class="form-group"><label class="form-label">Sub-Indikator</label><input id="cf-name" class="form-input" value="${esc(c?.name||'')}" placeholder="Misal: Tepat Waktu"></div>
       <div class="form-group" style="grid-column: 1 / -1"><label class="form-label">Berlaku Untuk</label><select id="cf-pos" class="form-input form-select">
         <option value="Semua" ${c?.position==='Semua'?'selected':''}>Semua Jabatan</option>
@@ -1678,7 +1692,9 @@ window._showCriteriaForm = (key) => {
   </div>`;
 };
 window._saveCriteria = async (key) => {
-  const indicator = $('cf-indicator').value.trim() || 'Umum';
+  const selVal = $('cf-indicator-select').value;
+  let indicator = (selVal === '__NEW__' ? $('cf-indicator').value.trim() : selVal) || 'Umum';
+  
   const name = $('cf-name').value.trim();
   if (!name) { showToast('Sub-indikator wajib diisi!', 'error'); return; }
   const data = { indicator, name, position: $('cf-pos').value };
