@@ -659,8 +659,14 @@ function renderCriteriaPage() {
 // LEADERBOARD (ADMIN)
 // ==========================================
 function renderLeaderboard() {
+  const monthVal = window._leaderboardMonth || '';
   const users = getUsers();
-  const allRatings = getRatings();
+  let allRatings = getRatings();
+  
+  if (monthVal) {
+    allRatings = allRatings.filter(r => (r.date || '').startsWith(monthVal));
+  }
+
   if (users.length === 0) return '<div class="fade-in"><div class="card"><p class="text-muted">Tambahkan karyawan terlebih dahulu.</p></div></div>';
   
   const scores = users.map(u => {
@@ -678,13 +684,15 @@ function renderLeaderboard() {
       if (totalCount > 0) avg = totalScores / totalCount;
     }
     return { ...u, avg: parseFloat(avg.toFixed(2)), evalCount: r.length };
-  }).sort((a,b) => b.avg - a.avg);
+  }).filter(u => u.evalCount > 0 || !monthVal) // Hide employees with 0 evals in specific month, but show all if no filter
+    .sort((a,b) => b.avg - a.avg);
 
   return `<div class="fade-in">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+    <div style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
       <h3 class="text-xl font-bold">Peringkat Kinerja Karyawan</h3>
+      <input type="month" class="input-field" style="width: auto; padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--border);" value="${monthVal}" onchange="window._filterLeaderboard(this.value)">
     </div>
-    ${scores.length === 0 ? '<div class="card"><p class="text-muted">Belum ada data penilaian.</p></div>' :
+    ${scores.length === 0 ? '<div class="card"><p class="text-muted">Belum ada data penilaian pada periode ini.</p></div>' :
     scores.map((s, idx) => {
       const color = s.avg >= 4.5 ? 'var(--success)' : s.avg >= 3.5 ? 'var(--info)' : s.avg >= 2.5 ? 'var(--warning)' : 'var(--danger)';
       const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : (idx + 1) + '.';
@@ -700,6 +708,12 @@ function renderLeaderboard() {
     }).join('')}
   </div>`;
 }
+
+window._filterLeaderboard = (val) => {
+  window._leaderboardMonth = val;
+  const lbSection = document.getElementById('section-leaderboard');
+  if (lbSection) lbSection.innerHTML = renderLeaderboard();
+};
 
 // ==========================================
 // SETTINGS (ADMIN)
