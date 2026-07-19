@@ -8,6 +8,25 @@ let currentSection = 'dashboard';
 let allData = { users: {}, transactions: {}, leaves: {}, savings: {}, violations: {}, ratings: {}, criteria: {}, leave_types: {}, settings: {}, pin_history: {} };
 
 // ==========================================
+// THEME
+// ==========================================
+const THEME_PALETTES = {
+  orange: { primary: '#F15800', hover: '#D94500', bg: '#FFF0E6' },
+  blue: { primary: '#2563EB', hover: '#1D4ED8', bg: '#EFF6FF' },
+  emerald: { primary: '#059669', hover: '#047857', bg: '#ECFDF5' },
+  purple: { primary: '#7C3AED', hover: '#6D28D9', bg: '#F5F3FF' },
+  red: { primary: '#DC2626', hover: '#B91C1C', bg: '#FEF2F2' },
+  slate: { primary: '#334155', hover: '#1E293B', bg: '#F1F5F9' }
+};
+
+function applyTheme(themeKey) {
+  const t = THEME_PALETTES[themeKey] || THEME_PALETTES['orange'];
+  document.documentElement.style.setProperty('--primary', t.primary);
+  document.documentElement.style.setProperty('--primary-hover', t.hover);
+  document.documentElement.style.setProperty('--primary-bg', t.bg);
+}
+
+// ==========================================
 // UTILITIES
 // ==========================================
 function esc(s) { if (!s) return ''; return String(s).replace(/[&<>"']/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[t])); }
@@ -93,6 +112,10 @@ function init() {
   nodes.forEach(node => {
     onValue(ref(db, node), snap => {
       allData[node] = snap.exists() ? snap.val() : {};
+      
+      if (node === 'settings') {
+        applyTheme(allData.settings.theme || 'orange');
+      }
       
       if (node === 'users') {
         const empSelect = document.getElementById('inp-emp-username');
@@ -719,13 +742,35 @@ function renderSettings() {
           <span style="font-weight:600;">Izinkan Edit Tanggal Lahir</span>
         </label>
       </div>
+    </div>
 
-      <div style="margin-top:2rem;">
-        <button class="btn btn-primary" onclick="window._saveSettings()">Simpan Pengaturan</button>
+    <div class="card mb-4">
+      <h3 class="card-title mb-4">Tema Warna Aplikasi</h3>
+      <p class="text-sm text-muted mb-4">Ubah tema warna untuk MyTIC, Absensi, dan Ceklis SOP secara bersamaan.</p>
+      
+      <div class="theme-grid">
+        ${Object.keys(THEME_PALETTES).map(k => {
+          const t = THEME_PALETTES[k];
+          const active = (s.theme || 'orange') === k ? 'active' : '';
+          return `
+          <div class="theme-card ${active}" onclick="window._setTheme('${k}')" style="border-color: ${active ? t.primary : 'var(--border)'}">
+            <div class="theme-color-preview" style="background: ${t.primary}"></div>
+            <div class="theme-name" style="text-transform: capitalize; font-weight: 600; text-align: center; margin-top: 0.5rem; font-size: 0.85rem;">${k}</div>
+          </div>`;
+        }).join('')}
       </div>
+    </div>
+
+    <div style="margin-top:2rem;">
+      <button class="btn btn-primary" onclick="window._saveSettings()">Simpan Pengaturan</button>
     </div>
   </div>`;
 }
+
+window._setTheme = async (themeKey) => {
+  await set(ref(db, 'settings/theme'), themeKey);
+  showToast('Tema diubah!', 'success');
+};
 
 // ==========================================
 // EMPLOYEE VIEWS

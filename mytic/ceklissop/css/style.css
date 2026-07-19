@@ -1,9 +1,23 @@
+:root {
+    --primary: #1e40af;
+    --primary-hover: #1e3a8a;
+    --primary-light: #60a5fa;
+    --primary-bg: #eff6ff;
+}
+
 body {
     font-family: 'DM Sans', sans-serif;
 }
 
+/* Theme Utilities */
+.text-theme-dark { color: var(--primary); }
+.text-theme { color: var(--primary); }
+.bg-theme { background-color: var(--primary); color: white; }
+.bg-theme:hover { background-color: var(--primary-hover); }
+.focus-ring-theme:focus { box-shadow: 0 0 0 2px var(--primary-light); }
+
 .tab-active {
-    background: #1e40af;
+    background: var(--primary);
     color: #fff;
 }
 
@@ -22,8 +36,8 @@ body {
 }
 
 .nav-active {
-    border-bottom: 3px solid #1e40af;
-    color: #1e40af;
+    border-bottom: 3px solid var(--primary);
+    color: var(--primary);
     font-weight: 700;
 }
 

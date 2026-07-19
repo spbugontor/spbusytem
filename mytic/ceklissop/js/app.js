@@ -5,6 +5,31 @@ const DEFAULT_MOBIL = ["Buka pintu kendaraan", "Ucapkan salam & senyum", "Tanyak
 const DEFAULT_MOTOR = ["Ucapkan salam & senyum", "Tanyakan jenis BBM & nominal", "Minta matikan mesin", "Cek nol meter (tunjukkan ke customer)", "Isi BBM sesuai permintaan", "Tunjukkan meter akhir", "Terima pembayaran & hitung kembalian", "Ucapkan terima kasih"];
 
 let allRecords = [];
+
+// ==========================================
+// THEME
+// ==========================================
+const THEME_PALETTES = {
+  orange: { primary: '#F15800', hover: '#D94500', bg: '#FFF0E6', light: '#fed7aa' },
+  blue: { primary: '#2563EB', hover: '#1D4ED8', bg: '#EFF6FF', light: '#93c5fd' },
+  emerald: { primary: '#059669', hover: '#047857', bg: '#ECFDF5', light: '#6ee7b7' },
+  purple: { primary: '#7C3AED', hover: '#6D28D9', bg: '#F5F3FF', light: '#c4b5fd' },
+  red: { primary: '#DC2626', hover: '#B91C1C', bg: '#FEF2F2', light: '#fca5a5' },
+  slate: { primary: '#334155', hover: '#1E293B', bg: '#F1F5F9', light: '#cbd5e1' }
+};
+
+function applyTheme(themeKey) {
+  const t = THEME_PALETTES[themeKey] || THEME_PALETTES['orange'];
+  document.documentElement.style.setProperty('--primary', t.primary);
+  document.documentElement.style.setProperty('--primary-hover', t.hover);
+  document.documentElement.style.setProperty('--primary-bg', t.bg);
+  document.documentElement.style.setProperty('--primary-light', t.light);
+}
+
+onValue(ref(db, 'settings/theme'), snap => {
+  const theme = snap.val();
+  if (theme) applyTheme(theme);
+});
 let currentTab = 'Mobil';
 let checkedItems = new Set();
 let sopTab = 'Mobil';

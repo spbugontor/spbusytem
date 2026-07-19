@@ -769,5 +769,34 @@ tr:hover td { background: var(--surface-hover); }
     display: none !important;
   }
 }
+
+/* Theme Picker */
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.theme-card {
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+}
+.theme-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+.theme-card.active {
+  background: var(--surface-hover);
+  box-shadow: var(--shadow-md);
+}
+.theme-color-preview {
+  height: 40px;
+  border-radius: var(--radius-sm);
+  width: 100%;
+}
  
  

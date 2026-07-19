@@ -10,6 +10,26 @@ const $ = id => document.getElementById(id);
 const esc = s => s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : '';
 
 // ==========================================
+// THEME
+// ==========================================
+const THEME_PALETTES = {
+  orange: { primary: '#F15800', hover: '#D94500', bg: '#FFF0E6' },
+  blue: { primary: '#2563EB', hover: '#1D4ED8', bg: '#EFF6FF' },
+  emerald: { primary: '#059669', hover: '#047857', bg: '#ECFDF5' },
+  purple: { primary: '#7C3AED', hover: '#6D28D9', bg: '#F5F3FF' },
+  red: { primary: '#DC2626', hover: '#B91C1C', bg: '#FEF2F2' },
+  slate: { primary: '#334155', hover: '#1E293B', bg: '#F1F5F9' }
+};
+
+function applyTheme(themeKey) {
+  const t = THEME_PALETTES[themeKey] || THEME_PALETTES['orange'];
+  document.documentElement.style.setProperty('--primary', t.primary);
+  document.documentElement.style.setProperty('--primary-dark', t.hover);
+  document.documentElement.style.setProperty('--primary-light', t.hover);
+  document.documentElement.style.setProperty('--primary-bg', t.bg);
+}
+
+// ==========================================
 // SHIFTS
 // ==========================================
 let SHIFTS = {
@@ -120,6 +140,11 @@ onValue(ref(db, 'absensi'), snap => {
   }
   
   render();
+});
+
+onValue(ref(db, 'settings/theme'), snap => {
+  const theme = snap.val();
+  if (theme) applyTheme(theme);
 });
 
 function render() {
