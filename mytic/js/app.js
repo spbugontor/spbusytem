@@ -20,11 +20,15 @@ const THEME_PALETTES = {
 };
 
 function applyTheme(themeKey) {
+  localStorage.setItem('spbu_theme', themeKey);
   const t = THEME_PALETTES[themeKey] || THEME_PALETTES['orange'];
   document.documentElement.style.setProperty('--primary', t.primary);
   document.documentElement.style.setProperty('--primary-hover', t.hover);
   document.documentElement.style.setProperty('--primary-bg', t.bg);
 }
+
+const savedTheme = localStorage.getItem('spbu_theme');
+if (savedTheme) applyTheme(savedTheme);
 
 // ==========================================
 // UTILITIES
@@ -711,8 +715,7 @@ function renderLeaderboard() {
 
 window._filterLeaderboard = (val) => {
   window._leaderboardMonth = val;
-  const lbSection = document.getElementById('section-leaderboard');
-  if (lbSection) lbSection.innerHTML = renderLeaderboard();
+  renderCurrentSection();
 };
 
 // ==========================================

@@ -19,12 +19,16 @@ const THEME_PALETTES = {
 };
 
 function applyTheme(themeKey) {
+  localStorage.setItem('spbu_theme', themeKey);
   const t = THEME_PALETTES[themeKey] || THEME_PALETTES['orange'];
   document.documentElement.style.setProperty('--primary', t.primary);
   document.documentElement.style.setProperty('--primary-hover', t.hover);
   document.documentElement.style.setProperty('--primary-bg', t.bg);
   document.documentElement.style.setProperty('--primary-light', t.light);
 }
+
+const savedTheme = localStorage.getItem('spbu_theme');
+if (savedTheme) applyTheme(savedTheme);
 
 onValue(ref(db, 'settings/theme'), snap => {
   const theme = snap.val();
