@@ -163,10 +163,10 @@ function isOpen() {
   return new Date() >= target;
 }
 
-// Hitung hanya pesanan hari ini untuk validasi dan kuota UI
+// Mengambil semua data pesanan yang aktif (belum di-reset oleh admin)
+// Ini memperbaiki masalah data yang hilang pada pergantian hari
 function getTodayOrders() {
-  const today = getTodayString();
-  return orders.filter(o => o.tanggal === today);
+  return orders;
 }
 
 function getQuotaLeft() {

@@ -1,0 +1,1031 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <script>window["__codeletBootstrap__"] = JSON.parse('{"A":"A","B":"20260710-05-9ed98a3"}');</script>
+    <script src="/_sdk/f432b76fb310b513.telemetry_sdk.js"
+        integrity="sha512-9FJQ55EKmmqhyyik8BhrMVfm0+iYYfb8uOlRsjtkxJMEI97qOVEI4PnHohDjQAtvAep0IOEpdQ64eki0sz62ug=="></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Absensi Karyawan</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .toast {
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+    </style>
+    <script src="/_sdk/9432170dbd2ae0df.resizing_sdk.js" type="text/javascript"
+        integrity="sha512-FeT+58sb1f9ejWPWFjCbJvTT+SDwGV+ngrHUnlO7TWEOoqwOLj6p256kO3vOL7DIWl1cIgrobiof8v2bOigwPg=="></script>
+</head>
+
+<body data-template-id="__page-root" class="min-h-screen w-full">
+    <header data-template-id="header-bg" class="canva-header p-4 shadow-md sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex flex-col items-center justify-center">
+            <div id="admin-trigger" class="cursor-pointer select-none mb-2"><i data-lucide="fingerprint"
+                    class="w-8 h-8 text-white"></i>
+            </div>
+            <h1 class="text-white font-bold text-xl">Absen Karyawan SPBU Gontor</h1>
+            <p class="text-white text-sm font-medium mt-1">Let's do the best, Allahu Akbar!</p><button id="btn-back"
+                class="absolute right-4 text-white/80 hover:text-white hidden"><i data-lucide="arrow-left"
+                    class="w-5 h-5"></i></button>
+        </div>
+    </header>
+    <main class="w-full max-w-4xl mx-auto p-4 sm:p-4">
+        <div id="toast-container" class="fixed top-20 right-4 z-[100] space-y-2"></div><!-- Modal -->
+        <div id="modal-overlay" class="modal-overlay">
+            <div class="bg-white rounded-2xl p-8 mx-4 max-w-md w-full text-center shadow-xl">
+                <div id="modal-icon" class="text-8xl mb-6"></div>
+                <h3 id="modal-title" class="text-3xl font-bold mb-3"></h3>
+                <p id="modal-message" class="text-gray-600 text-lg mb-6"></p><button id="modal-close"
+                    class="px-8 py-3 bg-indigo-600 text-white rounded-lg font-bold text-lg">Mengerti</button>
+            </div>
+        </div><!-- View: Employee Select -->
+        <div id="view-select" class="view active">
+            <h2 class="text-3xl font-bold mb-6 text-indigo-900">Pilih Karyawan</h2>
+            <div id="employee-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+            <p id="no-employees" class="text-center py-8 text-gray-400 text-2xl hidden">Belum ada karyawan. Hubungi
+                admin untuk menambahkan.</p>
+        </div><!-- View: Employee Panel -->
+        <div id="view-employee" class="view">
+            <div class="text-center mb-8">
+                <h2 id="emp-name" class="text-5xl font-bold text-gray-800"></h2>
+                <p id="emp-position" class="text-2xl text-gray-500 mt-1"></p>
+                <p id="emp-date" class="text-xl text-gray-400 mt-2"></p>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <button id="btn-clock-in"
+                    class="p-4 rounded-xl font-bold text-white text-center text-2xl active:scale-95 transition bg-green-500 hover:bg-green-600">Masuk</button>
+                <button id="btn-clock-out"
+                    class="p-4 rounded-xl font-bold text-white text-center text-2xl active:scale-95 transition bg-red-600 hover:bg-red-700">Pulang</button>
+            </div>
+            <div id="emp-today-status" class="p-4 bg-gray-50 rounded-xl mb-6 hidden">
+                <p id="emp-status-text" class="text-xl text-gray-600 font-medium"></p>
+            </div>
+            <h3 class="font-semibold text-2xl mb-3 text-indigo-900">Riwayat Absensi</h3>
+            <div id="emp-recap" class="space-y-3 max-h-96 overflow-y-auto"></div>
+        </div><!-- View: Admin Panel -->
+        <div id="view-admin" class="view">
+            <div class="flex gap-3 mb-6 overflow-x-auto pb-2">
+                <button
+                    class="admin-tab px-5 py-3 rounded-lg text-lg font-semibold whitespace-nowrap bg-indigo-600 text-white active:scale-95 transition"
+                    data-tab="dashboard">Dashboard</button> <button
+                    class="admin-tab px-5 py-3 rounded-lg text-lg font-semibold whitespace-nowrap bg-gray-200 text-gray-700 active:scale-95 transition"
+                    data-tab="employees">Karyawan</button> <button
+                    class="admin-tab px-5 py-3 rounded-lg text-lg font-semibold whitespace-nowrap bg-gray-200 text-gray-700 active:scale-95 transition"
+                    data-tab="report">Rekap</button> <button
+                    class="admin-tab px-5 py-3 rounded-lg text-lg font-semibold whitespace-nowrap bg-gray-200 text-gray-700 active:scale-95 transition"
+                    data-tab="messages">Pesan</button>
+            </div>
+            <div id="confirm-overlay" class="modal-overlay">
+                <div class="bg-white rounded-2xl p-8 mx-4 max-w-sm w-full shadow-xl">
+                    <h3 id="confirm-title" class="text-xl font-bold mb-3"></h3>
+                    <p id="confirm-message" class="text-gray-600 text-lg mb-8"></p>
+                    <div class="flex gap-4 justify-center"><button id="confirm-cancel"
+                            class="px-8 py-3 bg-gray-300 text-gray-800 rounded-lg font-bold text-lg active:scale-95 transition">Batal</button>
+                        <button id="confirm-ok"
+                            class="px-8 py-3 bg-red-600 text-white rounded-lg font-bold text-lg active:scale-95 transition">Hapus</button>
+                    </div>
+                </div>
+            </div>
+            <div id="edit-modal-overlay" class="modal-overlay">
+                <div class="bg-white rounded-2xl p-8 mx-4 max-w-sm w-full shadow-xl">
+                    <h3 class="text-xl font-bold mb-5">Edit Karyawan</h3>
+                    <form id="edit-form" class="space-y-5">
+                        <div>
+                            <label for="edit-name" class="block text-lg font-bold text-gray-800 mb-2">Nama</label>
+                            <input id="edit-name" type="text" class="w-full p-3 border rounded-lg text-lg font-medium"
+                                required>
+                        </div>
+                        <div>
+                            <label for="edit-nickname" class="block text-lg font-bold text-gray-800 mb-2">Nama
+                                Panggilan</label> <input id="edit-nickname" type="text"
+                                class="w-full p-3 border rounded-lg text-lg font-medium" required>
+                        </div>
+                        <div>
+                            <label for="edit-position"
+                                class="block text-lg font-bold text-gray-800 mb-2">Jabatan</label> <select
+                                id="edit-position" class="w-full p-3 border rounded-lg text-lg font-medium">
+                                <option value="Admin">Admin</option>
+                                <option value="Pengawas">Pengawas</option>
+                                <option value="Operator">Operator</option>
+                                <option value="Cleaning Service">Cleaning Service</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-4 justify-center">
+                            <button type="button" id="edit-cancel"
+                                class="px-6 py-3 bg-gray-300 text-gray-800 rounded-lg font-bold text-lg active:scale-95 transition">Batal</button>
+                            <button type="submit"
+                                class="px-6 py-3 bg-blue-600 text-white rounded-lg font-bold text-lg active:scale-95 transition">Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div id="admin-dashboard" class="admin-content">
+                <h3 class="font-bold text-2xl mb-4 text-indigo-900">Belum Absen Hari Ini</h3>
+                <div id="dashboard-absent" class="space-y-3"></div>
+                <p id="all-present" class="text-green-600 text-xl font-semibold hidden">✓ Semua karyawan sudah absen
+                    hari ini</p>
+            </div>
+            <div id="admin-employees" class="admin-content hidden">
+                <h3 class="font-bold text-2xl mb-4 text-indigo-900">Kelola Karyawan</h3>
+                <form id="add-employee-form" class="mb-6">
+                    <div class="mb-4">
+                        <input id="input-name" type="text" placeholder="Nama karyawan"
+                            class="w-full p-3 border rounded-lg text-lg font-medium">
+                    </div>
+                    <div class="mb-4">
+                        <input id="input-nickname" type="text" placeholder="Nama panggilan"
+                            class="w-full p-3 border rounded-lg text-lg font-medium">
+                    </div>
+                    <div class="mb-4">
+                        <p class="text-lg font-medium text-gray-700 mb-3">Pilih Jabatan</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button"
+                                class="position-btn p-3 border-2 border-gray-300 rounded-lg text-lg font-medium active:scale-95 transition hover:border-indigo-600"
+                                data-position="Admin">Admin</button> <button type="button"
+                                class="position-btn p-3 border-2 border-gray-300 rounded-lg text-lg font-medium active:scale-95 transition hover:border-indigo-600"
+                                data-position="Pengawas">Pengawas</button> <button type="button"
+                                class="position-btn p-3 border-2 border-gray-300 rounded-lg text-lg font-medium active:scale-95 transition hover:border-indigo-600"
+                                data-position="Operator">Operator</button> <button type="button"
+                                class="position-btn p-3 border-2 border-gray-300 rounded-lg text-lg font-medium active:scale-95 transition hover:border-indigo-600"
+                                data-position="Cleaning Service">Cleaning Service</button>
+                        </div><input id="input-position" type="hidden" value="">
+                    </div><button type="submit"
+                        class="w-full px-6 py-3 bg-indigo-600 text-white rounded-lg text-lg font-bold active:scale-95 transition">Tambah</button>
+                </form>
+                <div id="admin-emp-list" class="space-y-3"></div>
+            </div>
+            <div id="admin-report" class="admin-content hidden">
+                <h3 class="font-bold text-2xl mb-4 text-indigo-900">Rekap Absensi</h3>
+                <div class="flex gap-3 mb-6 flex-col sm:flex-row">
+                    <select id="report-period" class="p-3 border rounded-lg text-lg font-medium flex-1">
+                        <option value="daily">Harian</option>
+                        <option value="weekly">Mingguan</option>
+                        <option value="monthly">Bulanan</option>
+                    </select> <input id="report-date" type="date"
+                        class="p-3 border rounded-lg text-lg font-medium flex-1"> <button id="btn-reset-data"
+                        class="px-6 py-3 bg-red-600 text-white rounded-lg text-lg font-bold active:scale-95 transition">Reset
+                        Data</button>
+                </div>
+                <div id="report-content" class="space-y-3 overflow-y-auto"></div>
+            </div>
+            <div id="admin-messages" class="admin-content hidden">
+                <h3 class="font-bold text-2xl mb-6">Pengaturan Pesan Absen</h3>
+                <form id="messages-form" class="space-y-6">
+                    <div><label for="msg-on-time" class="block text-lg font-bold text-gray-800 mb-2">Pesan Tepat
+                            Waktu</label> <textarea id="msg-on-time" rows="3"
+                            class="w-full p-3 border rounded-lg text-lg font-medium resize-none"
+                            placeholder="Pesan saat karyawan absen masuk tepat waktu"></textarea>
+                    </div>
+                    <div><label for="msg-late" class="block text-lg font-bold text-gray-800 mb-2">Pesan
+                            Terlambat</label> <textarea id="msg-late" rows="3"
+                            class="w-full p-3 border rounded-lg text-lg font-medium resize-none"
+                            placeholder="Pesan saat karyawan absen masuk terlambat"></textarea>
+                    </div>
+                    <div><label for="msg-clock-out" class="block text-lg font-bold text-gray-800 mb-2">Pesan Absen
+                            Pulang</label> <textarea id="msg-clock-out" rows="3"
+                            class="w-full p-3 border rounded-lg text-lg font-medium resize-none"
+                            placeholder="Pesan saat karyawan absen pulang"></textarea>
+                    </div>
+                    <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <p class="text-base text-blue-800"><strong>Variabel tersedia:</strong></p>
+                        <p class="text-base text-blue-700 mt-1">{nama} - nama karyawan | {waktu} - waktu absen |
+                            {terlambat} - durasi terlambat</p>
+                    </div><button type="submit"
+                        class="w-full px-6 py-3 bg-indigo-600 text-white rounded-lg text-lg font-bold active:scale-95 transition">Simpan
+                        Pesan</button>
+                </form>
+            </div><!-- Shift Selection Modal (moved outside view-admin) -->
+        </div>
+    </main><!-- Shift Selection Modal (outside all views for global accessibility) -->
+    <div id="shift-select-overlay" class="modal-overlay">
+        <div class="bg-white rounded-2xl p-8 mx-4 max-w-md w-full shadow-xl">
+            <h3 class="text-2xl font-bold mb-6 text-gray-800">Pilih Shift</h3>
+            <div class="space-y-3 mb-8">
+                <button
+                    class="shift-option-btn w-full p-4 border-2 border-gray-300 rounded-lg text-lg font-semibold text-left hover:border-indigo-600 hover:bg-indigo-50 active:scale-95 transition"
+                    data-shift="1"> <span class="font-bold text-gray-800">Shift 1</span> <span
+                        class="block text-sm text-gray-500 mt-1">04:45 - 12:45</span> </button> <button
+                    class="shift-option-btn w-full p-4 border-2 border-gray-300 rounded-lg text-lg font-semibold text-left hover:border-indigo-600 hover:bg-indigo-50 active:scale-95 transition"
+                    data-shift="2"> <span class="font-bold text-gray-800">Shift 2</span> <span
+                        class="block text-sm text-gray-500 mt-1">12:45 - 21:15</span> </button> <button
+                    class="shift-option-btn w-full p-4 border-2 border-gray-300 rounded-lg text-lg font-semibold text-left hover:border-indigo-600 hover:bg-indigo-50 active:scale-95 transition"
+                    data-shift="3"> <span class="font-bold text-gray-800">Shift 3</span> <span
+                        class="block text-sm text-gray-500 mt-1">21:15 - 04:45</span> </button> <button
+                    class="shift-option-btn w-full p-4 border-2 border-gray-300 rounded-lg text-lg font-semibold text-left hover:border-indigo-600 hover:bg-indigo-50 active:scale-95 transition"
+                    data-shift="admin"> <span class="font-bold text-gray-800">Admin</span> <span
+                        class="block text-sm text-gray-500 mt-1">07:00 - 15:00</span> </button>
+            </div>
+            <div class="flex gap-4 justify-center">
+                <button id="shift-cancel"
+                    class="px-8 py-3 bg-gray-300 text-gray-800 rounded-lg font-bold text-lg active:scale-95 transition">Batal</button>
+            </div>
+        </div>
+    </div>
+    <script src="/_sdk/719055fef2a85d14.editing_sdk.js"
+        integrity="sha512-kFqrdGgIiTOsu307feB5Cy3JVP9IayftsmCIZ0csxYBGuBmJQPhyvcnmKR8F0fTW97h5s1gAvz3SumI8zJ6OxQ=="></script>
+    <script src="/_sdk/0179d719c431a79e.data_sdk.js"
+        integrity="sha512-OsRvJkI5GkC3MJQcgotQYotpzrMSX415GiKKgvYdxQEEkzD/fdchShO2FMSy0PJr/tiINMXOk5Vl2zAgg6bUiA=="></script>
+    <script>
+        (function () {
+            let allRecords = [];
+            let employees = [];
+            let currentEmployee = null;
+            let tapCount = 0;
+            let tapTimer = null;
+            let confirmCallback = null;
+            let customMessages = {
+                onTime: 'MasyaAllah kamu datang tepat waktu, semangat kerjanya',
+                late: 'Astaghfirullah kamu terlambat {terlambat}, besok datang lebih awal lagi ya',
+                clockOut: 'Alhamdulillah, hati-hati di jalan ya, semoga selamat sampai tujuan'
+            };
+
+            const SHIFTS = {
+                '1': { start: [4, 45], end: [12, 45], label: 'Shift 1 (04:45-12:45)', tolerance: 5 },
+                '2': { start: [12, 45], end: [21, 15], label: 'Shift 2 (12:45-21:15)', tolerance: 5 },
+                '3': { start: [21, 15], end: [4, 45], label: 'Shift 3 (21:15-04:45)', tolerance: 5 },
+                'admin': { start: [7, 0], end: [15, 0], label: 'Admin (07:00-15:00)', tolerance: 10 }
+            };
+
+            // Auto-capitalize name input
+            document.getElementById('input-name').addEventListener('input', function () {
+                const pos = this.selectionStart;
+                this.value = this.value.replace(/\b\w/g, c => c.toUpperCase());
+                this.setSelectionRange(pos, pos);
+            });
+
+            function loadMessagesFromSdk() {
+                const msgRecords = allRecords.filter(r => r.message_type && ['onTime', 'late', 'clockOut'].includes(r.message_type));
+                if (msgRecords.length > 0) {
+                    msgRecords.forEach(r => {
+                        if (r.message_type === 'onTime' && r.note) customMessages.onTime = r.note;
+                        if (r.message_type === 'late' && r.note) customMessages.late = r.note;
+                        if (r.message_type === 'clockOut' && r.note) customMessages.clockOut = r.note;
+                    });
+                }
+            }
+
+            async function saveMessagesToSdk() {
+                try {
+                    // Delete old message records
+                    const oldMsgs = allRecords.filter(r => r.message_type && ['onTime', 'late', 'clockOut'].includes(r.message_type));
+                    for (const msg of oldMsgs) {
+                        const result = await window.dataSdk.delete(msg);
+                        if (result.isError) console.error('Delete error:', result.error);
+                    }
+                    // Create new message records
+                    const msgs = [
+                        { employee_name: 'SYSTEM_MSG', employee_position: '', employee_nickname: '', date: '', clock_in: '', clock_out: '', shift: '', status: '', late_minutes: 0, message_type: 'onTime', note: customMessages.onTime },
+                        { employee_name: 'SYSTEM_MSG', employee_position: '', employee_nickname: '', date: '', clock_in: '', clock_out: '', shift: '', status: '', late_minutes: 0, message_type: 'late', note: customMessages.late },
+                        { employee_name: 'SYSTEM_MSG', employee_position: '', employee_nickname: '', date: '', clock_in: '', clock_out: '', shift: '', status: '', late_minutes: 0, message_type: 'clockOut', note: customMessages.clockOut }
+                    ];
+                    for (const msg of msgs) {
+                        const result = await window.dataSdk.create(msg);
+                        if (result.isError) console.error('Create error:', result.error);
+                    }
+                } catch (err) {
+                    console.error('Save messages error:', err);
+                }
+            }
+
+            function saveCustomMessages() {
+                // This function is called after saveMessagesToSdk completes
+                renderCustomMessagesForm();
+            }
+
+            function renderCustomMessagesForm() {
+                document.getElementById('msg-on-time').value = customMessages.onTime;
+                document.getElementById('msg-late').value = customMessages.late;
+                document.getElementById('msg-clock-out').value = customMessages.clockOut;
+            }
+
+            function replaceVariables(msg, vars) {
+                let result = msg;
+                if (vars.nama) result = result.replace(/{nama}/g, vars.nama);
+                if (vars.waktu) result = result.replace(/{waktu}/g, vars.waktu);
+                if (vars.terlambat) result = result.replace(/{terlambat}/g, vars.terlambat);
+                return result;
+            }
+
+            function todayStr() {
+                return new Date().toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' });
+            }
+
+            function nowTime() {
+                return new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false });
+            }
+
+            function showToast(msg, type) {
+                const c = document.getElementById('toast-container');
+                const t = document.createElement('div');
+                t.className = `toast px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium ${type === 'success' ? 'bg-green-500' : type === 'warning' ? 'bg-amber-500' : 'bg-red-500'}`;
+                t.textContent = msg;
+                c.appendChild(t);
+                setTimeout(() => t.remove(), 3000);
+            }
+
+            function showModal(title, message, isLate) {
+                document.getElementById('modal-icon').textContent = isLate ? '⚠️' : '✅';
+                document.getElementById('modal-title').textContent = title;
+                document.getElementById('modal-message').textContent = message;
+                document.getElementById('modal-overlay').classList.add('active');
+            }
+
+            document.getElementById('modal-close').addEventListener('click', () => {
+                document.getElementById('modal-overlay').classList.remove('active');
+            });
+
+            function showConfirm(title, message, okCallback) {
+                confirmCallback = okCallback;
+                document.getElementById('confirm-title').textContent = title;
+                document.getElementById('confirm-message').textContent = message;
+                document.getElementById('confirm-overlay').classList.add('active');
+            }
+
+            document.getElementById('confirm-ok').addEventListener('click', () => {
+                document.getElementById('confirm-overlay').classList.remove('active');
+                if (confirmCallback) {
+                    confirmCallback();
+                    confirmCallback = null;
+                }
+            });
+
+            document.getElementById('confirm-cancel').addEventListener('click', () => {
+                document.getElementById('confirm-overlay').classList.remove('active');
+                confirmCallback = null;
+            });
+
+            function calcLate(shift, clockInTime) {
+                const [h, m] = clockInTime.split(/[:.]+/).map(Number);
+                const s = SHIFTS[shift];
+                const startMin = s.start[0] * 60 + s.start[1];
+                const currentMin = h * 60 + m;
+                let diff = currentMin - startMin;
+                // Handle overnight shift
+                if (shift === '3' && diff < -720) diff += 1440;
+                if (shift === '3' && diff > 720) diff -= 1440;
+                const tolerance = s.tolerance;
+                if (diff > tolerance) return diff;
+                return 0;
+            }
+
+            function getAdminTolerance() {
+                const day = new Date().getDay();
+                // Mon=1 to Thu=4 get 10 min tolerance for admin shift
+                return (day >= 1 && day <= 4) ? 10 : 5;
+            }
+
+            function formatLate(mins) {
+                if (mins <= 0) return 'On Time ✓';
+                const h = Math.floor(mins / 60);
+                const m = mins % 60;
+                let parts = [];
+                if (h > 0) parts.push(`${h} jam`);
+                if (m > 0) parts.push(`${m} menit`);
+                return `Terlambat ${parts.join(' ')}`;
+            }
+
+            function showView(id) {
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+                document.getElementById('btn-back').classList.toggle('hidden', id === 'view-select');
+            }
+
+            function deriveEmployees() {
+                const map = new Map();
+                allRecords.forEach(r => {
+                    if (r.employee_name && r.employee_name !== 'SYSTEM_MSG' && !map.has(r.employee_name)) {
+                        map.set(r.employee_name, { position: r.employee_position || '', nickname: r.employee_nickname || '' });
+                    }
+                });
+                employees = Array.from(map, ([name, data]) => ({ name, position: data.position, nickname: data.nickname }));
+            }
+
+            function renderEmployeeList() {
+                deriveEmployees();
+                const container = document.getElementById('employee-list');
+                const noMsg = document.getElementById('no-employees');
+                if (employees.length === 0) {
+                    container.innerHTML = '';
+                    noMsg.classList.remove('hidden');
+                    return;
+                }
+                noMsg.classList.add('hidden');
+                container.innerHTML = employees.map(e => {
+                    return `
+                <button class="emp-card p-5 bg-white rounded-xl shadow-sm border hover:border-indigo-400 transition text-left active:scale-95" data-name="${e.name}">
+                    <p class="font-medium text-gray-800 text-lg">${e.name}</p>
+                    <p class="text-sm text-gray-400">${e.position}</p>
+                </button>
+            `;
+                }).join('');
+                container.querySelectorAll('.emp-card').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        currentEmployee = { name: btn.dataset.name, position: employees.find(e => e.name === btn.dataset.name)?.position || '', nickname: employees.find(e => e.name === btn.dataset.name)?.nickname || '' };
+                        openEmployeePanel();
+                    });
+                });
+            }
+
+            function openEmployeePanel() {
+                const nameEl = document.getElementById('emp-name');
+                const posEl = document.getElementById('emp-position');
+                const dateEl = document.getElementById('emp-date');
+                nameEl.className = 'text-3xl font-bold text-gray-800';
+                posEl.className = 'text-lg text-gray-500 mt-1';
+                dateEl.className = 'text-sm text-gray-400 mt-2';
+                nameEl.textContent = currentEmployee.name;
+                posEl.textContent = currentEmployee.position;
+                dateEl.textContent = todayStr();
+                showView('view-employee');
+                renderEmpStatus();
+                renderEmpRecap();
+            }
+
+            function renderEmpStatus() {
+                const today = todayStr();
+                const rec = allRecords.find(r => r.employee_name === currentEmployee.name && r.date === today);
+                const statusEl = document.getElementById('emp-today-status');
+                const textEl = document.getElementById('emp-status-text');
+                if (rec && rec.clock_in && rec.clock_in !== '-') {
+                    statusEl.classList.remove('hidden');
+                    textEl.textContent = `Masuk: ${rec.clock_in || '-'} | Pulang: ${rec.clock_out || '-'} | ${rec.status || ''}`;
+                    textEl.className = 'text-sm text-gray-600 font-medium';
+                } else {
+                    statusEl.classList.add('hidden');
+                }
+            }
+
+            function renderEmpRecap() {
+                const container = document.getElementById('emp-recap');
+                const recs = allRecords.filter(r => r.employee_name === currentEmployee.name && r.date).slice(-10).reverse();
+                container.innerHTML = recs.map(r => `
+                <div class="p-4 bg-white rounded-lg border text-sm">
+                    <div class="flex justify-between"><span class="text-gray-600 font-medium">${r.date}</span><span class="font-bold ${r.late_minutes > 0 ? 'text-amber-600' : 'text-green-600'}">${r.status || ''}</span></div>
+                    <div class="text-gray-500 text-xs mt-2">${r.shift || ''} | ${r.clock_in || '-'} - ${r.clock_out || '-'}${r.note ? ' | ' + r.note : ''}</div>
+                </div>
+            `).join('') || '<p class="text-gray-400 text-sm text-center">Belum ada data</p>';
+            }
+
+
+            // Clock in - show shift selection modal
+            document.getElementById('btn-clock-in').addEventListener('click', () => {
+                const today = todayStr();
+                const existing = allRecords.find(r => r.employee_name === currentEmployee.name && r.date === today && r.clock_in && r.clock_in !== '-');
+                if (existing) {
+                    showToast('Sudah absen masuk hari ini', 'warning');
+                    return;
+                }
+                // Check if manajemen has provided absence note for today
+                const hasAdminNote = allRecords.find(r => r.employee_name === currentEmployee.name && r.date === today && (r.clock_in === '-' || !r.clock_in) && ['Sakit', 'Izin', 'Cuti', 'Libur', 'Lainnya'].includes(r.status));
+                if (hasAdminNote) {
+                    showToast('Manajemen sudah memberikan keterangan untuk hari ini', 'warning');
+                    return;
+                }
+
+                // Show shift selection modal
+                document.getElementById('shift-select-overlay').classList.add('active');
+            });
+
+            // Shift option buttons
+            document.querySelectorAll('.shift-option-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const shift = btn.dataset.shift;
+                    const clockInBtn = document.getElementById('btn-clock-in');
+                    const today = todayStr();
+
+                    document.getElementById('shift-select-overlay').classList.remove('active');
+
+                    if (allRecords.length >= 999) {
+                        showToast('Limit 999 data tercapai!', 'error');
+                        return;
+                    }
+
+                    const time = nowTime();
+                    const late = calcLate(shift, time);
+                    const status = late > 0 ? formatLate(late) : 'On Time ✓';
+
+                    clockInBtn.disabled = true;
+                    const result = await window.dataSdk.create({
+                        employee_name: currentEmployee.name,
+                        employee_position: currentEmployee.position,
+                        employee_nickname: currentEmployee.nickname,
+                        date: today,
+                        clock_in: time,
+                        clock_out: '',
+                        shift: SHIFTS[shift].label,
+                        status: status,
+                        late_minutes: late,
+                        note: ''
+                    });
+                    clockInBtn.disabled = false;
+
+                    if (result.isOk) {
+                        if (late > 0) {
+                            const h = Math.floor(late / 60);
+                            const m = late % 60;
+                            let lateParts = [];
+                            if (h > 0) lateParts.push(`${h} jam`);
+                            if (m > 0) lateParts.push(`${m} menit`);
+                            const lateStr = lateParts.join(' ');
+                            const msg = replaceVariables(customMessages.late, {
+                                nama: currentEmployee.nickname || currentEmployee.name,
+                                waktu: time,
+                                terlambat: lateStr
+                            });
+                            showModal('Astaghfirullah', msg, true);
+                        } else {
+                            const msg = replaceVariables(customMessages.onTime, {
+                                nama: currentEmployee.nickname || currentEmployee.name,
+                                waktu: time
+                            });
+                            showModal('MasyaAllah', msg, false);
+                        }
+                    } else {
+                        showToast('Gagal menyimpan: ' + (result.error?.message || 'Unknown error'), 'error');
+                    }
+                });
+            });
+
+            // Shift cancel button
+            document.getElementById('shift-cancel').addEventListener('click', () => {
+                document.getElementById('shift-select-overlay').classList.remove('active');
+            });
+
+            // Clock out
+            document.getElementById('btn-clock-out').addEventListener('click', async () => {
+                const btn = document.getElementById('btn-clock-out');
+                const today = todayStr();
+                const existing = allRecords.find(r => r.employee_name === currentEmployee.name && r.date === today && r.clock_in && r.clock_in !== '-');
+                if (!existing) {
+                    showToast('Belum absen masuk', 'warning');
+                    return;
+                }
+                if (existing.clock_out) {
+                    showToast('Sudah absen pulang', 'warning');
+                    return;
+                }
+                btn.disabled = true;
+                const updated = { ...existing, clock_out: nowTime() };
+                const result = await window.dataSdk.update(updated);
+                btn.disabled = false;
+
+                if (result.isOk) {
+                    const msg = replaceVariables(customMessages.clockOut, {
+                        nama: currentEmployee.nickname || currentEmployee.name,
+                        waktu: updated.clock_out
+                    });
+                    showModal('Alhamdulillah', msg, false);
+                } else {
+                    showToast('Gagal menyimpan: ' + (result.error?.message || 'Unknown error'), 'error');
+                }
+            });
+
+            // Admin trigger
+            document.getElementById('admin-trigger').addEventListener('click', () => {
+                tapCount++;
+                clearTimeout(tapTimer);
+                tapTimer = setTimeout(() => { tapCount = 0; }, 2000);
+                if (tapCount >= 5) {
+                    tapCount = 0;
+                    showView('view-admin');
+                    renderAdminDashboard();
+                    renderAdminEmployees();
+                }
+            });
+
+            document.getElementById('btn-back').addEventListener('click', () => {
+                showView('view-select');
+                currentEmployee = null;
+            });
+
+            // Admin tabs
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.admin-tab').forEach(t => { t.className = 'admin-tab px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap bg-gray-200 text-gray-700'; });
+                    tab.className = 'admin-tab px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap bg-indigo-600 text-white';
+                    document.querySelectorAll('.admin-content').forEach(c => c.classList.add('hidden'));
+                    document.getElementById('admin-' + tab.dataset.tab).classList.remove('hidden');
+                    if (tab.dataset.tab === 'report') renderReport();
+                });
+            });
+
+            function renderAdminDashboard() {
+                const today = todayStr();
+                const clockedIn = allRecords.filter(r => r.date === today && r.clock_in && r.clock_in !== '-').map(r => r.employee_name);
+                const withNote = allRecords.filter(r => r.date === today && (r.clock_in === '-' || !r.clock_in) && r.status && ['Sakit', 'Izin', 'Cuti', 'Libur', 'Lainnya'].includes(r.status)).map(r => r.employee_name);
+                const absent = employees.filter(e => !clockedIn.includes(e.name) && !withNote.includes(e.name));
+                const container = document.getElementById('dashboard-absent');
+                const allP = document.getElementById('all-present');
+                if (absent.length === 0) {
+                    container.innerHTML = '';
+                    allP.classList.remove('hidden');
+                } else {
+                    allP.classList.add('hidden');
+                    container.innerHTML = absent.map(e => `
+                    <div class="flex items-center justify-between p-4 bg-white rounded-lg border">
+                        <div><p class="font-bold text-base">${e.name}</p><p class="text-sm text-gray-400 mt-1">${e.position}</p></div>
+                        <select class="note-select text-sm p-2 border rounded font-medium active:scale-95 transition" data-name="${e.name}">
+                            <option value="">Keterangan</option>
+                            <option value="Sakit">Sakit</option>
+                            <option value="Izin">Izin</option>
+                            <option value="Cuti">Cuti</option>
+                            <option value="Libur">Libur</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                `).join('');
+                    container.querySelectorAll('.note-select').forEach(sel => {
+                        sel.addEventListener('change', async () => {
+                            const note = sel.value;
+                            if (!note) return;
+                            if (allRecords.length >= 999) { showToast('Limit tercapai', 'error'); return; }
+                            sel.disabled = true;
+                            const empName = sel.dataset.name;
+                            const result = await window.dataSdk.create({
+                                employee_name: empName,
+                                employee_position: employees.find(e => e.name === empName)?.position || '',
+                                employee_nickname: '',
+                                date: todayStr(),
+                                clock_in: '-',
+                                clock_out: '-',
+                                shift: '-',
+                                status: note,
+                                late_minutes: 0,
+                                note: note
+                            });
+                            sel.disabled = false;
+                            if (result.isOk) {
+                                showToast(`${empName}: ${note}`, 'success');
+                            } else {
+                                showToast('Gagal simpan: ' + (result.error?.message || 'Unknown error'), 'error');
+                            }
+                        });
+                    });
+                }
+            }
+
+            function renderAdminEmployees() {
+                const container = document.getElementById('admin-emp-list');
+                container.innerHTML = employees.map(e => `
+                <div class="flex items-center justify-between p-4 bg-white rounded-lg border">
+                    <div><p class="font-bold text-base">${e.name}</p><p class="text-sm text-gray-400 mt-1">${e.position}</p></div>
+                    <div class="flex gap-3">
+                        <button class="edit-emp px-3 py-2 bg-blue-500 text-white text-sm rounded font-bold active:scale-95 transition" data-name="${e.name}" data-pos="${e.position}" data-nick="${e.nickname}">Edit</button>
+                        <button class="delete-emp px-3 py-2 bg-red-500 text-white text-sm rounded font-bold active:scale-95 transition" data-name="${e.name}">Hapus</button>
+                    </div>
+                </div>
+            `).join('') || '<p class="text-gray-400 text-sm text-center">Belum ada karyawan</p>';
+
+                container.querySelectorAll('.edit-emp').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const name = btn.dataset.name;
+                        const pos = btn.dataset.pos;
+                        const nick = btn.dataset.nick;
+                        const emp = employees.find(e => e.name === name);
+                        if (!emp) return;
+
+                        const editModal = document.getElementById('edit-modal-overlay');
+                        const editForm = document.getElementById('edit-form');
+                        const editName = document.getElementById('edit-name');
+                        const editNick = document.getElementById('edit-nickname');
+                        const editPos = document.getElementById('edit-position');
+                        const editCancel = document.getElementById('edit-cancel');
+
+                        editName.value = name;
+                        editNick.value = nick;
+                        editPos.value = pos;
+                        editModal.classList.add('active');
+
+                        editCancel.onclick = () => {
+                            editModal.classList.remove('active');
+                        };
+
+                        editForm.onsubmit = async (e) => {
+                            e.preventDefault();
+                            const submitBtn = e.target.querySelector('button[type="submit"]');
+                            const newName = editName.value.trim();
+                            const newNick = editNick.value.trim();
+                            const newPos = editPos.value;
+                            if (!newName) { showToast('Nama harus diisi', 'warning'); return; }
+
+                            submitBtn.disabled = true;
+                            const toUpdate = allRecords.filter(r => r.employee_name === name);
+                            for (const rec of toUpdate) {
+                                const updated = { ...rec, employee_name: newName, employee_position: newPos, employee_nickname: newNick };
+                                const result = await window.dataSdk.update(updated);
+                                if (result.isError) {
+                                    showToast('Gagal update: ' + (result.error?.message || 'Unknown error'), 'error');
+                                    submitBtn.disabled = false;
+                                    return;
+                                }
+                            }
+                            submitBtn.disabled = false;
+                            showToast(`${name} → ${newName}`, 'success');
+                            editModal.classList.remove('active');
+                        };
+                    });
+                });
+
+                container.querySelectorAll('.delete-emp').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const name = btn.dataset.name;
+                        showConfirm(
+                            'Hapus Karyawan',
+                            `Hapus ${name} dan semua data absensinya? Aksi ini tidak bisa dibatalkan.`,
+                            async () => {
+                                const toDelete = allRecords.filter(r => r.employee_name === name);
+                                for (const rec of toDelete) {
+                                    const result = await window.dataSdk.delete(rec);
+                                    if (result.isError) {
+                                        showToast('Gagal hapus: ' + (result.error?.message || 'Unknown error'), 'error');
+                                        return;
+                                    }
+                                }
+                                showToast(`${name} dihapus`, 'success');
+                            }
+                        );
+                    });
+                });
+            }
+
+            // Position button group
+            document.querySelectorAll('.position-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.querySelectorAll('.position-btn').forEach(b => {
+                        b.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-600');
+                        b.classList.add('bg-white', 'text-gray-800', 'border-gray-300');
+                    });
+                    btn.classList.remove('bg-white', 'text-gray-800', 'border-gray-300');
+                    btn.classList.add('bg-indigo-600', 'text-white', 'border-indigo-600');
+                    document.getElementById('input-position').value = btn.dataset.position;
+                });
+            });
+
+            // Add employee
+            document.getElementById('add-employee-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                const nameInput = document.getElementById('input-name');
+                const posInput = document.getElementById('input-position');
+                const name = nameInput.value.trim();
+                const pos = posInput.value;
+                if (!name) { showToast('Nama harus diisi', 'warning'); return; }
+                if (!pos) { showToast('Pilih jabatan', 'warning'); return; }
+                if (employees.find(emp => emp.name === name)) { showToast('Nama sudah ada', 'warning'); return; }
+                if (allRecords.length >= 999) { showToast('Limit tercapai', 'error'); return; }
+
+                submitBtn.disabled = true;
+                const result = await window.dataSdk.create({
+                    employee_name: name,
+                    employee_position: pos,
+                    employee_nickname: document.getElementById('input-nickname').value.trim(),
+                    date: '',
+                    clock_in: '',
+                    clock_out: '',
+                    shift: '',
+                    status: 'registered',
+                    late_minutes: 0,
+                    note: 'Data karyawan'
+                });
+                submitBtn.disabled = false;
+
+                if (result.isOk) {
+                    nameInput.value = '';
+                    document.getElementById('input-nickname').value = '';
+                    posInput.value = '';
+                    document.querySelectorAll('.position-btn').forEach(b => {
+                        b.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-600');
+                        b.classList.add('bg-white', 'text-gray-800', 'border-gray-300');
+                    });
+                    showToast('Karyawan ditambahkan', 'success');
+                } else {
+                    showToast('Gagal menambah: ' + (result.error?.message || 'Unknown error'), 'error');
+                }
+            });
+
+            // Report
+            document.getElementById('report-date').valueAsDate = new Date();
+            document.getElementById('report-period').addEventListener('change', renderReport);
+            document.getElementById('report-date').addEventListener('change', renderReport);
+
+            document.getElementById('btn-reset-data').addEventListener('click', async () => {
+                const period = document.getElementById('report-period').value;
+                const dateVal = document.getElementById('report-date').value;
+                if (!dateVal) { showToast('Pilih tanggal terlebih dahulu', 'warning'); return; }
+
+                const targetDate = new Date(dateVal);
+                let toDelete = allRecords.filter(r => r.date && r.date !== '' && r.employee_name);
+
+                if (period === 'daily') {
+                    const ds = targetDate.toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' });
+                    toDelete = toDelete.filter(r => r.date === ds);
+                } else if (period === 'weekly') {
+                    const start = new Date(targetDate);
+                    start.setDate(start.getDate() - start.getDay());
+                    const end = new Date(start);
+                    end.setDate(end.getDate() + 6);
+                    toDelete = toDelete.filter(r => {
+                        const parts = r.date.split('/');
+                        if (parts.length === 3) {
+                            const d = new Date(parts[2], parts[1] - 1, parts[0]);
+                            return d >= start && d <= end;
+                        }
+                        return false;
+                    });
+                } else {
+                    const m = targetDate.getMonth();
+                    const y = targetDate.getFullYear();
+                    toDelete = toDelete.filter(r => {
+                        const parts = r.date.split('/');
+                        if (parts.length === 3) return parseInt(parts[1]) - 1 === m && parseInt(parts[2]) === y;
+                        return false;
+                    });
+                }
+
+                if (toDelete.length === 0) { showToast('Tidak ada data untuk dihapus', 'warning'); return; }
+
+                showConfirm(
+                    'Reset Data',
+                    `Hapus ${toDelete.length} data absensi? Aksi ini tidak bisa dibatalkan.`,
+                    async () => {
+                        for (const rec of toDelete) {
+                            const result = await window.dataSdk.delete(rec);
+                            if (result.isError) {
+                                showToast('Gagal hapus: ' + (result.error?.message || 'Unknown error'), 'error');
+                                return;
+                            }
+                        }
+                        showToast(`${toDelete.length} data dihapus`, 'success');
+                        renderReport();
+                    }
+                );
+            });
+
+            // Messages settings
+            document.getElementById('messages-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+
+                customMessages.onTime = document.getElementById('msg-on-time').value.trim() || 'MasyaAllah kamu datang tepat waktu, semangat kerjanya';
+                customMessages.late = document.getElementById('msg-late').value.trim() || 'Astaghfirullah kamu terlambat {terlambat}, besok datang lebih awal lagi ya';
+                customMessages.clockOut = document.getElementById('msg-clock-out').value.trim() || 'Alhamdulillah, hati-hati di jalan ya, semoga selamat sampai tujuan';
+
+                await saveMessagesToSdk();
+                saveCustomMessages();
+
+                submitBtn.disabled = false;
+                showToast('Pesan berhasil disimpan', 'success');
+            });
+
+            function renderReport() {
+                const period = document.getElementById('report-period').value;
+                const dateVal = document.getElementById('report-date').value;
+                const container = document.getElementById('report-content');
+                if (!dateVal) { container.innerHTML = ''; return; }
+
+                const targetDate = new Date(dateVal);
+                let filtered = allRecords.filter(r => r.date && r.date !== '' && r.employee_name);
+
+                if (period === 'daily') {
+                    const ds = targetDate.toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' });
+                    filtered = filtered.filter(r => r.date === ds);
+                } else if (period === 'weekly') {
+                    const start = new Date(targetDate);
+                    start.setDate(start.getDate() - start.getDay());
+                    const end = new Date(start);
+                    end.setDate(end.getDate() + 6);
+                    filtered = filtered.filter(r => {
+                        const parts = r.date.split('/');
+                        if (parts.length === 3) {
+                            const d = new Date(parts[2], parts[1] - 1, parts[0]);
+                            return d >= start && d <= end;
+                        }
+                        return false;
+                    });
+                } else {
+                    const m = targetDate.getMonth();
+                    const y = targetDate.getFullYear();
+                    filtered = filtered.filter(r => {
+                        const parts = r.date.split('/');
+                        if (parts.length === 3) return parseInt(parts[1]) - 1 === m && parseInt(parts[2]) === y;
+                        return false;
+                    });
+                }
+
+                // Aggregate by employee
+                const summary = {};
+                filtered.forEach(r => {
+                    if (!summary[r.employee_name]) {
+                        summary[r.employee_name] = { present: 0, late: 0, absent: 0, sick: 0, permit: 0, leave: 0, other: 0 };
+                    }
+                    if (r.clock_in && r.clock_in !== '-') {
+                        summary[r.employee_name].present++;
+                        if (r.late_minutes > 0) summary[r.employee_name].late++;
+                    } else if (r.status === 'Sakit') {
+                        summary[r.employee_name].sick++;
+                    } else if (r.status === 'Izin') {
+                        summary[r.employee_name].permit++;
+                    } else if (r.status === 'Cuti') {
+                        summary[r.employee_name].leave++;
+                    } else if (r.status === 'Libur') {
+                        summary[r.employee_name].other++;
+                    }
+                });
+
+                container.innerHTML = Object.entries(summary).map(([name, stats]) => `
+                <div class="p-4 bg-white rounded-lg border text-sm">
+                    <p class="font-bold text-gray-800 text-base">${name}</p>
+                    <div class="grid grid-cols-2 gap-3 mt-3">
+                        <span class="font-medium text-gray-700 text-lg">✓ Hadir: ${stats.present}</span>
+                        <span class="font-medium text-amber-600 text-lg">⚠ Terlambat: ${stats.late}</span>
+                        <span class="font-medium text-blue-600 text-lg">🏥 Sakit: ${stats.sick}</span>
+                        <span class="font-medium text-purple-600 text-lg">📋 Izin: ${stats.permit}</span>
+                        <span class="font-medium text-orange-600 text-lg">🏖 Cuti: ${stats.leave}</span>
+                        <span class="font-medium text-green-600 text-lg">📅 Libur: ${stats.other}</span>
+                    </div>
+                </div>
+            `).join('') || '<p class="text-gray-400 text-sm text-center">Tidak ada data</p>';
+            }
+
+            // Data SDK
+            const handler = {
+                onDataChanged(data) {
+                    allRecords = data;
+                    // Always load messages from SDK first on every sync
+                    loadMessagesFromSdk();
+                    renderCustomMessagesForm();
+
+                    renderEmployeeList();
+                    if (currentEmployee) {
+                        renderEmpStatus();
+                        renderEmpRecap();
+                    }
+                    if (document.getElementById('view-admin').classList.contains('active')) {
+                        renderAdminDashboard();
+                        renderAdminEmployees();
+                    }
+                }
+            };
+
+            window.dataSdk.init(handler);
+            lucide.createIcons();
+        })();
+    </script>
+    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'a19ea8c3055b978e',t:'MTc4Mzg0NDc0Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+</body>
+
+</html>
