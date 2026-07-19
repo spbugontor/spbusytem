@@ -33,7 +33,7 @@ function fmtDateID(dateStr) {
 }
 function nowTime() {
   const d = new Date();
-  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
 }
 function calcLate(shiftKey, clockInTime) {
   const [h, m] = clockInTime.split(':').map(Number);
@@ -159,24 +159,49 @@ function renderLeaderboard() {
   const targetDate = new Date();
   const m = String(targetDate.getMonth() + 1).padStart(2, '0');
   const y = targetDate.getFullYear();
-  const prefix = `${y}-${m}`;
-  const monthRecs = recs.filter(r => r.date && r.date.startsWith(prefix));
+  const d = String(targetDate.getDate()).padStart(2, '0');
+  
+  const startInput = $('dash-start');
+  const endInput = $('dash-end');
+  const startStr = startInput && startInput.value ? startInput.value : `${y}-${m}-01`;
+  const endStr = endInput && endInput.value ? endInput.value : `${y}-${m}-${d}`;
+  
+  const monthRecs = recs.filter(r => r.date && r.date >= startStr && r.date <= endStr);
   
   const scores = emps.map(emp => {
     const empRecs = monthRecs.filter(r => r.emp_name === emp.name);
     let score = 0;
     let present = 0;
+    let totalSecLate = 0;
+    
     empRecs.forEach(r => {
       if (r.clock_in && r.clock_in !== '-') {
         present++;
-        if ((r.late_minutes || 0) === 0) score += 10; // Tepat waktu
+        if ((r.late_minutes || 0) <= 0) score += 10; // Tepat waktu
         else score += 5; // Terlambat
+        
+        // Tie-breaker: calculate exact seconds relative to shift start
+        let [h, m, s] = r.clock_in.split(':').map(Number);
+        s = s || 0;
+        let sKey = Object.keys(SHIFTS).find(k => SHIFTS[k].label === r.shift);
+        if (sKey) {
+           const sh = SHIFTS[sKey];
+           const startSec = sh.start[0] * 3600 + sh.start[1] * 60;
+           let currentSec = h * 3600 + m * 60 + s;
+           let diffSec = currentSec - startSec;
+           if (sKey === '3' && diffSec < -43200) diffSec += 86400; // cross day threshold
+           if (sKey === '3' && diffSec > 43200) diffSec -= 86400;
+           totalSecLate += diffSec;
+        }
       } else {
         if (['Sakit','Izin','Cuti'].includes(r.status)) score += 2; // Keterangan sah
       }
     });
-    return { name: emp.name, score, present };
-  }).filter(e => e.score > 0 || e.present > 0).sort((a, b) => b.score - a.score);
+    return { name: emp.name, score, present, totalSecLate };
+  }).filter(e => e.score > 0 || e.present > 0).sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score; // Rank by score first
+    return a.totalSecLate - b.totalSecLate; // If score same, lower (more early) wins
+  });
 
   if (scores.length === 0) {
     container.innerHTML = '<p class="text-center text-sm text-muted">Belum ada data absensi bulan ini</p>';
@@ -451,11 +476,22 @@ function renderAdminDashboard() {
   }
 
   // Render Chart
-  const targetDate = new Date();
-  const m = String(targetDate.getMonth() + 1).padStart(2, '0');
-  const y = targetDate.getFullYear();
-  const prefix = `${y}-${m}`;
-  const monthRecs = recs.filter(r => r.date && r.date.startsWith(prefix));
+  const startInput = $('dash-start');
+  const endInput = $('dash-end');
+  
+  if (!startInput.value || !endInput.value) {
+    const todayDate = new Date();
+    const y = todayDate.getFullYear();
+    const m = String(todayDate.getMonth() + 1).padStart(2, '0');
+    const d = String(todayDate.getDate()).padStart(2, '0');
+    startInput.value = `${y}-${m}-01`;
+    endInput.value = `${y}-${m}-${d}`;
+  }
+  
+  const startStr = startInput.value;
+  const endStr = endInput.value;
+  
+  const monthRecs = recs.filter(r => r.date && r.date >= startStr && r.date <= endStr);
   
   let onTimeCount = 0, lateCount = 0, absentNoteCount = 0;
   monthRecs.forEach(r => {
@@ -490,6 +526,9 @@ function renderAdminDashboard() {
       }
     });
   }
+  
+  // Also update leaderboard when dashboard dates change
+  renderLeaderboard();
 }
 
 // ==========================================

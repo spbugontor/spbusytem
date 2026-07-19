@@ -155,7 +155,14 @@
 
       <!-- Tab: Dashboard -->
       <div id="tab-dashboard" class="tab-content">
-        <h3 class="section-title" style="font-size:1.1rem;">Statistik Kedisiplinan Bulan Ini</h3>
+        <h3 class="section-title" style="font-size:1.1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+          <span>Statistik Kedisiplinan</span>
+          <div style="display:flex;gap:0.5rem;align-items:center;font-size:0.8rem;font-weight:normal;">
+            <input type="date" id="dash-start" class="form-input" style="padding:0.2rem 0.5rem;height:auto;" onchange="renderAdminDashboard()">
+            <span>-</span>
+            <input type="date" id="dash-end" class="form-input" style="padding:0.2rem 0.5rem;height:auto;" onchange="renderAdminDashboard()">
+          </div>
+        </h3>
         <div class="card mb-4" style="height:250px;position:relative;">
           <canvas id="discipline-chart"></canvas>
         </div>
