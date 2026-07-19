@@ -1371,10 +1371,10 @@ window._updateRatingCriteria = () => {
       <h5 style="font-size:0.8rem;font-weight:700;color:var(--primary);margin-bottom:0.25rem;text-transform:uppercase">${esc(ind)}</h5>`;
     
     grouped[ind].forEach(c => {
-      // the data-name attribute is used in _saveRating
+      // the data-key attribute is used in _saveRating to avoid invalid characters in Firebase keys
       html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.25rem 0;border-bottom:1px solid #e2e8f0">
         <span class="text-sm" style="flex:1;padding-right:0.5rem">${esc(c.name)}</span>
-        <input type="number" min="1" max="5" value="3" class="form-input rf-score" data-name="${esc(c.name)}" style="width:60px;padding:0.3rem;text-align:center;font-size:0.85rem">
+        <input type="number" min="1" max="5" value="3" class="form-input rf-score" data-key="${c._key}" style="width:60px;padding:0.3rem;text-align:center;font-size:0.85rem">
       </div>`;
     });
     
@@ -1388,7 +1388,7 @@ window._saveRating = async () => {
   const date = $('rf-date').value;
   const note = $('rf-note').value.trim();
   const scores = {};
-  document.querySelectorAll('.rf-score').forEach(el => { scores[el.dataset.name] = Math.min(5, Math.max(1, parseInt(el.value) || 1)); });
+  document.querySelectorAll('.rf-score').forEach(el => { scores[el.dataset.key] = Math.min(5, Math.max(1, parseInt(el.value) || 1)); });
   await set(push(ref(db, 'ratings')), { emp_id: empId, date, scores, note });
   showToast('Penilaian disimpan!', 'success');
   hideModal();
@@ -1475,11 +1475,12 @@ window._generateRatingPDFHtml = (key) => {
     const allCrits = getCriteria();
     const groupedScores = {};
     
-    Object.entries(rating.scores).forEach(([critName, score]) => {
-      const cDef = allCrits.find(c => c.name === critName);
+    Object.entries(rating.scores).forEach(([critKey, score]) => {
+      const cDef = allCrits.find(c => c._key === critKey || c.name === critKey);
+      const actualName = cDef ? cDef.name : critKey;
       const ind = cDef && cDef.indicator ? cDef.indicator : 'Umum';
       if (!groupedScores[ind]) groupedScores[ind] = [];
-      groupedScores[ind].push({ name: critName, score });
+      groupedScores[ind].push({ name: actualName, score });
     });
     
     Object.keys(groupedScores).forEach(ind => {
