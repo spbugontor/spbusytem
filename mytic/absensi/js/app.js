@@ -128,7 +128,7 @@ function render() {
   const id = activeView.id;
   if (id === 'view-select') renderEmployeeList();
   if (id === 'view-employee') { renderEmpStatus(); renderEmpRecap(); }
-  if (id === 'view-admin') { renderAdminDashboard(); renderAdminEmployees(); }
+  if (id === 'view-admin') { renderAdminDashboard(); renderAdminEmployees(); renderLeaderboard(); }
 }
 
 // ==========================================
