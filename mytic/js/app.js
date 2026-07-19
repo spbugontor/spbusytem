@@ -601,6 +601,15 @@ function renderRatings() {
 // ==========================================
 function renderCriteriaPage() {
   const criteria = getCriteria();
+  
+  // Group by indicator
+  const grouped = {};
+  criteria.forEach(c => {
+    const ind = c.indicator || 'Umum';
+    if (!grouped[ind]) grouped[ind] = [];
+    grouped[ind].push(c);
+  });
+
   return `<div class="fade-in">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
       <h3 class="text-xl font-bold">Kriteria Penilaian</h3>
@@ -608,13 +617,18 @@ function renderCriteriaPage() {
     </div>
     <div id="crit-form-area"></div>
     ${criteria.length===0?'<div class="card"><p class="text-muted">Belum ada kriteria.</p></div>':
-    criteria.map(c => `<div class="card" style="margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center">
-      <div><strong>${esc(c.name)}</strong><br><span class="text-xs text-muted">Berlaku: ${esc(c.position||'Semua')}</span></div>
-      <div style="display:flex;gap:0.5rem">
-        <button class="btn btn-secondary" style="padding:0.4rem 0.6rem;font-size:0.7rem" onclick="window._showCriteriaForm('${c._key}')">Edit</button>
-        <button class="btn btn-outline-danger" style="padding:0.4rem 0.6rem;font-size:0.7rem" onclick="window._deleteCriteria('${c._key}')">Hapus</button>
+    Object.keys(grouped).map(ind => `
+      <div style="margin-bottom:1.5rem">
+        <h4 style="font-weight:700;margin-bottom:0.75rem;padding-bottom:0.25rem;border-bottom:2px solid var(--border)">Indikator: ${esc(ind)}</h4>
+        ${grouped[ind].map(c => `<div class="card" style="margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center">
+          <div><strong>${esc(c.name)}</strong><br><span class="text-xs text-muted">Berlaku: ${esc(c.position||'Semua')}</span></div>
+          <div style="display:flex;gap:0.5rem">
+            <button class="btn btn-secondary" style="padding:0.4rem 0.6rem;font-size:0.7rem" onclick="window._showCriteriaForm('${c._key}')">Edit</button>
+            <button class="btn btn-outline-danger" style="padding:0.4rem 0.6rem;font-size:0.7rem" onclick="window._deleteCriteria('${c._key}')">Hapus</button>
+          </div>
+        </div>`).join('')}
       </div>
-    </div>`).join('')}
+    `).join('')}
   </div>`;
 }
 
@@ -1308,21 +1322,66 @@ window._deleteSaving = async (key) => { if (confirm('Hapus?')) { await remove(re
 // --- RATING CRUD ---
 window._showRatingForm = () => {
   const users = getUsers();
-  const criteria = getCriteria();
+  const criteria = getCriteria(); // Used just for checking if any exist
   if (users.length === 0) { showToast('Tambahkan karyawan dulu!', 'warning'); return; }
   if (criteria.length === 0) { showToast('Buat kriteria penilaian dulu!', 'warning'); return; }
+  
   showModal(`<div class="modal-header"><h3 class="modal-title">Tambah Penilaian</h3><button class="modal-close" onclick="window._hideModal()">✕</button></div>
     <div class="modal-body">
-      <div class="form-group"><label class="form-label">Pilih Karyawan</label><select id="rf-emp" class="form-input form-select">${users.map(u=>`<option value="${u.emp_id}">${esc(u.name)} (${esc(u.position)})</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Pilih Karyawan</label><select id="rf-emp" class="form-input form-select" onchange="window._updateRatingCriteria()">${users.map(u=>`<option value="${u.emp_id}" data-pos="${esc(u.position)}">${esc(u.name)} (${esc(u.position)})</option>`).join('')}</select></div>
       <div class="form-group"><label class="form-label">Bulan Penilaian</label><input id="rf-date" type="month" value="${today().substring(0,7)}" class="form-input"></div>
-      <p class="form-label">Skor Kriteria (1-5)</p>
-      ${criteria.map(c => `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border)">
-        <span class="text-sm">${esc(c.name)}</span>
-        <input type="number" min="1" max="5" value="3" class="form-input rf-score" data-name="${esc(c.name)}" style="width:70px;padding:0.4rem;text-align:center;font-size:0.85rem">
-      </div>`).join('')}
+      <div id="rf-criteria-container"></div>
       <div class="form-group mt-4"><label class="form-label">Catatan</label><textarea id="rf-note" class="form-input" rows="2" placeholder="Catatan tambahan..."></textarea></div>
     </div>
     <div class="modal-footer"><button class="btn btn-primary" onclick="window._saveRating()">Simpan Penilaian</button><button class="btn btn-secondary" onclick="window._hideModal()">Batal</button></div>`);
+  
+  // Initialize criteria list for the first selected employee
+  window._updateRatingCriteria();
+};
+
+window._updateRatingCriteria = () => {
+  const empSelect = $('rf-emp');
+  if (!empSelect) return;
+  const selectedOption = empSelect.options[empSelect.selectedIndex];
+  if (!selectedOption) return;
+  const pos = selectedOption.getAttribute('data-pos');
+  
+  // Get criteria filtered by this position
+  const posCriteria = getCriteria(pos);
+  
+  // Group by indicator
+  const grouped = {};
+  posCriteria.forEach(c => {
+    const ind = c.indicator || 'Umum';
+    if (!grouped[ind]) grouped[ind] = [];
+    grouped[ind].push(c);
+  });
+  
+  const container = $('rf-criteria-container');
+  if (!container) return;
+  
+  if (posCriteria.length === 0) {
+    container.innerHTML = '<p class="text-muted text-sm italic py-2">Tidak ada kriteria untuk jabatan ini.</p>';
+    return;
+  }
+  
+  let html = '<p class="form-label mt-2">Skor Kriteria (1-5)</p>';
+  Object.keys(grouped).forEach(ind => {
+    html += `<div style="margin-top:0.5rem;background:#f8fafc;padding:0.5rem;border-radius:4px;border:1px solid var(--border)">
+      <h5 style="font-size:0.8rem;font-weight:700;color:var(--primary);margin-bottom:0.25rem;text-transform:uppercase">${esc(ind)}</h5>`;
+    
+    grouped[ind].forEach(c => {
+      // the data-name attribute is used in _saveRating
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.25rem 0;border-bottom:1px solid #e2e8f0">
+        <span class="text-sm" style="flex:1;padding-right:0.5rem">${esc(c.name)}</span>
+        <input type="number" min="1" max="5" value="3" class="form-input rf-score" data-name="${esc(c.name)}" style="width:60px;padding:0.3rem;text-align:center;font-size:0.85rem">
+      </div>`;
+    });
+    
+    html += `</div>`;
+  });
+  
+  container.innerHTML = html;
 };
 window._saveRating = async () => {
   const empId = $('rf-emp').value;
@@ -1405,7 +1464,7 @@ window._generateRatingPDFHtml = (key) => {
     <table style="width:100%;border-collapse:collapse;font-size:0.75rem;">
       <thead>
         <tr>
-          <th style="border:1px solid #000;padding:4px;text-align:left;background:#f0f0f0;">Kriteria Penilaian</th>
+          <th style="border:1px solid #000;padding:4px;text-align:left;background:#f0f0f0;">Indikator / Sub-Indikator</th>
           <th style="border:1px solid #000;padding:4px;text-align:center;width:80px;background:#f0f0f0;">Skor (1-5)</th>
         </tr>
       </thead>
@@ -1413,13 +1472,26 @@ window._generateRatingPDFHtml = (key) => {
   `;
   
   if (rating.scores) {
-    Object.entries(rating.scores).forEach(([crit, score]) => {
-      html += `
-        <tr>
-          <td style="border:1px solid #000;padding:4px;">${esc(crit)}</td>
-          <td style="border:1px solid #000;padding:4px;text-align:center;">${score}</td>
-        </tr>
-      `;
+    const allCrits = getCriteria();
+    const groupedScores = {};
+    
+    Object.entries(rating.scores).forEach(([critName, score]) => {
+      const cDef = allCrits.find(c => c.name === critName);
+      const ind = cDef && cDef.indicator ? cDef.indicator : 'Umum';
+      if (!groupedScores[ind]) groupedScores[ind] = [];
+      groupedScores[ind].push({ name: critName, score });
+    });
+    
+    Object.keys(groupedScores).forEach(ind => {
+      html += `<tr><td colspan="2" style="border:1px solid #000;padding:4px;background:#f8fafc;font-weight:bold;text-transform:uppercase;font-size:0.7rem;">${esc(ind)}</td></tr>`;
+      groupedScores[ind].forEach(item => {
+        html += `
+          <tr>
+            <td style="border:1px solid #000;padding:4px;padding-left:12px;">${esc(item.name)}</td>
+            <td style="border:1px solid #000;padding:4px;text-align:center;">${item.score}</td>
+          </tr>
+        `;
+      });
     });
   }
   
@@ -1587,8 +1659,9 @@ window._showCriteriaForm = (key) => {
   area.innerHTML = `<div class="card mb-4 fade-in" style="border:2px solid var(--primary)">
     <h3 class="card-title mb-4">${c?'Edit':'Tambah'} Kriteria</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-      <div class="form-group"><label class="form-label">Nama Kriteria</label><input id="cf-name" class="form-input" value="${esc(c?.name||'')}"></div>
-      <div class="form-group"><label class="form-label">Berlaku Untuk</label><select id="cf-pos" class="form-input form-select">
+      <div class="form-group"><label class="form-label">Nama Indikator</label><input id="cf-indicator" class="form-input" value="${esc(c?.indicator||'Umum')}" placeholder="Misal: Kedisiplinan"></div>
+      <div class="form-group"><label class="form-label">Sub-Indikator</label><input id="cf-name" class="form-input" value="${esc(c?.name||'')}" placeholder="Misal: Tepat Waktu"></div>
+      <div class="form-group" style="grid-column: 1 / -1"><label class="form-label">Berlaku Untuk</label><select id="cf-pos" class="form-input form-select">
         <option value="Semua" ${c?.position==='Semua'?'selected':''}>Semua Jabatan</option>
         <option value="Manager" ${c?.position==='Manager'?'selected':''}>Manager</option>
         <option value="Admin" ${c?.position==='Admin'?'selected':''}>Admin</option>
@@ -1604,9 +1677,10 @@ window._showCriteriaForm = (key) => {
   </div>`;
 };
 window._saveCriteria = async (key) => {
+  const indicator = $('cf-indicator').value.trim() || 'Umum';
   const name = $('cf-name').value.trim();
-  if (!name) { showToast('Nama wajib!', 'error'); return; }
-  const data = { name, position: $('cf-pos').value };
+  if (!name) { showToast('Sub-indikator wajib diisi!', 'error'); return; }
+  const data = { indicator, name, position: $('cf-pos').value };
   if (key) await update(ref(db, 'criteria/' + key), data);
   else await set(push(ref(db, 'criteria')), data);
   showToast('Kriteria disimpan!', 'success');
