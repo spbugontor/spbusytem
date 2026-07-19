@@ -636,7 +636,8 @@ tr:hover td { background: var(--surface-hover); }
   .mobile-header { display: flex !important; }
   .mobile-nav { display: flex !important; }
   .topbar { display: none !important; }
-  .content-wrapper { padding: 1rem; padding-bottom: 5rem; }
+  .content-wrapper { padding: 1rem; }
+  .content-wrapper::after { content: ""; display: block; height: 6rem; }
   .dashboard-grid { grid-template-columns: 1fr 1fr !important; gap: 0.75rem; }
   .stat-value { font-size: 1.25rem; }
 
