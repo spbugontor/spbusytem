@@ -12,12 +12,13 @@ const esc = s => s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replac
 // ==========================================
 // SHIFTS
 // ==========================================
-const SHIFTS = {
+let SHIFTS = {
   '1': { start: [4, 45], end: [12, 45], label: 'Shift 1 (04:45–12:45)', tolerance: 5 },
   '2': { start: [12, 45], end: [21, 15], label: 'Shift 2 (12:45–21:15)', tolerance: 5 },
   '3': { start: [21, 15], end: [4, 45], label: 'Shift 3 (21:15–04:45)', tolerance: 5 },
   'admin': { start: [7, 0], end: [15, 0], label: 'Admin (07:00–15:00)', tolerance: 10 }
 };
+const DEFAULT_SHIFTS = JSON.parse(JSON.stringify(SHIFTS));
 
 // ==========================================
 // HELPERS
@@ -111,6 +112,13 @@ onValue(ref(db, 'absensi'), snap => {
   if (!allData.employees) allData.employees = {};
   if (!allData.records) allData.records = {};
   if (!allData.settings) allData.settings = {};
+  
+  if (allData.settings.shifts) {
+    SHIFTS = allData.settings.shifts;
+  } else {
+    SHIFTS = JSON.parse(JSON.stringify(DEFAULT_SHIFTS));
+  }
+  
   render();
 });
 
@@ -836,6 +844,33 @@ function renderMessagesForm() {
   $('msg-on-time').value = msgs.onTime;
   $('msg-late').value = msgs.late;
   $('msg-clock-out').value = msgs.clockOut;
+  
+  const shiftContainer = $('shift-settings-container');
+  if (shiftContainer) {
+    let html = '';
+    Object.keys(SHIFTS).forEach(k => {
+      const s = SHIFTS[k];
+      html += `
+      <div class="card mb-3" style="border-left: 4px solid var(--primary); padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <h5 style="margin-bottom: 0.5rem; color: var(--text);">${esc(s.label.split(' (')[0])}</h5>
+        <div class="grid-2">
+          <div class="form-group mb-0">
+            <label class="form-label" style="font-size:0.75rem;">Mulai</label>
+            <input type="time" id="set-shift-start-${k}" class="form-input" value="${String(s.start[0]).padStart(2,'0')}:${String(s.start[1]).padStart(2,'0')}">
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label" style="font-size:0.75rem;">Selesai</label>
+            <input type="time" id="set-shift-end-${k}" class="form-input" value="${String(s.end[0]).padStart(2,'0')}:${String(s.end[1]).padStart(2,'0')}">
+          </div>
+        </div>
+        <div class="form-group mt-2 mb-0">
+          <label class="form-label" style="font-size:0.75rem;">Toleransi Keterlambatan (menit)</label>
+          <input type="number" id="set-shift-tol-${k}" class="form-input" value="${s.tolerance}" min="0">
+        </div>
+      </div>`;
+    });
+    shiftContainer.innerHTML = html;
+  }
 }
 
 $('btn-save-messages').addEventListener('click', async () => {
@@ -853,6 +888,26 @@ $('btn-save-messages').addEventListener('click', async () => {
   if (newPin && newPin.length <= 6) {
     updates.admin_pin = newPin;
   }
+  
+  const newShifts = {};
+  Object.keys(SHIFTS).forEach(k => {
+    const s = SHIFTS[k];
+    const startTime = $(`set-shift-start-${k}`).value || "00:00";
+    const endTime = $(`set-shift-end-${k}`).value || "00:00";
+    const tol = parseInt($(`set-shift-tol-${k}`).value) || 0;
+    
+    const [startH, startM] = startTime.split(':').map(Number);
+    const [endH, endM] = endTime.split(':').map(Number);
+    const labelPrefix = s.label.split(' (')[0];
+    
+    newShifts[k] = {
+      start: [startH, startM],
+      end: [endH, endM],
+      label: `${labelPrefix} (${startTime}–${endTime})`,
+      tolerance: tol
+    };
+  });
+  updates.shifts = newShifts;
 
   await update(ref(db, 'absensi/settings'), updates);
   

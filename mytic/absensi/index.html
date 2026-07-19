@@ -149,7 +149,7 @@
         <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
         <button class="tab-btn" data-tab="employees">Karyawan</button>
         <button class="tab-btn" data-tab="report">Rekap</button>
-        <button class="tab-btn" data-tab="messages">Pesan</button>
+        <button class="tab-btn" data-tab="messages">Pengaturan</button>
         <a href="../index.html" class="tab-btn" style="text-decoration:none; color: #dc2626; font-weight: 500; display: inline-flex; align-items: center; justify-content: center;">🚪 Portal MyTIC</a>
       </div>
 
@@ -221,7 +221,7 @@
         <div id="report-content"></div>
       </div>
 
-      <!-- Tab: Pesan & Sistem -->
+      <!-- Tab: Pengaturan & Sistem -->
       <div id="tab-messages" class="tab-content hidden">
         <h3 class="section-title" style="font-size:1.1rem;">Pengaturan Sistem</h3>
         <div class="card">
@@ -230,6 +230,12 @@
             <input id="setting-pin" type="password" class="form-input" maxlength="6" pattern="[0-9]*" inputmode="numeric" placeholder="Biarkan kosong jika tidak ingin mengubah">
           </div>
           <hr style="border:0;border-top:1px solid var(--border);margin:1.5rem 0;">
+          <h4 class="form-label" style="font-size:1rem;margin-bottom:1rem;color:var(--text);">Jam Shift & Toleransi</h4>
+          <div id="shift-settings-container">
+             <!-- Shifts rendered here -->
+          </div>
+          <hr style="border:0;border-top:1px solid var(--border);margin:1.5rem 0;">
+          <h4 class="form-label" style="font-size:1rem;margin-bottom:1rem;color:var(--text);">Kustomisasi Pesan</h4>
           <div class="form-group">
             <label class="form-label">Pesan Tepat Waktu</label>
             <textarea id="msg-on-time" class="form-textarea" rows="3" placeholder="Pesan saat tepat waktu..."></textarea>
@@ -245,7 +251,7 @@
           <div class="card" style="background:var(--info-light);border-color:var(--info);margin-bottom:1rem;">
             <p class="text-sm" style="color:var(--info);"><strong>Variabel:</strong> {nama} = nama karyawan | {waktu} = waktu absen | {terlambat} = durasi terlambat</p>
           </div>
-          <button id="btn-save-messages" class="btn btn-primary" style="width:100%;">Simpan Pesan</button>
+          <button id="btn-save-messages" class="btn btn-primary" style="width:100%;">Simpan Pengaturan</button>
         </div>
       </div>
     </div>
