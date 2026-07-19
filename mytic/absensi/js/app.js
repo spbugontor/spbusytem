@@ -197,43 +197,21 @@ function renderLeaderboard() {
         if (['Sakit','Izin','Cuti'].includes(r.status)) score += 2; // Keterangan sah
       }
     });
-    return { name: emp.name, score, present, totalSecLate };
-  }).filter(e => e.score > 0 || e.present > 0).sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score; // Rank by score first
-    return a.totalSecLate - b.totalSecLate; // If score same, lower (more early) wins
+    return { name: emp.name, present, totalSecLate };
+  }).filter(e => e.present > 0).sort((a, b) => {
+    return a.totalSecLate - b.totalSecLate; // The lowest total SecLate (most early cumulatively) wins
   });
 
   if (scores.length === 0) {
-    container.innerHTML = '<p class="text-center text-sm text-muted">Belum ada data absensi bulan ini</p>';
+    container.innerHTML = '<p class="text-center text-sm text-muted">Belum ada data absensi pada periode ini</p>';
     return;
   }
-
-  const formatTimeInfo = (sec) => {
-    if (sec === 0) return 'Tepat waktu';
-    const isEarly = sec < 0;
-    let absSec = Math.abs(sec);
-    const h = Math.floor(absSec / 3600);
-    absSec %= 3600;
-    const m = Math.floor(absSec / 60);
-    const s = absSec % 60;
-    
-    let parts = [];
-    if (h > 0) parts.push(`${h}j`);
-    if (m > 0 || h > 0) parts.push(`${m}m`);
-    parts.push(`${s}d`);
-    
-    const timeStr = parts.join(' ');
-    return isEarly ? `Lebih awal: ${timeStr}` : `Telat: ${timeStr}`;
-  };
 
   const generateListHTML = (list, isTop3) => list.map((s, i) => `
     <div class="leaderboard-item rank-${i + 1}" style="${!isTop3 ? 'background:#f8fafc;box-shadow:none;border:1px solid #e2e8f0;margin-bottom:0.5rem;' : ''}">
       <div class="leaderboard-rank" style="${!isTop3 && i >= 3 ? 'background:#94a3b8;color:#fff;' : ''}">#${i + 1}</div>
       <div class="leaderboard-info">
         <div class="leaderboard-name">${esc(s.name)}</div>
-        <div class="leaderboard-score" style="color:var(--text-secondary);font-weight:normal;font-size:0.8rem;">
-          ${formatTimeInfo(s.totalSecLate)}
-        </div>
       </div>
     </div>
   `).join('');
