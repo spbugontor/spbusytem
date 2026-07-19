@@ -1372,9 +1372,12 @@ window._updateRatingCriteria = () => {
     
     grouped[ind].forEach(c => {
       // the data-key attribute is used in _saveRating to avoid invalid characters in Firebase keys
-      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.25rem 0;border-bottom:1px solid #e2e8f0">
-        <span class="text-sm" style="flex:1;padding-right:0.5rem">${esc(c.name)}</span>
-        <input type="number" min="1" max="5" value="3" class="form-input rf-score" data-key="${c._key}" style="width:60px;padding:0.3rem;text-align:center;font-size:0.85rem">
+      html += `<div style="display:flex;flex-direction:column;gap:0.5rem;padding:0.5rem 0;border-bottom:1px solid #e2e8f0">
+        <span class="text-sm font-semibold" style="flex:1;">${esc(c.name)}</span>
+        <input type="hidden" class="rf-score" data-key="${c._key}" id="score-${c._key}" value="3">
+        <div style="display:flex;gap:0.5rem;justify-content:flex-end;" id="rating-group-${c._key}">
+          ${[1,2,3,4,5].map(n => `<button type="button" class="rating-btn ${n===3?'active':''}" onclick="_setRating('${c._key}', ${n})">${n}</button>`).join('')}
+        </div>
       </div>`;
     });
     
@@ -1382,6 +1385,21 @@ window._updateRatingCriteria = () => {
   });
   
   container.innerHTML = html;
+};
+
+window._setRating = (key, val) => {
+  const input = $('score-' + key);
+  if (input) input.value = val;
+  const group = $('rating-group-' + key);
+  if (group) {
+    group.querySelectorAll('.rating-btn').forEach(btn => {
+      if (parseInt(btn.textContent) === val) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
 };
 window._saveRating = async () => {
   const empId = $('rf-emp').value;

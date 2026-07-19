@@ -598,6 +598,33 @@ tr:hover td { background: var(--surface-hover); }
   line-height: 1;
 }
 
+/* Rating Buttons */
+.rating-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.rating-btn:hover {
+  background: var(--bg-color);
+  border-color: var(--primary);
+}
+.rating-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  transform: scale(1.05);
+  box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+}
 /* -------------------------------------
    RESPONSIVE (MOBILE)
 ------------------------------------- */
@@ -741,3 +768,5 @@ tr:hover td { background: var(--surface-hover); }
     display: none !important;
   }
 }
+ 
+ 
