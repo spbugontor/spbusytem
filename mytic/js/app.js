@@ -142,6 +142,16 @@ function init() {
       showToast(`Akses ditolak pada data ${node}. Periksa Firebase Rules!`, 'error');
     });
   });
+
+  onValue(ref(db, 'absensi/records'), snap => {
+    allData.absensi_records = snap.exists() ? snap.val() : {};
+    if (currentUser) renderCurrentSection();
+  });
+
+  onValue(ref(db, 'ceklissop/records'), snap => {
+    allData.ceklissop_records = snap.exists() ? snap.val() : {};
+    if (currentUser) renderCurrentSection();
+  });
 }
 
 // ==========================================
@@ -241,6 +251,7 @@ const ADMIN_MENU = [
 
 const EMP_MENU = [
   { id: 'dashboard', label: 'Beranda', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1' },
+  { id: 'emp-history', label: 'Riwayat Harian', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
   { id: 'emp-debits', label: 'Tunggakan', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' },
   { id: 'emp-leaves', label: 'Izin/Cuti', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
   { id: 'emp-violations', label: 'Pelanggaran', icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z' },
@@ -348,6 +359,7 @@ function renderCurrentSection() {
     switch (currentSection) {
       case 'dashboard': html = renderEmpDashboard(); break;
       case 'emp-debits': html = renderEmpDebits(); break;
+      case 'emp-history': html = renderEmpHistory(); break;
       case 'emp-leaves': html = renderEmpLeaves(); break;
       case 'emp-violations': html = renderEmpViolations(); break;
       case 'emp-savings': html = renderEmpSavings(); break;
@@ -811,6 +823,76 @@ function renderEmpDashboard() {
         <div><p class="form-label">ID</p><p class="font-bold">${esc(emp.emp_id)}</p></div>
         <div><p class="form-label">Username</p><p class="font-bold">${esc(emp.username)}</p></div>
       </div>
+    </div>
+  </div>`;
+}
+
+function renderEmpHistory() {
+  const emp = getUserByUsername(currentUser.username);
+  if (!emp) return '<div class="card"><p class="text-muted">Data tidak ditemukan.</p></div>';
+
+  const absensiRecords = Object.values(allData.absensi_records || {}).filter(r => r.emp_name === emp.name);
+  const ceklisRecords = Object.values(allData.ceklissop_records || {}).filter(r => r.operator_name === emp.name);
+
+  // Parse and sort history by date descending
+  let history = [];
+  
+  absensiRecords.forEach(r => {
+    history.push({
+      type: 'absensi',
+      dateObj: new Date(`${r.date}T${r.clock_in || '00:00'}`),
+      dateStr: r.date,
+      timeStr: r.clock_in,
+      title: 'Absensi Masuk',
+      subtitle: r.shift,
+      status: r.status,
+      isWarning: r.status && r.status !== 'On Time ✓' && !r.status.toLowerCase().includes('izin')
+    });
+  });
+
+  ceklisRecords.forEach(r => {
+    const d = new Date(r.date);
+    history.push({
+      type: 'ceklis',
+      dateObj: d,
+      dateStr: d.toISOString().split('T')[0],
+      timeStr: d.toTimeString().split(' ')[0].substring(0, 5),
+      title: `SOP ${r.category}`,
+      subtitle: r.shift,
+      status: `Skor: ${r.score}%`,
+      isWarning: r.score < 100
+    });
+  });
+
+  history.sort((a, b) => b.dateObj - a.dateObj);
+
+  return `<div class="fade-in">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <h3 class="text-xl font-bold">Riwayat Harian (Absensi & SOP)</h3>
+    </div>
+    
+    <div class="card">
+      ${history.length === 0 ? '<p class="text-muted text-center" style="padding: 2rem 0;">Belum ada riwayat tercatat.</p>' : 
+      history.map(h => {
+        const icon = h.type === 'absensi' 
+          ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>'
+          : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
+        
+        const statusColor = h.isWarning ? 'color: var(--danger);' : 'color: var(--success);';
+        
+        return `
+        <div style="display:flex;align-items:center;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--border);">
+          <div style="background:var(--bg);padding:0.75rem;border-radius:50%;">${icon}</div>
+          <div style="flex:1;">
+            <div style="font-weight:700;">${h.title}</div>
+            <div class="text-xs text-muted">${fmtDate(h.dateStr)} • Jam ${h.timeStr} • Shift ${h.subtitle}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:700; ${statusColor}">${h.status}</div>
+          </div>
+        </div>
+        `;
+      }).join('')}
     </div>
   </div>`;
 }
