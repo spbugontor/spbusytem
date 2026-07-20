@@ -30,6 +30,31 @@ function applyTheme(themeKey) {
 const savedTheme = localStorage.getItem('spbu_theme');
 if (savedTheme) applyTheme(savedTheme);
 
+// Dark Mode Logic
+const savedDarkMode = localStorage.getItem('spbu_dark_mode') === 'true';
+if (savedDarkMode) document.documentElement.classList.add('dark-mode');
+
+window.toggleDarkMode = () => {
+  const isDark = document.documentElement.classList.toggle('dark-mode');
+  localStorage.setItem('spbu_dark_mode', isDark);
+  
+  const moon = document.getElementById('icon-moon');
+  const sun = document.getElementById('icon-sun');
+  if (moon && sun) {
+    if (isDark) { moon.classList.add('hidden'); sun.classList.remove('hidden'); }
+    else { moon.classList.remove('hidden'); sun.classList.add('hidden'); }
+  }
+};
+
+// Update icons on load if they exist
+document.addEventListener('DOMContentLoaded', () => {
+  if (savedDarkMode) {
+    const moon = document.getElementById('icon-moon');
+    const sun = document.getElementById('icon-sun');
+    if (moon && sun) { moon.classList.add('hidden'); sun.classList.remove('hidden'); }
+  }
+});
+
 // ==========================================
 // UTILITIES
 // ==========================================

@@ -45,3 +45,52 @@ body {
     padding: 10px 4px;
     font-size: 14px;
 }
+
+/* Dark Mode */
+html.dark-mode body {
+    background: #0F172A;
+    color: #F8FAFC;
+}
+html.dark-mode .bg-white {
+    background: #1E293B !important;
+}
+html.dark-mode .bg-gray-50 {
+    background: #1E293B !important;
+}
+html.dark-mode .bg-gray-100 {
+    background: #334155 !important;
+}
+html.dark-mode .border {
+    border-color: #334155 !important;
+}
+html.dark-mode .text-gray-500,
+html.dark-mode .text-gray-600,
+html.dark-mode .text-gray-700 {
+    color: #94A3B8 !important;
+}
+html.dark-mode .text-gray-800,
+html.dark-mode .text-gray-900 {
+    color: #F8FAFC !important;
+}
+html.dark-mode .tab-inactive {
+    background: #334155;
+    color: #CBD5E1;
+}
+html.dark-mode .check-item {
+    background: #1E293B;
+    border-color: #334155;
+}
+html.dark-mode .check-item.checked {
+    background: rgba(22, 163, 74, 0.2);
+    border-color: #16a34a;
+}
+html.dark-mode input,
+html.dark-mode select {
+    background: #1E293B !important;
+    color: #F8FAFC !important;
+    border-color: #334155 !important;
+}
+html.dark-mode .shadow-md,
+html.dark-mode .shadow-lg {
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.4) !important;
+}

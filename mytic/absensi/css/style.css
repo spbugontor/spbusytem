@@ -32,6 +32,23 @@
   --transition: all 0.2s ease;
 }
 
+html.dark-mode {
+  --bg: #0F172A;
+  --surface: #1E293B;
+  --text: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --border: #334155;
+  --shadow: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4);
+  --success-light: rgba(5, 150, 105, 0.2);
+  --warning-light: rgba(217, 119, 6, 0.2);
+  --danger-light: rgba(220, 38, 38, 0.2);
+  --info-light: rgba(2, 132, 199, 0.2);
+  --primary-bg: rgba(79, 70, 229, 0.2);
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
@@ -508,7 +525,7 @@ body {
   align-items: center;
   padding: 0.75rem 1rem;
   margin-bottom: 0.5rem;
-  background: white;
+  background: var(--surface);
   border-radius: var(--radius);
   border: 1px solid var(--border);
 }

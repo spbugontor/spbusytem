@@ -30,6 +30,9 @@ function applyTheme(themeKey) {
 const savedTheme = localStorage.getItem('spbu_theme');
 if (savedTheme) applyTheme(savedTheme);
 
+// Dark Mode (personal, shared via localStorage)
+if (localStorage.getItem('spbu_dark_mode') === 'true') document.documentElement.classList.add('dark-mode');
+
 onValue(ref(db, 'settings/theme'), snap => {
   const theme = snap.val();
   if (theme) applyTheme(theme);

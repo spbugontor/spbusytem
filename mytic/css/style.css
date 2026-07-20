@@ -35,6 +35,24 @@
   --radius-xl: 1rem;
 }
 
+html.dark-mode {
+  --bg-color: #0F172A;
+  --surface: #1E293B;
+  --surface-hover: #334155;
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --border: #334155;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+  
+  --success-bg: rgba(16, 185, 129, 0.2);
+  --danger-bg: rgba(239, 68, 68, 0.2);
+  --warning-bg: rgba(245, 158, 11, 0.2);
+  --info-bg: rgba(59, 130, 246, 0.2);
+  --primary-bg: rgba(241, 88, 0, 0.2);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -797,6 +815,50 @@ tr:hover td { background: var(--surface-hover); }
   height: 40px;
   border-radius: var(--radius-sm);
   width: 100%;
+}
+
+/* -------------------------------------
+   DARK MODE OVERRIDES
+------------------------------------- */
+html.dark-mode .toast {
+  background: #1E293B;
+  color: #F8FAFC;
+}
+html.dark-mode .badge-success { color: #6EE7B7; }
+html.dark-mode .badge-warning { color: #FCD34D; }
+html.dark-mode .badge-danger { color: #FCA5A5; }
+html.dark-mode .badge-info { color: #93C5FD; }
+
+html.dark-mode .theme-card {
+  background: #334155;
+  border-color: #475569;
+}
+html.dark-mode .theme-card.active {
+  background: #475569;
+}
+
+html.dark-mode .rating-btn {
+  background: #334155;
+  color: #F8FAFC;
+  border-color: #475569;
+}
+html.dark-mode .rating-btn:hover {
+  background: #475569;
+}
+
+html.dark-mode .more-menu-backdrop {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* Fix for inline bg-white styles */
+html.dark-mode [style*="background:white"],
+html.dark-mode [style*="background: white"],
+html.dark-mode [style*="bg-white"] {
+  background: var(--surface) !important;
+}
+
+html.dark-mode .login-screen {
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
 }
  
  
