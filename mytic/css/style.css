@@ -133,6 +133,8 @@ body {
 .btn-danger:hover { background: #DC2626; }
 .btn-outline-danger { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
 .btn-outline-danger:hover { background: var(--danger-bg); }
+.btn-warning { background: #F59E0B; color: white; }
+.btn-warning:hover { background: #D97706; }
 
 /* -------------------------------------
    INPUTS & FORMS
