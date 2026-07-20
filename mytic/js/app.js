@@ -34,25 +34,26 @@ if (savedTheme) applyTheme(savedTheme);
 const savedDarkMode = localStorage.getItem('spbu_dark_mode') === 'true';
 if (savedDarkMode) document.documentElement.classList.add('dark-mode');
 
+function syncDarkIcons(isDark) {
+  ['', '-mobile'].forEach(suffix => {
+    const moon = document.getElementById('icon-moon' + suffix);
+    const sun = document.getElementById('icon-sun' + suffix);
+    if (moon && sun) {
+      if (isDark) { moon.classList.add('hidden'); sun.classList.remove('hidden'); }
+      else { moon.classList.remove('hidden'); sun.classList.add('hidden'); }
+    }
+  });
+}
+
 window.toggleDarkMode = () => {
   const isDark = document.documentElement.classList.toggle('dark-mode');
   localStorage.setItem('spbu_dark_mode', isDark);
-  
-  const moon = document.getElementById('icon-moon');
-  const sun = document.getElementById('icon-sun');
-  if (moon && sun) {
-    if (isDark) { moon.classList.add('hidden'); sun.classList.remove('hidden'); }
-    else { moon.classList.remove('hidden'); sun.classList.add('hidden'); }
-  }
+  syncDarkIcons(isDark);
 };
 
 // Update icons on load if they exist
 document.addEventListener('DOMContentLoaded', () => {
-  if (savedDarkMode) {
-    const moon = document.getElementById('icon-moon');
-    const sun = document.getElementById('icon-sun');
-    if (moon && sun) { moon.classList.add('hidden'); sun.classList.remove('hidden'); }
-  }
+  if (savedDarkMode) syncDarkIcons(true);
 });
 
 // ==========================================
@@ -875,17 +876,29 @@ function renderEmpHistory() {
     });
   });
 
+  // Group ceklis records by date (accumulate per day)
+  const ceklisByDate = {};
   ceklisRecords.forEach(r => {
     const d = new Date(r.date);
+    const dateStr = d.toISOString().split('T')[0];
+    if (!ceklisByDate[dateStr]) ceklisByDate[dateStr] = { scores: [], count: 0, categories: [], lastTime: d };
+    ceklisByDate[dateStr].scores.push(r.score || 0);
+    ceklisByDate[dateStr].count++;
+    if (!ceklisByDate[dateStr].categories.includes(r.category)) ceklisByDate[dateStr].categories.push(r.category);
+    if (d > ceklisByDate[dateStr].lastTime) ceklisByDate[dateStr].lastTime = d;
+  });
+
+  Object.entries(ceklisByDate).forEach(([dateStr, data]) => {
+    const avgScore = Math.round(data.scores.reduce((a, b) => a + b, 0) / data.scores.length);
     history.push({
       type: 'ceklis',
-      dateObj: d,
-      dateStr: d.toISOString().split('T')[0],
-      timeStr: d.toTimeString().split(' ')[0].substring(0, 5),
-      title: `SOP ${r.category}`,
-      subtitle: r.shift,
-      status: `Skor: ${r.score}%`,
-      isWarning: r.score < 100
+      dateObj: data.lastTime,
+      dateStr: dateStr,
+      timeStr: data.lastTime.toTimeString().split(' ')[0].substring(0, 5),
+      title: `SOP Harian (${data.categories.join(' & ')})`,
+      subtitle: `${data.count}x pengecekan`,
+      status: `Rata-rata: ${avgScore}%`,
+      isWarning: avgScore < 100
     });
   });
 
