@@ -64,9 +64,7 @@ function getSopItems(cat) {
 window.showPage = showPage;
 window.switchTab = switchTab;
 window.submitChecklist = submitChecklist;
-window.addKaryawan = addKaryawan;
-window.editKaryawan = editKaryawan;
-window.deleteKaryawan = deleteKaryawan;
+
 window.switchSopTab = switchSopTab;
 window.addSopItem = addSopItem;
 window.editSopItem = editSopItem;
