@@ -667,28 +667,7 @@ document.querySelectorAll('.position-btn').forEach(btn => {
   });
 });
 
-$('btn-add-emp').addEventListener('click', async () => {
-  const name = $('input-name').value.trim();
-  const nickname = $('input-nickname').value.trim();
-  if (!name) { showToast('Nama harus diisi', 'warning'); return; }
-  if (!selectedPosition) { showToast('Pilih jabatan', 'warning'); return; }
-  if (getEmployees().find(e => e.name === name)) { showToast('Nama sudah ada', 'warning'); return; }
-
-  await set(push(ref(db, 'absensi/employees')), { name, nickname, position: selectedPosition });
-  $('input-name').value = '';
-  $('input-nickname').value = '';
-  selectedPosition = '';
-  document.querySelectorAll('.position-btn').forEach(b => b.classList.remove('selected'));
-  showToast('Karyawan ditambahkan!', 'success');
-});
-
-// Auto-capitalize
-$('input-name').addEventListener('input', function() {
-  const pos = this.selectionStart;
-  this.value = this.value.replace(/\b\w/g, c => c.toUpperCase());
-  this.setSelectionRange(pos, pos);
-});
-
+// Add Employee removed, now centralized in MyTIC
 let editingKey = null;
 function renderAdminEmployees() {
   const container = $('admin-emp-list');
