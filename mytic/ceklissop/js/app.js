@@ -217,61 +217,6 @@ function renderKaryawan() {
     
     empty.classList.add('hidden');
     container.innerHTML = records.map(k => `<div class="border rounded-lg p-3 bg-white flex justify-between items-center"><span class="font-medium">${k.name}</span><span class="text-xs text-gray-500">${k.position || ''}</span></div>`).join('');
-    updateKaryawanButtonLabel();
-}
-
-async function addKaryawan() {
-    const input = document.getElementById('karyawan-input');
-    const val = input.value.trim();
-    if (!val) return;
-    const btn = document.getElementById('btn-add-karyawan');
-    btn.disabled = true; btn.style.opacity = '0.6';
-    
-    try {
-        if (editingKaryawanRecord) {
-            await update(ref(db, 'ceklissop/employees/' + editingKaryawanRecord._key), { name: val });
-            editingKaryawanRecord = null;
-        } else {
-            if (getKaryawanRecords().some(r => r.name === val)) { showFeedback('⚠️ Karyawan sudah ada', 'text-red-600'); btn.disabled = false; btn.style.opacity = '1'; return; }
-            await set(push(ref(db, 'ceklissop/employees')), { type: 'karyawan', name: val });
-        }
-        input.value = '';
-    } catch(e) {
-        console.error(e);
-        showFeedback('❌ Gagal menyimpan', 'text-red-600');
-    }
-    
-    btn.disabled = false; btn.style.opacity = '1';
-    updateKaryawanButtonLabel();
-}
-
-function editKaryawan(id) {
-    const record = allRecords.find(r => r._key === id);
-    if (!record) return;
-    document.getElementById('karyawan-input').value = record.name;
-    editingKaryawanRecord = record;
-    updateKaryawanButtonLabel();
-}
-
-function deleteKaryawan(id) {
-    const record = allRecords.find(r => r._key === id);
-    if (!record) return;
-    const modal = document.getElementById('delete-modal');
-    document.getElementById('delete-modal-title').textContent = `Hapus "${record.name}"?`;
-    document.getElementById('delete-modal-message').textContent = 'Tindakan ini tidak dapat dibatalkan.';
-    modal.classList.remove('hidden');
-    document.getElementById('delete-confirm-btn').onclick = async () => {
-        try {
-            await remove(ref(db, 'ceklissop/employees/' + record._key));
-            editingKaryawanRecord = null;
-            modal.classList.add('hidden');
-        } catch(e) { showFeedback('❌ Gagal menghapus', 'text-red-600'); }
-    };
-}
-
-function updateKaryawanButtonLabel() {
-    const btn = document.getElementById('btn-add-karyawan');
-    btn.textContent = editingKaryawanRecord ? 'Simpan' : 'Tambah';
 }
 
 // === KELOLA SOP ===
