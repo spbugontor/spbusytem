@@ -906,7 +906,12 @@ function renderEmpHistory() {
     });
   });
 
-  history.sort((a, b) => b.dateObj - a.dateObj);
+  history.sort((a, b) => {
+    if (a.dateStr !== b.dateStr) return b.dateStr.localeCompare(a.dateStr);
+    const timeA = (a.timeStr && a.timeStr !== '-') ? a.timeStr : '00:00';
+    const timeB = (b.timeStr && b.timeStr !== '-') ? b.timeStr : '00:00';
+    return timeB.localeCompare(timeA);
+  });
 
   return `<div class="fade-in">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
