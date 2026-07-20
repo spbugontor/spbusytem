@@ -3,7 +3,7 @@ import { db, ref, onValue, set, push, remove, update } from './firebase-config.j
 // ==========================================
 // STATE
 // ==========================================
-let allData = { employees: {}, records: {}, settings: {} };
+let allData = { employees: {}, records: {}, settings: {}, users: {} };
 let currentEmployee = null; // { _key, name, nickname, position }
 
 const $ = id => document.getElementById(id);
@@ -105,7 +105,7 @@ function showConfirm(title, message, cb, btnText = 'Yakin', isDanger = false) {
 }
 
 function getEmployees() {
-  return Object.entries(allData.employees || {}).map(([k, v]) => ({ _key: k, ...v }));
+  return Object.entries(allData.users || {}).map(([k, v]) => ({ _key: k, ...v }));
 }
 function getRecords(empName) {
   const all = Object.entries(allData.records || {}).map(([k, v]) => ({ _key: k, ...v }));
@@ -132,8 +132,7 @@ function replaceVars(msg, vars) {
 // FIREBASE LISTENER
 // ==========================================
 onValue(ref(db, 'absensi'), snap => {
-  allData = snap.val() || { employees: {}, records: {}, settings: {} };
-  if (!allData.employees) allData.employees = {};
+  allData = { ...allData, ...(snap.val() || { employees: {}, records: {}, settings: {} }) };
   if (!allData.records) allData.records = {};
   if (!allData.settings) allData.settings = {};
   
@@ -143,6 +142,11 @@ onValue(ref(db, 'absensi'), snap => {
     SHIFTS = JSON.parse(JSON.stringify(DEFAULT_SHIFTS));
   }
   
+  render();
+});
+
+onValue(ref(db, 'users'), snap => {
+  allData.users = snap.val() || {};
   render();
 });
 
@@ -695,10 +699,6 @@ function renderAdminEmployees() {
       <div>
         <div style="font-weight:700;">${esc(e.name)}</div>
         <div class="text-xs text-muted">${esc(e.position)}${e.nickname ? ' • ' + esc(e.nickname) : ''}</div>
-      </div>
-      <div class="flex gap-2">
-        <button class="btn btn-primary edit-emp-btn" style="padding:0.4rem 0.75rem;font-size:0.8rem;" data-key="${e._key}">Edit</button>
-        <button class="btn btn-danger del-emp-btn" style="padding:0.4rem 0.75rem;font-size:0.8rem;" data-key="${e._key}" data-name="${esc(e.name)}">Hapus</button>
       </div>
     </div>
   `).join('');

@@ -45,9 +45,11 @@ let customEndDate = null;
 let sopViolationChart = null;
 let monthlyCheckDone = false;
 
+let centralUsers = [];
+
 // Helpers to get typed records
 function getChecklists() { return allRecords.filter(r => r.type === 'checklist'); }
-function getKaryawanRecords() { return allRecords.filter(r => r.type === 'karyawan'); }
+function getKaryawanRecords() { return centralUsers; }
 function getSopRecords(cat) { return allRecords.filter(r => r.type === (cat === 'Mobil' ? 'sop_mobil' : 'sop_motor')).sort((a, b) => (a.order_index || 0) - (b.order_index || 0)); }
 function getSopItems(cat) {
     const records = getSopRecords(cat);
@@ -211,7 +213,7 @@ function renderKaryawan() {
     if (!records.length) { container.innerHTML = ''; empty.classList.remove('hidden'); return; }
     
     empty.classList.add('hidden');
-    container.innerHTML = records.map(k => `<div class="border rounded-lg p-3 bg-white flex justify-between items-center"><span class="font-medium">${k.name}</span><div class="flex gap-2"><button class="text-blue-600 text-sm font-medium" onclick="editKaryawan('${k._key}')">Edit</button><button class="text-red-600 text-sm font-medium" onclick="deleteKaryawan('${k._key}')">Hapus</button></div></div>`).join('');
+    container.innerHTML = records.map(k => `<div class="border rounded-lg p-3 bg-white flex justify-between items-center"><span class="font-medium">${k.name}</span><span class="text-xs text-gray-500">${k.position || ''}</span></div>`).join('');
     updateKaryawanButtonLabel();
 }
 
@@ -711,14 +713,21 @@ async function downloadAndResetOldData() {
 }
 
 // === INIT FIREBASE LISTENER ===
+onValue(ref(db, 'users'), (snapshot) => {
+    const data = snapshot.val() || {};
+    centralUsers = Object.entries(data).map(([key, val]) => ({ ...val, _key: key, type: 'karyawan' }));
+    
+    const activePage = ['ceklis', 'karyawan', 'sop', 'rekap'].find(p => !document.getElementById('page-' + p).classList.contains('hidden'));
+    if (activePage === 'karyawan') renderKaryawan();
+    if (activePage === 'ceklis') populateOperatorSelect();
+});
+
 onValue(ref(db, 'ceklissop'), (snapshot) => {
     const data = snapshot.val() || {};
     let parsedData = [];
     
     // Parse records
     if (data.records) Object.entries(data.records).forEach(([key, val]) => parsedData.push({ ...val, _key: key, type: 'checklist' }));
-    // Parse employees
-    if (data.employees) Object.entries(data.employees).forEach(([key, val]) => parsedData.push({ ...val, _key: key, type: 'karyawan' }));
     // Parse SOP Mobil
     if (data.sop_mobil) Object.entries(data.sop_mobil).forEach(([key, val]) => parsedData.push({ ...val, _key: key, type: 'sop_mobil' }));
     // Parse SOP Motor
@@ -729,7 +738,6 @@ onValue(ref(db, 'ceklissop'), (snapshot) => {
     // Re-render
     renderHistory();
     const activePage = ['ceklis', 'karyawan', 'sop', 'rekap'].find(p => !document.getElementById('page-' + p).classList.contains('hidden'));
-    if (activePage === 'karyawan') renderKaryawan();
     if (activePage === 'sop') renderSopList();
     if (activePage === 'ceklis') { populateOperatorSelect(); renderChecklist(); }
     if (activePage === 'rekap') {
