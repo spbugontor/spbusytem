@@ -111,6 +111,57 @@
       </div>
     </div>
 
+    <!-- ==================== MODAL: EDIT ABSENSI ==================== -->
+    <div id="edit-record-overlay" class="modal-overlay">
+      <div class="modal-box" style="text-align:left;">
+        <h3 class="modal-title mb-4">Edit Absensi Karyawan</h3>
+        <div class="form-group">
+          <label class="form-label">Nama Karyawan</label>
+          <input id="edit-rec-name" class="form-input" disabled>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tanggal</label>
+          <input id="edit-rec-date" class="form-input" disabled>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pilihan Shift</label>
+          <select id="edit-rec-shift" class="form-select">
+            <option value="1">Shift 1</option>
+            <option value="2">Shift 2</option>
+            <option value="3">Shift 3</option>
+            <option value="admin">Admin</option>
+            <option value="-">Tidak Hadir / Keterangan</option>
+          </select>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Jam Masuk</label>
+            <input id="edit-rec-in" class="form-input" disabled>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Jam Pulang</label>
+            <input id="edit-rec-out" class="form-input" disabled>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status / Keterangan</label>
+          <select id="edit-rec-status" class="form-select">
+            <option value="Hadir">Hadir (Sesuai Log Masuk)</option>
+            <option value="Sakit">Sakit</option>
+            <option value="Izin">Izin</option>
+            <option value="Cuti">Cuti</option>
+            <option value="Libur">Libur</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+        <div class="flex gap-4 justify-center" style="margin-top:1.5rem;">
+          <button id="edit-rec-cancel" class="btn btn-secondary">Batal</button>
+          <button id="edit-rec-save" class="btn btn-primary">Simpan</button>
+        </div>
+      </div>
+    </div>
+
+
     <!-- ==================== MODAL: DETAIL PERINGKAT ==================== -->
     <div id="detail-overlay" class="modal-overlay">
       <div class="modal-box" style="text-align:left;max-height:85vh;overflow-y:auto;max-width:450px;">
@@ -257,6 +308,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
   <script type="module" src="js/firebase-config.js?v=10"></script>
-  <script type="module" src="js/app.js?v=11"></script>
+  <script type="module" src="js/app.js?v=12"></script>
 </body>
 </html>

@@ -735,6 +735,153 @@ $('edit-save').addEventListener('click', async () => {
 $('edit-cancel').addEventListener('click', () => { $('edit-overlay').classList.remove('active'); editingKey = null; });
 
 // ==========================================
+// ADMIN: EDIT ABSENSI RECORD
+// ==========================================
+let editingRecordKey = null;
+
+function openEditRecordModal(record) {
+  editingRecordKey = record._key;
+  $('edit-rec-name').value = record.emp_name;
+  $('edit-rec-date').value = fmtDateID(record.date);
+  
+  let shiftKey = '-';
+  if (record.shift && record.shift !== '-') {
+    shiftKey = Object.keys(SHIFTS).find(k => record.shift.startsWith(SHIFTS[k].label.split(' (')[0])) || '-';
+  }
+  $('edit-rec-shift').value = shiftKey;
+  
+  $('edit-rec-in').value = (record.clock_in && record.clock_in !== '-') ? record.clock_in : '-';
+  $('edit-rec-out').value = (record.clock_out && record.clock_out !== '-') ? record.clock_out : '-';
+  
+  const sVal = ['Sakit','Izin','Cuti','Libur','Lainnya'].includes(record.status) ? record.status : 'Hadir';
+  $('edit-rec-status').value = sVal;
+  
+  toggleEditRecordFormFields();
+  $('edit-record-overlay').classList.add('active');
+}
+
+function toggleEditRecordFormFields() {
+  const statusVal = $('edit-rec-status').value;
+  const shiftSelect = $('edit-rec-shift');
+  if (statusVal !== 'Hadir') {
+    shiftSelect.value = '-';
+    shiftSelect.disabled = true;
+  } else {
+    shiftSelect.disabled = false;
+    if (shiftSelect.value === '-') {
+      shiftSelect.value = '1';
+    }
+  }
+}
+
+$('edit-rec-status').addEventListener('change', toggleEditRecordFormFields);
+$('edit-rec-shift').addEventListener('change', () => {
+  if ($('edit-rec-shift').value === '-') {
+    $('edit-rec-status').value = 'Izin';
+  } else {
+    $('edit-rec-status').value = 'Hadir';
+  }
+});
+
+$('edit-rec-cancel').addEventListener('click', () => {
+  $('edit-record-overlay').classList.remove('active');
+  editingRecordKey = null;
+});
+
+$('edit-rec-save').addEventListener('click', async () => {
+  if (!editingRecordKey) return;
+  const record = getRecords().find(r => r._key === editingRecordKey);
+  if (!record) return;
+  
+  const statusVal = $('edit-rec-status').value;
+  const shiftKey = $('edit-rec-shift').value;
+  
+  let updates = {};
+  
+  if (statusVal !== 'Hadir') {
+    updates = {
+      shift: '-',
+      clock_in: '-',
+      clock_out: '-',
+      status: statusVal,
+      late_minutes: 0,
+      note: statusVal
+    };
+  } else {
+    if (shiftKey === '-') {
+      showToast('Harap pilih shift valid untuk status Hadir', 'warning');
+      return;
+    }
+    
+    const clockIn = (record.clock_in && record.clock_in !== '-') ? record.clock_in : nowTime();
+    const clockOut = (record.clock_out && record.clock_out !== '-') ? record.clock_out : '';
+    
+    const late = calcLate(shiftKey, clockIn);
+    const statusText = late > 0 ? formatLate(late) : 'On Time ✓';
+    
+    updates = {
+      shift: SHIFTS[shiftKey].label,
+      clock_in: clockIn,
+      clock_out: clockOut,
+      status: statusText,
+      late_minutes: late,
+      note: ''
+    };
+  }
+  
+  await update(ref(db, 'absensi/records/' + editingRecordKey), updates);
+  $('edit-record-overlay').classList.remove('active');
+  editingRecordKey = null;
+  showToast('Data absensi diperbarui!', 'success');
+  renderReport();
+  renderLeaderboard();
+  renderAdminDashboard();
+});
+
+function showEmpPeriodDetail(name, empRecs) {
+  $('detail-title').textContent = `📋 Detail Absensi: ${name}`;
+  
+  let html = '<div style="max-height:350px;overflow-y:auto;">';
+  if (empRecs.length === 0) {
+    html += '<p class="text-sm text-muted" style="text-align:center;padding:1rem;">Tidak ada data absensi untuk periode ini.</p>';
+  } else {
+    empRecs.sort((a,b) => b.date.localeCompare(a.date)).forEach(r => {
+      const statusColor = (!r.clock_in || r.clock_in === '-') ? 'var(--info)' : ((r.late_minutes || 0) > 0 ? 'var(--warning)' : 'var(--success)');
+      const clockIn = (r.clock_in && r.clock_in !== '-') ? r.clock_in : '-';
+      const clockOut = (r.clock_out && r.clock_out !== '-') ? r.clock_out : '-';
+      
+      html += `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 0;border-bottom:1px solid var(--border);font-size:0.85rem;">
+          <div>
+            <div style="font-weight:600;color:var(--text);">${fmtDateID(r.date)}</div>
+            <div style="color:var(--text-muted);font-size:0.75rem;">${r.shift || '-'} | Masuk: ${clockIn} | Pulang: ${clockOut}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <span style="color:${statusColor};font-weight:600;font-size:0.75rem;white-space:nowrap;">${r.status || '-'}</span>
+            <button class="btn btn-primary btn-edit-record-modal" data-key="${r._key}" style="padding:0.25rem 0.5rem;font-size:0.7rem;">Edit</button>
+          </div>
+        </div>`;
+    });
+  }
+  html += '</div>';
+  
+  $('detail-content').innerHTML = html;
+  $('detail-overlay').classList.add('active');
+  
+  $('detail-content').querySelectorAll('.btn-edit-record-modal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $('detail-overlay').classList.remove('active');
+      const record = getRecords().find(r => r._key === btn.dataset.key);
+      if (record) {
+        openEditRecordModal(record);
+      }
+    });
+  });
+}
+
+
+
+// ==========================================
 // ADMIN: REKAP
 // ==========================================
 $('report-date').valueAsDate = new Date();
@@ -796,10 +943,15 @@ function renderReport() {
     return;
   }
 
-  container.innerHTML = names.map(name => {
+  let reportHtml = names.map(name => {
     const s = grouped[name];
-    return `<div class="card mb-2">
-      <div style="font-weight:700;margin-bottom:0.75rem;">${esc(name)}</div>
+    return `<div class="card mb-2" style="padding:1.25rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+        <div style="font-weight:700; font-size:1.05rem;">${esc(name)}</div>
+        <button class="btn btn-primary btn-view-edit-emp-recap" data-name="${esc(name)}" style="padding:0.25rem 0.5rem; font-size:0.75rem; border-radius:var(--radius-sm);">
+          Edit / Detail
+        </button>
+      </div>
       <div class="stat-grid">
         <div class="stat-item"><div class="stat-value" style="color:var(--success);">${s.present}</div><div class="stat-label">Hadir</div></div>
         <div class="stat-item"><div class="stat-value" style="color:var(--warning);">${s.late}</div><div class="stat-label">Terlambat</div></div>
@@ -810,6 +962,71 @@ function renderReport() {
       </div>
     </div>`;
   }).join('');
+
+  if (filtered.length > 0) {
+    reportHtml += `
+    <div class="card mt-4">
+      <h4 class="section-title" style="font-size:1.1rem; margin-bottom:1rem;">Detail Log Absensi</h4>
+      <div style="overflow-x:auto;">
+        <table class="report-table" style="width:100%; border-collapse:collapse; font-size:0.85rem; text-align:left;">
+          <thead>
+            <tr style="border-bottom:2px solid var(--border); color:var(--text-secondary);">
+              <th style="padding:0.5rem;">Tanggal</th>
+              <th style="padding:0.5rem;">Nama</th>
+              <th style="padding:0.5rem;">Shift</th>
+              <th style="padding:0.5rem;">Masuk</th>
+              <th style="padding:0.5rem;">Pulang</th>
+              <th style="padding:0.5rem;">Status / Keterangan</th>
+              <th style="padding:0.5rem; text-align:center;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filtered.sort((a,b) => b.date.localeCompare(a.date) || a.emp_name.localeCompare(b.emp_name)).map(r => `
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:0.5rem; white-space:nowrap;">${fmtDateID(r.date)}</td>
+                <td style="padding:0.5rem; font-weight:600;">${esc(r.emp_name)}</td>
+                <td style="padding:0.5rem;">${esc(r.shift || '-')}</td>
+                <td style="padding:0.5rem;">${r.clock_in || '-'}</td>
+                <td style="padding:0.5rem;">${r.clock_out || '-'}</td>
+                <td style="padding:0.5rem;">
+                  <span class="badge ${r.clock_in === '-' ? 'badge-info' : ((r.late_minutes || 0) > 0 ? 'badge-warning' : 'badge-success')}">
+                    ${esc(r.status || '-')}
+                  </span>
+                </td>
+                <td style="padding:0.5rem; text-align:center;">
+                  <button class="btn btn-primary btn-edit-record" data-key="${r._key}" style="padding:0.25rem 0.5rem; font-size:0.75rem; border-radius:var(--radius-sm);">
+                    Edit
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  container.innerHTML = reportHtml;
+
+  container.querySelectorAll('.btn-view-edit-emp-recap').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.name;
+      const empRecs = filtered.filter(r => r.emp_name === name);
+      showEmpPeriodDetail(name, empRecs);
+    });
+  });
+
+  container.querySelectorAll('.btn-edit-record').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const recKey = btn.dataset.key;
+      const record = getRecords().find(r => r._key === recKey);
+      if (record) {
+        openEditRecordModal(record);
+      }
+    });
+  });
+
+
 }
 
 // Unduh PDF
