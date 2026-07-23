@@ -257,9 +257,12 @@ function renderLeaderboard() {
       </div>
     </div>
   `).join('');
-
-  container.innerHTML = generateListHTML(scores.slice(0, 3), true);
+  container.innerHTML = generateListHTML(scores, true);
   
+  // Tambahkan event listener agar nama karyawan di leaderboard utama juga bisa diklik
+  container.querySelectorAll('.leaderboard-item').forEach(item => {
+    item.addEventListener('click', () => showLeaderboardDetail(item.dataset.emp));
+  });
   const adminContainer = $('admin-leaderboard-list');
   if (adminContainer) {
     adminContainer.innerHTML = generateListHTML(scores, false);
