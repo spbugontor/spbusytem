@@ -1322,6 +1322,9 @@ input, select, textarea { font-family: inherit; }
     flex-direction: column;
     gap: 4px;
   }
+  #btn-help-admin-mobile {
+    display: flex;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1440,3 +1443,7 @@ input, select, textarea { font-family: inherit; }
 .password-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
 .password-wrapper input { padding-right: 2.5rem; width: 100%; }
 .password-toggle { position: absolute; right: 0.5rem; background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1rem; padding: 0.2rem; display:flex; align-items:center; justify-content:center; }
+
+#btn-help-admin-mobile {
+  display: none;
+}
