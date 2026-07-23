@@ -387,6 +387,50 @@ function setupEventListeners() {
     });
   });
 
+  // Swipe Gestures for Admin Sections (Mobile)
+  let touchStartX = 0;
+  let touchStartY = 0;
+  const adminMain = document.querySelector('.admin-main');
+  const sections = ['dashboard', 'kelola', 'pengaturan', 'password'];
+
+  if (adminMain) {
+    adminMain.addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    adminMain.addEventListener('touchend', e => {
+      const targetTag = e.target.tagName.toLowerCase();
+      if (['input', 'textarea', 'select', 'button', 'a'].includes(targetTag) || e.target.closest('input, textarea, select, button, a')) {
+        return;
+      }
+      
+      const touchEndX = e.changedTouches[0].screenX;
+      const touchEndY = e.changedTouches[0].screenY;
+      const diffX = touchEndX - touchStartX;
+      const diffY = touchEndY - touchStartY;
+      
+      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) {
+        const activeNav = document.querySelector('.nav-item.active');
+        if (!activeNav) return;
+        
+        const currentSection = activeNav.dataset.section;
+        const currentIndex = sections.indexOf(currentSection);
+        if (currentIndex === -1) return;
+        
+        if (diffX < 0) {
+          if (currentIndex < sections.length - 1) {
+            switchAdminSection(sections[currentIndex + 1]);
+          }
+        } else {
+          if (currentIndex > 0) {
+            switchAdminSection(sections[currentIndex - 1]);
+          }
+        }
+      }
+    }, { passive: true });
+  }
+
   // Export PDF
   on('btn-export-pdf', 'click', handleExportPDF);
 
