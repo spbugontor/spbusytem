@@ -48,6 +48,7 @@ function getTodayString() {
 document.addEventListener('DOMContentLoaded', init);
 
 function init() {
+  initTheme();
   setupEventListeners();
 
   // Pastikan sesi tersimpan di browser meski tab ditutup
@@ -280,9 +281,11 @@ function renderAdminList() {
   const search = (document.getElementById('admin-search') || {}).value || '';
   const query = search.toLowerCase();
 
-  // Admin bisa melihat semua pesanan, tapi kita fokuskan ke hari ini dulu untuk kemudahan.
-  // Jika ingin menampilkan semua riwayat, ganti `getTodayOrders()` menjadi `orders`.
-  const filtered = getTodayOrders().filter(o => (o.nama || '').toLowerCase().includes(query));
+  const filtered = getTodayOrders().filter(o => 
+    (o.nama || '').toLowerCase().includes(query) ||
+    (o.kk || '').includes(query) ||
+    (o.nik || '').includes(query)
+  );
 
   if (filtered.length === 0) {
     container.innerHTML =
@@ -384,8 +387,12 @@ function setupEventListeners() {
     });
   });
 
-  // Export CSV
-  on('btn-export-csv', 'click', handleExportCSV);
+  // Export PDF
+  on('btn-export-pdf', 'click', handleExportPDF);
+
+  // Theme Toggles
+  on('btn-theme-toggle-user', 'click', toggleTheme);
+  on('btn-theme-toggle-admin', 'click', toggleTheme);
 
   // Auto capitalize
   on('inp-nama', 'input', function () {
@@ -623,42 +630,212 @@ async function handleChangePassword(e) {
 }
 
 // ─────────────────────────────────────────────
-// EXPORT CSV FEATURE (ADVANCED)
+// EXPORT PDF FEATURE (ADVANCED)
 // ─────────────────────────────────────────────
-function handleExportCSV() {
+function handleExportPDF() {
   const todayOrders = getTodayOrders();
   if (todayOrders.length === 0) {
-    toast('Tidak ada data untuk diexport', 'error');
+    toast('Tidak ada data untuk dicetak', 'error');
     return;
   }
 
-  let csvContent = "data:text/csv;charset=utf-8,";
-  // Header
-  csvContent += "ID,Nama Lengkap,No KK,NIK,Jumlah Tabung,Status Pembayaran,Tanggal,Waktu\n";
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) {
+    toast('Gagal membuka jendela cetak. Pastikan pop-up diperbolehkan.', 'error');
+    return;
+  }
 
-  // Data rows
-  todayOrders.forEach(function (o) {
-    // Sanitasi koma agar tidak merusak CSV
-    const nama = `"${(o.nama || '').replace(/"/g, '""')}"`;
-    const kk = `"${o.kk}"`;
-    const nik = `"${o.nik}"`;
+  let tableRows = todayOrders.map((o, idx) => {
     const status = o.sudah_bayar ? "Lunas" : "Belum Bayar";
+    const statusClass = o.sudah_bayar ? "status-paid" : "status-unpaid";
+    return `
+      <tr>
+        <td style="text-align: center;">${idx + 1}</td>
+        <td>${esc(o.nama)}</td>
+        <td style="text-align: center; font-family: monospace;">${esc(o.kk)}</td>
+        <td style="text-align: center; font-family: monospace;">${esc(o.nik)}</td>
+        <td style="text-align: center;"><span class="badge ${statusClass}">${status}</span></td>
+        <td style="text-align: center;"><div class="check-box"></div></td>
+      </tr>
+    `;
+  }).join('');
 
-    const row = `${o.id},${nama},${kk},${nik},${o.jumlah},${status},${o.tanggal},${o.waktu}`;
-    csvContent += row + "\n";
-  });
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="id">
+    <head>
+      <meta charset="UTF-8">
+      <title>Rekap Pemesanan LPG 3 KG - ${getTodayString()}</title>
+      <style>
+        body {
+          font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+          color: #1C1917;
+          margin: 30px;
+          line-height: 1.4;
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 25px;
+          border-bottom: 3px double #0D9488;
+          padding-bottom: 15px;
+        }
+        .header h1 {
+          margin: 0;
+          font-size: 22px;
+          color: #0D9488;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .header p {
+          margin: 6px 0 0;
+          color: #57534E;
+          font-size: 13px;
+          font-weight: 500;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 20px;
+        }
+        th, td {
+          border: 1px solid #D1D5DB;
+          padding: 8px 10px;
+          font-size: 12px;
+          text-align: left;
+        }
+        th {
+          background-color: #F3F4F6;
+          color: #1F2937;
+          font-weight: 700;
+          text-transform: uppercase;
+          font-size: 11px;
+          letter-spacing: 0.3px;
+        }
+        tr:nth-child(even) {
+          background-color: #F9FAFB;
+        }
+        .badge {
+          display: inline-block;
+          padding: 3px 8px;
+          border-radius: 9999px;
+          font-size: 10px;
+          font-weight: 700;
+        }
+        .status-paid {
+          background-color: #DEF7EC;
+          color: #03543F;
+          border: 1px solid #86EFAC;
+        }
+        .status-unpaid {
+          background-color: #FDE8E8;
+          color: #9B1C1C;
+          border: 1px solid #FCA5A5;
+        }
+        .check-box {
+          display: inline-block;
+          width: 16px;
+          height: 16px;
+          border: 1.5px solid #4B5563;
+          border-radius: 4px;
+          margin: 0 auto;
+        }
+        .footer {
+          margin-top: 40px;
+          text-align: right;
+          font-size: 11px;
+          color: #6B7280;
+          border-top: 1px solid #E5E7EB;
+          padding-top: 10px;
+        }
+        @media print {
+          body { margin: 10px; }
+          tr { page-break-inside: avoid; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>Rekap Pemesanan LPG 3 KG</h1>
+        <p>Tanggal Laporan: ${getTodayString()} | Total Pemesan Hari Ini: ${todayOrders.length} Orang</p>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 40px; text-align: center;">No</th>
+            <th>Nama Pemesan</th>
+            <th style="width: 140px; text-align: center;">Nomor KK</th>
+            <th style="width: 140px; text-align: center;">NIK KTP</th>
+            <th style="width: 110px; text-align: center;">Status Bayar</th>
+            <th style="width: 70px; text-align: center;">Ceklis</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRows}
+        </tbody>
+      </table>
+      <div class="footer">
+        Dicetak melalui Sistem Agen LPG 3 KG pada ${new Date().toLocaleString('id-ID')}
+      </div>
+      <script>
+        window.onload = function() {
+          window.print();
+          setTimeout(function() { window.close(); }, 500);
+        };
+      </script>
+    </body>
+    </html>
+  `;
 
-  // Download logic
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", `Rekap_Pesanan_LPG_${getTodayString()}.csv`);
-  document.body.appendChild(link); // Required for FF
+  printWindow.document.write(htmlContent);
+  printWindow.document.close();
+}
 
-  link.click();
-  document.body.removeChild(link);
+// ─────────────────────────────────────────────
+// THEME MANAGEMENT
+// ─────────────────────────────────────────────
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme');
+  const isDark = savedTheme === 'dark';
+  if (isDark) {
+    document.body.classList.add('dark-theme');
+  } else {
+    document.body.classList.remove('dark-theme');
+  }
+  updateThemeToggleIcons(isDark);
+}
 
-  toast('Download CSV berhasil dimulai', 'success');
+function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark-theme');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  updateThemeToggleIcons(isDark);
+  toast(`Tema ${isDark ? 'Gelap' : 'Terang'} aktif`, 'info');
+}
+
+function updateThemeToggleIcons(isDark) {
+  const sunIcon = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  `;
+  const moonIcon = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  `;
+
+  const userBtn = document.getElementById('btn-theme-toggle-user');
+  const adminBtn = document.getElementById('btn-theme-toggle-admin');
+
+  if (userBtn) userBtn.innerHTML = isDark ? sunIcon : moonIcon;
+  if (adminBtn) adminBtn.innerHTML = isDark ? sunIcon : moonIcon;
 }
 
 // ─────────────────────────────────────────────

@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function esc(s) { if (!s) return ''; return String(s).replace(/[&<>"']/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[t])); }
 function fmt(n) { return 'Rp ' + (parseInt(n) || 0).toLocaleString('id-ID'); }
 function fmtDate(d) { if (!d) return '-'; try { return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }); } catch { return d; } }
-function fmtMonthYear(d) { if (!d) return '-'; try { const [y,m] = d.split('-'); const date = new Date(y, parseInt(m)-1, 1); return date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }); } catch { return d; } }
+function fmtMonthYear(d) { if (!d) return '-'; try { const [y, m] = d.split('-'); const date = new Date(y, parseInt(m) - 1, 1); return date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }); } catch { return d; } }
 function today() { return new Date().toISOString().split('T')[0]; }
 
 function getUsers() { return Object.entries(allData.users).map(([k, v]) => ({ ...v, _key: k })); }
@@ -142,11 +142,11 @@ function init() {
   nodes.forEach(node => {
     onValue(ref(db, node), snap => {
       allData[node] = snap.exists() ? snap.val() : {};
-      
+
       if (node === 'settings') {
         applyTheme(allData.settings.theme || 'orange');
       }
-      
+
       if (node === 'users') {
         const empSelect = document.getElementById('inp-emp-username');
         if (empSelect) {
@@ -155,7 +155,7 @@ function init() {
           if (usersList.length === 0) {
             empSelect.innerHTML = '<option value="">-- Belum ada karyawan --</option>';
           } else {
-            empSelect.innerHTML = '<option value="">-- Pilih Nama Anda --</option>' + 
+            empSelect.innerHTML = '<option value="">-- Pilih Nama Anda --</option>' +
               usersList.map(u => `<option value="${esc(u.username)}">${esc(u.name)} (${esc(u.position)})</option>`).join('');
           }
           if (currentVal) empSelect.value = currentVal;
@@ -334,18 +334,18 @@ function setupNavigation() {
           <button onclick="window._toggleMoreMenu()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted)">✕</button>
         </div>
         <div style="padding:0.75rem">${mobileMore.map(m => {
-          if (m.href) {
-            return `<a href="${m.href}" class="more-menu-item">
+      if (m.href) {
+        return `<a href="${m.href}" class="more-menu-item">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg>
             <span>${m.label}</span>
           </a>`;
-          } else {
-            return `<a class="more-menu-item" data-target="${m.id}" onclick="window._toggleMoreMenu()">
+      } else {
+        return `<a class="more-menu-item" data-target="${m.id}" onclick="window._toggleMoreMenu()">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg>
             <span>${m.label}</span>
           </a>`;
-          }
-        }).join('')}</div>
+      }
+    }).join('')}</div>
       </div>`;
     document.body.appendChild(popup);
   }
@@ -443,11 +443,11 @@ function renderEmployees() {
     </div>
     <div id="emp-form-area"></div>
     ${users.length === 0 ? '<div class="card" style="text-align:center;padding:3rem"><p class="text-muted">Belum ada karyawan. Klik Tambah.</p></div>' :
-    users.map(e => {
-      const avatarHtml = e.profile_picture 
-        ? `<img src="${e.profile_picture}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">` 
-        : `<div style="width:44px;height:44px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem">${(e.name || '?')[0]}</div>`;
-      return `<div class="card" style="margin-bottom:0.75rem">
+      users.map(e => {
+        const avatarHtml = e.profile_picture
+          ? `<img src="${e.profile_picture}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">`
+          : `<div style="width:44px;height:44px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem">${(e.name || '?')[0]}</div>`;
+        return `<div class="card" style="margin-bottom:0.75rem">
       <div style="display:flex;align-items:center;gap:1rem">
         ${avatarHtml}
         <div style="flex:1;min-width:0"><strong>${esc(e.name)}</strong><br><span class="text-xs text-muted">${esc(e.position)} • ${esc(e.emp_id)} • ${esc(e.username)}</span></div>
@@ -458,7 +458,7 @@ function renderEmployees() {
         </div>
       </div>
     </div>`;
-    }).join('')}
+      }).join('')}
   </div>`;
 }
 
@@ -470,16 +470,16 @@ function renderDebits() {
   return `<div class="fade-in">
     <h3 class="text-xl font-bold mb-4">Tunggakan Karyawan</h3>
     ${users.length === 0 ? '<div class="card"><p class="text-muted">Tambahkan karyawan dahulu.</p></div>' :
-    users.map(e => {
-      const bal = calcBalance(e.emp_id);
-      const txns = getTxns(e.emp_id);
-      return `<div class="card" style="margin-bottom:0.75rem">
+      users.map(e => {
+        const bal = calcBalance(e.emp_id);
+        const txns = getTxns(e.emp_id);
+        return `<div class="card" style="margin-bottom:0.75rem">
         <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="document.getElementById('txn-${e.emp_id}').classList.toggle('hidden')">
           <div style="display:flex;align-items:center;gap:0.75rem">
-            <div style="width:40px;height:40px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:800">${(e.name||'?')[0]}</div>
+            <div style="width:40px;height:40px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:800">${(e.name || '?')[0]}</div>
             <div><strong>${esc(e.name)}</strong><br><span class="text-xs text-muted">${esc(e.position)}</span></div>
           </div>
-          <div style="text-align:right"><strong style="color:${bal>0?'var(--danger)':bal<0?'var(--success)':'var(--text-muted)'}">${fmt(bal)}</strong><br><span class="text-xs text-muted">${txns.length} transaksi</span></div>
+          <div style="text-align:right"><strong style="color:${bal > 0 ? 'var(--danger)' : bal < 0 ? 'var(--success)' : 'var(--text-muted)'}">${fmt(bal)}</strong><br><span class="text-xs text-muted">${txns.length} transaksi</span></div>
         </div>
         <div id="txn-${e.emp_id}" class="hidden" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1rem">
           <div style="display:flex;gap:0.5rem;margin-bottom:1rem">
@@ -488,13 +488,13 @@ function renderDebits() {
           </div>
           <div id="txn-form-${e.emp_id}"></div>
           ${txns.length === 0 ? '<p class="text-xs text-muted" style="text-align:center">Belum ada transaksi.</p>' :
-          txns.map(t => `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0.75rem;background:var(--bg-color);border-radius:var(--radius-md);margin-bottom:0.25rem;font-size:0.8rem">
-            <div><strong style="color:${t.type==='debit'?'var(--danger)':'var(--success)'}">${t.type==='debit'?'+':'-'}${fmt(t.amount)}</strong> <span class="text-muted">${esc(t.note||'')}</span></div>
+            txns.map(t => `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0.75rem;background:var(--bg-color);border-radius:var(--radius-md);margin-bottom:0.25rem;font-size:0.8rem">
+            <div><strong style="color:${t.type === 'debit' ? 'var(--danger)' : 'var(--success)'}">${t.type === 'debit' ? '+' : '-'}${fmt(t.amount)}</strong> <span class="text-muted">${esc(t.note || '')}</span></div>
             <div style="display:flex;align-items:center;gap:0.5rem"><span class="text-muted">${fmtDate(t.date)}</span><button style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:0.7rem" onclick="window._deleteTxn('${t._key}')">✕</button></div>
           </div>`).join('')}
         </div>
       </div>`;
-    }).join('')}
+      }).join('')}
   </div>`;
 }
 
@@ -506,22 +506,22 @@ function renderMgmtLeaves() {
   return `<div class="fade-in">
     <h3 class="text-xl font-bold mb-4">Pengajuan Izin/Cuti</h3>
     ${leaves.length === 0 ? '<div class="card"><p class="text-muted">Belum ada pengajuan.</p></div>' :
-    leaves.map(l => {
-      const emp = getUserByEmpId(l.emp_id);
-      const sc = l.status === 'Disetujui' ? 'badge-success' : l.status === 'Ditolak' ? 'badge-danger' : 'badge-warning';
-      return `<div class="card" style="margin-bottom:0.75rem;border-left:4px solid ${l.status==='Disetujui'?'var(--success)':l.status==='Ditolak'?'var(--danger)':'var(--warning)'}">
+      leaves.map(l => {
+        const emp = getUserByEmpId(l.emp_id);
+        const sc = l.status === 'Disetujui' ? 'badge-success' : l.status === 'Ditolak' ? 'badge-danger' : 'badge-warning';
+        return `<div class="card" style="margin-bottom:0.75rem;border-left:4px solid ${l.status === 'Disetujui' ? 'var(--success)' : l.status === 'Ditolak' ? 'var(--danger)' : 'var(--warning)'}">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap">
           <div style="flex:1;min-width:200px">
-            <strong>${esc(emp?emp.name:l.emp_id)}</strong><br>
+            <strong>${esc(emp ? emp.name : l.emp_id)}</strong><br>
             <span class="text-xs text-muted">${esc(l.leave_type)} • ${fmtDate(l.start_date)} - ${fmtDate(l.end_date)}</span><br>
-            <span class="text-xs text-muted">${esc(l.reason||'-')}</span>
+            <span class="text-xs text-muted">${esc(l.reason || '-')}</span>
             ${l.feedback ? `<br><span class="text-xs mt-1" style="display:inline-block;padding:0.25rem 0.5rem;background:var(--bg-color);border-radius:var(--radius-sm);color:var(--primary);font-weight:600">Catatan: ${esc(l.feedback)}</span>` : ''}
           </div>
           <div style="display:flex;flex-direction:column;gap:0.5rem;align-items:flex-end">
             <select onchange="window._updateLeaveStatus('${l._key}',this.value)" class="form-input form-select" style="padding:0.4rem 2rem 0.4rem 0.6rem;font-size:0.75rem;font-weight:700;width:auto">
-              <option value="Menunggu" ${l.status==='Menunggu'?'selected':''}>Menunggu</option>
-              <option value="Disetujui" ${l.status==='Disetujui'?'selected':''}>Disetujui</option>
-              <option value="Ditolak" ${l.status==='Ditolak'?'selected':''}>Ditolak</option>
+              <option value="Menunggu" ${l.status === 'Menunggu' ? 'selected' : ''}>Menunggu</option>
+              <option value="Disetujui" ${l.status === 'Disetujui' ? 'selected' : ''}>Disetujui</option>
+              <option value="Ditolak" ${l.status === 'Ditolak' ? 'selected' : ''}>Ditolak</option>
             </select>
             <div style="display:flex;gap:0.5rem">
               <button class="btn btn-secondary" style="padding:0.3rem 0.6rem;font-size:0.7rem" onclick="window._addLeaveNote('${l._key}')">Catatan</button>
@@ -530,7 +530,7 @@ function renderMgmtLeaves() {
           </div>
         </div>
       </div>`;
-    }).join('')}
+      }).join('')}
   </div>`;
 }
 
@@ -546,7 +546,7 @@ function renderLeaveTypes() {
     </div>
     <div id="lt-form-area"></div>
     ${types.length === 0 ? '<div class="card"><p class="text-muted">Belum ada jenis cuti.</p></div>' :
-    types.map(t => `<div class="card" style="margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center">
+      types.map(t => `<div class="card" style="margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center">
       <div><strong>${esc(t.name)}</strong><br><span class="text-xs text-muted">Jatah: ${t.quota || '-'} hari/tahun • Berlaku: ${esc(t.gender || 'Semua')}</span></div>
       <div style="display:flex;gap:0.5rem">
         <button class="btn btn-secondary" style="padding:0.4rem 0.6rem;font-size:0.7rem" onclick="window._showLeaveTypeForm('${t._key}')">Edit</button>
@@ -564,12 +564,12 @@ function renderViolations() {
   return `<div class="fade-in">
     <h3 class="text-xl font-bold mb-4">Kartu Pelanggaran</h3>
     ${users.length === 0 ? '<div class="card"><p class="text-muted">Tambahkan karyawan dahulu.</p></div>' :
-    users.map(e => {
-      const vios = getViolations(e.emp_id);
-      return `<div class="card" style="margin-bottom:0.75rem">
+      users.map(e => {
+        const vios = getViolations(e.emp_id);
+        return `<div class="card" style="margin-bottom:0.75rem">
         <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="document.getElementById('vio-${e.emp_id}').classList.toggle('hidden')">
           <div style="display:flex;align-items:center;gap:0.75rem">
-            <div style="width:40px;height:40px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:800">${(e.name||'?')[0]}</div>
+            <div style="width:40px;height:40px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:800">${(e.name || '?')[0]}</div>
             <div><strong>${esc(e.name)}</strong><br><span class="text-xs text-muted">${esc(e.position)}</span></div>
           </div>
           <div style="text-align:right"><strong style="color:var(--danger)">${vios.length}</strong><br><span class="text-xs text-muted">pelanggaran</span></div>
@@ -577,18 +577,18 @@ function renderViolations() {
         <div id="vio-${e.emp_id}" class="hidden" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1rem">
           <button class="btn btn-danger" style="width:100%;margin-bottom:1rem;padding:0.5rem;font-size:0.75rem" onclick="window._showVioForm('${e.emp_id}')">+ Tambah Pelanggaran</button>
           <div id="vio-form-${e.emp_id}"></div>
-          ${vios.length===0?'<p class="text-xs text-muted" style="text-align:center">Bersih 👍</p>':
-          vios.map(v => {
-            const lc = v.level==='SP3'?'var(--danger)':v.level==='SP2'?'var(--warning)':v.level==='SP1'?'#EAB308':'var(--info)';
-            return `<div style="border-left:4px solid ${lc};padding:0.75rem;background:var(--bg-color);border-radius:var(--radius-md);margin-bottom:0.5rem">
+          ${vios.length === 0 ? '<p class="text-xs text-muted" style="text-align:center">Bersih 👍</p>' :
+            vios.map(v => {
+              const lc = v.level === 'SP3' ? 'var(--danger)' : v.level === 'SP2' ? 'var(--warning)' : v.level === 'SP1' ? '#EAB308' : 'var(--info)';
+              return `<div style="border-left:4px solid ${lc};padding:0.75rem;background:var(--bg-color);border-radius:var(--radius-md);margin-bottom:0.5rem">
               <div style="display:flex;justify-content:space-between"><strong class="text-xs" style="color:${lc}">${esc(v.level)}</strong><button style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:0.7rem" onclick="window._deleteVio('${v._key}')">✕</button></div>
               <p class="text-xs">${esc(v.violation_type)}: ${esc(v.description)}</p>
               <span class="text-xs text-muted">${fmtDate(v.date)}</span>
             </div>`;
-          }).join('')}
+            }).join('')}
         </div>
       </div>`;
-    }).join('')}
+      }).join('')}
   </div>`;
 }
 
@@ -603,14 +603,14 @@ function renderSavings() {
       <button class="btn btn-primary" onclick="window._showMassSavingForm()">+ Input Massal</button>
     </div>
     <div id="mass-sav-form-area"></div>
-    ${users.length===0?'<div class="card"><p class="text-muted">Tambahkan karyawan dahulu.</p></div>':
-    users.map(e => {
-      const svs = getSavings(e.emp_id);
-      const total = svs.reduce((s, x) => s + (x.amount || 0), 0);
-      return `<div class="card" style="margin-bottom:0.75rem">
+    ${users.length === 0 ? '<div class="card"><p class="text-muted">Tambahkan karyawan dahulu.</p></div>' :
+      users.map(e => {
+        const svs = getSavings(e.emp_id);
+        const total = svs.reduce((s, x) => s + (x.amount || 0), 0);
+        return `<div class="card" style="margin-bottom:0.75rem">
         <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="document.getElementById('sav-${e.emp_id}').classList.toggle('hidden')">
           <div style="display:flex;align-items:center;gap:0.75rem">
-            <div style="width:40px;height:40px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:800">${(e.name||'?')[0]}</div>
+            <div style="width:40px;height:40px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:800">${(e.name || '?')[0]}</div>
             <div><strong>${esc(e.name)}</strong><br><span class="text-xs text-muted">${esc(e.position)}</span></div>
           </div>
           <div style="text-align:right"><strong style="color:var(--success)">${fmt(total)}</strong><br><span class="text-xs text-muted">${svs.length} entri</span></div>
@@ -618,14 +618,14 @@ function renderSavings() {
         <div id="sav-${e.emp_id}" class="hidden" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1rem">
           <button class="btn btn-primary" style="width:100%;margin-bottom:1rem;padding:0.5rem;font-size:0.75rem;background:var(--success)" onclick="window._showSavingForm('${e.emp_id}')">+ Tambah Tabungan</button>
           <div id="sav-form-${e.emp_id}"></div>
-          ${svs.length===0?'<p class="text-xs text-muted" style="text-align:center">Belum ada tabungan.</p>':
-          svs.map(s => `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0.75rem;background:var(--bg-color);border-radius:var(--radius-md);margin-bottom:0.25rem;font-size:0.8rem">
-            <div><strong style="color:var(--success)">${fmt(s.amount)}</strong> <span class="text-muted">${esc(s.month||'')}</span></div>
+          ${svs.length === 0 ? '<p class="text-xs text-muted" style="text-align:center">Belum ada tabungan.</p>' :
+            svs.map(s => `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0.75rem;background:var(--bg-color);border-radius:var(--radius-md);margin-bottom:0.25rem;font-size:0.8rem">
+            <div><strong style="color:var(--success)">${fmt(s.amount)}</strong> <span class="text-muted">${esc(s.month || '')}</span></div>
             <div style="display:flex;align-items:center;gap:0.5rem"><span class="text-muted">${fmtDate(s.date)}</span><button style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:0.7rem" onclick="window._deleteSaving('${s._key}')">✕</button></div>
           </div>`).join('')}
         </div>
       </div>`;
-    }).join('')}
+      }).join('')}
   </div>`;
 }
 
@@ -643,14 +643,14 @@ function renderRatings() {
         <button class="btn btn-primary" onclick="window._showRatingForm()">+ Tambah Penilaian</button>
       </div>
     </div>
-    ${ratings.length===0?'<div class="card"><p class="text-muted">Belum ada penilaian.</p></div>':
-    ratings.map(r => {
-      const emp = getUserByEmpId(r.emp_id);
-      const avg = r.scores ? (Object.values(r.scores).reduce((s,v)=>s+v,0)/Object.values(r.scores).length).toFixed(1) : '0';
-      const color = avg >= 4.5 ? 'var(--success)' : avg >= 3.5 ? 'var(--info)' : avg >= 2.5 ? 'var(--warning)' : 'var(--danger)';
-      return `<div class="card" style="margin-bottom:0.75rem">
+    ${ratings.length === 0 ? '<div class="card"><p class="text-muted">Belum ada penilaian.</p></div>' :
+      ratings.map(r => {
+        const emp = getUserByEmpId(r.emp_id);
+        const avg = r.scores ? (Object.values(r.scores).reduce((s, v) => s + v, 0) / Object.values(r.scores).length).toFixed(1) : '0';
+        const color = avg >= 4.5 ? 'var(--success)' : avg >= 3.5 ? 'var(--info)' : avg >= 2.5 ? 'var(--warning)' : 'var(--danger)';
+        return `<div class="card" style="margin-bottom:0.75rem">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <div><strong>${esc(emp?emp.name:r.emp_id)}</strong><br><span class="text-xs text-muted">Periode: ${fmtMonthYear(r.date)}</span></div>
+          <div><strong>${esc(emp ? emp.name : r.emp_id)}</strong><br><span class="text-xs text-muted">Periode: ${fmtMonthYear(r.date)}</span></div>
           <div style="text-align:right"><span style="font-size:1.5rem;font-weight:800;color:${color}">${avg}</span><span class="text-xs text-muted">/5</span><br>
           <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.25rem;flex-wrap:wrap;">
             <button class="btn btn-outline-primary" style="padding:0.2rem 0.5rem;font-size:0.65rem;" onclick="window._downloadSingleRatingPDF('${r._key}')">Unduh PDF</button>
@@ -661,7 +661,7 @@ function renderRatings() {
         </div>
         ${r.note ? `<p class="text-xs text-muted mt-2" style="border-top:1px solid var(--border);padding-top:0.5rem">"${esc(r.note)}"</p>` : ''}
       </div>`;
-    }).join('')}
+      }).join('')}
   </div>`;
 }
 
@@ -670,7 +670,7 @@ function renderRatings() {
 // ==========================================
 function renderCriteriaPage() {
   const criteria = getCriteria();
-  
+
   // Group by indicator
   const grouped = {};
   criteria.forEach(c => {
@@ -685,12 +685,12 @@ function renderCriteriaPage() {
       <button class="btn btn-primary" onclick="window._showCriteriaForm()">+ Tambah</button>
     </div>
     <div id="crit-form-area"></div>
-    ${criteria.length===0?'<div class="card"><p class="text-muted">Belum ada kriteria.</p></div>':
-    Object.keys(grouped).map(ind => `
+    ${criteria.length === 0 ? '<div class="card"><p class="text-muted">Belum ada kriteria.</p></div>' :
+      Object.keys(grouped).map(ind => `
       <div style="margin-bottom:1.5rem">
         <h4 style="font-weight:700;margin-bottom:0.75rem;padding-bottom:0.25rem;border-bottom:2px solid var(--border)">Indikator: ${esc(ind)}</h4>
         ${grouped[ind].map(c => `<div class="card" style="margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center">
-          <div><strong>${esc(c.name)}</strong><br><span class="text-xs text-muted">Berlaku: ${esc(c.position||'Semua')}</span></div>
+          <div><strong>${esc(c.name)}</strong><br><span class="text-xs text-muted">Berlaku: ${esc(c.position || 'Semua')}</span></div>
           <div style="display:flex;gap:0.5rem">
             <button class="btn btn-secondary" style="padding:0.4rem 0.6rem;font-size:0.7rem" onclick="window._showCriteriaForm('${c._key}')">Edit</button>
             <button class="btn btn-outline-danger" style="padding:0.4rem 0.6rem;font-size:0.7rem" onclick="window._deleteCriteria('${c._key}')">Hapus</button>
@@ -708,13 +708,13 @@ function renderLeaderboard() {
   const monthVal = window._leaderboardMonth || '';
   const users = getUsers();
   let allRatings = getRatings();
-  
+
   if (monthVal) {
     allRatings = allRatings.filter(r => (r.date || '').startsWith(monthVal));
   }
 
   if (users.length === 0) return '<div class="fade-in"><div class="card"><p class="text-muted">Tambahkan karyawan terlebih dahulu.</p></div></div>';
-  
+
   const scores = users.map(u => {
     const r = allRatings.filter(x => x.emp_id === u.emp_id);
     let avg = 0;
@@ -723,7 +723,7 @@ function renderLeaderboard() {
       r.forEach(rt => {
         if (rt.scores) {
           const vals = Object.values(rt.scores);
-          totalScores += vals.reduce((a,b)=>a+b,0);
+          totalScores += vals.reduce((a, b) => a + b, 0);
           totalCount += vals.length;
         }
       });
@@ -731,7 +731,7 @@ function renderLeaderboard() {
     }
     return { ...u, avg: parseFloat(avg.toFixed(2)), evalCount: r.length };
   }).filter(u => u.evalCount > 0 || !monthVal) // Hide employees with 0 evals in specific month, but show all if no filter
-    .sort((a,b) => b.avg - a.avg);
+    .sort((a, b) => b.avg - a.avg);
 
   return `<div class="fade-in">
     <div style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
@@ -739,10 +739,10 @@ function renderLeaderboard() {
       <input type="month" class="input-field" style="width: auto; padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--border);" value="${monthVal}" onchange="window._filterLeaderboard(this.value)">
     </div>
     ${scores.length === 0 ? '<div class="card"><p class="text-muted">Belum ada data penilaian pada periode ini.</p></div>' :
-    scores.map((s, idx) => {
-      const color = s.avg >= 4.5 ? 'var(--success)' : s.avg >= 3.5 ? 'var(--info)' : s.avg >= 2.5 ? 'var(--warning)' : 'var(--danger)';
-      const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : (idx + 1) + '.';
-      return `<div class="card" style="margin-bottom:0.75rem;display:flex;align-items:center;justify-content:space-between">
+      scores.map((s, idx) => {
+        const color = s.avg >= 4.5 ? 'var(--success)' : s.avg >= 3.5 ? 'var(--info)' : s.avg >= 2.5 ? 'var(--warning)' : 'var(--danger)';
+        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : (idx + 1) + '.';
+        return `<div class="card" style="margin-bottom:0.75rem;display:flex;align-items:center;justify-content:space-between">
         <div style="display:flex;align-items:center;gap:1rem">
           <div style="font-size:1.5rem;font-weight:800;width:40px;text-align:center">${medal}</div>
           <div><strong style="font-size:1.1rem">${esc(s.name)}</strong><br><span class="text-xs text-muted">${esc(s.position)} • ${s.evalCount} evaluasi</span></div>
@@ -751,7 +751,7 @@ function renderLeaderboard() {
           <span style="font-size:1.8rem;font-weight:800;color:${color}">${s.avg}</span><span class="text-xs text-muted">/5</span>
         </div>
       </div>`;
-    }).join('')}
+      }).join('')}
   </div>`;
 }
 
@@ -809,14 +809,14 @@ function renderSettings() {
       
       <div class="theme-grid">
         ${Object.keys(THEME_PALETTES).map(k => {
-          const t = THEME_PALETTES[k];
-          const active = (s.theme || 'orange') === k ? 'active' : '';
-          return `
+    const t = THEME_PALETTES[k];
+    const active = (s.theme || 'orange') === k ? 'active' : '';
+    return `
           <div class="theme-card ${active}" onclick="window._setTheme('${k}')" style="border-color: ${active ? t.primary : 'var(--border)'}">
             <div class="theme-color-preview" style="background: ${t.primary}"></div>
             <div class="theme-name" style="text-transform: capitalize; font-weight: 600; text-align: center; margin-top: 0.5rem; font-size: 0.85rem;">${k}</div>
           </div>`;
-        }).join('')}
+  }).join('')}
       </div>
     </div>
 
@@ -842,7 +842,7 @@ function renderEmpDashboard() {
   const pendingLeaves = getLeaves(emp.emp_id).filter(l => l.status === 'Menunggu').length;
   return `<div class="fade-in">
     <div class="dashboard-grid">
-      <div class="stat-card"><div class="stat-title">Tunggakan Saya</div><div class="stat-value" style="color:${bal>0?'var(--danger)':'var(--success)'}">${fmt(bal)}</div></div>
+      <div class="stat-card"><div class="stat-title">Tunggakan Saya</div><div class="stat-value" style="color:${bal > 0 ? 'var(--danger)' : 'var(--success)'}">${fmt(bal)}</div></div>
       <div class="stat-card"><div class="stat-title">Tabungan Saya</div><div class="stat-value" style="color:var(--success)">${fmt(savTotal)}</div></div>
       <div class="stat-card"><div class="stat-title">Izin Pending</div><div class="stat-value" style="color:var(--warning)">${pendingLeaves}</div></div>
     </div>
@@ -866,7 +866,7 @@ function renderEmpHistory() {
 
   // Parse and sort history by date descending
   let history = [];
-  
+
   absensiRecords.forEach(r => {
     history.push({
       type: 'absensi',
@@ -919,14 +919,14 @@ function renderEmpHistory() {
     </div>
     
     <div class="card">
-      ${history.length === 0 ? '<p class="text-muted text-center" style="padding: 2rem 0;">Belum ada riwayat tercatat.</p>' : 
+      ${history.length === 0 ? '<p class="text-muted text-center" style="padding: 2rem 0;">Belum ada riwayat tercatat.</p>' :
       history.map(h => {
-        const icon = h.type === 'absensi' 
+        const icon = h.type === 'absensi'
           ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>'
           : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
-        
+
         const statusColor = h.isWarning ? 'color: var(--danger);' : 'color: var(--success);';
-        
+
         return `
         <div style="display:flex;align-items:center;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--border);">
           <div style="background:var(--bg);padding:0.75rem;border-radius:50%;">${icon}</div>
@@ -950,11 +950,11 @@ function renderEmpDebits() {
   const bal = calcBalance(emp.emp_id);
   const txns = getTxns(emp.emp_id);
   return `<div class="fade-in">
-    <div class="card mb-4" style="text-align:center"><p class="form-label">Saldo Tunggakan</p><p style="font-size:2rem;font-weight:800;color:${bal>0?'var(--danger)':'var(--success)'}">${fmt(bal)}</p></div>
+    <div class="card mb-4" style="text-align:center"><p class="form-label">Saldo Tunggakan</p><p style="font-size:2rem;font-weight:800;color:${bal > 0 ? 'var(--danger)' : 'var(--success)'}">${fmt(bal)}</p></div>
     <div class="card"><h3 class="card-title mb-4">Riwayat Transaksi</h3>
-    ${txns.length===0?'<p class="text-muted text-sm">Belum ada transaksi.</p>':
-    txns.map(t => `<div style="display:flex;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid var(--border);font-size:0.85rem">
-      <div><strong style="color:${t.type==='debit'?'var(--danger)':'var(--success)'}">${t.type==='debit'?'+':'-'}${fmt(t.amount)}</strong> <span class="text-muted">${esc(t.note||'')}</span></div>
+    ${txns.length === 0 ? '<p class="text-muted text-sm">Belum ada transaksi.</p>' :
+      txns.map(t => `<div style="display:flex;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid var(--border);font-size:0.85rem">
+      <div><strong style="color:${t.type === 'debit' ? 'var(--danger)' : 'var(--success)'}">${t.type === 'debit' ? '+' : '-'}${fmt(t.amount)}</strong> <span class="text-muted">${esc(t.note || '')}</span></div>
       <span class="text-muted">${fmtDate(t.date)}</span></div>`).join('')}
     </div>
   </div>`;
@@ -971,17 +971,17 @@ function renderEmpLeaves() {
       <button class="btn btn-primary" onclick="window._showEmpLeaveForm()">+ Ajukan</button>
     </div>
     <div id="emp-leave-form-area"></div>
-    ${leaves.length===0?'<div class="card"><p class="text-muted">Belum ada pengajuan.</p></div>':
-    leaves.map(l => {
-      const sc = l.status==='Disetujui'?'badge-success':l.status==='Ditolak'?'badge-danger':'badge-warning';
-      return `<div class="card" style="margin-bottom:0.75rem;border-left:4px solid ${l.status==='Disetujui'?'var(--success)':l.status==='Ditolak'?'var(--danger)':'var(--warning)'}">
+    ${leaves.length === 0 ? '<div class="card"><p class="text-muted">Belum ada pengajuan.</p></div>' :
+      leaves.map(l => {
+        const sc = l.status === 'Disetujui' ? 'badge-success' : l.status === 'Ditolak' ? 'badge-danger' : 'badge-warning';
+        return `<div class="card" style="margin-bottom:0.75rem;border-left:4px solid ${l.status === 'Disetujui' ? 'var(--success)' : l.status === 'Ditolak' ? 'var(--danger)' : 'var(--warning)'}">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <div><strong>${esc(l.leave_type)}</strong><br><span class="text-xs text-muted">${fmtDate(l.start_date)} - ${fmtDate(l.end_date)}</span><br><span class="text-xs text-muted">${esc(l.reason||'')}</span></div>
+          <div><strong>${esc(l.leave_type)}</strong><br><span class="text-xs text-muted">${fmtDate(l.start_date)} - ${fmtDate(l.end_date)}</span><br><span class="text-xs text-muted">${esc(l.reason || '')}</span></div>
           <span class="badge ${sc}">${esc(l.status)}</span>
         </div>
-        ${l.feedback?`<p class="text-xs text-muted mt-2" style="border-top:1px solid var(--border);padding-top:0.5rem">Feedback: ${esc(l.feedback)}</p>`:''}
+        ${l.feedback ? `<p class="text-xs text-muted mt-2" style="border-top:1px solid var(--border);padding-top:0.5rem">Feedback: ${esc(l.feedback)}</p>` : ''}
       </div>`;
-    }).join('')}
+      }).join('')}
   </div>`;
 }
 
@@ -991,15 +991,15 @@ function renderEmpViolations() {
   const vios = getViolations(emp.emp_id);
   return `<div class="fade-in">
     <h3 class="text-xl font-bold mb-4">Pelanggaran Saya</h3>
-    ${vios.length===0?'<div class="card" style="text-align:center;padding:2rem"><p class="text-muted">Bersih! Tidak ada pelanggaran 👍</p></div>':
-    vios.map(v => {
-      const lc = v.level==='SP3'?'var(--danger)':v.level==='SP2'?'var(--warning)':v.level==='SP1'?'#EAB308':'var(--info)';
-      return `<div class="card" style="margin-bottom:0.5rem;border-left:4px solid ${lc}">
+    ${vios.length === 0 ? '<div class="card" style="text-align:center;padding:2rem"><p class="text-muted">Bersih! Tidak ada pelanggaran 👍</p></div>' :
+      vios.map(v => {
+        const lc = v.level === 'SP3' ? 'var(--danger)' : v.level === 'SP2' ? 'var(--warning)' : v.level === 'SP1' ? '#EAB308' : 'var(--info)';
+        return `<div class="card" style="margin-bottom:0.5rem;border-left:4px solid ${lc}">
         <strong class="text-xs" style="color:${lc}">${esc(v.level)}</strong>
         <p class="text-xs">${esc(v.violation_type)}: ${esc(v.description)}</p>
         <span class="text-xs text-muted">${fmtDate(v.date)}</span>
       </div>`;
-    }).join('')}
+      }).join('')}
   </div>`;
 }
 
@@ -1011,9 +1011,9 @@ function renderEmpSavings() {
   return `<div class="fade-in">
     <div class="card mb-4" style="text-align:center"><p class="form-label">Total Tabungan</p><p style="font-size:2rem;font-weight:800;color:var(--success)">${fmt(total)}</p></div>
     <div class="card"><h3 class="card-title mb-4">Riwayat Tabungan</h3>
-    ${svs.length===0?'<p class="text-muted text-sm">Belum ada.</p>':
-    svs.map(s => `<div style="display:flex;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid var(--border);font-size:0.85rem">
-      <div><strong style="color:var(--success)">${fmt(s.amount)}</strong> <span class="text-muted">${esc(s.month||'')}</span></div>
+    ${svs.length === 0 ? '<p class="text-muted text-sm">Belum ada.</p>' :
+      svs.map(s => `<div style="display:flex;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid var(--border);font-size:0.85rem">
+      <div><strong style="color:var(--success)">${fmt(s.amount)}</strong> <span class="text-muted">${esc(s.month || '')}</span></div>
       <span class="text-muted">${fmtDate(s.date)}</span></div>`).join('')}
     </div>
   </div>`;
@@ -1025,31 +1025,31 @@ function renderEmpRatings() {
   const ratings = getRatings(emp.emp_id);
   return `<div class="fade-in">
     <h3 class="text-xl font-bold mb-4">Penilaian Saya</h3>
-    ${ratings.length===0?'<div class="card"><p class="text-muted">Belum ada penilaian.</p></div>':
-    ratings.map(r => {
-      const avg = r.scores ? (Object.values(r.scores).reduce((s,v)=>s+v,0)/Object.values(r.scores).length).toFixed(1) : '0';
-      const color = avg >= 4.5 ? 'var(--success)' : avg >= 3.5 ? 'var(--info)' : avg >= 2.5 ? 'var(--warning)' : 'var(--danger)';
-      return `<div class="card" style="margin-bottom:0.75rem">
+    ${ratings.length === 0 ? '<div class="card"><p class="text-muted">Belum ada penilaian.</p></div>' :
+      ratings.map(r => {
+        const avg = r.scores ? (Object.values(r.scores).reduce((s, v) => s + v, 0) / Object.values(r.scores).length).toFixed(1) : '0';
+        const color = avg >= 4.5 ? 'var(--success)' : avg >= 3.5 ? 'var(--info)' : avg >= 2.5 ? 'var(--warning)' : 'var(--danger)';
+        return `<div class="card" style="margin-bottom:0.75rem">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <span class="text-muted text-sm">Periode: ${fmtMonthYear(r.date)}</span>
           <span style="font-size:1.5rem;font-weight:800;color:${color}">${avg}/5</span>
         </div>
-        ${r.note?`<p class="text-xs text-muted mt-2" style="border-top:1px solid var(--border);padding-top:0.5rem">"${esc(r.note)}"</p>`:''}
+        ${r.note ? `<p class="text-xs text-muted mt-2" style="border-top:1px solid var(--border);padding-top:0.5rem">"${esc(r.note)}"</p>` : ''}
       </div>`;
-    }).join('')}
+      }).join('')}
   </div>`;
 }
 
 function renderEmpProfile() {
   const emp = getUserByUsername(currentUser.username);
   if (!emp) return '<div class="card"><p class="text-muted">Data tidak ditemukan.</p></div>';
-  
+
   const s = allData.settings || {};
   const ep = s.emp_profile_edit || {};
-  
-  const avatarHtml = emp.profile_picture 
+
+  const avatarHtml = emp.profile_picture
     ? `<img src="${emp.profile_picture}" alt="Profil" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin:0 auto 1rem;border:2px solid var(--primary);">`
-    : `<div style="width:80px;height:80px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;margin:0 auto 1rem">${(emp.name||'?')[0]}</div>`;
+    : `<div style="width:80px;height:80px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;margin:0 auto 1rem">${(emp.name || '?')[0]}</div>`;
 
   return `<div class="fade-in">
     <div class="card" style="text-align:center;padding:2rem;margin-bottom:1rem;position:relative;">
@@ -1078,23 +1078,23 @@ function renderEmpProfile() {
         </div>
         <div class="form-group">
           <label class="form-label">No. Telepon ${!ep.phone ? '<span class="text-xs text-muted">(Terkunci)</span>' : ''}</label>
-          <input id="pe-phone" class="form-input" value="${esc(emp.phone||'')}" ${!ep.phone ? 'disabled' : ''}>
+          <input id="pe-phone" class="form-input" value="${esc(emp.phone || '')}" ${!ep.phone ? 'disabled' : ''}>
         </div>
         <div class="form-group">
           <label class="form-label">Email ${!ep.email ? '<span class="text-xs text-muted">(Terkunci)</span>' : ''}</label>
-          <input id="pe-email" class="form-input" value="${esc(emp.email||'')}" ${!ep.email ? 'disabled' : ''}>
+          <input id="pe-email" class="form-input" value="${esc(emp.email || '')}" ${!ep.email ? 'disabled' : ''}>
         </div>
         <div class="form-group">
           <label class="form-label">Tanggal Lahir ${!ep.dob ? '<span class="text-xs text-muted">(Terkunci)</span>' : ''}</label>
-          <input id="pe-dob" type="date" class="form-input" value="${emp.date_of_birth||''}" ${!ep.dob ? 'disabled' : ''}>
+          <input id="pe-dob" type="date" class="form-input" value="${emp.date_of_birth || ''}" ${!ep.dob ? 'disabled' : ''}>
         </div>
         <div class="form-group">
           <label class="form-label">Jenis Kelamin <span class="text-xs text-muted">(Terkunci)</span></label>
-          <input class="form-input" value="${esc(emp.gender||'-')}" disabled>
+          <input class="form-input" value="${esc(emp.gender || '-')}" disabled>
         </div>
         <div class="form-group">
           <label class="form-label">Jenis Kontrak <span class="text-xs text-muted">(Terkunci)</span></label>
-          <input class="form-input" value="${esc(emp.contract_type||'-')}" disabled>
+          <input class="form-input" value="${esc(emp.contract_type || '-')}" disabled>
         </div>
         <div class="form-group">
           <label class="form-label">Masa Kontrak <span class="text-xs text-muted">(Terkunci)</span></label>
@@ -1142,18 +1142,18 @@ window._showEmpForm = (key) => {
   area.innerHTML = `<div class="card mb-4 fade-in" style="border:2px solid var(--primary)">
     <h3 class="card-title mb-4">${emp ? 'Edit Karyawan' : 'Tambah Karyawan Baru'}</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-      <div class="form-group"><label class="form-label">Nama Lengkap</label><input id="ef-name" class="form-input" value="${esc(emp?.name||'')}"></div>
-      <div class="form-group"><label class="form-label">Jenis Kelamin</label><select id="ef-gender" class="form-input form-select"><option value="Laki-Laki" ${emp?.gender==='Laki-Laki'?'selected':''}>Laki-Laki</option><option value="Perempuan" ${emp?.gender==='Perempuan'?'selected':''}>Perempuan</option></select></div>
-      <div class="form-group"><label class="form-label">Jabatan</label><select id="ef-pos" class="form-input form-select">${positions.map(p=>`<option ${emp?.position===p?'selected':''}>${p}</option>`).join('')}</select></div>
-      <div class="form-group"><label class="form-label">PIN (6 digit)</label><div class="password-wrapper"><input id="ef-pin" type="password" inputmode="numeric" maxlength="6" class="form-input" value="${esc(emp?.pin||'')}" placeholder="••••••"><button type="button" class="password-toggle" onclick="window._togglePassword(this)">👁️</button></div></div>
-      <div class="form-group"><label class="form-label">Jenis Kontrak</label><select id="ef-ctype" class="form-input form-select"><option value="Training" ${emp?.contract_type==='Training'?'selected':''}>Training (3 Bulan)</option><option value="Tetap" ${emp?.contract_type==='Tetap'?'selected':''}>Tetap (1 Tahun)</option></select></div>
-      <div class="form-group"><label class="form-label">Mulai Kontrak</label><input id="ef-cstart" type="date" class="form-input" value="${emp?.contract_start||''}"></div>
-      <div class="form-group"><label class="form-label">Telepon</label><input id="ef-phone" class="form-input" value="${esc(emp?.phone||'')}"></div>
-      <div class="form-group"><label class="form-label">Email</label><input id="ef-email" type="email" class="form-input" value="${esc(emp?.email||'')}"></div>
-      <div class="form-group"><label class="form-label">Tanggal Lahir</label><input id="ef-dob" type="date" class="form-input" value="${emp?.date_of_birth||''}"></div>
+      <div class="form-group"><label class="form-label">Nama Lengkap</label><input id="ef-name" class="form-input" value="${esc(emp?.name || '')}"></div>
+      <div class="form-group"><label class="form-label">Jenis Kelamin</label><select id="ef-gender" class="form-input form-select"><option value="Laki-Laki" ${emp?.gender === 'Laki-Laki' ? 'selected' : ''}>Laki-Laki</option><option value="Perempuan" ${emp?.gender === 'Perempuan' ? 'selected' : ''}>Perempuan</option></select></div>
+      <div class="form-group"><label class="form-label">Jabatan</label><select id="ef-pos" class="form-input form-select">${positions.map(p => `<option ${emp?.position === p ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">PIN (6 digit)</label><div class="password-wrapper"><input id="ef-pin" type="password" inputmode="numeric" maxlength="6" class="form-input" value="${esc(emp?.pin || '')}" placeholder="••••••"><button type="button" class="password-toggle" onclick="window._togglePassword(this)">👁️</button></div></div>
+      <div class="form-group"><label class="form-label">Jenis Kontrak</label><select id="ef-ctype" class="form-input form-select"><option value="Training" ${emp?.contract_type === 'Training' ? 'selected' : ''}>Training (3 Bulan)</option><option value="Tetap" ${emp?.contract_type === 'Tetap' ? 'selected' : ''}>Tetap (1 Tahun)</option></select></div>
+      <div class="form-group"><label class="form-label">Mulai Kontrak</label><input id="ef-cstart" type="date" class="form-input" value="${emp?.contract_start || ''}"></div>
+      <div class="form-group"><label class="form-label">Telepon</label><input id="ef-phone" class="form-input" value="${esc(emp?.phone || '')}"></div>
+      <div class="form-group"><label class="form-label">Email</label><input id="ef-email" type="email" class="form-input" value="${esc(emp?.email || '')}"></div>
+      <div class="form-group"><label class="form-label">Tanggal Lahir</label><input id="ef-dob" type="date" class="form-input" value="${emp?.date_of_birth || ''}"></div>
     </div>
     <div style="display:flex;gap:0.75rem;margin-top:1rem">
-      <button class="btn btn-primary" onclick="window._saveEmp('${key||''}')">${emp?'Perbarui':'Simpan'}</button>
+      <button class="btn btn-primary" onclick="window._saveEmp('${key || ''}')">${emp ? 'Perbarui' : 'Simpan'}</button>
       <button class="btn btn-secondary" onclick="document.getElementById('emp-form-area').innerHTML=''">Batal</button>
     </div>
   </div>`;
@@ -1201,7 +1201,7 @@ window._showEmpDetail = (key) => {
   const leaveTypes = getLeaveTypes().filter(t => !t.gender || t.gender === 'Semua' || t.gender === emp.gender);
   const currentYear = new Date().getFullYear();
   const empLeaves = getLeaves(emp.emp_id).filter(l => l.status !== 'Ditolak' && new Date(l.start_date).getFullYear() === currentYear);
-  
+
   let leaveQuotaHtml = '';
   if (leaveTypes.length > 0) {
     leaveQuotaHtml = `<div class="mt-4"><p class="form-label mb-2">Sisa Jatah Cuti (${currentYear})</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">`;
@@ -1218,7 +1218,7 @@ window._showEmpDetail = (key) => {
         const remaining = t.quota - taken;
         leaveQuotaHtml += `<div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.5rem">
           <p class="text-xs text-muted">${esc(t.name)}</p>
-          <p class="font-bold text-sm" style="color:${remaining<=0?'var(--danger)':'var(--success)'}">${remaining} <span class="text-xs font-normal text-muted">dari ${t.quota} hari</span></p>
+          <p class="font-bold text-sm" style="color:${remaining <= 0 ? 'var(--danger)' : 'var(--success)'}">${remaining} <span class="text-xs font-normal text-muted">dari ${t.quota} hari</span></p>
         </div>`;
       }
     });
@@ -1232,11 +1232,11 @@ window._showEmpDetail = (key) => {
         <div><p class="form-label">Jabatan</p><p class="font-semibold text-sm">${esc(emp.position)}</p></div>
         <div><p class="form-label">ID</p><p class="font-semibold text-sm">${esc(emp.emp_id)}</p></div>
         <div><p class="form-label">Username</p><p class="font-semibold text-sm">${esc(emp.username)}</p></div>
-        <div><p class="form-label">Kelamin</p><p class="font-semibold text-sm">${esc(emp.gender||'-')}</p></div>
-        <div><p class="form-label">Kontrak</p><p class="font-semibold text-sm">${esc(emp.contract_type||'-')}</p></div>
+        <div><p class="form-label">Kelamin</p><p class="font-semibold text-sm">${esc(emp.gender || '-')}</p></div>
+        <div><p class="form-label">Kontrak</p><p class="font-semibold text-sm">${esc(emp.contract_type || '-')}</p></div>
         <div><p class="form-label">Berakhir</p><p class="font-semibold text-sm">${fmtDate(emp.contract_end)}</p></div>
-        <div><p class="form-label">Tunggakan</p><p class="font-semibold text-sm" style="color:${bal>0?'var(--danger)':'var(--success)'}">${fmt(bal)}</p></div>
-        <div><p class="form-label">Telepon</p><p class="font-semibold text-sm">${esc(emp.phone||'-')}</p></div>
+        <div><p class="form-label">Tunggakan</p><p class="font-semibold text-sm" style="color:${bal > 0 ? 'var(--danger)' : 'var(--success)'}">${fmt(bal)}</p></div>
+        <div><p class="form-label">Telepon</p><p class="font-semibold text-sm">${esc(emp.phone || '-')}</p></div>
       </div>
       ${leaveQuotaHtml}
       <div class="mt-4">
@@ -1287,16 +1287,16 @@ async function autoResetLeaveOnContractEnd() {
   const todayStr = today();
   const currentYear = new Date().getFullYear();
   const users = getUsers();
-  
+
   for (const emp of users) {
     if (!emp.contract_end) continue;
-    
+
     // Check if contract has ended (contract_end <= today)
     if (emp.contract_end <= todayStr) {
       // Check if already reset this cycle (store marker in user data)
       const resetMarker = emp.leave_reset_date;
       if (resetMarker === emp.contract_end) continue; // Already reset for this contract end
-      
+
       // Delete all leaves for this employee in the current year
       let deleted = 0;
       for (const [k, v] of Object.entries(allData.leaves)) {
@@ -1305,7 +1305,7 @@ async function autoResetLeaveOnContractEnd() {
           deleted++;
         }
       }
-      
+
       // Mark as reset so it doesn't re-trigger
       if (deleted > 0) {
         await update(ref(db, 'users/' + emp._key), { leave_reset_date: emp.contract_end });
@@ -1319,12 +1319,12 @@ async function autoResetLeaveOnContractEnd() {
 window._showTxnForm = (empId, type) => {
   const area = $('txn-form-' + empId); if (!area) return;
   area.innerHTML = `<div style="padding:0.75rem;background:var(--bg-color);border-radius:var(--radius-lg);margin-bottom:1rem;border:1px solid var(--border)">
-    <p class="text-xs font-bold mb-2" style="color:${type==='debit'?'var(--danger)':'var(--success)'}">${type==='debit'?'Tambah Debit':'Tambah Kredit'}</p>
+    <p class="text-xs font-bold mb-2" style="color:${type === 'debit' ? 'var(--danger)' : 'var(--success)'}">${type === 'debit' ? 'Tambah Debit' : 'Tambah Kredit'}</p>
     <input id="tf-amt" type="number" inputmode="numeric" class="form-input mb-2" placeholder="Jumlah (Rp)" style="font-size:0.85rem;padding:0.5rem">
     <input id="tf-date" type="date" value="${today()}" class="form-input mb-2" style="font-size:0.85rem;padding:0.5rem">
     <input id="tf-note" class="form-input mb-2" placeholder="Keterangan" style="font-size:0.85rem;padding:0.5rem">
     <div style="display:flex;gap:0.5rem">
-      <button class="btn ${type==='debit'?'btn-danger':'btn-primary'}" style="padding:0.5rem 1rem;font-size:0.75rem;${type==='credit'?'background:var(--success)':''}" onclick="window._saveTxn('${empId}','${type}')">Simpan</button>
+      <button class="btn ${type === 'debit' ? 'btn-danger' : 'btn-primary'}" style="padding:0.5rem 1rem;font-size:0.75rem;${type === 'credit' ? 'background:var(--success)' : ''}" onclick="window._saveTxn('${empId}','${type}')">Simpan</button>
       <button class="btn btn-secondary" style="padding:0.5rem 1rem;font-size:0.75rem" onclick="document.getElementById('txn-form-${empId}').innerHTML=''">Batal</button>
     </div>
   </div>`;
@@ -1356,7 +1356,7 @@ window._addLeaveNote = (key) => {
     <div class="modal-body">
       <div class="form-group">
         <label class="form-label">Tulis Catatan / Feedback</label>
-        <textarea id="ln-note" class="form-input" rows="3" placeholder="Masukkan catatan...">${esc(l.feedback||'')}</textarea>
+        <textarea id="ln-note" class="form-input" rows="3" placeholder="Masukkan catatan...">${esc(l.feedback || '')}</textarea>
       </div>
     </div>
     <div class="modal-footer">
@@ -1400,7 +1400,7 @@ window._saveEmpLeave = async () => {
   const endDate = $('lf-end').value;
   const reason = $('lf-reason').value.trim();
   if (!startDate || !endDate) { showToast('Tanggal wajib diisi!', 'error'); return; }
-  
+
   const d1 = new Date(startDate);
   const d2 = new Date(endDate);
   if (d2 < d1) { showToast('Tanggal selesai harus setelah atau sama dengan mulai!', 'error'); return; }
@@ -1435,18 +1435,18 @@ window._showLeaveTypeForm = (key) => {
   const lt = key ? (() => { const v = allData.leave_types[key]; return v ? { ...v, _key: key } : null; })() : null;
   const area = $('lt-form-area'); if (!area) return;
   area.innerHTML = `<div class="card mb-4 fade-in" style="border:2px solid var(--primary)">
-    <h3 class="card-title mb-4">${lt?'Edit':'Tambah'} Jenis Cuti</h3>
+    <h3 class="card-title mb-4">${lt ? 'Edit' : 'Tambah'} Jenis Cuti</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem">
-      <div class="form-group"><label class="form-label">Nama Jenis Cuti</label><input id="ltf-name" class="form-input" value="${esc(lt?.name||'')}"></div>
-      <div class="form-group"><label class="form-label">Jatah (hari)</label><input id="ltf-quota" type="number" class="form-input" value="${lt?.quota||''}"></div>
+      <div class="form-group"><label class="form-label">Nama Jenis Cuti</label><input id="ltf-name" class="form-input" value="${esc(lt?.name || '')}"></div>
+      <div class="form-group"><label class="form-label">Jatah (hari)</label><input id="ltf-quota" type="number" class="form-input" value="${lt?.quota || ''}"></div>
       <div class="form-group"><label class="form-label">Jenis Kelamin</label><select id="ltf-gender" class="form-input form-select">
-        <option value="Semua" ${lt?.gender==='Semua'?'selected':''}>Semua</option>
-        <option value="Laki-Laki" ${lt?.gender==='Laki-Laki'?'selected':''}>Laki-Laki</option>
-        <option value="Perempuan" ${lt?.gender==='Perempuan'?'selected':''}>Perempuan</option>
+        <option value="Semua" ${lt?.gender === 'Semua' ? 'selected' : ''}>Semua</option>
+        <option value="Laki-Laki" ${lt?.gender === 'Laki-Laki' ? 'selected' : ''}>Laki-Laki</option>
+        <option value="Perempuan" ${lt?.gender === 'Perempuan' ? 'selected' : ''}>Perempuan</option>
       </select></div>
     </div>
     <div style="display:flex;gap:0.75rem;margin-top:0.5rem">
-      <button class="btn btn-primary" onclick="window._saveLeaveType('${key||''}')">${lt?'Perbarui':'Simpan'}</button>
+      <button class="btn btn-primary" onclick="window._saveLeaveType('${key || ''}')">${lt ? 'Perbarui' : 'Simpan'}</button>
       <button class="btn btn-secondary" onclick="document.getElementById('lt-form-area').innerHTML=''">Batal</button>
     </div>
   </div>`;
@@ -1514,9 +1514,9 @@ window._saveSaving = async (empId) => {
 };
 
 window._showMassSavingForm = () => {
-  const area = $('mass-sav-form-area'); if(!area) return;
+  const area = $('mass-sav-form-area'); if (!area) return;
   const users = getUsers();
-  const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   const now = new Date();
   const curMonthIdx = now.getMonth();
   const curYear = now.getFullYear();
@@ -1531,7 +1531,7 @@ window._showMassSavingForm = () => {
     <div class="form-group">
       <label class="form-label" style="display:flex;justify-content:space-between"><span>Pilih Karyawan</span><label style="cursor:pointer;font-weight:normal"><input type="checkbox" onchange="document.querySelectorAll('.msf-emp-cb').forEach(c=>c.checked=this.checked)"> Pilih Semua</label></label>
       <div style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.5rem;background:var(--bg-color)">
-        ${users.map(u=>`<label style="display:flex;align-items:center;gap:0.5rem;padding:0.25rem 0;cursor:pointer"><input type="checkbox" class="msf-emp-cb" value="${u.emp_id}"> <strong>${esc(u.name)}</strong> (${esc(u.position)})</label>`).join('')}
+        ${users.map(u => `<label style="display:flex;align-items:center;gap:0.5rem;padding:0.25rem 0;cursor:pointer"><input type="checkbox" class="msf-emp-cb" value="${u.emp_id}"> <strong>${esc(u.name)}</strong> (${esc(u.position)})</label>`).join('')}
       </div>
     </div>
     <div style="display:flex;gap:0.75rem;margin-top:1rem">
@@ -1546,16 +1546,16 @@ window._saveMassSaving = async () => {
   const month = $('msf-month').value.trim();
   const date = $('msf-date').value;
   const cbs = document.querySelectorAll('.msf-emp-cb:checked');
-  
-  if(amt <= 0) { showToast('Jumlah harus > 0', 'error'); return; }
-  if(!month || !date) { showToast('Bulan dan tanggal wajib diisi!', 'error'); return; }
-  if(cbs.length === 0) { showToast('Pilih minimal 1 karyawan!', 'error'); return; }
-  
-  for(const cb of cbs) {
+
+  if (amt <= 0) { showToast('Jumlah harus > 0', 'error'); return; }
+  if (!month || !date) { showToast('Bulan dan tanggal wajib diisi!', 'error'); return; }
+  if (cbs.length === 0) { showToast('Pilih minimal 1 karyawan!', 'error'); return; }
+
+  for (const cb of cbs) {
     const empId = cb.value;
     await set(push(ref(db, 'savings')), { emp_id: empId, amount: amt, month, date });
   }
-  
+
   showToast(cbs.length + ' tabungan berhasil disimpan!', 'success');
   $('mass-sav-form-area').innerHTML = '';
 };
@@ -1567,16 +1567,16 @@ window._showRatingForm = () => {
   const criteria = getCriteria(); // Used just for checking if any exist
   if (users.length === 0) { showToast('Tambahkan karyawan dulu!', 'warning'); return; }
   if (criteria.length === 0) { showToast('Buat kriteria penilaian dulu!', 'warning'); return; }
-  
+
   showModal(`<div class="modal-header"><h3 class="modal-title">Tambah Penilaian</h3><button class="modal-close" onclick="window._hideModal()">✕</button></div>
     <div class="modal-body">
-      <div class="form-group"><label class="form-label">Pilih Karyawan</label><select id="rf-emp" class="form-input form-select" onchange="window._updateRatingCriteria()">${users.map(u=>`<option value="${u.emp_id}" data-pos="${esc(u.position)}">${esc(u.name)} (${esc(u.position)})</option>`).join('')}</select></div>
-      <div class="form-group"><label class="form-label">Bulan Penilaian</label><input id="rf-date" type="month" value="${today().substring(0,7)}" class="form-input"></div>
+      <div class="form-group"><label class="form-label">Pilih Karyawan</label><select id="rf-emp" class="form-input form-select" onchange="window._updateRatingCriteria()">${users.map(u => `<option value="${u.emp_id}" data-pos="${esc(u.position)}">${esc(u.name)} (${esc(u.position)})</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Bulan Penilaian</label><input id="rf-date" type="month" value="${today().substring(0, 7)}" class="form-input"></div>
       <div id="rf-criteria-container"></div>
       <div class="form-group mt-4"><label class="form-label">Catatan</label><textarea id="rf-note" class="form-input" rows="2" placeholder="Catatan tambahan..."></textarea></div>
     </div>
     <div class="modal-footer"><button class="btn btn-primary" onclick="window._saveRating()">Simpan Penilaian</button><button class="btn btn-secondary" onclick="window._hideModal()">Batal</button></div>`);
-  
+
   // Initialize criteria list for the first selected employee
   window._updateRatingCriteria();
 };
@@ -1587,10 +1587,10 @@ window._updateRatingCriteria = () => {
   const selectedOption = empSelect.options[empSelect.selectedIndex];
   if (!selectedOption) return;
   const pos = selectedOption.getAttribute('data-pos');
-  
+
   // Get criteria filtered by this position
   const posCriteria = getCriteria(pos);
-  
+
   // Group by indicator
   const grouped = {};
   posCriteria.forEach(c => {
@@ -1598,34 +1598,34 @@ window._updateRatingCriteria = () => {
     if (!grouped[ind]) grouped[ind] = [];
     grouped[ind].push(c);
   });
-  
+
   const container = $('rf-criteria-container');
   if (!container) return;
-  
+
   if (posCriteria.length === 0) {
     container.innerHTML = '<p class="text-muted text-sm italic py-2">Tidak ada kriteria untuk jabatan ini.</p>';
     return;
   }
-  
+
   let html = '<p class="form-label mt-2">Skor Kriteria (1-5)</p>';
   Object.keys(grouped).forEach(ind => {
     html += `<div style="margin-top:0.5rem;background:#f8fafc;padding:0.5rem;border-radius:4px;border:1px solid var(--border)">
       <h5 style="font-size:0.8rem;font-weight:700;color:var(--primary);margin-bottom:0.25rem;text-transform:uppercase">${esc(ind)}</h5>`;
-    
+
     grouped[ind].forEach(c => {
       // the data-key attribute is used in _saveRating to avoid invalid characters in Firebase keys
       html += `<div style="display:flex;flex-direction:column;gap:0.5rem;padding:0.5rem 0;border-bottom:1px solid #e2e8f0">
         <span class="text-sm font-semibold" style="flex:1;">${esc(c.name)}</span>
         <input type="hidden" class="rf-score" data-key="${c._key}" id="score-${c._key}" value="3">
         <div style="display:flex;gap:0.5rem;justify-content:flex-end;" id="rating-group-${c._key}">
-          ${[1,2,3,4,5].map(n => `<button type="button" class="rating-btn ${n===3?'active':''}" onclick="_setRating('${c._key}', ${n})">${n}</button>`).join('')}
+          ${[1, 2, 3, 4, 5].map(n => `<button type="button" class="rating-btn ${n === 3 ? 'active' : ''}" onclick="_setRating('${c._key}', ${n})">${n}</button>`).join('')}
         </div>
       </div>`;
     });
-    
+
     html += `</div>`;
   });
-  
+
   container.innerHTML = html;
 };
 
@@ -1661,12 +1661,12 @@ window._generateRatingPDFHtml = (key) => {
     showToast('Data penilaian tidak ditemukan', 'error');
     return null;
   }
-  
+
   const emp = getUserByEmpId(rating.emp_id);
   const empName = emp ? emp.name : rating.emp_id;
   const empPos = emp ? emp.position : '-';
   const empGender = emp ? emp.gender : 'Semua';
-  const avg = rating.scores ? (Object.values(rating.scores).reduce((s,v)=>s+v,0)/Object.values(rating.scores).length).toFixed(1) : '0';
+  const avg = rating.scores ? (Object.values(rating.scores).reduce((s, v) => s + v, 0) / Object.values(rating.scores).length).toFixed(1) : '0';
 
   // --- Hitung data Izin/Cuti ---
   const currentYear = new Date().getFullYear();
@@ -1683,14 +1683,14 @@ window._generateRatingPDFHtml = (key) => {
       let taken = 0;
       empLeaves.filter(l => l.leave_type === t.name && l.status !== 'Ditolak' && new Date(l.start_date).getFullYear() === currentYear).forEach(l => {
         const s = new Date(l.start_date); const e = new Date(l.end_date);
-        taken += Math.max(1, Math.ceil((e - s) / (1000*60*60*24)) + 1);
+        taken += Math.max(1, Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1);
       });
       const remaining = t.quota - taken;
       leaveQuotaRows += `<tr>
         <td style="border:1px solid #000;padding:4px;">${esc(t.name)}</td>
         <td style="border:1px solid #000;padding:4px;text-align:center;">${t.quota} hari</td>
         <td style="border:1px solid #000;padding:4px;text-align:center;">${taken} hari</td>
-        <td style="border:1px solid #000;padding:4px;text-align:center;font-weight:bold;color:${remaining<=0?'red':'#065F46'}">${remaining} hari</td>
+        <td style="border:1px solid #000;padding:4px;text-align:center;font-weight:bold;color:${remaining <= 0 ? 'red' : '#065F46'}">${remaining} hari</td>
       </tr>`;
     }
   });
@@ -1730,11 +1730,11 @@ window._generateRatingPDFHtml = (key) => {
       </thead>
       <tbody>
   `;
-  
+
   if (rating.scores) {
     const allCrits = getCriteria();
     const groupedScores = {};
-    
+
     Object.entries(rating.scores).forEach(([critKey, score]) => {
       const cDef = allCrits.find(c => c._key === critKey || c.name === critKey);
       const actualName = cDef ? cDef.name : critKey;
@@ -1742,7 +1742,7 @@ window._generateRatingPDFHtml = (key) => {
       if (!groupedScores[ind]) groupedScores[ind] = [];
       groupedScores[ind].push({ name: actualName, score });
     });
-    
+
     Object.keys(groupedScores).forEach(ind => {
       html += `<tr><td colspan="2" style="border:1px solid #000;padding:4px;background:#f8fafc;font-weight:bold;text-transform:uppercase;font-size:0.7rem;">${esc(ind)}</td></tr>`;
       groupedScores[ind].forEach(item => {
@@ -1755,7 +1755,7 @@ window._generateRatingPDFHtml = (key) => {
       });
     });
   }
-  
+
   html += `
         <tr>
           <td style="border:1px solid #000;padding:4px;text-align:right;"><strong>Rata-Rata:</strong></td>
@@ -1834,26 +1834,26 @@ window._downloadSingleRatingPDF = (key) => {
     showToast('Library PDF sedang dimuat, coba sebentar lagi', 'warning');
     return;
   }
-  
+
   const html = _generateRatingPDFHtml(key);
   if (!html) return;
-  
+
   const rating = allData.ratings[key];
   const emp = getUserByEmpId(rating.emp_id);
   const empName = emp ? emp.name : rating.emp_id;
   const filename = `Evaluasi_${empName.replace(/\s+/g, '_')}_${rating.date}.pdf`;
-  
+
   const opt = {
-    margin:       10,
-    filename:     filename,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2 },
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    margin: 10,
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
-  
+
   const div = document.createElement('div');
   div.innerHTML = html;
-  
+
   showToast('Menyiapkan file unduhan...', 'info');
   html2pdf().set(opt).from(div).save().then(() => {
     showToast('PDF berhasil diunduh!', 'success');
@@ -1893,12 +1893,12 @@ window._downloadAllRatingsPDF = () => {
   }
 
   const opt = {
-    margin:       10,
-    filename:     `Evaluasi_Semua_Karyawan_${today()}.pdf`,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2 },
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak:    { mode: ['css'] }
+    margin: 10,
+    filename: `Evaluasi_Semua_Karyawan_${today()}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['css'] }
   };
 
   const div = document.createElement('div');
@@ -1917,15 +1917,15 @@ window._downloadAllRatingsPDF = () => {
 window._showCriteriaForm = (key) => {
   const c = key ? (() => { const v = allData.criteria[key]; return v ? { ...v, _key: key } : null; })() : null;
   const area = $('crit-form-area'); if (!area) return;
-  
+
   const allCrits = getCriteria();
   const uniqueIndicators = [...new Set(allCrits.map(x => x.indicator || 'Umum'))];
   const currentInd = c?.indicator || 'Umum';
   if (!uniqueIndicators.includes(currentInd)) uniqueIndicators.push(currentInd);
   if (uniqueIndicators.length === 0) uniqueIndicators.push('Umum');
-  
+
   area.innerHTML = `<div class="card mb-4 fade-in" style="border:2px solid var(--primary)">
-    <h3 class="card-title mb-4">${c?'Edit':'Tambah'} Kriteria</h3>
+    <h3 class="card-title mb-4">${c ? 'Edit' : 'Tambah'} Kriteria</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
       <div class="form-group">
         <label class="form-label">Nama Indikator</label>
@@ -1935,18 +1935,18 @@ window._showCriteriaForm = (key) => {
         </select>
         <input id="cf-indicator" class="form-input" value="" placeholder="Ketik nama indikator baru..." style="display:none;">
       </div>
-      <div class="form-group"><label class="form-label">Sub-Indikator</label><input id="cf-name" class="form-input" value="${esc(c?.name||'')}" placeholder="Misal: Tepat Waktu"></div>
+      <div class="form-group"><label class="form-label">Sub-Indikator</label><input id="cf-name" class="form-input" value="${esc(c?.name || '')}" placeholder="Misal: Tepat Waktu"></div>
       <div class="form-group" style="grid-column: 1 / -1"><label class="form-label">Berlaku Untuk</label><select id="cf-pos" class="form-input form-select">
-        <option value="Semua" ${c?.position==='Semua'?'selected':''}>Semua Jabatan</option>
-        <option value="Manager" ${c?.position==='Manager'?'selected':''}>Manager</option>
-        <option value="Admin" ${c?.position==='Admin'?'selected':''}>Admin</option>
-        <option value="Supervisor" ${c?.position==='Supervisor'?'selected':''}>Supervisor</option>
-        <option value="Operator" ${c?.position==='Operator'?'selected':''}>Operator</option>
-        <option value="Cleaning Service" ${c?.position==='Cleaning Service'?'selected':''}>Cleaning Service</option>
+        <option value="Semua" ${c?.position === 'Semua' ? 'selected' : ''}>Semua Jabatan</option>
+        <option value="Manager" ${c?.position === 'Manager' ? 'selected' : ''}>Manager</option>
+        <option value="Admin" ${c?.position === 'Admin' ? 'selected' : ''}>Admin</option>
+        <option value="Supervisor" ${c?.position === 'Supervisor' ? 'selected' : ''}>Supervisor</option>
+        <option value="Operator" ${c?.position === 'Operator' ? 'selected' : ''}>Operator</option>
+        <option value="Cleaning Service" ${c?.position === 'Cleaning Service' ? 'selected' : ''}>Cleaning Service</option>
       </select></div>
     </div>
     <div style="display:flex;gap:0.75rem;margin-top:0.5rem">
-      <button class="btn btn-primary" onclick="window._saveCriteria('${key||''}')">${c?'Perbarui':'Simpan'}</button>
+      <button class="btn btn-primary" onclick="window._saveCriteria('${key || ''}')">${c ? 'Perbarui' : 'Simpan'}</button>
       <button class="btn btn-secondary" onclick="document.getElementById('crit-form-area').innerHTML=''">Batal</button>
     </div>
   </div>`;
@@ -1954,7 +1954,7 @@ window._showCriteriaForm = (key) => {
 window._saveCriteria = async (key) => {
   const selVal = $('cf-indicator-select').value;
   let indicator = (selVal === '__NEW__' ? $('cf-indicator').value.trim() : selVal) || 'Umum';
-  
+
   const name = $('cf-name').value.trim();
   if (!name) { showToast('Sub-indikator wajib diisi!', 'error'); return; }
   const data = { indicator, name, position: $('cf-pos').value };
@@ -2026,31 +2026,31 @@ window._updateEmployeeProfile = async () => {
   const emp = getUserByUsername(currentUser.username); if (!emp) return;
   const s = allData.settings || {};
   const ep = s.emp_profile_edit || {};
-  
+
   const updates = {};
   if (ep.name) updates.name = $('pe-name').value.trim();
   if (ep.phone) updates.phone = $('pe-phone').value.trim();
   if (ep.email) updates.email = $('pe-email').value.trim();
   if (ep.dob) updates.date_of_birth = $('pe-dob').value;
   if (window._tempProfilePhoto) updates.profile_picture = window._tempProfilePhoto;
-  
+
   if (Object.keys(updates).length === 0) {
     showToast('Tidak ada data yang bisa diubah', 'warning');
     return;
   }
-  
+
   if (ep.name && updates.name === '') { showToast('Nama tidak boleh kosong', 'error'); return; }
-  
+
   await update(ref(db, 'users/' + emp._key), updates);
-  
+
   // Update currentUser local session so UI updates instantly
   if (updates.name) currentUser.name = updates.name;
   sessionStorage.setItem('mytic_emp_session', JSON.stringify(currentUser));
-  
+
   // Update header UI
   const hd = document.getElementById('display-mobile-name');
   if (hd) hd.textContent = currentUser.name;
-  
+
   window._tempProfilePhoto = null; // reset
   showToast('Profil berhasil diperbarui!', 'success');
   // Refresh view
