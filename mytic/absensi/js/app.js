@@ -250,18 +250,22 @@ function renderLeaderboard() {
   }
 
   const getRankIcon = (index) => {
-    const icons = ['👑','🥈','🥉','🌟','✨','🎖️','🏅','💎','🔥','🚀','🎯','🏆','⭐','👍'];
-    return icons[index] || '👏';
+    if (index === 0) return '👑';
+    if (index === 1) return '🥈';
+    if (index === 2) return '🥉';
+    return `#${index + 1}`;
   };
 
-  const generateListHTML = (list, isTop3) => list.map((s, i) => `
+  const generateListHTML = (list, isTop3) => list.map((s, i) => {
+    const isMedal = i < 3;
+    return `
     <div class="leaderboard-item rank-${i + 1}" data-emp="${esc(s.name)}" style="${!isTop3 ? 'cursor:pointer;background:var(--bg);box-shadow:none;border:1px solid var(--border);margin-bottom:0.5rem;' : 'cursor:default;'}">
-      <div class="leaderboard-rank" style="font-size:1.6rem; background:transparent;">${getRankIcon(i)}</div>
+      <div class="leaderboard-rank" style="${isMedal ? 'font-size:1.6rem; background:transparent;' : 'font-size:1.1rem; background:var(--border); color:var(--text); border-radius:var(--radius-sm); height:30px; display:flex; align-items:center; justify-content:center; margin:auto 0;'}">${getRankIcon(i)}</div>
       <div class="leaderboard-info">
         <div class="leaderboard-name">${esc(s.name)}</div>
       </div>
     </div>
-  `).join('');
+  `}).join('');
   container.innerHTML = generateListHTML(scores, true);
 
   const adminContainer = $('admin-leaderboard-list');
