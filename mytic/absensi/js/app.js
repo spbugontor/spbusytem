@@ -250,7 +250,7 @@ function renderLeaderboard() {
   }
 
   const generateListHTML = (list, isTop3) => list.map((s, i) => `
-    <div class="leaderboard-item rank-${i + 1}" data-emp="${esc(s.name)}" style="cursor:pointer;${!isTop3 ? 'background:var(--bg);box-shadow:none;border:1px solid var(--border);margin-bottom:0.5rem;' : ''}">
+    <div class="leaderboard-item rank-${i + 1}" data-emp="${esc(s.name)}" style="${!isTop3 ? 'cursor:pointer;background:var(--bg);box-shadow:none;border:1px solid var(--border);margin-bottom:0.5rem;' : 'cursor:default;'}">
       <div class="leaderboard-rank" style="${!isTop3 && i >= 3 ? 'background:var(--border);color:var(--text);border-radius:var(--radius-sm);' : ''}">#${i + 1}</div>
       <div class="leaderboard-info">
         <div class="leaderboard-name">${esc(s.name)}</div>
@@ -258,11 +258,7 @@ function renderLeaderboard() {
     </div>
   `).join('');
   container.innerHTML = generateListHTML(scores, true);
-  
-  // Tambahkan event listener agar nama karyawan di leaderboard utama juga bisa diklik
-  container.querySelectorAll('.leaderboard-item').forEach(item => {
-    item.addEventListener('click', () => showLeaderboardDetail(item.dataset.emp));
-  });
+
   const adminContainer = $('admin-leaderboard-list');
   if (adminContainer) {
     adminContainer.innerHTML = generateListHTML(scores, false);
