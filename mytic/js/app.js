@@ -293,12 +293,48 @@ const EMP_MENU = [
 function setupNavigation() {
   const isAdmin = currentUser.role === 'admin';
   const menu = isAdmin ? ADMIN_MENU : EMP_MENU;
+
+  // Check unread/pending leaves for badges
+  let empHasUnreadLeave = false;
+  let adminHasPendingLeave = false;
+
+  if (isAdmin) {
+    const allLeaves = getLeaves();
+    adminHasPendingLeave = allLeaves.some(l => {
+      if (l.status === 'Menunggu') return true;
+      const chats = l.chats ? Object.values(l.chats) : [];
+      if (chats.length > 0) {
+        chats.sort((a, b) => a.timestamp - b.timestamp);
+        return chats[chats.length - 1].role === 'Karyawan';
+      }
+      return false;
+    });
+  } else if (currentUser && currentUser.username) {
+    const emp = getUserByUsername(currentUser.username);
+    if (emp) {
+      const empLeaves = getLeaves(emp.emp_id);
+      empHasUnreadLeave = empLeaves.some(l => {
+        const chats = l.chats ? Object.values(l.chats) : [];
+        if (chats.length > 0) {
+          chats.sort((a, b) => a.timestamp - b.timestamp);
+          return chats[chats.length - 1].role === 'Manajemen';
+        }
+        return false;
+      });
+    }
+  }
+
+  const redDot = `<span style="width:8px;height:8px;background:var(--danger);border-radius:50%;display:inline-block;margin-left:5px;box-shadow:0 0 6px var(--danger);vertical-align:middle"></span>`;
+
   let dHTML = '';
   menu.forEach(m => {
+    const isLeaveMenu = (m.id === 'leaves' && adminHasPendingLeave) || (m.id === 'emp-leaves' && empHasUnreadLeave);
+    const labelWithBadge = isLeaveMenu ? `${m.label}${redDot}` : m.label;
+
     if (m.href) {
-      dHTML += `<a href="${m.href}" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg>${m.label}</a>`;
+      dHTML += `<a href="${m.href}" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg>${labelWithBadge}</a>`;
     } else {
-      dHTML += `<a class="nav-item" data-target="${m.id}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg>${m.label}</a>`;
+      dHTML += `<a class="nav-item" data-target="${m.id}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg>${labelWithBadge}</a>`;
     }
   });
   $('nav-desktop').innerHTML = dHTML;
@@ -309,14 +345,19 @@ function setupNavigation() {
   const mobileMore = menu.slice(MAX_MOBILE);
   let mHTML = '';
   mobileMain.forEach(m => {
+    const isLeaveMenu = (m.id === 'leaves' && adminHasPendingLeave) || (m.id === 'emp-leaves' && empHasUnreadLeave);
+    const labelWithBadge = isLeaveMenu ? `${m.label}${redDot}` : m.label;
+
     if (m.href) {
-      mHTML += `<a href="${m.href}" class="mobile-nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg><span>${m.label}</span></a>`;
+      mHTML += `<a href="${m.href}" class="mobile-nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg><span>${labelWithBadge}</span></a>`;
     } else {
-      mHTML += `<a class="mobile-nav-item" data-target="${m.id}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg><span>${m.label}</span></a>`;
+      mHTML += `<a class="mobile-nav-item" data-target="${m.id}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg><span>${labelWithBadge}</span></a>`;
     }
   });
+
+  const hasMoreUnread = mobileMore.some(m => (m.id === 'leaves' && adminHasPendingLeave) || (m.id === 'emp-leaves' && empHasUnreadLeave));
   if (mobileMore.length > 0) {
-    mHTML += `<a class="mobile-nav-item" onclick="window._toggleMoreMenu()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg><span>Lainnya</span></a>`;
+    mHTML += `<a class="mobile-nav-item" onclick="window._toggleMoreMenu()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg><span>Lainnya${hasMoreUnread ? redDot : ''}</span></a>`;
   }
   $('nav-mobile').innerHTML = mHTML;
 
@@ -334,17 +375,19 @@ function setupNavigation() {
           <button onclick="window._toggleMoreMenu()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted)">✕</button>
         </div>
         <div style="padding:0.75rem">${mobileMore.map(m => {
+      const isLeaveMenu = (m.id === 'leaves' && adminHasPendingLeave) || (m.id === 'emp-leaves' && empHasUnreadLeave);
+      const labelWithBadge = isLeaveMenu ? `${m.label}${redDot}` : m.label;
+
       if (m.href) {
         return `<a href="${m.href}" class="more-menu-item">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg>
-            <span>${m.label}</span>
+            <span>${labelWithBadge}</span>
           </a>`;
       } else {
         return `<a class="more-menu-item" data-target="${m.id}" onclick="window._toggleMoreMenu()">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg>
-            <span>${m.label}</span>
+            <span>${labelWithBadge}</span>
           </a>`;
-      }
     }).join('')}</div>
       </div>`;
     document.body.appendChild(popup);
@@ -367,6 +410,7 @@ function switchSection(id) {
 }
 
 function renderCurrentSection() {
+  if (currentUser) setupNavigation();
   const w = $('content-wrapper'); if (!w) return;
   const isAdmin = currentUser && currentUser.role === 'admin';
   let html = '';
@@ -501,6 +545,26 @@ function renderDebits() {
 // ==========================================
 // LEAVES (ADMIN)
 // ==========================================
+function renderLeaveChatButton(l, role) {
+  const chats = l.chats ? Object.values(l.chats) : [];
+  if (chats.length === 0) {
+    return `<button class="btn btn-primary" style="padding:0.3rem 0.6rem;font-size:0.7rem;display:inline-flex;align-items:center;gap:0.3rem" onclick="window._showLeaveChat('${l._key}', '${role}')">💬 Diskusi</button>`;
+  }
+
+  chats.sort((a, b) => a.timestamp - b.timestamp);
+  const lastChat = chats[chats.length - 1];
+  const hasUnread = lastChat && lastChat.role !== role;
+
+  if (hasUnread) {
+    return `<button class="btn btn-primary" style="padding:0.3rem 0.6rem;font-size:0.7rem;display:inline-flex;align-items:center;gap:0.3rem;border:1.5px solid var(--danger);box-shadow: 0 0 8px rgba(239, 68, 68, 0.4)" onclick="window._showLeaveChat('${l._key}', '${role}')">
+      💬 Diskusi (${chats.length}) 
+      <span style="background:var(--danger);color:#fff;font-size:0.6rem;padding:1px 5px;border-radius:8px;font-weight:700">Pesan Baru!</span>
+    </button>`;
+  }
+
+  return `<button class="btn btn-primary" style="padding:0.3rem 0.6rem;font-size:0.7rem;display:inline-flex;align-items:center;gap:0.3rem" onclick="window._showLeaveChat('${l._key}', '${role}')">💬 Diskusi (${chats.length})</button>`;
+}
+
 function renderMgmtLeaves() {
   const leaves = getLeaves();
   return `<div class="fade-in">
@@ -524,7 +588,7 @@ function renderMgmtLeaves() {
               <option value="Ditolak" ${l.status === 'Ditolak' ? 'selected' : ''}>Ditolak</option>
             </select>
             <div style="display:flex;gap:0.5rem">
-              <button class="btn btn-primary" style="padding:0.3rem 0.6rem;font-size:0.7rem" onclick="window._showLeaveChat('${l._key}', 'Manajemen')">💬 Diskusi</button>
+              ${renderLeaveChatButton(l, 'Manajemen')}
               <button class="btn btn-outline-danger" style="padding:0.3rem 0.6rem;font-size:0.7rem" onclick="window._deleteLeave('${l._key}')">Hapus</button>
             </div>
           </div>
@@ -985,7 +1049,7 @@ function renderEmpLeaves() {
             <span class="badge ${sc}">${esc(l.status)}</span>
             <div style="display:flex;gap:0.25rem">
               ${l.status === 'Menunggu' ? `<button class="btn btn-secondary" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="window._editEmpLeaveForm('${l._key}')">Edit</button>` : ''}
-              <button class="btn btn-primary" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="window._showLeaveChat('${l._key}', 'Karyawan')">💬 Diskusi</button>
+              ${renderLeaveChatButton(l, 'Karyawan')}
             </div>
           </div>
         </div>
