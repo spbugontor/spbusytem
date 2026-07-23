@@ -16,8 +16,8 @@
 <body>
   <div class="box">
     <h2>🔄 Migrasi Data Absensi</h2>
-    <p>Mengubah nama <strong>"Robby Ferdian"</strong> → <strong>"Ferdian Robby"</strong> di semua record absensi Firebase.</p>
-    <div id="status" class="info">Memulai migrasi...</div>
+    <p>Menghapus semua data karyawan bernama <strong>"Ajel"</strong> (termasuk riwayat absensi) dari Firebase.</p>
+    <div id="status" class="info">Memulai proses...</div>
   </div>
 
   <script type="module">
@@ -46,33 +46,42 @@
 
       const snap = await get(ref(db, 'absensi/records'));
       const records = snap.val();
+      
+      const empSnap = await get(ref(db, 'absensi/employees'));
+      const emps = empSnap.val();
 
-      if (!records) {
-        log('Tidak ada record absensi ditemukan.', 'error');
-      } else {
-        const OLD_NAME = "Robby Ferdian";
-        const NEW_NAME = "Ferdian Robby";
+      const TARGET_NAME = "Ajel";
+      const updates = {};
+      let countRec = 0;
+      let countEmp = 0;
 
-        const updates = {};
-        let count = 0;
-
+      if (records) {
         for (const [key, rec] of Object.entries(records)) {
-          if (rec.emp_name === OLD_NAME) {
-            updates[`absensi/records/${key}/emp_name`] = NEW_NAME;
-            count++;
+          if (rec.emp_name === TARGET_NAME) {
+            updates[`absensi/records/${key}`] = null; // delete
+            countRec++;
           }
         }
-
-        if (count === 0) {
-          log(`Tidak ada record dengan nama "${OLD_NAME}".`, 'info');
-        } else {
-          log(`Ditemukan ${count} record dengan nama "${OLD_NAME}".`, 'info');
-          log(`Mengubah menjadi "${NEW_NAME}"...`, 'info');
-
-          await update(ref(db), updates);
-          log(`\n✅ Berhasil mengubah ${count} record!`, 'success');
-          log('\nSilakan tutup halaman ini dan refresh halaman absensi.', 'success');
+      }
+      
+      if (emps) {
+        for (const [key, emp] of Object.entries(emps)) {
+          if (emp.name === TARGET_NAME) {
+            updates[`absensi/employees/${key}`] = null; // delete
+            countEmp++;
+          }
         }
+      }
+
+      if (countRec === 0 && countEmp === 0) {
+        log(`Tidak ada data dengan nama "${TARGET_NAME}".`, 'info');
+      } else {
+        log(`Ditemukan ${countEmp} data profil dan ${countRec} riwayat absensi bernama "${TARGET_NAME}".`, 'info');
+        log(`Menghapus data...`, 'info');
+
+        await update(ref(db), updates);
+        log(`\n✅ Berhasil menghapus semua data ${TARGET_NAME}!`, 'success');
+        log('\nSilakan tutup halaman ini dan refresh halaman absensi utama.', 'success');
       }
     } catch (err) {
       log('Error: ' + err.message, 'error');
