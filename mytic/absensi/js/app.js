@@ -249,9 +249,14 @@ function renderLeaderboard() {
     return;
   }
 
+  const getRankIcon = (index) => {
+    const icons = ['👑','🥈','🥉','🌟','✨','🎖️','🏅','💎','🔥','🚀','🎯','🏆','⭐','👍'];
+    return icons[index] || '👏';
+  };
+
   const generateListHTML = (list, isTop3) => list.map((s, i) => `
     <div class="leaderboard-item rank-${i + 1}" data-emp="${esc(s.name)}" style="${!isTop3 ? 'cursor:pointer;background:var(--bg);box-shadow:none;border:1px solid var(--border);margin-bottom:0.5rem;' : 'cursor:default;'}">
-      <div class="leaderboard-rank" style="${!isTop3 && i >= 3 ? 'background:var(--border);color:var(--text);border-radius:var(--radius-sm);' : ''}">#${i + 1}</div>
+      <div class="leaderboard-rank" style="font-size:1.6rem; background:transparent;">${getRankIcon(i)}</div>
       <div class="leaderboard-info">
         <div class="leaderboard-name">${esc(s.name)}</div>
       </div>
