@@ -635,159 +635,75 @@ async function handleChangePassword(e) {
 function handleExportPDF() {
   const todayOrders = getTodayOrders();
   if (todayOrders.length === 0) {
-    toast('Tidak ada data untuk dicetak', 'error');
+    toast('Tidak ada data untuk diunduh', 'error');
     return;
   }
 
-  const printWindow = window.open('', '_blank');
-  if (!printWindow) {
-    toast('Gagal membuka jendela cetak. Pastikan pop-up diperbolehkan.', 'error');
-    return;
-  }
-
+  // Create a temporary element to hold the report HTML
+  const element = document.createElement('div');
+  
   let tableRows = todayOrders.map((o, idx) => {
     const status = o.sudah_bayar ? "Lunas" : "Belum Bayar";
-    const statusClass = o.sudah_bayar ? "status-paid" : "status-unpaid";
+    const statusStyle = o.sudah_bayar ? "background-color: #DEF7EC; color: #03543F; border: 1px solid #86EFAC;" : "background-color: #FDE8E8; color: #9B1C1C; border: 1px solid #FCA5A5;";
     return `
       <tr>
-        <td style="text-align: center;">${idx + 1}</td>
-        <td>${esc(o.nama)}</td>
-        <td style="text-align: center; font-family: monospace;">${esc(o.kk)}</td>
-        <td style="text-align: center; font-family: monospace;">${esc(o.nik)}</td>
-        <td style="text-align: center;"><span class="badge ${statusClass}">${status}</span></td>
-        <td style="text-align: center;"><div class="check-box"></div></td>
+        <td style="text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${idx + 1}</td>
+        <td style="border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${esc(o.nama)}</td>
+        <td style="text-align: center; font-family: monospace; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${esc(o.kk)}</td>
+        <td style="text-align: center; font-family: monospace; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${esc(o.nik)}</td>
+        <td style="text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">
+          <span style="display: inline-block; padding: 3px 8px; border-radius: 9999px; font-weight: 700; font-size: 9px; ${statusStyle}">${status}</span>
+        </td>
+        <td style="text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">
+          <div style="display: inline-block; width: 14px; height: 14px; border: 1.5px solid #4B5563; border-radius: 3px; margin: 0 auto;"></div>
+        </td>
       </tr>
     `;
   }).join('');
 
-  const htmlContent = `
-    <!DOCTYPE html>
-    <html lang="id">
-    <head>
-      <meta charset="UTF-8">
-      <title>Rekap Pemesanan LPG 3 KG - ${getTodayString()}</title>
-      <style>
-        body {
-          font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-          color: #1C1917;
-          margin: 30px;
-          line-height: 1.4;
-        }
-        .header {
-          text-align: center;
-          margin-bottom: 25px;
-          border-bottom: 3px double #0D9488;
-          padding-bottom: 15px;
-        }
-        .header h1 {
-          margin: 0;
-          font-size: 22px;
-          color: #0D9488;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        .header p {
-          margin: 6px 0 0;
-          color: #57534E;
-          font-size: 13px;
-          font-weight: 500;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-bottom: 20px;
-        }
-        th, td {
-          border: 1px solid #D1D5DB;
-          padding: 8px 10px;
-          font-size: 12px;
-          text-align: left;
-        }
-        th {
-          background-color: #F3F4F6;
-          color: #1F2937;
-          font-weight: 700;
-          text-transform: uppercase;
-          font-size: 11px;
-          letter-spacing: 0.3px;
-        }
-        tr:nth-child(even) {
-          background-color: #F9FAFB;
-        }
-        .badge {
-          display: inline-block;
-          padding: 3px 8px;
-          border-radius: 9999px;
-          font-size: 10px;
-          font-weight: 700;
-        }
-        .status-paid {
-          background-color: #DEF7EC;
-          color: #03543F;
-          border: 1px solid #86EFAC;
-        }
-        .status-unpaid {
-          background-color: #FDE8E8;
-          color: #9B1C1C;
-          border: 1px solid #FCA5A5;
-        }
-        .check-box {
-          display: inline-block;
-          width: 16px;
-          height: 16px;
-          border: 1.5px solid #4B5563;
-          border-radius: 4px;
-          margin: 0 auto;
-        }
-        .footer {
-          margin-top: 40px;
-          text-align: right;
-          font-size: 11px;
-          color: #6B7280;
-          border-top: 1px solid #E5E7EB;
-          padding-top: 10px;
-        }
-        @media print {
-          body { margin: 10px; }
-          tr { page-break-inside: avoid; }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <h1>Rekap Pemesanan LPG 3 KG</h1>
-        <p>Tanggal Laporan: ${getTodayString()} | Total Pemesan Hari Ini: ${todayOrders.length} Orang</p>
+  element.innerHTML = `
+    <div style="font-family: 'Plus Jakarta Sans', Arial, sans-serif; color: #1C1917; padding: 20px; line-height: 1.4;">
+      <div style="text-align: center; margin-bottom: 20px; border-bottom: 3px double #0D9488; padding-bottom: 12px;">
+        <h1 style="margin: 0; font-size: 20px; color: #0D9488; text-transform: uppercase; letter-spacing: 0.5px;">Rekap Pemesanan LPG 3 KG</h1>
+        <p style="margin: 6px 0 0; color: #57534E; font-size: 12px; font-weight: 500;">Tanggal Laporan: ${getTodayString()} | Total Pemesan Hari Ini: ${todayOrders.length} Orang</p>
       </div>
-      <table>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
         <thead>
           <tr>
-            <th style="width: 40px; text-align: center;">No</th>
-            <th>Nama Pemesan</th>
-            <th style="width: 140px; text-align: center;">Nomor KK</th>
-            <th style="width: 140px; text-align: center;">NIK KTP</th>
-            <th style="width: 110px; text-align: center;">Status Bayar</th>
-            <th style="width: 70px; text-align: center;">Ceklis</th>
+            <th style="width: 40px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">No</th>
+            <th style="border: 1px solid #D1D5DB; padding: 8px 10px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">Nama Pemesan</th>
+            <th style="width: 130px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">Nomor KK</th>
+            <th style="width: 130px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">NIK KTP</th>
+            <th style="width: 100px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">Status Bayar</th>
+            <th style="width: 60px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">Ceklis</th>
           </tr>
         </thead>
         <tbody>
           ${tableRows}
         </tbody>
       </table>
-      <div class="footer">
-        Dicetak melalui Sistem Agen LPG 3 KG pada ${new Date().toLocaleString('id-ID')}
+      <div style="margin-top: 30px; text-align: right; font-size: 10px; color: #6B7280; border-top: 1px solid #E5E7EB; padding-top: 8px;">
+        Diunduh melalui Sistem Agen LPG 3 KG pada ${new Date().toLocaleString('id-ID')}
       </div>
-      <script>
-        window.onload = function() {
-          window.print();
-          setTimeout(function() { window.close(); }, 500);
-        };
-      </script>
-    </body>
-    </html>
+    </div>
   `;
 
-  printWindow.document.write(htmlContent);
-  printWindow.document.close();
+  const opt = {
+    margin:       10,
+    filename:     `Rekap_Pemesanan_LPG_${getTodayString()}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  // Generate and download PDF
+  toast('Sedang memproses unduhan PDF...', 'info');
+  html2pdf().set(opt).from(element).save().then(() => {
+    toast('Unduhan PDF berhasil!', 'success');
+  }).catch(err => {
+    console.error(err);
+    toast('Gagal mengunduh PDF', 'error');
+  });
 }
 
 // ─────────────────────────────────────────────
