@@ -697,7 +697,6 @@ function handleExportPDF() {
   };
 
   // Generate and download PDF
-  toast('Sedang memproses unduhan PDF...', 'info');
   html2pdf().set(opt).from(element).save().then(() => {
     toast('Unduhan PDF berhasil!', 'success');
   }).catch(err => {
