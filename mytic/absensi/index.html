@@ -300,6 +300,12 @@
             <label class="form-label">Pesan Absen Pulang</label>
             <textarea id="msg-clock-out" class="form-textarea" rows="3" placeholder="Pesan saat pulang..."></textarea>
           </div>
+          <hr style="border:0;border-top:1px solid var(--border);margin:1.5rem 0;">
+          <h4 class="form-label" style="font-size:1rem;margin-bottom:1rem;color:var(--text);">Hak Akses Peringkat Karyawan</h4>
+          <div class="form-group" style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.5rem;">
+            <input type="checkbox" id="setting-rank-clickable" style="width:1.25rem;height:1.25rem;cursor:pointer;">
+            <label for="setting-rank-clickable" class="form-label" style="margin-bottom:0;cursor:pointer;font-weight:normal;">Izinkan karyawan mengklik papan peringkat untuk melihat rincian absensi</label>
+          </div>
           <div class="card" style="background:var(--info-light);border-color:var(--info);margin-bottom:1rem;">
             <p class="text-sm" style="color:var(--info);"><strong>Variabel:</strong> {nama} = nama karyawan | {waktu} = waktu absen | {terlambat} = durasi terlambat</p>
           </div>

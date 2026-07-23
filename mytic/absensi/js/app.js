@@ -258,8 +258,9 @@ function renderLeaderboard() {
 
   const generateListHTML = (list, isTop3) => list.map((s, i) => {
     const isMedal = i < 3;
+    const isClickable = isTop3 ? (allData.settings.rank_clickable || false) : true;
     return `
-    <div class="leaderboard-item rank-${i + 1}" data-emp="${esc(s.name)}" style="${!isTop3 ? 'cursor:pointer;background:var(--bg);box-shadow:none;border:1px solid var(--border);margin-bottom:0.5rem;' : 'cursor:default;'}">
+    <div class="leaderboard-item rank-${i + 1}" data-emp="${esc(s.name)}" style="${isClickable ? 'cursor:pointer;' : 'cursor:default;'}${!isTop3 ? 'background:var(--bg);box-shadow:none;border:1px solid var(--border);margin-bottom:0.5rem;' : ''}">
       <div class="leaderboard-rank" style="${isMedal ? 'font-size:1.6rem; background:transparent;' : 'font-size:1.1rem; background:var(--border); color:var(--text); border-radius:var(--radius-sm); height:30px; display:flex; align-items:center; justify-content:center; margin:auto 0;'}">${getRankIcon(i)}</div>
       <div class="leaderboard-info">
         <div class="leaderboard-name">${esc(s.name)}</div>
@@ -267,6 +268,12 @@ function renderLeaderboard() {
     </div>
   `}).join('');
   container.innerHTML = generateListHTML(scores, true);
+
+  if (allData.settings.rank_clickable) {
+    container.querySelectorAll('.leaderboard-item').forEach(item => {
+      item.addEventListener('click', () => showLeaderboardDetail(item.dataset.emp));
+    });
+  }
 
   const adminContainer = $('admin-leaderboard-list');
   if (adminContainer) {
@@ -1210,6 +1217,7 @@ function renderMessagesForm() {
   $('msg-on-time').value = msgs.onTime;
   $('msg-late').value = msgs.late;
   $('msg-clock-out').value = msgs.clockOut;
+  $('setting-rank-clickable').checked = allData.settings.rank_clickable || false;
   
   const shiftContainer = $('shift-settings-container');
   if (shiftContainer) {
@@ -1247,7 +1255,8 @@ $('btn-save-messages').addEventListener('click', async () => {
   const updates = {
     msg_on_time: onTime,
     msg_late: late,
-    msg_clock_out: clockOut
+    msg_clock_out: clockOut,
+    rank_clickable: $('setting-rank-clickable').checked
   };
   
   const newPin = $('setting-pin').value.trim();
