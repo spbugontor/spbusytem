@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Migrasi Data Absensi</title>
+  <style>
+    body { font-family: sans-serif; background: #0F172A; color: #F8FAFC; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+    .box { background: #1E293B; padding: 2rem; border-radius: 1rem; max-width: 500px; width: 90%; text-align: center; }
+    h2 { margin-bottom: 1rem; }
+    #status { margin-top: 1rem; padding: 1rem; background: #334155; border-radius: 0.5rem; font-size: 0.9rem; white-space: pre-wrap; text-align: left; }
+    .success { color: #4ADE80; }
+    .error { color: #F87171; }
+    .info { color: #60A5FA; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>🔄 Migrasi Data Absensi</h2>
+    <p>Mengubah nama <strong>"Robby Ferdian"</strong> → <strong>"Ferdian Robby"</strong> di semua record absensi Firebase.</p>
+    <div id="status" class="info">Memulai migrasi...</div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+
+    const statusEl = document.getElementById('status');
+    function log(msg, cls) {
+      statusEl.innerHTML += `<span class="${cls || ''}">${msg}</span>\n`;
+    }
+
+    try {
+      const app = initializeApp({
+        apiKey: "AIzaSyBBcb3lbQJQ30BZZoBV4j5l1mTwPfsVh2o",
+        authDomain: "spbu-system.firebaseapp.com",
+        databaseURL: "https://spbu-system-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "spbu-system",
+        storageBucket: "spbu-system.firebasestorage.app",
+        messagingSenderId: "397973887906",
+        appId: "1:397973887906:web:7e7a2f502db9efa3df70fb"
+      });
+
+      const db = getDatabase(app);
+      statusEl.innerHTML = '';
+      log('Terhubung ke Firebase...', 'info');
+
+      const snap = await get(ref(db, 'absensi/records'));
+      const records = snap.val();
+
+      if (!records) {
+        log('Tidak ada record absensi ditemukan.', 'error');
+      } else {
+        const OLD_NAME = "Robby Ferdian";
+        const NEW_NAME = "Ferdian Robby";
+
+        const updates = {};
+        let count = 0;
+
+        for (const [key, rec] of Object.entries(records)) {
+          if (rec.emp_name === OLD_NAME) {
+            updates[`absensi/records/${key}/emp_name`] = NEW_NAME;
+            count++;
+          }
+        }
+
+        if (count === 0) {
+          log(`Tidak ada record dengan nama "${OLD_NAME}".`, 'info');
+        } else {
+          log(`Ditemukan ${count} record dengan nama "${OLD_NAME}".`, 'info');
+          log(`Mengubah menjadi "${NEW_NAME}"...`, 'info');
+
+          await update(ref(db), updates);
+          log(`\n✅ Berhasil mengubah ${count} record!`, 'success');
+          log('\nSilakan tutup halaman ini dan refresh halaman absensi.', 'success');
+        }
+      }
+    } catch (err) {
+      log('Error: ' + err.message, 'error');
+    }
+  </script>
+</body>
+</html>
