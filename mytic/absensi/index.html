@@ -173,14 +173,20 @@
 
     <!-- ==================== VIEW: PILIH KARYAWAN ==================== -->
     <div id="view-select" class="view active">
-      <h2 class="section-title">Pilih Karyawan</h2>
-      <div id="employee-list" class="emp-grid mb-6"></div>
-      <p id="no-employees" class="no-data hidden mb-6">Belum ada karyawan. Hubungi admin untuk menambahkan.</p>
-      
-      <div class="card" style="margin-top:2rem;">
-        <h3 class="section-title" style="font-size:1.1rem; text-align:center; margin-bottom:1rem;">🏆 Karyawan Paling Disiplin Bulan Ini</h3>
-        <div id="leaderboard-list">
-          <!-- Leaderboard will be populated here -->
+      <div class="dashboard-layout">
+        <div class="dashboard-main">
+          <h2 class="section-title">Pilih Karyawan</h2>
+          <div id="employee-list" class="emp-grid mb-6"></div>
+          <p id="no-employees" class="no-data hidden mb-6">Belum ada karyawan. Hubungi admin untuk menambahkan.</p>
+        </div>
+        
+        <div class="dashboard-sidebar">
+          <div class="card" style="margin-top:0;">
+            <h3 class="section-title" style="font-size:1.1rem; text-align:center; margin-bottom:1rem;">🏆 Karyawan Paling Disiplin Bulan Ini</h3>
+            <div id="leaderboard-list">
+              <!-- Leaderboard will be populated here -->
+            </div>
+          </div>
         </div>
       </div>
     </div>
