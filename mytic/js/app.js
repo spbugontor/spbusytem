@@ -301,13 +301,11 @@ function setupNavigation() {
   if (isAdmin) {
     const allLeaves = getLeaves();
     adminHasPendingLeave = allLeaves.some(l => {
-      if (l.status === 'Menunggu') return true;
       const chats = l.chats ? Object.values(l.chats) : [];
-      if (chats.length > 0) {
-        chats.sort((a, b) => a.timestamp - b.timestamp);
-        return chats[chats.length - 1].role === 'Karyawan';
-      }
-      return false;
+      const lastRead = l.lastRead_Manajemen || 0;
+      const hasUnreadChat = chats.some(c => c.role === 'Karyawan' && c.timestamp > lastRead);
+      const isUnreadPending = l.status === 'Menunggu' && !l.lastRead_Manajemen;
+      return hasUnreadChat || isUnreadPending;
     });
   } else if (currentUser && currentUser.username) {
     const emp = getUserByUsername(currentUser.username);
@@ -315,11 +313,8 @@ function setupNavigation() {
       const empLeaves = getLeaves(emp.emp_id);
       empHasUnreadLeave = empLeaves.some(l => {
         const chats = l.chats ? Object.values(l.chats) : [];
-        if (chats.length > 0) {
-          chats.sort((a, b) => a.timestamp - b.timestamp);
-          return chats[chats.length - 1].role === 'Manajemen';
-        }
-        return false;
+        const lastRead = l.lastRead_Karyawan || 0;
+        return chats.some(c => c.role === 'Manajemen' && c.timestamp > lastRead);
       });
     }
   }
@@ -553,13 +548,13 @@ function renderLeaveChatButton(l, role) {
   }
 
   chats.sort((a, b) => a.timestamp - b.timestamp);
-  const lastChat = chats[chats.length - 1];
-  const hasUnread = lastChat && lastChat.role !== role;
+  const lastRead = role === 'Manajemen' ? (l.lastRead_Manajemen || 0) : (l.lastRead_Karyawan || 0);
+  const unreadCount = chats.filter(c => c.role !== role && c.timestamp > lastRead).length;
 
-  if (hasUnread) {
+  if (unreadCount > 0) {
     return `<button class="btn btn-primary" style="padding:0.3rem 0.6rem;font-size:0.7rem;display:inline-flex;align-items:center;gap:0.3rem;border:1.5px solid var(--danger);box-shadow: 0 0 8px rgba(239, 68, 68, 0.4)" onclick="window._showLeaveChat('${l._key}', '${role}')">
       💬 Diskusi (${chats.length}) 
-      <span style="background:var(--danger);color:#fff;font-size:0.6rem;padding:1px 5px;border-radius:8px;font-weight:700">Pesan Baru!</span>
+      <span style="background:var(--danger);color:#fff;font-size:0.6rem;padding:1px 5px;border-radius:8px;font-weight:700">${unreadCount} Baru!</span>
     </button>`;
   }
 
@@ -1426,8 +1421,15 @@ window._deleteLeave = async (key) => { if (confirm('Hapus pengajuan?')) { await 
 window._showLeaveChat = (key, role) => {
   const l = allData.leaves[key];
   if (!l) return;
-  const chats = l.chats ? Object.values(l.chats) : [];
   
+  // Mark as read in Firebase and local state
+  const readField = role === 'Manajemen' ? 'lastRead_Manajemen' : 'lastRead_Karyawan';
+  const now = Date.now();
+  update(ref(db, `leaves/${key}`), { [readField]: now });
+  l[readField] = now;
+  if (currentUser) setupNavigation();
+
+  const chats = l.chats ? Object.values(l.chats) : [];
   chats.sort((a, b) => a.timestamp - b.timestamp);
 
   let chatHTML = chats.length === 0 ? '<p class="text-muted text-center" style="margin-top:2rem">Belum ada pesan. Mulai diskusi di bawah.</p>' :
@@ -1467,20 +1469,21 @@ window._sendLeaveChat = async (key, role) => {
   if (!msg) return;
   
   const senderName = role === 'Manajemen' ? 'Manajemen' : (getUserByUsername(currentUser.username)?.name || 'Karyawan');
-  
+  const now = Date.now();
+  const readField = role === 'Manajemen' ? 'lastRead_Manajemen' : 'lastRead_Karyawan';
+
   inp.disabled = true;
   await set(push(ref(db, `leaves/${key}/chats`)), {
     senderName,
     role,
     message: msg,
-    timestamp: Date.now()
+    timestamp: now
   });
+  await update(ref(db, `leaves/${key}`), { [readField]: now });
+  if (allData.leaves[key]) allData.leaves[key][readField] = now;
   
   inp.disabled = false;
   inp.value = '';
-  // Note: we don't strictly need to manually call _showLeaveChat because the firebase onValue listener 
-  // on 'leaves' will update allData and might trigger a re-render. 
-  // However, since we are inside a modal, updating it directly is smoother.
   window._showLeaveChat(key, role);
 };
 window._showEmpLeaveForm = () => {
