@@ -742,7 +742,8 @@ let editingRecordKey = null;
 function openEditRecordModal(record) {
   editingRecordKey = record._key;
   $('edit-rec-name').value = record.emp_name;
-  $('edit-rec-date').value = fmtDateID(record.date);
+  $('edit-rec-date').value = record.date;
+  $('edit-rec-date').disabled = true;
   
   let shiftKey = '-';
   if (record.shift && record.shift !== '-') {
@@ -755,6 +756,28 @@ function openEditRecordModal(record) {
   
   const sVal = ['Sakit','Izin','Cuti','Libur','Lainnya'].includes(record.status) ? record.status : 'Hadir';
   $('edit-rec-status').value = sVal;
+  
+  toggleEditRecordFormFields();
+  $('edit-record-overlay').classList.add('active');
+}
+
+function openNewRecordModal(empName) {
+  editingRecordKey = 'NEW';
+  $('edit-rec-name').value = empName;
+  
+  let dateVal = $('report-date').value;
+  if (!dateVal) {
+    const t = new Date();
+    dateVal = t.toISOString().slice(0, 10);
+  }
+  
+  $('edit-rec-date').value = dateVal;
+  $('edit-rec-date').disabled = false; // Allow changing date for new record
+  
+  $('edit-rec-shift').value = '-';
+  $('edit-rec-in').value = '-';
+  $('edit-rec-out').value = '-';
+  $('edit-rec-status').value = 'Izin';
   
   toggleEditRecordFormFields();
   $('edit-record-overlay').classList.add('active');
@@ -790,8 +813,12 @@ $('edit-rec-cancel').addEventListener('click', () => {
 
 $('edit-rec-save').addEventListener('click', async () => {
   if (!editingRecordKey) return;
-  const record = getRecords().find(r => r._key === editingRecordKey);
-  if (!record) return;
+  
+  let record = null;
+  if (editingRecordKey !== 'NEW') {
+    record = getRecords().find(r => r._key === editingRecordKey);
+    if (!record) return;
+  }
   
   const statusVal = $('edit-rec-status').value;
   const shiftKey = $('edit-rec-shift').value;
@@ -813,8 +840,9 @@ $('edit-rec-save').addEventListener('click', async () => {
       return;
     }
     
-    const clockIn = (record.clock_in && record.clock_in !== '-') ? record.clock_in : nowTime();
-    const clockOut = (record.clock_out && record.clock_out !== '-') ? record.clock_out : '';
+    
+    const clockIn = (record && record.clock_in && record.clock_in !== '-') ? record.clock_in : nowTime();
+    const clockOut = (record && record.clock_out && record.clock_out !== '-') ? record.clock_out : '';
     
     const late = calcLate(shiftKey, clockIn);
     const statusText = late > 0 ? formatLate(late) : 'On Time ✓';
@@ -829,7 +857,23 @@ $('edit-rec-save').addEventListener('click', async () => {
     };
   }
   
-  await update(ref(db, 'absensi/records/' + editingRecordKey), updates);
+  if (editingRecordKey === 'NEW') {
+    const targetDate = $('edit-rec-date').value;
+    if (!targetDate) { showToast('Tanggal harus diisi', 'warning'); return; }
+    
+    // Check if record already exists for this date
+    const empName = $('edit-rec-name').value;
+    const existing = getRecords().find(r => r.emp_name === empName && r.date === targetDate);
+    if (existing) { showToast('Karyawan sudah memiliki data pada tanggal ini. Silakan edit data yang ada.', 'warning'); return; }
+    
+    updates.emp_name = empName;
+    updates.date = targetDate;
+    updates.timestamp = Date.now();
+    await push(ref(db, 'absensi/records'), updates);
+  } else {
+    await update(ref(db, 'absensi/records/' + editingRecordKey), updates);
+  }
+  
   $('edit-record-overlay').classList.remove('active');
   editingRecordKey = null;
   showToast('Data absensi diperbarui!', 'success');
@@ -843,7 +887,11 @@ function showEmpPeriodDetail(name, empRecs) {
   
   let html = '<div style="max-height:350px;overflow-y:auto;">';
   if (empRecs.length === 0) {
-    html += '<p class="text-sm text-muted" style="text-align:center;padding:1rem;">Tidak ada data absensi untuk periode ini.</p>';
+    html += `
+      <div style="text-align:center;padding:1.5rem 1rem;">
+        <p class="text-sm text-muted" style="margin-bottom:1rem;">Tidak ada data absensi untuk periode ini.</p>
+        <button class="btn btn-primary btn-add-record-modal" data-name="${name}" style="padding:0.4rem 0.8rem;font-size:0.8rem;">+ Tambah Absensi Manual</button>
+      </div>`;
   } else {
     empRecs.sort((a,b) => b.date.localeCompare(a.date)).forEach(r => {
       const statusColor = (!r.clock_in || r.clock_in === '-') ? 'var(--info)' : ((r.late_minutes || 0) > 0 ? 'var(--warning)' : 'var(--success)');
@@ -875,6 +923,13 @@ function showEmpPeriodDetail(name, empRecs) {
       if (record) {
         openEditRecordModal(record);
       }
+    });
+  });
+  
+  $('detail-content').querySelectorAll('.btn-add-record-modal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $('detail-overlay').classList.remove('active');
+      openNewRecordModal(btn.dataset.name);
     });
   });
 }
