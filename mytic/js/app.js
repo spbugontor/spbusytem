@@ -524,7 +524,7 @@ function renderMgmtLeaves() {
               <option value="Ditolak" ${l.status === 'Ditolak' ? 'selected' : ''}>Ditolak</option>
             </select>
             <div style="display:flex;gap:0.5rem">
-              <button class="btn btn-secondary" style="padding:0.3rem 0.6rem;font-size:0.7rem" onclick="window._addLeaveNote('${l._key}')">Catatan</button>
+              <button class="btn btn-primary" style="padding:0.3rem 0.6rem;font-size:0.7rem" onclick="window._showLeaveChat('${l._key}', 'Manajemen')">💬 Diskusi</button>
               <button class="btn btn-outline-danger" style="padding:0.3rem 0.6rem;font-size:0.7rem" onclick="window._deleteLeave('${l._key}')">Hapus</button>
             </div>
           </div>
@@ -975,11 +975,20 @@ function renderEmpLeaves() {
       leaves.map(l => {
         const sc = l.status === 'Disetujui' ? 'badge-success' : l.status === 'Ditolak' ? 'badge-danger' : 'badge-warning';
         return `<div class="card" style="margin-bottom:0.75rem;border-left:4px solid ${l.status === 'Disetujui' ? 'var(--success)' : l.status === 'Ditolak' ? 'var(--danger)' : 'var(--warning)'}">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div><strong>${esc(l.leave_type)}</strong><br><span class="text-xs text-muted">${fmtDate(l.start_date)} - ${fmtDate(l.end_date)}</span><br><span class="text-xs text-muted">${esc(l.reason || '')}</span></div>
-          <span class="badge ${sc}">${esc(l.status)}</span>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.5rem">
+          <div style="flex:1;min-width:200px">
+            <strong>${esc(l.leave_type)}</strong><br>
+            <span class="text-xs text-muted">${fmtDate(l.start_date)} - ${fmtDate(l.end_date)}</span><br>
+            <span class="text-xs text-muted">${esc(l.reason || '')}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.5rem">
+            <span class="badge ${sc}">${esc(l.status)}</span>
+            <div style="display:flex;gap:0.25rem">
+              ${l.status === 'Menunggu' ? `<button class="btn btn-secondary" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="window._editEmpLeaveForm('${l._key}')">Edit</button>` : ''}
+              <button class="btn btn-primary" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="window._showLeaveChat('${l._key}', 'Karyawan')">💬 Diskusi</button>
+            </div>
+          </div>
         </div>
-        ${l.feedback ? `<p class="text-xs text-muted mt-2" style="border-top:1px solid var(--border);padding-top:0.5rem">Feedback: ${esc(l.feedback)}</p>` : ''}
       </div>`;
       }).join('')}
   </div>`;
@@ -1349,27 +1358,65 @@ window._updateLeaveStatus = async (key, status) => {
 };
 window._deleteLeave = async (key) => { if (confirm('Hapus pengajuan?')) { await remove(ref(db, 'leaves/' + key)); showToast('Dihapus!', 'success'); } };
 
-window._addLeaveNote = (key) => {
+window._showLeaveChat = (key, role) => {
   const l = allData.leaves[key];
   if (!l) return;
-  showModal(`<div class="modal-header"><h3 class="modal-title">Catatan Manajemen</h3><button class="modal-close" onclick="window._hideModal()">✕</button></div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label">Tulis Catatan / Feedback</label>
-        <textarea id="ln-note" class="form-input" rows="3" placeholder="Masukkan catatan...">${esc(l.feedback || '')}</textarea>
+  const chats = l.chats ? Object.values(l.chats) : [];
+  
+  chats.sort((a, b) => a.timestamp - b.timestamp);
+
+  let chatHTML = chats.length === 0 ? '<p class="text-muted text-center" style="margin-top:2rem">Belum ada pesan. Mulai diskusi di bawah.</p>' :
+    chats.map(c => {
+      const isMe = c.role === role;
+      return `<div style="display:flex; flex-direction:column; align-items:${isMe ? 'flex-end' : 'flex-start'}; margin-bottom: 0.75rem;">
+        <span class="text-xs text-muted" style="margin-bottom:0.25rem">${esc(c.senderName)} • ${new Date(c.timestamp).toLocaleString('id-ID', {hour:'2-digit', minute:'2-digit', day:'numeric', month:'short'})}</span>
+        <div style="background:${isMe ? 'var(--primary)' : 'var(--bg-color)'}; color:${isMe ? '#fff' : 'var(--text)'}; padding:0.5rem 0.75rem; border-radius: var(--radius-md); max-width:85%; font-size:0.85rem; border: 1px solid ${isMe ? 'var(--primary)' : 'var(--border)'};">
+          ${esc(c.message)}
+        </div>
+      </div>`;
+    }).join('');
+
+  showModal(`<div class="modal-header" style="border-bottom:1px solid var(--border);"><h3 class="modal-title">💬 Diskusi Pengajuan</h3><button class="modal-close" onclick="window._hideModal()">✕</button></div>
+    <div class="modal-body" style="padding:0; display:flex; flex-direction:column;">
+      <div id="leave-chat-box" style="height: 350px; overflow-y: auto; padding: 1rem; background: var(--surface);">
+        ${chatHTML}
       </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-primary" onclick="window._saveLeaveNote('${key}')">Simpan</button>
-      <button class="btn btn-secondary" onclick="window._hideModal()">Batal</button>
+      <div style="padding: 1rem; border-top: 1px solid var(--border); display:flex; gap:0.5rem; background: var(--surface);">
+        <input type="text" id="leave-chat-input" class="form-input" placeholder="Ketik pesan..." style="flex:1;" onkeypress="if(event.key==='Enter') window._sendLeaveChat('${key}', '${role}')">
+        <button class="btn btn-primary" onclick="window._sendLeaveChat('${key}', '${role}')">Kirim</button>
+      </div>
     </div>`);
+    
+  setTimeout(() => {
+    const box = $('leave-chat-box');
+    if (box) box.scrollTop = box.scrollHeight;
+    const inp = $('leave-chat-input');
+    if (inp) inp.focus();
+  }, 100);
 };
 
-window._saveLeaveNote = async (key) => {
-  const feedback = $('ln-note').value.trim();
-  await update(ref(db, 'leaves/' + key), { feedback });
-  showToast('Catatan disimpan!', 'success');
-  hideModal();
+window._sendLeaveChat = async (key, role) => {
+  const inp = $('leave-chat-input');
+  if (!inp) return;
+  const msg = inp.value.trim();
+  if (!msg) return;
+  
+  const senderName = role === 'Manajemen' ? 'Manajemen' : (getUserByUsername(currentUser.username)?.name || 'Karyawan');
+  
+  inp.disabled = true;
+  await set(push(ref(db, `leaves/${key}/chats`)), {
+    senderName,
+    role,
+    message: msg,
+    timestamp: Date.now()
+  });
+  
+  inp.disabled = false;
+  inp.value = '';
+  // Note: we don't strictly need to manually call _showLeaveChat because the firebase onValue listener 
+  // on 'leaves' will update allData and might trigger a re-render. 
+  // However, since we are inside a modal, updating it directly is smoother.
+  window._showLeaveChat(key, role);
 };
 window._showEmpLeaveForm = () => {
   const emp = getUserByUsername(currentUser.username); if (!emp) return;
@@ -1429,6 +1476,75 @@ window._saveEmpLeave = async () => {
   showToast('Pengajuan berhasil!', 'success');
   $('emp-leave-form-area').innerHTML = '';
 };
+
+window._editEmpLeaveForm = (key) => {
+  const l = allData.leaves[key];
+  if (!l || l.status !== 'Menunggu') return;
+  const emp = getUserByUsername(currentUser.username); if (!emp) return;
+  const area = $('emp-leave-form-area'); if (!area) return;
+  const types = getLeaveTypes().filter(t => !t.gender || t.gender === 'Semua' || t.gender === emp.gender);
+  area.innerHTML = `<div class="card mb-4 fade-in" style="border:2px solid var(--warning)">
+    <h3 class="card-title mb-4">Edit Pengajuan Izin/Cuti</h3>
+    <div class="form-group"><label class="form-label">Jenis</label><select id="lf-type-edit" class="form-input form-select">
+      <option value="Izin" ${l.leave_type === 'Izin' ? 'selected' : ''}>Izin (Umum)</option>
+      ${types.map(t => `<option value="${esc(t.name)}" ${l.leave_type === t.name ? 'selected' : ''}>${esc(t.name)} (${t.quota} hari)</option>`).join('')}
+    </select></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div class="form-group"><label class="form-label">Mulai</label><input id="lf-start-edit" type="date" class="form-input" value="${l.start_date}"></div>
+      <div class="form-group"><label class="form-label">Selesai</label><input id="lf-end-edit" type="date" class="form-input" value="${l.end_date}"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Alasan</label><textarea id="lf-reason-edit" class="form-input" rows="2" placeholder="Jelaskan alasan...">${esc(l.reason || '')}</textarea></div>
+    <div style="display:flex;gap:0.75rem">
+      <button class="btn btn-warning" onclick="window._updateEmpLeave('${key}')">Perbarui</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('emp-leave-form-area').innerHTML=''">Batal</button>
+    </div>
+  </div>`;
+  // Scroll to the edit form area smoothly
+  area.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+window._updateEmpLeave = async (key) => {
+  const l = allData.leaves[key];
+  if (!l || l.status !== 'Menunggu') return;
+  const emp = getUserByUsername(currentUser.username); if (!emp) return;
+  
+  const leaveType = $('lf-type-edit').value;
+  const startDate = $('lf-start-edit').value;
+  const endDate = $('lf-end-edit').value;
+  const reason = $('lf-reason-edit').value.trim();
+  
+  if (!startDate || !endDate) { showToast('Tanggal wajib diisi!', 'error'); return; }
+
+  const d1 = new Date(startDate);
+  const d2 = new Date(endDate);
+  if (d2 < d1) { showToast('Tanggal selesai harus setelah atau sama dengan mulai!', 'error'); return; }
+  const requestedDays = Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+
+  if (leaveType !== 'Izin') {
+    const types = getLeaveTypes();
+    const typeObj = types.find(t => t.name === leaveType);
+    if (typeObj && typeObj.quota > 0) {
+      const currentYear = new Date().getFullYear();
+      // Exclude the current leave request being edited from the taken count
+      const userLeaves = getLeaves(emp.emp_id).filter(leave => leave._key !== key && leave.leave_type === leaveType && leave.status !== 'Ditolak' && new Date(leave.start_date).getFullYear() === currentYear);
+      let takenDays = 0;
+      userLeaves.forEach(leave => {
+        const ld1 = new Date(leave.start_date);
+        const ld2 = new Date(leave.end_date);
+        takenDays += Math.round((ld2 - ld1) / (1000 * 60 * 60 * 24)) + 1;
+      });
+      if (takenDays + requestedDays > typeObj.quota) {
+        showToast(`Jatah ${leaveType} tidak cukup! (Sisa: ${typeObj.quota - takenDays} hari)`, 'error');
+        return;
+      }
+    }
+  }
+
+  await update(ref(db, 'leaves/' + key), { leave_type: leaveType, start_date: startDate, end_date: endDate, reason });
+  showToast('Pengajuan diperbarui!', 'success');
+  $('emp-leave-form-area').innerHTML = '';
+};
+
 
 // --- LEAVE TYPE CRUD ---
 window._showLeaveTypeForm = (key) => {
