@@ -981,7 +981,7 @@ input, select, textarea { font-family: inherit; }
   color: var(--text);
 }
 
-.btn-logout {
+.btn-logout-responsive {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -996,11 +996,11 @@ input, select, textarea { font-family: inherit; }
   transition: all var(--transition);
 }
 
-.btn-logout:hover {
+.btn-logout-responsive:hover {
   background: #FECACA;
 }
 
-.btn-logout svg {
+.btn-logout-responsive svg {
   width: 15px;
   height: 15px;
 }
@@ -1440,3 +1440,34 @@ input, select, textarea { font-family: inherit; }
 .password-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
 .password-wrapper input { padding-right: 2.5rem; width: 100%; }
 .password-toggle { position: absolute; right: 0.5rem; background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1rem; padding: 0.2rem; display:flex; align-items:center; justify-content:center; }
+
+/* ── Mobile Topbar Responsive Fixes ── */
+@media (max-width: 768px) {
+  .btn-responsive .btn-text,
+  .btn-logout-responsive .btn-text {
+    display: none !important;
+  }
+  .btn-responsive, .btn-logout-responsive {
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-right: 0 !important;
+    border-radius: var(--radius-sm) !important;
+  }
+  .btn-logout-responsive {
+    background: var(--error-bg) !important;
+    border: 1px solid #FECACA !important;
+    color: var(--error) !important;
+  }
+  .btn-logout-responsive:hover {
+    background: #FECACA !important;
+  }
+  .admin-topbar {
+    gap: 6px;
+  }
+  .admin-page-title {
+    font-size: 16px !important;
+  }
+}
