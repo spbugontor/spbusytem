@@ -248,10 +248,10 @@ function loginSuccess() {
   const savedCollapsed = localStorage.getItem('mytic_sidebar_collapsed');
   const screenMain = document.getElementById('screen-main');
   if (screenMain) {
-    if (savedCollapsed === 'true') {
-      screenMain.classList.add('sidebar-collapsed');
-    } else {
+    if (savedCollapsed === 'false') {
       screenMain.classList.remove('sidebar-collapsed');
+    } else {
+      screenMain.classList.add('sidebar-collapsed');
     }
   }
 
@@ -437,8 +437,26 @@ function switchSection(id) {
   document.querySelectorAll('[data-target]').forEach(el => el.classList.toggle('active', el.getAttribute('data-target') === id));
   const label = document.querySelector(`.nav-item[data-target="${id}"]`);
   $('topbar-title').textContent = label ? label.textContent.trim() : 'Dashboard';
+
+  // Auto-hide sidebar on PC when selecting a menu
+  const screenMain = document.getElementById('screen-main');
+  if (screenMain && !screenMain.classList.contains('sidebar-collapsed')) {
+    screenMain.classList.add('sidebar-collapsed');
+  }
+
   renderCurrentSection();
 }
+
+// Auto-hide PC sidebar when clicking outside
+document.addEventListener('click', (e) => {
+  const screenMain = document.getElementById('screen-main');
+  if (!screenMain || screenMain.classList.contains('sidebar-collapsed')) return;
+  const isSidebar = e.target.closest('.sidebar');
+  const isToggleBtn = e.target.closest('#btn-toggle-sidebar');
+  if (!isSidebar && !isToggleBtn) {
+    screenMain.classList.add('sidebar-collapsed');
+  }
+});
 
 function renderCurrentSection() {
   if (currentUser) setupNavigation();
