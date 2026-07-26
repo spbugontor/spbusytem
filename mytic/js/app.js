@@ -2686,6 +2686,53 @@ window._changePin = async () => {
 };
 
 // ==========================================
+// PWA INSTALLATION HANDLER
+// ==========================================
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  showPwaInstallBanner();
+});
+
+function showPwaInstallBanner() {
+  const existing = document.getElementById('pwa-install-banner');
+  if (existing || !deferredPrompt) return;
+
+  const banner = document.createElement('div');
+  banner.id = 'pwa-install-banner';
+  banner.className = 'pwa-banner';
+  banner.innerHTML = `
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <div style="width:36px;height:36px;background:var(--primary);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem">📱</div>
+      <div>
+        <strong style="font-size:0.85rem;display:block;">Install Aplikasi MyTIC</strong>
+        <span style="font-size:0.75rem;color:var(--text-muted)">Pasang di layar utama HP / Laptop untuk akses cepat!</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:0.5rem;align-items:center;">
+      <button class="btn btn-primary" style="padding:0.35rem 0.75rem;font-size:0.75rem;" onclick="window._triggerPwaInstall()">Install</button>
+      <button style="background:none;border:none;color:var(--text-muted);font-size:1.1rem;cursor:pointer;padding:0 0.25rem;" onclick="document.getElementById('pwa-install-banner').remove()">✕</button>
+    </div>
+  `;
+  document.body.appendChild(banner);
+}
+
+window._triggerPwaInstall = () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then((choiceResult) => {
+    if (choiceResult.outcome === 'accepted') {
+      showToast('Aplikasi MyTIC berhasil dipasang!', 'success');
+    }
+    deferredPrompt = null;
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) banner.remove();
+  });
+};
+
+// ==========================================
 // START
 // ==========================================
 document.addEventListener('DOMContentLoaded', init);

@@ -15,6 +15,15 @@
   <!-- CSS -->
   <link rel="stylesheet" href="css/style.css?v=20260720b">
 
+  <!-- PWA Meta Tags & Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#F15800">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MyTIC">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
   <!-- Chart.js & PDF Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -189,7 +198,18 @@
 
   <!-- MODULES (Firebase + App Logic) -->
   <script type="module" src="js/firebase-config.js?v=20260720a"></script>
-  <script type="module" src="js/app.js?v=20260726d"></script>
+  <script type="module" src="js/app.js?v=20260726_pwa"></script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker registered:', reg.scope))
+          .catch(err => console.error('Service Worker registration error:', err));
+      });
+    }
+  </script>
 </body>
 
 </html>

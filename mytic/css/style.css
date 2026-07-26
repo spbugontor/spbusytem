@@ -879,3 +879,29 @@ html.dark-mode .login-screen {
 .rating-btn { padding: 0.4rem 0.8rem; font-weight: 600; border-radius: 4px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); cursor: pointer; transition: all 0.2s; }
 .rating-btn:hover { background: #e2e8f0; }
 .rating-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+/* PWA Install Banner */
+.pwa-banner {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--primary);
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-lg);
+  padding: 0.85rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  animation: slideUp 0.3s ease-out;
+}
+@media (max-width: 640px) {
+  .pwa-banner {
+    left: 1rem;
+    right: 1rem;
+    bottom: 4.5rem;
+  }
+}
