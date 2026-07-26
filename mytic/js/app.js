@@ -2407,7 +2407,7 @@ window._deleteInternalChat = async (key) => {
 
 // --- LEAVE CRUD ---
 window._updateLeaveStatus = async (key, status) => {
-  await update(ref(db, 'leaves/' + key), { status });
+  await update(ref(db, 'leaves/' + key), { status, timestamp: Date.now() });
   showToast('Status diperbarui!', 'success');
 };
 window._deleteLeave = async (key) => { if (confirm('Hapus pengajuan?')) { await remove(ref(db, 'leaves/' + key)); showToast('Dihapus!', 'success'); } };
@@ -2534,7 +2534,7 @@ window._saveEmpLeave = async () => {
     }
   }
 
-  await set(push(ref(db, 'leaves')), { emp_id: emp.emp_id, leave_type: leaveType, start_date: startDate, end_date: endDate, reason, status: 'Menunggu', date: today() });
+  await set(push(ref(db, 'leaves')), { emp_id: emp.emp_id, emp_name: emp.name, leave_type: leaveType, start_date: startDate, end_date: endDate, reason, status: 'Menunggu', date: today(), timestamp: Date.now() });
   showToast('Pengajuan berhasil!', 'success');
   $('emp-leave-form-area').innerHTML = '';
 };
@@ -2663,7 +2663,7 @@ window._saveVio = async (empId) => {
   const vType = $('vf-type').value.trim();
   const desc = $('vf-desc').value.trim();
   if (!vType || !desc) { showToast('Jenis dan keterangan wajib!', 'error'); return; }
-  await set(push(ref(db, 'violations')), { emp_id: empId, violation_type: vType, category: $('vf-cat').value, level: $('vf-level').value, description: desc, date: $('vf-date').value, status: 'Berlaku' });
+  await set(push(ref(db, 'violations')), { emp_id: empId, violation_type: vType, category: $('vf-cat').value, level: $('vf-level').value, description: desc, date: $('vf-date').value, status: 'Berlaku', timestamp: Date.now() });
   showToast('Pelanggaran dicatat!', 'success');
 };
 window._deleteVio = async (key) => { if (confirm('Hapus?')) { await remove(ref(db, 'violations/' + key)); showToast('Dihapus!', 'success'); } };
@@ -2686,7 +2686,7 @@ window._showSavingForm = (empId) => {
 window._saveSaving = async (empId) => {
   const amt = parseFloat($('sf-amt').value) || 0;
   if (amt <= 0) { showToast('Jumlah harus > 0', 'error'); return; }
-  await set(push(ref(db, 'savings')), { emp_id: empId, amount: amt, month: $('sf-month').value.trim(), date: $('sf-date').value });
+  await set(push(ref(db, 'savings')), { emp_id: empId, amount: amt, month: $('sf-month').value.trim(), date: $('sf-date').value, timestamp: Date.now() });
   showToast('Tabungan disimpan!', 'success');
   $('sav-form-' + empId).innerHTML = '';
 };
@@ -2731,7 +2731,7 @@ window._saveMassSaving = async () => {
 
   for (const cb of cbs) {
     const empId = cb.value;
-    await set(push(ref(db, 'savings')), { emp_id: empId, amount: amt, month, date });
+    await set(push(ref(db, 'savings')), { emp_id: empId, amount: amt, month, date, timestamp: Date.now() });
   }
 
   showToast(cbs.length + ' tabungan berhasil disimpan!', 'success');
@@ -2827,7 +2827,7 @@ window._saveRating = async () => {
   const note = $('rf-note').value.trim();
   const scores = {};
   document.querySelectorAll('.rf-score').forEach(el => { scores[el.dataset.key] = Math.min(5, Math.max(1, parseInt(el.value) || 1)); });
-  await set(push(ref(db, 'ratings')), { emp_id: empId, date, scores, note });
+  await set(push(ref(db, 'ratings')), { emp_id: empId, date, scores, note, timestamp: Date.now() });
   showToast('Penilaian disimpan!', 'success');
   hideModal();
 };
