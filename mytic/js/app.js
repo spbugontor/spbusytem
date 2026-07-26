@@ -2017,7 +2017,8 @@ function renderInternalChat() {
   const now = Date.now();
   sessionStorage.setItem('mytic_read_internal_chat', now);
 
-  const rawChats = allData.internal_chats ? Object.values(allData.internal_chats) : [];
+  const chatEntries = allData.internal_chats ? Object.entries(allData.internal_chats) : [];
+  const rawChats = chatEntries.map(([key, val]) => ({ ...val, _key: key }));
   rawChats.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
   requestAnimationFrame(() => {
@@ -2039,6 +2040,7 @@ function renderInternalChat() {
         ${rawChats.length === 0 ? '<div style="margin:auto;text-align:center;" class="text-muted"><p class="text-sm">Belum ada pesan dalam diskusi ini.</p><span class="text-xs">Mulai percakapan dengan mengetik pesan di bawah.</span></div>' :
           rawChats.map(c => {
             const isMe = (currentUser.role === 'employee' && c.sender_id === currentUser.id) || (currentUser.role === 'admin' && c.sender_role === 'Manajemen');
+            const canDelete = currentUser.role === 'admin' || isMe;
             const bubbleBg = isMe ? 'var(--primary)' : 'var(--bg-color)';
             const textColor = isMe ? '#ffffff' : 'var(--text-main)';
             const alignSelf = isMe ? 'flex-end' : 'flex-start';
@@ -2049,6 +2051,7 @@ function renderInternalChat() {
                 <strong style="color:var(--text-main)">${esc(c.sender_name)}</strong>
                 <span class="badge badge-info" style="font-size:0.6rem;padding:0.1rem 0.35rem">${esc(c.sender_role)}</span>
                 <span>${fmtDate(c.timestamp || Date.now())}</span>
+                ${canDelete ? `<button style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:0.7rem;margin-left:0.2rem;padding:0 0.2rem;" onclick="window._deleteInternalChat('${c._key}')" title="Hapus Pesan">✕</button>` : ''}
               </div>
               <div style="background:${bubbleBg};color:${textColor};padding:0.65rem 0.9rem;border-radius:${borderRadius};font-size:0.85rem;line-height:1.4;box-shadow:0 2px 5px rgba(0,0,0,0.05);word-break:break-word;">
                 ${esc(c.message)}
@@ -2093,6 +2096,14 @@ window._sendInternalChat = async () => {
     message: msg,
     timestamp: Date.now()
   });
+};
+
+window._deleteInternalChat = async (key) => {
+  if (!key) return;
+  if (confirm('Hapus pesan diskusi ini?')) {
+    await remove(ref(db, `internal_chats/${key}`));
+    showToast('Pesan berhasil dihapus!', 'success');
+  }
 };
 
 // --- LEAVE CRUD ---
