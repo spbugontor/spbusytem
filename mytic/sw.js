@@ -63,9 +63,36 @@ self.addEventListener('fetch', (e) => {
   );
 });
 
+// Handle System Web Push Notifications (Background & Lock Screen)
+self.addEventListener('push', (event) => {
+  let data = { title: 'MyTIC SPBU Gontor 🔔', body: 'Notifikasi baru diterima.' };
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch (e) {
+      data.body = event.data.text();
+    }
+  }
+
+  const options = {
+    body: data.body || 'Ada update baru di aplikasi MyTIC.',
+    icon: 'icons/icon-192.png',
+    badge: 'icons/icon-192.png',
+    vibrate: [200, 100, 200],
+    renotify: true,
+    tag: data.tag || 'mytic-background-push',
+    data: { url: data.url || './' }
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'MyTIC SPBU Gontor 🔔', options)
+  );
+});
+
 // Handle Notification Click (Opens/Focuses MyTIC App on HP)
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  const urlToOpen = (event.notification.data && event.notification.data.url) ? event.notification.data.url : './';
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (let client of clientList) {
@@ -74,7 +101,7 @@ self.addEventListener('notificationclick', (event) => {
         }
       }
       if (clients.openWindow) {
-        return clients.openWindow('./');
+        return clients.openWindow(urlToOpen);
       }
     })
   );
