@@ -2044,13 +2044,28 @@ window._deleteTxn = async (key) => { if (confirm('Hapus transaksi?')) { await re
 // --- INTERNAL PRIVAT CHAT ---
 function markInternalChatAsRead() {
   if (!currentUser) return;
-  const now = Date.now();
+  const rawChats = allData.internal_chats ? Object.values(allData.internal_chats) : [];
+  if (rawChats.length === 0) return;
+
+  let latestTs = 0;
+  rawChats.forEach(c => { if ((c.timestamp || 0) > latestTs) latestTs = c.timestamp; });
+  if (!latestTs) return;
+
   if (currentUser.role === 'admin') {
-    localStorage.setItem('mytic_lastread_chat_admin', now);
-    update(ref(db, 'settings'), { lastRead_InternalChat_admin: now });
+    const currentRead = allData.settings ? (allData.settings.lastRead_InternalChat_admin || 0) : 0;
+    localStorage.setItem('mytic_lastread_chat_admin', latestTs);
+    if (currentRead < latestTs) {
+      if (allData.settings) allData.settings.lastRead_InternalChat_admin = latestTs;
+      update(ref(db, 'settings'), { lastRead_InternalChat_admin: latestTs }).catch(console.error);
+    }
   } else if (currentUser.id) {
-    localStorage.setItem(`mytic_lastread_chat_${currentUser.id}`, now);
-    update(ref(db, `users/${currentUser.id}`), { lastRead_InternalChat: now });
+    const emp = allData.users ? allData.users[currentUser.id] : null;
+    const currentRead = emp ? (emp.lastRead_InternalChat || 0) : 0;
+    localStorage.setItem(`mytic_lastread_chat_${currentUser.id}`, latestTs);
+    if (currentRead < latestTs) {
+      if (emp) emp.lastRead_InternalChat = latestTs;
+      update(ref(db, `users/${currentUser.id}`), { lastRead_InternalChat: latestTs }).catch(console.error);
+    }
   }
 }
 
