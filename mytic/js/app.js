@@ -220,8 +220,8 @@ function init() {
 
       if (currentUser) renderCurrentSection();
     }, error => {
-      console.error(`Error reading ${node}:`, error);
-      showToast(`Akses ditolak pada data ${node}. Periksa Firebase Rules!`, 'error');
+      console.warn(`Info/Warning reading ${node}:`, error);
+      if (!allData[node]) allData[node] = {};
     });
   });
 
