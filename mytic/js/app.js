@@ -26,11 +26,22 @@ function applyTheme(themeKey) {
   document.documentElement.style.setProperty('--primary-hover', t.hover);
   document.documentElement.style.setProperty('--primary-bg', t.bg);
 
-  // Dynamically update PWA title bar header color
-  const metaTheme = document.querySelector('meta[name="theme-color"]');
-  if (metaTheme) {
-    metaTheme.setAttribute('content', t.primary);
+  // Dynamically update PWA & Mobile status bar header colors (Android, Chrome, Safari, Samsung)
+  let metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (!metaTheme) {
+    metaTheme = document.createElement('meta');
+    metaTheme.name = 'theme-color';
+    document.head.appendChild(metaTheme);
   }
+  metaTheme.setAttribute('content', t.primary);
+
+  let metaNav = document.querySelector('meta[name="msapplication-navbutton-color"]');
+  if (!metaNav) {
+    metaNav = document.createElement('meta');
+    metaNav.name = 'msapplication-navbutton-color';
+    document.head.appendChild(metaNav);
+  }
+  metaNav.setAttribute('content', t.primary);
 }
 
 const savedTheme = localStorage.getItem('spbu_theme');
