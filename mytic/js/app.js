@@ -2796,13 +2796,13 @@ window._updateRatingCriteria = () => {
 
   let html = '<p class="form-label mt-2">Skor Kriteria (1-5)</p>';
   Object.keys(grouped).forEach(ind => {
-    html += `<div style="margin-top:0.5rem;background:#f8fafc;padding:0.5rem;border-radius:4px;border:1px solid var(--border)">
-      <h5 style="font-size:0.8rem;font-weight:700;color:var(--primary);margin-bottom:0.25rem;text-transform:uppercase">${esc(ind)}</h5>`;
+    html += `<div style="margin-top:0.5rem;background:var(--surface);color:var(--text-main);padding:0.75rem;border-radius:var(--radius-md);border:1px solid var(--border)">
+      <h5 style="font-size:0.85rem;font-weight:700;color:var(--primary);margin-bottom:0.5rem;text-transform:uppercase">${esc(ind)}</h5>`;
 
     grouped[ind].forEach(c => {
       // the data-key attribute is used in _saveRating to avoid invalid characters in Firebase keys
-      html += `<div style="display:flex;flex-direction:column;gap:0.5rem;padding:0.5rem 0;border-bottom:1px solid #e2e8f0">
-        <span class="text-sm font-semibold" style="flex:1;">${esc(c.name)}</span>
+      html += `<div style="display:flex;flex-direction:column;gap:0.5rem;padding:0.5rem 0;border-bottom:1px solid var(--border)">
+        <span class="text-sm font-semibold" style="flex:1;color:var(--text-main);">${esc(c.name)}</span>
         <input type="hidden" class="rf-score" data-key="${c._key}" id="score-${c._key}" value="3">
         <div style="display:flex;gap:0.5rem;justify-content:flex-end;" id="rating-group-${c._key}">
           ${[1, 2, 3, 4, 5].map(n => `<button type="button" class="rating-btn ${n === 3 ? 'active' : ''}" onclick="_setRating('${c._key}', ${n})">${n}</button>`).join('')}

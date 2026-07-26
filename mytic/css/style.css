@@ -863,11 +863,28 @@ html.dark-mode .more-menu-backdrop {
   background: rgba(0, 0, 0, 0.7);
 }
 
-/* Fix for inline bg-white styles */
+/* Fix for inline bg-white and light background styles in Dark Mode */
 html.dark-mode [style*="background:white"],
 html.dark-mode [style*="background: white"],
+html.dark-mode [style*="background:#f8fafc"],
+html.dark-mode [style*="background: #f8fafc"],
 html.dark-mode [style*="bg-white"] {
   background: var(--surface) !important;
+  color: var(--text-main) !important;
+}
+
+html.dark-mode .modal-content {
+  background: var(--surface) !important;
+  color: var(--text-main) !important;
+}
+
+html.dark-mode .modal-content label,
+html.dark-mode .modal-content span,
+html.dark-mode .modal-content p,
+html.dark-mode .modal-content h3,
+html.dark-mode .modal-content h4,
+html.dark-mode .modal-content h5 {
+  color: var(--text-main) !important;
 }
 
 html.dark-mode .login-screen {
