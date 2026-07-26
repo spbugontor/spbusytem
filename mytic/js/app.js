@@ -190,7 +190,7 @@ function init() {
   });
 
   // Global real-time listeners per node
-  const nodes = ['users', 'transactions', 'leaves', 'savings', 'violations', 'ratings', 'criteria', 'leave_types', 'settings', 'pin_history'];
+  const nodes = ['users', 'transactions', 'leaves', 'savings', 'violations', 'ratings', 'criteria', 'leave_types', 'settings', 'pin_history', 'internal_chats'];
   nodes.forEach(node => {
     onValue(ref(db, node), snap => {
       allData[node] = snap.exists() ? snap.val() : {};
@@ -369,7 +369,7 @@ function doLogout(msg = true) {
   $('nav-mobile').classList.add('hidden');
   $('inp-mgmt-pin').value = '';
   $('inp-emp-pin').value = '';
-  if (msg) showToast('Anda telah keluar', 'info');
+      if (msg) showToast('Anda telah keluar', 'info');
 }
 
 // ==========================================
@@ -380,6 +380,7 @@ const ADMIN_MENU = [
   { id: 'employees', label: 'Karyawan', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197' },
   { id: 'debits', label: 'Tunggakan', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' },
   { id: 'leaves', label: 'Izin/Cuti', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
+  { id: 'internal-chat', label: 'Diskusi Internal', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z' },
   { id: 'leave-types', label: 'Jenis Cuti', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
   { id: 'violations', label: 'Pelanggaran', icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z' },
   { id: 'savings', label: 'Tabungan', icon: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z' },
@@ -404,11 +405,19 @@ const EMP_MENU = [
 
 function setupNavigation() {
   const isAdmin = currentUser.role === 'admin';
-  const menu = isAdmin ? ADMIN_MENU : EMP_MENU;
+  let menu = isAdmin ? [...ADMIN_MENU] : [...EMP_MENU];
+
+  if (!isAdmin && isEmpAdminOrSupervisor()) {
+    const hasChatMenu = menu.some(m => m.id === 'internal-chat');
+    if (!hasChatMenu) {
+      menu.splice(4, 0, { id: 'internal-chat', label: 'Diskusi Internal', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z' });
+    }
+  }
 
   // Check unread/pending leaves for badges
   let empHasUnreadLeave = false;
   let adminHasPendingLeave = false;
+  let hasUnreadChat = false;
 
   if (isAdmin) {
     const allLeaves = getLeaves();
@@ -568,6 +577,7 @@ function renderCurrentSection() {
     switch (currentSection) {
       case 'dashboard': html = renderAdminDashboard(); break;
       case 'employees': html = renderEmployees(); break;
+      case 'internal-chat': html = renderInternalChat(); break;
       case 'debits': html = renderDebits(); break;
       case 'leaves': html = renderMgmtLeaves(); break;
       case 'leave-types': html = renderLeaveTypes(); break;
@@ -582,6 +592,7 @@ function renderCurrentSection() {
   } else {
     switch (currentSection) {
       case 'dashboard': html = renderEmpDashboard(); break;
+      case 'internal-chat': html = renderInternalChat(); break;
       case 'emp-debits': html = renderEmpDebits(); break;
       case 'emp-history': html = renderEmpHistory(); break;
       case 'emp-leaves': html = renderEmpLeaves(); break;
@@ -2000,6 +2011,89 @@ window._saveTxn = async (empId, type) => {
 };
 
 window._deleteTxn = async (key) => { if (confirm('Hapus transaksi?')) { await remove(ref(db, 'transactions/' + key)); showToast('Dihapus!', 'success'); } };
+
+// --- INTERNAL PRIVAT CHAT ---
+function renderInternalChat() {
+  const now = Date.now();
+  sessionStorage.setItem('mytic_read_internal_chat', now);
+
+  const rawChats = allData.internal_chats ? Object.values(allData.internal_chats) : [];
+  rawChats.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+  requestAnimationFrame(() => {
+    const chatContainer = $('internal-chat-messages');
+    if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+  });
+
+  return `<div class="fade-in">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <div>
+        <h3 class="text-xl font-bold">Diskusi Internal Privat</h3>
+        <p class="text-xs text-muted">Ruang koordinasi khusus Manajemen, Admin, dan Supervisor SPBU Gontor</p>
+      </div>
+      <span class="badge badge-warning" style="display:flex;align-items:center;gap:0.3rem">🔒 Rahasia / Internal Only</span>
+    </div>
+
+    <div class="card" style="padding:1rem;display:flex;flex-direction:column;height:calc(100vh - 220px);min-height:450px;">
+      <div id="internal-chat-messages" style="flex:1;overflow-y:auto;padding-right:0.5rem;margin-bottom:1rem;display:flex;flex-direction:column;gap:0.75rem;">
+        ${rawChats.length === 0 ? '<div style="margin:auto;text-align:center;" class="text-muted"><p class="text-sm">Belum ada pesan dalam diskusi ini.</p><span class="text-xs">Mulai percakapan dengan mengetik pesan di bawah.</span></div>' :
+          rawChats.map(c => {
+            const isMe = (currentUser.role === 'employee' && c.sender_id === currentUser.id) || (currentUser.role === 'admin' && c.sender_role === 'Manajemen');
+            const bubbleBg = isMe ? 'var(--primary)' : 'var(--bg-color)';
+            const textColor = isMe ? '#ffffff' : 'var(--text-main)';
+            const alignSelf = isMe ? 'flex-end' : 'flex-start';
+            const borderRadius = isMe ? '16px 16px 2px 16px' : '16px 16px 16px 2px';
+
+            return `<div style="align-self:${alignSelf};max-width:80%;display:flex;flex-direction:column;align-items:${isMe ? 'flex-end' : 'flex-start'}">
+              <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:0.2rem;display:flex;gap:0.4rem;align-items:center;">
+                <strong style="color:var(--text-main)">${esc(c.sender_name)}</strong>
+                <span class="badge badge-info" style="font-size:0.6rem;padding:0.1rem 0.35rem">${esc(c.sender_role)}</span>
+                <span>${fmtDate(c.timestamp || Date.now())}</span>
+              </div>
+              <div style="background:${bubbleBg};color:${textColor};padding:0.65rem 0.9rem;border-radius:${borderRadius};font-size:0.85rem;line-height:1.4;box-shadow:0 2px 5px rgba(0,0,0,0.05);word-break:break-word;">
+                ${esc(c.message)}
+              </div>
+            </div>`;
+          }).join('')}
+      </div>
+
+      <div style="display:flex;gap:0.5rem;border-top:1px solid var(--border);padding-top:0.75rem;">
+        <input type="text" id="inp-internal-chat" class="form-control" placeholder="Tulis pesan diskusi..." style="font-size:0.85rem;" onkeypress="if(event.key==='Enter') window._sendInternalChat()">
+        <button class="btn btn-primary" onclick="window._sendInternalChat()" style="display:flex;align-items:center;gap:0.4rem;padding:0.5rem 1rem;">
+          <span>Kirim</span> ✈️
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+window._sendInternalChat = async () => {
+  const inp = $('inp-internal-chat');
+  if (!inp) return;
+  const msg = inp.value.trim();
+  if (!msg) return;
+
+  let senderId = 'admin';
+  let senderName = 'Manajemen';
+  let senderRole = 'Manajemen';
+
+  if (currentUser && currentUser.role === 'employee') {
+    senderId = currentUser.id;
+    senderName = currentUser.name;
+    senderRole = currentUser.position || 'Supervisor';
+  }
+
+  inp.value = '';
+  inp.focus();
+
+  await set(push(ref(db, 'internal_chats')), {
+    sender_id: senderId,
+    sender_name: senderName,
+    sender_role: senderRole,
+    message: msg,
+    timestamp: Date.now()
+  });
+};
 
 // --- LEAVE CRUD ---
 window._updateLeaveStatus = async (key, status) => {
