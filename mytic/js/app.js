@@ -218,6 +218,22 @@ function init() {
         }
       }
 
+      if (node === 'internal_chats' && currentUser) {
+        const rawChats = snap.exists() ? Object.values(snap.val()) : [];
+        if (rawChats.length > 0) {
+          rawChats.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+          const latestChat = rawChats[rawChats.length - 1];
+          const isMe = (currentUser.role === 'employee' && latestChat.sender_id === currentUser.id) || (currentUser.role === 'admin' && latestChat.sender_role === 'Manajemen');
+          
+          if (!isMe && window._lastNotifiedChatTs !== latestChat.timestamp) {
+            window._lastNotifiedChatTs = latestChat.timestamp;
+            if (currentSection !== 'internal-chat') {
+              showToast(`💬 Pesan Diskusi dari ${latestChat.sender_name}: "${latestChat.message}"`, 'info');
+            }
+          }
+        }
+      }
+
       if (currentUser) renderCurrentSection();
     }, error => {
       console.warn(`Info/Warning reading ${node}:`, error);
@@ -414,10 +430,9 @@ function setupNavigation() {
     }
   }
 
-  // Check unread/pending leaves for badges
+  // Check unread/pending leaves & internal chats for badges
   let empHasUnreadLeave = false;
   let adminHasPendingLeave = false;
-  let hasUnreadChat = false;
 
   if (isAdmin) {
     const allLeaves = getLeaves();
@@ -440,12 +455,27 @@ function setupNavigation() {
     }
   }
 
+  const lastReadChat = parseInt(sessionStorage.getItem('mytic_read_internal_chat') || '0');
+  const rawInternalChats = allData.internal_chats ? Object.values(allData.internal_chats) : [];
+  const unreadChatCount = rawInternalChats.filter(c => {
+    if (!currentUser) return false;
+    const isMe = (currentUser.role === 'employee' && c.sender_id === currentUser.id) || (currentUser.role === 'admin' && c.sender_role === 'Manajemen');
+    return !isMe && (c.timestamp || 0) > lastReadChat;
+  }).length;
+
   const redDot = `<span style="width:8px;height:8px;background:var(--danger);border-radius:50%;display:inline-block;margin-left:5px;box-shadow:0 0 6px var(--danger);vertical-align:middle"></span>`;
+  const chatBadge = unreadChatCount > 0 
+    ? `<span style="background:var(--danger);color:#fff;font-size:0.6rem;padding:1px 6px;border-radius:10px;font-weight:700;margin-left:4px;box-shadow:0 0 6px var(--danger);">${unreadChatCount} Baru!</span>`
+    : '';
 
   let dHTML = '';
   menu.forEach(m => {
     const isLeaveMenu = (m.id === 'leaves' && adminHasPendingLeave) || (m.id === 'emp-leaves' && empHasUnreadLeave);
-    const labelWithBadge = isLeaveMenu ? `${m.label}${redDot}` : m.label;
+    const isChatMenu = m.id === 'internal-chat' && unreadChatCount > 0;
+
+    let labelWithBadge = m.label;
+    if (isLeaveMenu) labelWithBadge = `${m.label}${redDot}`;
+    if (isChatMenu) labelWithBadge = `${m.label}${chatBadge}`;
 
     if (m.href) {
       dHTML += `<a href="${m.href}" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg>${labelWithBadge}</a>`;
@@ -462,7 +492,11 @@ function setupNavigation() {
   let mHTML = '';
   mobileMain.forEach(m => {
     const isLeaveMenu = (m.id === 'leaves' && adminHasPendingLeave) || (m.id === 'emp-leaves' && empHasUnreadLeave);
-    const labelWithBadge = isLeaveMenu ? `${m.label}${redDot}` : m.label;
+    const isChatMenu = m.id === 'internal-chat' && unreadChatCount > 0;
+
+    let labelWithBadge = m.label;
+    if (isLeaveMenu) labelWithBadge = `${m.label}${redDot}`;
+    if (isChatMenu) labelWithBadge = `${m.label}${chatBadge}`;
 
     if (m.href) {
       mHTML += `<a href="${m.href}" class="mobile-nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg><span>${labelWithBadge}</span></a>`;
