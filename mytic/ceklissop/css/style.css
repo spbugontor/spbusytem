@@ -10,9 +10,9 @@ body {
 }
 
 /* Theme Utilities */
-.text-theme-dark { color: var(--primary); }
-.text-theme { color: var(--primary); }
-.bg-theme { background-color: var(--primary); color: white; }
+.text-theme-dark { color: var(--primary); transition: color 0.3s ease; }
+.text-theme { color: var(--primary); transition: color 0.3s ease; }
+.bg-theme { background-color: var(--primary); color: white; transition: background-color 0.3s ease, border-color 0.3s ease; }
 .bg-theme:hover { background-color: var(--primary-hover); }
 .focus-ring-theme:focus { box-shadow: 0 0 0 2px var(--primary-light); }
 

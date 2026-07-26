@@ -10,12 +10,12 @@ let allRecords = [];
 // THEME
 // ==========================================
 const THEME_PALETTES = {
-  orange: { primary: '#F15800', hover: '#D94500', bg: '#FFF0E6', light: '#fed7aa' },
-  blue: { primary: '#2563EB', hover: '#1D4ED8', bg: '#EFF6FF', light: '#93c5fd' },
-  emerald: { primary: '#059669', hover: '#047857', bg: '#ECFDF5', light: '#6ee7b7' },
-  purple: { primary: '#7C3AED', hover: '#6D28D9', bg: '#F5F3FF', light: '#c4b5fd' },
-  red: { primary: '#DC2626', hover: '#B91C1C', bg: '#FEF2F2', light: '#fca5a5' },
-  slate: { primary: '#334155', hover: '#1E293B', bg: '#F1F5F9', light: '#cbd5e1' }
+  orange: { primary: '#F15800', hover: '#D94500', bg: '#FFF0E6', light: '#fed7aa', shadow: 'rgba(241, 88, 0, 0.39)' },
+  blue: { primary: '#2563EB', hover: '#1D4ED8', bg: '#EFF6FF', light: '#93c5fd', shadow: 'rgba(37, 99, 235, 0.39)' },
+  emerald: { primary: '#059669', hover: '#047857', bg: '#ECFDF5', light: '#6ee7b7', shadow: 'rgba(5, 150, 105, 0.39)' },
+  purple: { primary: '#7C3AED', hover: '#6D28D9', bg: '#F5F3FF', light: '#c4b5fd', shadow: 'rgba(124, 58, 237, 0.39)' },
+  red: { primary: '#DC2626', hover: '#B91C1C', bg: '#FEF2F2', light: '#fca5a5', shadow: 'rgba(220, 38, 38, 0.39)' },
+  slate: { primary: '#334155', hover: '#1E293B', bg: '#F1F5F9', light: '#cbd5e1', shadow: 'rgba(51, 65, 85, 0.39)' }
 };
 
 function applyTheme(themeKey) {
@@ -23,8 +23,27 @@ function applyTheme(themeKey) {
   const t = THEME_PALETTES[themeKey] || THEME_PALETTES['orange'];
   document.documentElement.style.setProperty('--primary', t.primary);
   document.documentElement.style.setProperty('--primary-hover', t.hover);
+  document.documentElement.style.setProperty('--primary-dark', t.hover);
   document.documentElement.style.setProperty('--primary-bg', t.bg);
   document.documentElement.style.setProperty('--primary-light', t.light);
+  document.documentElement.style.setProperty('--primary-shadow', t.shadow || 'rgba(0,0,0,0.2)');
+
+  // Dynamically update status bar / window header title bar color
+  let metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (!metaTheme) {
+    metaTheme = document.createElement('meta');
+    metaTheme.name = 'theme-color';
+    document.head.appendChild(metaTheme);
+  }
+  metaTheme.setAttribute('content', t.primary);
+
+  let metaNav = document.querySelector('meta[name="msapplication-navbutton-color"]');
+  if (!metaNav) {
+    metaNav = document.createElement('meta');
+    metaNav.name = 'msapplication-navbutton-color';
+    document.head.appendChild(metaNav);
+  }
+  metaNav.setAttribute('content', t.primary);
 }
 
 const savedTheme = localStorage.getItem('spbu_theme');
