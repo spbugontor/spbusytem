@@ -1162,13 +1162,64 @@ function renderEmpDashboard() {
   const savTotal = getSavings(emp.emp_id).reduce((s, x) => s + (x.amount || 0), 0);
   const pendingLeaves = getLeaves(emp.emp_id).filter(l => l.status === 'Menunggu').length;
 
+  // Calculate Employee Remaining Leave Quota
+  const leaveTypes = getLeaveTypes().filter(t => !t.gender || t.gender === 'Semua' || t.gender === emp.gender);
+  const currentYear = new Date().getFullYear();
+  const empApprovedLeaves = getLeaves(emp.emp_id).filter(l => l.status === 'Disetujui' && new Date(l.start_date).getFullYear() === currentYear);
+
+  let totalQuota = 0;
+  let totalTaken = 0;
+  let leaveQuotaBreakdownHtml = '';
+
+  leaveTypes.forEach(t => {
+    if (t.quota > 0) {
+      totalQuota += t.quota;
+      let taken = 0;
+      empApprovedLeaves.filter(l => l.leave_type === t.name).forEach(l => {
+        const d1 = new Date(l.start_date);
+        const d2 = new Date(l.end_date);
+        taken += Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+      });
+      totalTaken += taken;
+      const remaining = Math.max(0, t.quota - taken);
+      const pct = Math.min(100, Math.round((remaining / t.quota) * 100));
+
+      leaveQuotaBreakdownHtml += `
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.85rem;background:var(--surface)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem">
+            <strong class="text-sm">${esc(t.name)}</strong>
+            <span class="badge ${remaining > 0 ? 'badge-success' : 'badge-danger'}">${remaining} hari tersisa</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-muted);margin-bottom:0.4rem">
+            <span>Terpakai: ${taken} hari</span>
+            <span>Total Jatah: ${t.quota} hari</span>
+          </div>
+          <div style="width:100%;height:6px;background:var(--border);border-radius:4px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:${remaining > 0 ? 'var(--success)' : 'var(--danger)'}"></div>
+          </div>
+        </div>`;
+    }
+  });
+
+  const totalRemaining = Math.max(0, totalQuota - totalTaken);
+
   setTimeout(() => initEmpDashboardCharts(), 50);
 
   return `<div class="fade-in">
     <div class="dashboard-grid">
-      <div class="stat-card"><div class="stat-title">Tunggakan Saya</div><div class="stat-value" style="color:${bal > 0 ? 'var(--danger)' : 'var(--success)'}">${fmt(bal)}</div></div>
-      <div class="stat-card"><div class="stat-title">Tabungan Saya</div><div class="stat-value" style="color:var(--success)">${fmt(savTotal)}</div></div>
-      <div class="stat-card"><div class="stat-title">Izin Pending</div><div class="stat-value" style="color:var(--warning)">${pendingLeaves}</div></div>
+      <div class="stat-card" onclick="window._nav('emp-leaves')"><div class="stat-title">Sisa Cuti Saya (${currentYear})</div><div class="stat-value" style="color:var(--primary)">${totalRemaining} <span style="font-size:0.85rem;font-weight:600;color:var(--text-muted)">hari</span></div></div>
+      <div class="stat-card" onclick="window._nav('emp-debits')"><div class="stat-title">Tunggakan Saya</div><div class="stat-value" style="color:${bal > 0 ? 'var(--danger)' : 'var(--success)'}">${fmt(bal)}</div></div>
+      <div class="stat-card" onclick="window._nav('emp-savings')"><div class="stat-title">Tabungan Saya</div><div class="stat-value" style="color:var(--success)">${fmt(savTotal)}</div></div>
+      <div class="stat-card" onclick="window._nav('emp-leaves')"><div class="stat-title">Izin Pending</div><div class="stat-value" style="color:var(--warning)">${pendingLeaves}</div></div>
+    </div>
+
+    <!-- LEAVE QUOTA BREAKDOWN WIDGET -->
+    <div class="card mb-4">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <h3 class="card-title" style="font-size:1rem;">🌴 Rincian Sisa Jatah Cuti (${currentYear})</h3>
+        <button class="btn btn-secondary" style="padding:0.25rem 0.6rem;font-size:0.75rem" onclick="window._nav('emp-leaves')">Ajukan Cuti ➔</button>
+      </div>
+      ${leaveQuotaBreakdownHtml ? `<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:0.75rem">${leaveQuotaBreakdownHtml}</div>` : '<p class="text-xs text-muted">Belum ada jatah cuti khusus yang dikonfigurasi.</p>'}
     </div>
 
     <!-- EMPLOYEE GRAPHICS GRID -->
