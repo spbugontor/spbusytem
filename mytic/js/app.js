@@ -218,141 +218,7 @@ function init() {
         }
       }
 
-      if (node === 'internal_chats' && currentUser) {
-        const rawChats = snap.exists() ? Object.values(snap.val()) : [];
-        if (rawChats.length > 0) {
-          rawChats.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-          const latestChat = rawChats[rawChats.length - 1];
-          const isMe = (currentUser.role === 'employee' && latestChat.sender_id === currentUser.id) || (currentUser.role === 'admin' && latestChat.sender_role === 'Manajemen');
-          
-          if (!window._lastNotifiedChatTs) {
-            window._lastNotifiedChatTs = latestChat.timestamp;
-          } else if (!isMe && window._lastNotifiedChatTs < latestChat.timestamp) {
-            window._lastNotifiedChatTs = latestChat.timestamp;
-            if (currentSection !== 'internal-chat') {
-              showToast(`💬 Pesan Diskusi dari ${latestChat.sender_name}: "${latestChat.message}"`, 'info');
-              triggerSystemNotification(`💬 Pesan Diskusi - ${latestChat.sender_name}`, {
-                body: latestChat.message,
-                tag: 'mytic-chat'
-              });
-            }
-          }
-        }
-      }
-
-      if (node === 'leaves' && currentUser) {
-        const rawLeaves = snap.exists() ? Object.values(snap.val()) : [];
-        if (rawLeaves.length > 0) {
-          rawLeaves.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-          const latestLeave = rawLeaves[0];
-          
-          if (currentUser.role === 'admin' && latestLeave.status === 'Menunggu') {
-            if (!window._lastNotifiedLeaveTs) {
-              window._lastNotifiedLeaveTs = latestLeave.timestamp;
-            } else if (window._lastNotifiedLeaveTs < latestLeave.timestamp) {
-              window._lastNotifiedLeaveTs = latestLeave.timestamp;
-              showToast(`🏖️ Pengajuan Izin Baru: ${latestLeave.emp_name}`, 'info');
-              triggerSystemNotification(`🏖️ Pengajuan Izin Baru - ${latestLeave.emp_name}`, {
-                body: `Alasan: ${latestLeave.reason} (${latestLeave.start_date} s/d ${latestLeave.end_date})`,
-                tag: 'mytic-leave-new'
-              });
-            }
-          } else if (currentUser.role === 'employee' && (latestLeave.emp_id === currentUser.id || latestLeave.emp_id === currentUser.emp_id || latestLeave.emp_id === currentUser.username)) {
-            const statusKey = `${latestLeave.timestamp}_${latestLeave.status}`;
-            if (!window._lastNotifiedLeaveStatusKey) {
-              window._lastNotifiedLeaveStatusKey = statusKey;
-            } else if (window._lastNotifiedLeaveStatusKey !== statusKey) {
-              window._lastNotifiedLeaveStatusKey = statusKey;
-              if (latestLeave.status === 'Disetujui' || latestLeave.status === 'Ditolak') {
-                showToast(`🏖️ Status Izin Anda: ${latestLeave.status}`, 'info');
-                triggerSystemNotification(`🏖️ Status Izin: ${latestLeave.status}`, {
-                  body: `Pengajuan izin Anda tanggal ${latestLeave.start_date} telah ${latestLeave.status.toLowerCase()} oleh Manajemen.`,
-                  tag: 'mytic-leave-status'
-                });
-              }
-            }
-          }
-        }
-      }
-
-      if (node === 'violations' && currentUser && currentUser.role === 'employee') {
-        const rawViolations = snap.exists() ? Object.values(snap.val()) : [];
-        const myViolations = rawViolations.filter(v => v.emp_id === currentUser.id || v.emp_id === currentUser.emp_id || v.emp_id === currentUser.username);
-        if (myViolations.length > 0) {
-          myViolations.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-          const latestV = myViolations[0];
-          if (!window._lastNotifiedViolationTs) {
-            window._lastNotifiedViolationTs = latestV.timestamp;
-          } else if (window._lastNotifiedViolationTs < latestV.timestamp) {
-            window._lastNotifiedViolationTs = latestV.timestamp;
-            showToast(`⚠️ Catatan Pelanggaran Baru: ${latestV.type}`, 'warning');
-            triggerSystemNotification(`⚠️ Catatan Pelanggaran Baru`, {
-              body: `Jenis: ${latestV.type} (-${latestV.points} Poin). Catatan: ${latestV.note || '-'}`,
-              tag: 'mytic-violation'
-            });
-          }
-        }
-      }
-
-      if (node === 'transactions' && currentUser && currentUser.role === 'employee') {
-        const rawTxns = snap.exists() ? Object.values(snap.val()) : [];
-        const myTxns = rawTxns.filter(t => t.emp_id === currentUser.id || t.emp_id === currentUser.emp_id || t.emp_id === currentUser.username);
-        if (myTxns.length > 0) {
-          myTxns.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-          const latestT = myTxns[0];
-          if (!window._lastNotifiedTxnTs) {
-            window._lastNotifiedTxnTs = latestT.timestamp;
-          } else if (window._lastNotifiedTxnTs < latestT.timestamp) {
-            window._lastNotifiedTxnTs = latestT.timestamp;
-            const title = latestT.type === 'credit' ? '💳 Pembayaran Tunggakan (Kredit)' : '💳 Catatan Tunggakan Baru (Debit)';
-            const formattedAmt = `Rp ${Number(latestT.amount || 0).toLocaleString('id-ID')}`;
-            showToast(`${title}: ${formattedAmt}`, 'info');
-            triggerSystemNotification(title, {
-              body: `Nominal: ${formattedAmt}. Ket: ${latestT.note || '-'}`,
-              tag: 'mytic-txn'
-            });
-          }
-        }
-      }
-
-      if (node === 'ratings' && currentUser && currentUser.role === 'employee') {
-        const rawRatings = snap.exists() ? Object.values(snap.val()) : [];
-        const myRatings = rawRatings.filter(r => r.emp_id === currentUser.id || r.emp_id === currentUser.emp_id || r.emp_id === currentUser.username);
-        if (myRatings.length > 0) {
-          myRatings.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-          const latestR = myRatings[0];
-          if (!window._lastNotifiedRatingTs) {
-            window._lastNotifiedRatingTs = latestR.timestamp;
-          } else if (window._lastNotifiedRatingTs < latestR.timestamp) {
-            window._lastNotifiedRatingTs = latestR.timestamp;
-            showToast(`⭐ Penilaian Kinerja Baru (${latestR.period || ''})`, 'info');
-            triggerSystemNotification('⭐ Penilaian Kinerja Karyawan Baru', {
-              body: `Periode: ${latestR.period || '-'}. Total Skor: ${latestR.total_score || latestR.score || 0} (${latestR.category || 'Tercatat'})`,
-              tag: 'mytic-rating'
-            });
-          }
-        }
-      }
-
-      if (node === 'savings' && currentUser && currentUser.role === 'employee') {
-        const rawSavings = snap.exists() ? Object.values(snap.val()) : [];
-        const mySavings = rawSavings.filter(s => s.emp_id === currentUser.id || s.emp_id === currentUser.emp_id || s.emp_id === currentUser.username);
-        if (mySavings.length > 0) {
-          mySavings.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-          const latestS = mySavings[0];
-          if (!window._lastNotifiedSavingTs) {
-            window._lastNotifiedSavingTs = latestS.timestamp;
-          } else if (window._lastNotifiedSavingTs < latestS.timestamp) {
-            window._lastNotifiedSavingTs = latestS.timestamp;
-            const formattedAmt = `Rp ${Number(latestS.amount || 0).toLocaleString('id-ID')}`;
-            showToast(`💰 Transaksi Tabungan: ${latestS.type || 'Setoran'} ${formattedAmt}`, 'info');
-            triggerSystemNotification('💰 Transaksi Tabungan Karyawan', {
-              body: `${latestS.type || 'Transaksi'}: ${formattedAmt}. Ket: ${latestS.note || '-'}`,
-              tag: 'mytic-savings'
-            });
-          }
-        }
-      }
+      checkAndNotifyNode(node, snap);
 
       if (currentUser) renderCurrentSection();
     }, error => {
@@ -360,6 +226,139 @@ function init() {
       if (!allData[node]) allData[node] = {};
     });
   });
+
+function isRecordForUser(item, user) {
+  if (!item || !user) return false;
+  const target = (item.emp_id || item.empId || item.username || item.emp_name || '').toString().toLowerCase().trim();
+  if (!target) return false;
+
+  const uId = (user.id || '').toString().toLowerCase().trim();
+  const uKey = (user._key || '').toString().toLowerCase().trim();
+  const uEmpId = (user.emp_id || '').toString().toLowerCase().trim();
+  const uUsername = (user.username || '').toString().toLowerCase().trim();
+  const uName = (user.name || '').toString().toLowerCase().trim();
+
+  return (uId && target === uId) ||
+         (uKey && target === uKey) ||
+         (uEmpId && target === uEmpId) ||
+         (uUsername && target === uUsername) ||
+         (uName && target === uName);
+}
+
+function checkAndNotifyNode(node, rawSnap) {
+  if (!currentUser || !rawSnap.exists()) return;
+  const items = Object.values(rawSnap.val());
+  if (items.length === 0) return;
+
+  const lastNotifiedKey = `_lastNotified_${node}_ts`;
+
+  // On first app load, record the highest timestamp as baseline so old items don't spam
+  if (!window[lastNotifiedKey]) {
+    let maxTs = 0;
+    items.forEach(i => {
+      const ts = i.timestamp || 0;
+      if (ts > maxTs) maxTs = ts;
+    });
+    window[lastNotifiedKey] = maxTs || Date.now();
+    return;
+  }
+
+  const baselineTs = window[lastNotifiedKey];
+  let newMaxTs = baselineTs;
+
+  // Filter all new or updated items with timestamp strictly greater than baselineTs
+  const newItems = items.filter(i => (i.timestamp || 0) > baselineTs);
+  if (newItems.length === 0) return;
+
+  newItems.forEach(item => {
+    const itemTs = item.timestamp || Date.now();
+    if (itemTs > newMaxTs) newMaxTs = itemTs;
+
+    // 1. DISKUSI INTERNAL
+    if (node === 'internal_chats') {
+      const isMe = (currentUser.role === 'employee' && item.sender_id === currentUser.id) || (currentUser.role === 'admin' && item.sender_role === 'Manajemen');
+      if (!isMe && currentSection !== 'internal-chat') {
+        showToast(`💬 Pesan Diskusi dari ${item.sender_name}: "${item.message}"`, 'info');
+        triggerSystemNotification(`💬 Pesan Diskusi - ${item.sender_name}`, {
+          body: item.message,
+          tag: 'mytic-chat-' + itemTs
+        });
+      }
+    }
+
+    // 2. IZIN / CUTI
+    else if (node === 'leaves') {
+      if (currentUser.role === 'admin' && item.status === 'Menunggu') {
+        const empName = item.emp_name || 'Karyawan';
+        showToast(`🏖️ Pengajuan Izin Baru: ${empName}`, 'info');
+        triggerSystemNotification(`🏖️ Pengajuan Izin Baru - ${empName}`, {
+          body: `Alasan: ${item.reason || '-'} (${item.start_date} s/d ${item.end_date})`,
+          tag: 'mytic-leave-' + itemTs
+        });
+      } else if (currentUser.role === 'employee' && isRecordForUser(item, currentUser)) {
+        if (item.status === 'Disetujui' || item.status === 'Ditolak') {
+          showToast(`🏖️ Status Izin Anda: ${item.status}`, 'info');
+          triggerSystemNotification(`🏖️ Status Izin: ${item.status}`, {
+            body: `Pengajuan izin Anda tanggal ${item.start_date} telah ${item.status.toLowerCase()} oleh Manajemen.`,
+            tag: 'mytic-leave-status-' + itemTs
+          });
+        }
+      }
+    }
+
+    // 3. PELANGGARAN
+    else if (node === 'violations') {
+      if (currentUser.role === 'employee' && isRecordForUser(item, currentUser)) {
+        const vType = item.violation_type || item.type || 'Pelanggaran';
+        const pts = item.level || item.points || 'Peringatan';
+        showToast(`⚠️ Pelanggaran Baru: ${vType}`, 'warning');
+        triggerSystemNotification(`⚠️ Catatan Pelanggaran Baru`, {
+          body: `Jenis: ${vType} (${pts}). Catatan: ${item.description || item.note || '-'}`,
+          tag: 'mytic-violation-' + itemTs
+        });
+      }
+    }
+
+    // 4. TRANSAKSI (DEBIT / KREDIT)
+    else if (node === 'transactions') {
+      if (currentUser.role === 'employee' && isRecordForUser(item, currentUser)) {
+        const title = item.type === 'credit' ? '💳 Pembayaran Tunggakan (Kredit)' : '💳 Catatan Tunggakan Baru (Debit)';
+        const formattedAmt = `Rp ${Number(item.amount || 0).toLocaleString('id-ID')}`;
+        showToast(`${title}: ${formattedAmt}`, 'info');
+        triggerSystemNotification(title, {
+          body: `Nominal: ${formattedAmt}. Ket: ${item.note || '-'}`,
+          tag: 'mytic-txn-' + itemTs
+        });
+      }
+    }
+
+    // 5. PENILAIAN KINERJA
+    else if (node === 'ratings') {
+      if (currentUser.role === 'employee' && isRecordForUser(item, currentUser)) {
+        const avgScore = item.scores ? (Object.values(item.scores).reduce((s, v) => s + v, 0) / Object.values(item.scores).length).toFixed(1) : (item.score || '5.0');
+        showToast(`⭐ Penilaian Kinerja Baru (Skor: ${avgScore})`, 'info');
+        triggerSystemNotification('⭐ Penilaian Kinerja Karyawan Baru', {
+          body: `Bulan: ${item.date || '-'}. Skor Rata-rata: ${avgScore} / 5`,
+          tag: 'mytic-rating-' + itemTs
+        });
+      }
+    }
+
+    // 6. TABUNGAN
+    else if (node === 'savings') {
+      if (currentUser.role === 'employee' && isRecordForUser(item, currentUser)) {
+        const formattedAmt = `Rp ${Number(item.amount || 0).toLocaleString('id-ID')}`;
+        showToast(`💰 Tabungan Karyawan: ${formattedAmt}`, 'info');
+        triggerSystemNotification('💰 Transaksi Tabungan Karyawan', {
+          body: `Bulan: ${item.month || '-'}. Nominal: ${formattedAmt}`,
+          tag: 'mytic-savings-' + itemTs
+        });
+      }
+    }
+  });
+
+  window[lastNotifiedKey] = newMaxTs;
+}
 
 function triggerSystemNotification(title, options = {}) {
   if (!('Notification' in window)) return;
