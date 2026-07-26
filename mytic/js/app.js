@@ -229,6 +229,10 @@ function init() {
             window._lastNotifiedChatTs = latestChat.timestamp;
             if (currentSection !== 'internal-chat') {
               showToast(`💬 Pesan Diskusi dari ${latestChat.sender_name}: "${latestChat.message}"`, 'info');
+              triggerSystemNotification(`💬 Pesan Diskusi - ${latestChat.sender_name}`, {
+                body: latestChat.message,
+                tag: 'mytic-chat'
+              });
             }
           }
         }
@@ -240,6 +244,53 @@ function init() {
       if (!allData[node]) allData[node] = {};
     });
   });
+
+function triggerSystemNotification(title, options = {}) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    try {
+      if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+        navigator.serviceWorker.ready.then(reg => {
+          reg.showNotification(title, {
+            icon: 'icons/icon-192.png',
+            badge: 'icons/icon-192.png',
+            vibrate: [200, 100, 200],
+            renotify: true,
+            tag: 'mytic-system-notif',
+            ...options
+          });
+        }).catch(() => {
+          new Notification(title, { icon: 'icons/icon-192.png', ...options });
+        });
+      } else {
+        new Notification(title, { icon: 'icons/icon-192.png', ...options });
+      }
+    } catch (e) {
+      console.warn('System notification error:', e);
+    }
+  }
+}
+
+window.requestNotificationPermission = async () => {
+  if (!('Notification' in window)) {
+    showToast('Browser HP Anda tidak mendukung Notifikasi System.', 'warning');
+    return;
+  }
+  if (Notification.permission === 'granted') {
+    showToast('Notifikasi HP sudah aktif! 🔔', 'success');
+    return;
+  }
+  const result = await Notification.requestPermission();
+  if (result === 'granted') {
+    showToast('Izin diberikan! Notifikasi HP berhasil diaktifkan 🔔', 'success');
+    triggerSystemNotification('MyTIC SPBU Gontor 🔔', {
+      body: 'Notifikasi HP berhasil diaktifkan! Anda akan menerima pesan & info real-time.',
+      tag: 'mytic-welcome'
+    });
+  } else if (result === 'denied') {
+    showToast('Izin notifikasi ditolak. Aktifkan di Pengaturan Situs browser HP Anda.', 'error');
+  }
+};
 
   onValue(ref(db, 'absensi/records'), snap => {
     allData.absensi_records = snap.exists() ? snap.val() : {};
@@ -374,6 +425,12 @@ function loginSuccess() {
 
   setupNavigation();
   switchSection('dashboard');
+
+  if ('Notification' in window && Notification.permission === 'default') {
+    setTimeout(() => {
+      window.requestNotificationPermission();
+    }, 1500);
+  }
 }
 
 function doLogout(msg = true) {

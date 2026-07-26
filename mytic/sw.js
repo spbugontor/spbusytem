@@ -62,3 +62,20 @@ self.addEventListener('fetch', (e) => {
       })
   );
 });
+
+// Handle Notification Click (Opens/Focuses MyTIC App on HP)
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (let client of clientList) {
+        if ('focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow('./');
+      }
+    })
+  );
+});
