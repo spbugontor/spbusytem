@@ -272,16 +272,6 @@ function renderLeaderboard() {
   `}).join('');
   container.innerHTML = generateListHTML(scores, true);
 
-  // Tambahkan listener klik untuk melihat foto profil besar
-  document.querySelectorAll('.leaderboard-photo').forEach(img => {
-    img.addEventListener('click', (e) => {
-      e.stopPropagation(); // Agar tidak mentrigger detail absensi
-      $('photo-title').textContent = `Foto Profil: ${img.dataset.name}`;
-      $('photo-img').src = img.src;
-      $('photo-overlay').classList.add('active');
-    });
-  });
-
   if (allData.settings.rank_clickable) {
     container.querySelectorAll('.leaderboard-item').forEach(item => {
       item.addEventListener('click', () => showLeaderboardDetail(item.dataset.emp));
@@ -295,6 +285,16 @@ function renderLeaderboard() {
       item.addEventListener('click', () => showLeaderboardDetail(item.dataset.emp));
     });
   }
+
+  // Tambahkan listener klik untuk melihat foto profil besar (untuk halaman utama & dashboard admin)
+  document.querySelectorAll('.leaderboard-photo').forEach(img => {
+    img.addEventListener('click', (e) => {
+      e.stopPropagation(); // Agar tidak mentrigger detail absensi
+      $('photo-title').textContent = `Foto Profil: ${img.dataset.name}`;
+      $('photo-img').src = img.src;
+      $('photo-overlay').classList.add('active');
+    });
+  });
 }
 
 function showLeaderboardDetail(empName) {

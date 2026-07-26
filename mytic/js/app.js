@@ -1421,7 +1421,7 @@ window._deleteLeave = async (key) => { if (confirm('Hapus pengajuan?')) { await 
 window._showLeaveChat = (key, role) => {
   const l = allData.leaves[key];
   if (!l) return;
-  
+
   // Mark as read in Firebase and local state
   const readField = role === 'Manajemen' ? 'lastRead_Manajemen' : 'lastRead_Karyawan';
   const now = Date.now();
@@ -1436,7 +1436,7 @@ window._showLeaveChat = (key, role) => {
     chats.map(c => {
       const isMe = c.role === role;
       return `<div style="display:flex; flex-direction:column; align-items:${isMe ? 'flex-end' : 'flex-start'}; margin-bottom: 0.75rem;">
-        <span class="text-xs text-muted" style="margin-bottom:0.25rem">${esc(c.senderName)} • ${new Date(c.timestamp).toLocaleString('id-ID', {hour:'2-digit', minute:'2-digit', day:'numeric', month:'short'})}</span>
+        <span class="text-xs text-muted" style="margin-bottom:0.25rem">${esc(c.senderName)} • ${new Date(c.timestamp).toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}</span>
         <div style="background:${isMe ? 'var(--primary)' : 'var(--bg-color)'}; color:${isMe ? '#fff' : 'var(--text)'}; padding:0.5rem 0.75rem; border-radius: var(--radius-md); max-width:85%; font-size:0.85rem; border: 1px solid ${isMe ? 'var(--primary)' : 'var(--border)'};">
           ${esc(c.message)}
         </div>
@@ -1453,7 +1453,7 @@ window._showLeaveChat = (key, role) => {
         <button class="btn btn-primary" onclick="window._sendLeaveChat('${key}', '${role}')">Kirim</button>
       </div>
     </div>`);
-    
+
   setTimeout(() => {
     const box = $('leave-chat-box');
     if (box) box.scrollTop = box.scrollHeight;
@@ -1467,7 +1467,7 @@ window._sendLeaveChat = async (key, role) => {
   if (!inp) return;
   const msg = inp.value.trim();
   if (!msg) return;
-  
+
   const senderName = role === 'Manajemen' ? 'Manajemen' : (getUserByUsername(currentUser.username)?.name || 'Karyawan');
   const now = Date.now();
   const readField = role === 'Manajemen' ? 'lastRead_Manajemen' : 'lastRead_Karyawan';
@@ -1481,7 +1481,7 @@ window._sendLeaveChat = async (key, role) => {
   });
   await update(ref(db, `leaves/${key}`), { [readField]: now });
   if (allData.leaves[key]) allData.leaves[key][readField] = now;
-  
+
   inp.disabled = false;
   inp.value = '';
   window._showLeaveChat(key, role);
@@ -1575,12 +1575,12 @@ window._updateEmpLeave = async (key) => {
   const l = allData.leaves[key];
   if (!l || l.status !== 'Menunggu') return;
   const emp = getUserByUsername(currentUser.username); if (!emp) return;
-  
+
   const leaveType = $('lf-type-edit').value;
   const startDate = $('lf-start-edit').value;
   const endDate = $('lf-end-edit').value;
   const reason = $('lf-reason-edit').value.trim();
-  
+
   if (!startDate || !endDate) { showToast('Tanggal wajib diisi!', 'error'); return; }
 
   const d1 = new Date(startDate);
@@ -2168,7 +2168,7 @@ window._tempProfilePhoto = null;
 window._handlePhotoSelect = (e) => {
   const file = e.target.files[0];
   if (!file) return;
-  const max_size = 300;
+  const max_size = 800;
   const reader = new FileReader();
   reader.onload = (readerEvent) => {
     const img = new Image();
