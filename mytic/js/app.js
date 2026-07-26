@@ -845,13 +845,36 @@ function renderEmployees() {
   </div>`;
 }
 
+function isEmpAdminOrSupervisor() {
+  if (!currentUser || currentUser.role !== 'employee') return false;
+  const pos = (currentUser.position || '').toLowerCase();
+  return pos.includes('admin') || pos.includes('supervisor');
+}
+
+function canAddDebit() {
+  if (!currentUser) return false;
+  if (currentUser.role === 'admin') return true;
+  return isEmpAdminOrSupervisor();
+}
+
+function canAddCredit() {
+  if (!currentUser) return false;
+  return currentUser.role === 'admin';
+}
+
 // ==========================================
-// DEBITS (ADMIN)
+// DEBITS (ADMIN & SUPERVISOR)
 // ==========================================
 function renderDebits() {
   const users = getUsers();
+  const allowCredit = canAddCredit();
+  const allowDebit = canAddDebit();
+
   return `<div class="fade-in">
-    <h3 class="text-xl font-bold mb-4">Tunggakan Karyawan</h3>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <h3 class="text-xl font-bold">Tunggakan Karyawan</h3>
+      ${isEmpAdminOrSupervisor() ? '<span class="badge badge-warning">Akses Tambah Debit (Admin/Supervisor)</span>' : ''}
+    </div>
     ${users.length === 0 ? '<div class="card"><p class="text-muted">Tambahkan karyawan dahulu.</p></div>' :
       users.map(e => {
         const bal = calcBalance(e.emp_id);
@@ -865,16 +888,27 @@ function renderDebits() {
           <div style="text-align:right"><strong style="color:${bal > 0 ? 'var(--danger)' : bal < 0 ? 'var(--success)' : 'var(--text-muted)'}">${fmt(bal)}</strong><br><span class="text-xs text-muted">${txns.length} transaksi</span></div>
         </div>
         <div id="txn-${e.emp_id}" class="hidden" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1rem">
+          ${(allowDebit || allowCredit) ? `
           <div style="display:flex;gap:0.5rem;margin-bottom:1rem">
-            <button class="btn btn-danger" style="flex:1;padding:0.5rem;font-size:0.75rem" onclick="window._showTxnForm('${e.emp_id}','debit')">+ Debit</button>
-            <button class="btn btn-primary" style="flex:1;padding:0.5rem;font-size:0.75rem;background:var(--success)" onclick="window._showTxnForm('${e.emp_id}','credit')">+ Kredit</button>
-          </div>
+            ${allowDebit ? `<button class="btn btn-danger" style="flex:1;padding:0.5rem;font-size:0.75rem" onclick="window._showTxnForm('${e.emp_id}','debit')">+ Debit (Tambah Tunggakan)</button>` : ''}
+            ${allowCredit ? `<button class="btn btn-primary" style="flex:1;padding:0.5rem;font-size:0.75rem;background:var(--success)" onclick="window._showTxnForm('${e.emp_id}','credit')">+ Kredit (Pembayaran)</button>` : ''}
+          </div>` : ''}
           <div id="txn-form-${e.emp_id}"></div>
           ${txns.length === 0 ? '<p class="text-xs text-muted" style="text-align:center">Belum ada transaksi.</p>' :
-            txns.map(t => `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0.75rem;background:var(--bg-color);border-radius:var(--radius-md);margin-bottom:0.25rem;font-size:0.8rem">
-            <div><strong style="color:${t.type === 'debit' ? 'var(--danger)' : 'var(--success)'}">${t.type === 'debit' ? '+' : '-'}${fmt(t.amount)}</strong> <span class="text-muted">${esc(t.note || '')}</span></div>
-            <div style="display:flex;align-items:center;gap:0.5rem"><span class="text-muted">${fmtDate(t.date)}</span><button style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:0.7rem" onclick="window._deleteTxn('${t._key}')">✕</button></div>
-          </div>`).join('')}
+            txns.map(t => {
+              const adder = t.added_by || 'Manajemen';
+              return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0.75rem;background:var(--bg-color);border-radius:var(--radius-md);margin-bottom:0.35rem;font-size:0.8rem">
+              <div>
+                <strong style="color:${t.type === 'debit' ? 'var(--danger)' : 'var(--success)'}">${t.type === 'debit' ? '+' : '-'}${fmt(t.amount)}</strong> 
+                <span class="text-muted">${esc(t.note || '')}</span>
+                <span class="text-xs text-muted" style="display:block;margin-top:3px;font-size:0.72rem;">✍️ Ditambahkan oleh: <strong style="color:var(--text-main)">${esc(adder)}</strong></span>
+              </div>
+              <div style="display:flex;align-items:center;gap:0.5rem">
+                <span class="text-muted" style="font-size:0.75rem">${fmtDate(t.date)}</span>
+                ${currentUser.role === 'admin' ? `<button style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:0.7rem" onclick="window._deleteTxn('${t._key}')">✕</button>` : ''}
+              </div>
+            </div>`;
+            }).join('')}
         </div>
       </div>`;
       }).join('')}
@@ -1516,15 +1550,28 @@ function renderEmpHistory() {
 function renderEmpDebits() {
   const emp = getUserByUsername(currentUser.username);
   if (!emp) return '<div class="card"><p class="text-muted">Data tidak ditemukan.</p></div>';
+
+  // If employee position is Admin or Supervisor, show full employee tunggakan list (with Debit-Only access)
+  if (isEmpAdminOrSupervisor()) {
+    return renderDebits();
+  }
+
   const bal = calcBalance(emp.emp_id);
   const txns = getTxns(emp.emp_id);
   return `<div class="fade-in">
-    <div class="card mb-4" style="text-align:center"><p class="form-label">Saldo Tunggakan</p><p style="font-size:2rem;font-weight:800;color:${bal > 0 ? 'var(--danger)' : 'var(--success)'}">${fmt(bal)}</p></div>
+    <div class="card mb-4" style="text-align:center"><p class="form-label">Saldo Tunggakan Saya</p><p style="font-size:2rem;font-weight:800;color:${bal > 0 ? 'var(--danger)' : 'var(--success)'}">${fmt(bal)}</p></div>
     <div class="card"><h3 class="card-title mb-4">Riwayat Transaksi</h3>
     ${txns.length === 0 ? '<p class="text-muted text-sm">Belum ada transaksi.</p>' :
-      txns.map(t => `<div style="display:flex;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid var(--border);font-size:0.85rem">
-      <div><strong style="color:${t.type === 'debit' ? 'var(--danger)' : 'var(--success)'}">${t.type === 'debit' ? '+' : '-'}${fmt(t.amount)}</strong> <span class="text-muted">${esc(t.note || '')}</span></div>
-      <span class="text-muted">${fmtDate(t.date)}</span></div>`).join('')}
+      txns.map(t => {
+        const adder = t.added_by || 'Manajemen';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 0;border-bottom:1px solid var(--border);font-size:0.85rem">
+        <div>
+          <strong style="color:${t.type === 'debit' ? 'var(--danger)' : 'var(--success)'}">${t.type === 'debit' ? '+' : '-'}${fmt(t.amount)}</strong> 
+          <span class="text-muted">${esc(t.note || '')}</span>
+          <span class="text-xs text-muted" style="display:block;margin-top:3px;font-size:0.75rem;">✍️ Ditambahkan oleh: <strong style="color:var(--text-main)">${esc(adder)}</strong></span>
+        </div>
+        <span class="text-muted">${fmtDate(t.date)}</span></div>`;
+      }).join('')}
     </div>
   </div>`;
 }
@@ -1920,9 +1967,36 @@ window._saveTxn = async (empId, type) => {
   const date = $('tf-date').value;
   const note = $('tf-note').value.trim();
   if (amt <= 0) { showToast('Jumlah harus > 0', 'error'); return; }
+
+  if (type === 'credit' && !canAddCredit()) {
+    showToast('Hanya Manajemen yang diizinkan menambahkan transaksi Kredit!', 'error');
+    return;
+  }
+  if (type === 'debit' && !canAddDebit()) {
+    showToast('Anda tidak memiliki akses untuk menambah Debit!', 'error');
+    return;
+  }
+
   if (type === 'credit' && amt > calcBalance(empId)) { showToast('Pembayaran melebihi hutang!', 'error'); return; }
-  await set(push(ref(db, 'transactions')), { emp_id: empId, type, amount: amt, date, note });
-  showToast('Transaksi disimpan!', 'success');
+
+  let addedBy = 'Manajemen';
+  if (currentUser.role === 'employee') {
+    addedBy = `${currentUser.name} (${currentUser.position})`;
+  } else if (currentUser.name) {
+    addedBy = currentUser.name;
+  }
+
+  await set(push(ref(db, 'transactions')), {
+    emp_id: empId,
+    type,
+    amount: amt,
+    date,
+    note,
+    added_by: addedBy,
+    timestamp: Date.now()
+  });
+
+  showToast('Transaksi berhasil disimpan!', 'success');
 };
 
 window._deleteTxn = async (key) => { if (confirm('Hapus transaksi?')) { await remove(ref(db, 'transactions/' + key)); showToast('Dihapus!', 'success'); } };
