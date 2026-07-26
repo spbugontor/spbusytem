@@ -238,6 +238,46 @@ function init() {
         }
       }
 
+      if (node === 'leaves' && currentUser) {
+        const rawLeaves = snap.exists() ? Object.values(snap.val()) : [];
+        if (rawLeaves.length > 0) {
+          rawLeaves.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+          const latestLeave = rawLeaves[0];
+          
+          if (currentUser.role === 'admin' && latestLeave.status === 'Menunggu' && window._lastNotifiedLeaveTs !== latestLeave.timestamp) {
+            window._lastNotifiedLeaveTs = latestLeave.timestamp;
+            triggerSystemNotification(`🏖️ Pengajuan Izin Baru - ${latestLeave.emp_name}`, {
+              body: `Alasan: ${latestLeave.reason} (${latestLeave.start_date} s/d ${latestLeave.end_date})`,
+              tag: 'mytic-leave-new'
+            });
+          } else if (currentUser.role === 'employee' && currentUser.id === latestLeave.emp_id && window._lastNotifiedLeaveStatusTs !== `${latestLeave.timestamp}_${latestLeave.status}`) {
+            window._lastNotifiedLeaveStatusTs = `${latestLeave.timestamp}_${latestLeave.status}`;
+            if (latestLeave.status === 'Disetujui' || latestLeave.status === 'Ditolak') {
+              triggerSystemNotification(`🏖️ Status Izin: ${latestLeave.status}`, {
+                body: `Pengajuan izin Anda tanggal ${latestLeave.start_date} telah ${latestLeave.status.toLowerCase()} oleh Manajemen.`,
+                tag: 'mytic-leave-status'
+              });
+            }
+          }
+        }
+      }
+
+      if (node === 'violations' && currentUser && currentUser.role === 'employee') {
+        const rawViolations = snap.exists() ? Object.values(snap.val()) : [];
+        const myViolations = rawViolations.filter(v => v.emp_id === currentUser.id);
+        if (myViolations.length > 0) {
+          myViolations.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+          const latestV = myViolations[0];
+          if (window._lastNotifiedViolationTs !== latestV.timestamp) {
+            window._lastNotifiedViolationTs = latestV.timestamp;
+            triggerSystemNotification(`⚠️ Catatan Pelanggaran Baru`, {
+              body: `Jenis: ${latestV.type} (-${latestV.points} Poin). Catatan: ${latestV.note}`,
+              tag: 'mytic-violation'
+            });
+          }
+        }
+      }
+
       if (currentUser) renderCurrentSection();
     }, error => {
       console.warn(`Info/Warning reading ${node}:`, error);
