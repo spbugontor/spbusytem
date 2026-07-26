@@ -278,6 +278,55 @@ function init() {
         }
       }
 
+      if (node === 'transactions' && currentUser && currentUser.role === 'employee') {
+        const rawTxns = snap.exists() ? Object.values(snap.val()) : [];
+        const myTxns = rawTxns.filter(t => t.emp_id === currentUser.id);
+        if (myTxns.length > 0) {
+          myTxns.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+          const latestT = myTxns[0];
+          if (window._lastNotifiedTxnTs !== latestT.timestamp) {
+            window._lastNotifiedTxnTs = latestT.timestamp;
+            const title = latestT.type === 'credit' ? '💳 Pembayaran Tunggakan (Kredit)' : '💳 Catatan Tunggakan Baru (Debit)';
+            triggerSystemNotification(title, {
+              body: `Nominal: Rp ${Number(latestT.amount || 0).toLocaleString('id-ID')}. Ket: ${latestT.note || '-'}`,
+              tag: 'mytic-txn'
+            });
+          }
+        }
+      }
+
+      if (node === 'ratings' && currentUser && currentUser.role === 'employee') {
+        const rawRatings = snap.exists() ? Object.values(snap.val()) : [];
+        const myRatings = rawRatings.filter(r => r.emp_id === currentUser.id);
+        if (myRatings.length > 0) {
+          myRatings.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+          const latestR = myRatings[0];
+          if (window._lastNotifiedRatingTs !== latestR.timestamp) {
+            window._lastNotifiedRatingTs = latestR.timestamp;
+            triggerSystemNotification('⭐ Penilaian Kinerja Karyawan Baru', {
+              body: `Periode: ${latestR.period || '-'}. Total Skor: ${latestR.total_score || latestR.score || 0} (${latestR.category || 'Tercatat'})`,
+              tag: 'mytic-rating'
+            });
+          }
+        }
+      }
+
+      if (node === 'savings' && currentUser && currentUser.role === 'employee') {
+        const rawSavings = snap.exists() ? Object.values(snap.val()) : [];
+        const mySavings = rawSavings.filter(s => s.emp_id === currentUser.id);
+        if (mySavings.length > 0) {
+          mySavings.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+          const latestS = mySavings[0];
+          if (window._lastNotifiedSavingTs !== latestS.timestamp) {
+            window._lastNotifiedSavingTs = latestS.timestamp;
+            triggerSystemNotification('💰 Transaksi Tabungan Karyawan', {
+              body: `${latestS.type || 'Transaksi'}: Rp ${Number(latestS.amount || 0).toLocaleString('id-ID')}. Ket: ${latestS.note || '-'}`,
+              tag: 'mytic-savings'
+            });
+          }
+        }
+      }
+
       if (currentUser) renderCurrentSection();
     }, error => {
       console.warn(`Info/Warning reading ${node}:`, error);
