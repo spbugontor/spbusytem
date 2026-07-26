@@ -392,20 +392,33 @@ window.requestNotificationPermission = async () => {
     showToast('Browser HP Anda tidak mendukung Notifikasi System.', 'warning');
     return;
   }
-  if (Notification.permission === 'granted') {
-    showToast('Notifikasi HP sudah aktif! 🔔', 'success');
+  const currentPerm = Notification.permission;
+  if (currentPerm === 'granted') {
+    showToast('Notifikasi HP sudah AKTIF! 🔔', 'success');
+    triggerSystemNotification('🔔 Notifikasi HP SPBU Gontor', {
+      body: 'Notifikasi HP Anda 100% aktif dan siap menerima data real-time.',
+      tag: 'mytic-test-' + Date.now()
+    });
+    return;
+  }
+  if (currentPerm === 'denied') {
+    showToast('Izin notifikasi diblokir browser. Buka Setelan Situs di browser HP Anda.', 'error');
     return;
   }
   const result = await Notification.requestPermission();
   if (result === 'granted') {
-    showToast('Izin diberikan! Notifikasi HP berhasil diaktifkan 🔔', 'success');
-    triggerSystemNotification('MyTIC SPBU Gontor 🔔', {
-      body: 'Notifikasi HP berhasil diaktifkan! Anda akan menerima pesan & info real-time.',
+    showToast('Berhasil! Notifikasi HP diaktifkan 🔔', 'success');
+    triggerSystemNotification('🔔 Notifikasi HP Aktif! - MyTIC', {
+      body: 'Hebat! Notifikasi HP berhasil diaktifkan.',
       tag: 'mytic-welcome'
     });
-  } else if (result === 'denied') {
-    showToast('Izin notifikasi ditolak. Aktifkan di Pengaturan Situs browser HP Anda.', 'error');
+  } else {
+    showToast('Notifikasi belum diizinkan.', 'warning');
   }
+};
+
+window.testHpNotification = () => {
+  window.requestNotificationPermission();
 };
 
   onValue(ref(db, 'absensi/records'), snap => {
@@ -1447,6 +1460,14 @@ function renderSettings() {
   return `<div class="fade-in">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
       <h3 class="text-xl font-bold">Pengaturan Sistem</h3>
+    </div>
+
+    <div class="card mb-4">
+      <h3 class="card-title mb-2">🔔 Uji Coba & Status Notifikasi HP</h3>
+      <p class="text-sm text-muted mb-3">Klik tombol di bawah untuk meminta izin atau menguji apakah notifikasi sistem HP Anda berfungsi dengan baik.</p>
+      <button class="btn btn-primary" onclick="window.testHpNotification()" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.65rem 1.25rem;">
+        <span>🔔 Tes Notifikasi HP Sekarang</span>
+      </button>
     </div>
     
     <div class="card mb-4">
