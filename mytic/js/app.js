@@ -25,6 +25,12 @@ function applyTheme(themeKey) {
   document.documentElement.style.setProperty('--primary', t.primary);
   document.documentElement.style.setProperty('--primary-hover', t.hover);
   document.documentElement.style.setProperty('--primary-bg', t.bg);
+
+  // Dynamically update PWA title bar header color
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) {
+    metaTheme.setAttribute('content', t.primary);
+  }
 }
 
 const savedTheme = localStorage.getItem('spbu_theme');
