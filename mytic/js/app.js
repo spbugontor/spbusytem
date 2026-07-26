@@ -500,7 +500,30 @@ function setupNavigation() {
     }
   });
 
-  const hasMoreUnread = mobileMore.some(m => (m.id === 'leaves' && adminHasPendingLeave) || (m.id === 'emp-leaves' && empHasUnreadLeave));
+  // Update Header Bell Button Visibility and Badge
+  const bellBtn = document.getElementById('btn-nav-chat-bell');
+  const bellBadge = document.getElementById('badge-bell-count');
+  if (bellBtn) {
+    if (isAdmin || isEmpAdminOrSupervisor()) {
+      bellBtn.style.display = 'inline-flex';
+      if (unreadChatCount > 0) {
+        if (bellBadge) {
+          bellBadge.textContent = unreadChatCount;
+          bellBadge.classList.remove('hidden');
+        }
+      } else {
+        if (bellBadge) bellBadge.classList.add('hidden');
+      }
+    } else {
+      bellBtn.style.display = 'none';
+    }
+  }
+
+  const hasMoreUnread = mobileMore.some(m => 
+    (m.id === 'leaves' && adminHasPendingLeave) || 
+    (m.id === 'emp-leaves' && empHasUnreadLeave) ||
+    (m.id === 'internal-chat' && unreadChatCount > 0)
+  );
   if (mobileMore.length > 0) {
     mHTML += `<a class="mobile-nav-item" onclick="window._toggleMoreMenu()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg><span>Lainnya${hasMoreUnread ? redDot : ''}</span></a>`;
   }
