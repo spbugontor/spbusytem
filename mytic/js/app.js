@@ -2060,10 +2060,10 @@ function renderInternalChat() {
           }).join('')}
       </div>
 
-      <div style="display:flex;gap:0.5rem;border-top:1px solid var(--border);padding-top:0.75rem;">
-        <input type="text" id="inp-internal-chat" class="form-control" placeholder="Tulis pesan diskusi..." style="font-size:0.85rem;" onkeypress="if(event.key==='Enter') window._sendInternalChat()">
-        <button class="btn btn-primary" onclick="window._sendInternalChat()" style="display:flex;align-items:center;gap:0.4rem;padding:0.5rem 1rem;">
-          <span>Kirim</span> ✈️
+      <div style="display:flex;align-items:center;gap:0.5rem;border-top:1px solid var(--border);padding-top:0.75rem;width:100%;">
+        <input type="text" id="inp-internal-chat" class="form-input" placeholder="Tulis pesan diskusi..." style="flex:1;width:100%;font-size:0.88rem;padding:0.65rem 1rem;border-radius:var(--radius-lg);" onkeypress="if(event.key==='Enter') window._sendInternalChat()">
+        <button class="btn btn-primary" onclick="window._sendInternalChat()" title="Kirim Pesan" style="width:42px;height:42px;min-width:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 4px 12px var(--primary-shadow, rgba(0,0,0,0.2));">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="transform: translateX(1px);"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
         </button>
       </div>
     </div>
