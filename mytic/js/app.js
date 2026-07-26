@@ -242,41 +242,73 @@ function init() {
 function setupEventListeners() {
   $('tab-employee').addEventListener('click', () => { $('tab-employee').classList.add('active'); $('tab-management').classList.remove('active'); $('form-login-employee').classList.remove('hidden'); $('form-login-management').classList.add('hidden'); });
   $('tab-management').addEventListener('click', () => { $('tab-management').classList.add('active'); $('tab-employee').classList.remove('active'); $('form-login-management').classList.remove('hidden'); $('form-login-employee').classList.add('hidden'); });
-  $('btn-login-mgmt').addEventListener('click', handleAdminLogin);
-  $('inp-mgmt-pin').addEventListener('keypress', e => { if (e.key === 'Enter') handleAdminLogin(); });
+  $('btn-login-mgmt').addEventListener('click', () => handleAdminLogin(false));
+  $('inp-mgmt-pin').addEventListener('keypress', e => { if (e.key === 'Enter') handleAdminLogin(false); });
   $('btn-login-emp').addEventListener('click', handleEmpLogin);
   $('inp-emp-pin').addEventListener('keypress', e => { if (e.key === 'Enter') handleEmpLogin(); });
   $('btn-logout-sidebar').addEventListener('click', () => doLogout(true));
   $('btn-logout-mobile').addEventListener('click', () => doLogout(true));
+
+  // Auto-login for Employee (Instant as soon as PIN matches)
+  $('inp-emp-pin').addEventListener('input', () => {
+    const username = $('inp-emp-username').value;
+    const pin = $('inp-emp-pin').value.trim();
+    if (username && pin) {
+      const userObj = Object.values(allData.users || {}).find(u => u.username === username);
+      if (userObj && userObj.pin === pin) {
+        handleEmpLogin();
+      }
+    }
+  });
+
+  // Auto-login for Management (Triggers as soon as valid password is typed)
+  let mgmtAutoLoginTimer = null;
+  $('inp-mgmt-pin').addEventListener('input', () => {
+    clearTimeout(mgmtAutoLoginTimer);
+    const email = $('inp-mgmt-username').value.trim();
+    const pin = $('inp-mgmt-pin').value.trim();
+    if (email && pin.length >= 6) {
+      mgmtAutoLoginTimer = setTimeout(() => {
+        handleAdminLogin(true);
+      }, 350);
+    }
+  });
 }
 
 // ==========================================
 // AUTH
 // ==========================================
-async function handleAdminLogin() {
+async function handleAdminLogin(isAuto = false) {
   const email = $('inp-mgmt-username').value.trim().toLowerCase();
   const pin = $('inp-mgmt-pin').value.trim();
-  if (!email || !pin) { showToast('Isi email dan password!', 'warning'); return; }
-
-  if (!isEmailAllowedForMyTic(email)) {
-    showToast('Akun ini adalah akun Pemesanan LPG dan tidak memiliki hak akses ke MyTIC.', 'error');
+  if (!email || !pin) {
+    if (!isAuto) showToast('Isi email dan password!', 'warning');
     return;
   }
 
-  const btn = $('btn-login-mgmt'); btn.textContent = 'Memproses...'; btn.disabled = true;
+  if (!isEmailAllowedForMyTic(email)) {
+    if (!isAuto) showToast('Akun ini adalah akun Pemesanan LPG dan tidak memiliki hak akses ke MyTIC.', 'error');
+    return;
+  }
+
+  const btn = $('btn-login-mgmt');
+  if (btn) { btn.textContent = 'Memproses...'; btn.disabled = true; }
+
   try {
     const cred = await signInWithEmailAndPassword(auth, email, pin);
     if (!isEmailAllowedForMyTic(cred.user.email)) {
-      showToast('Akun ini adalah akun Pemesanan LPG dan tidak memiliki hak akses ke MyTIC.', 'error');
+      if (!isAuto) showToast('Akun ini adalah akun Pemesanan LPG dan tidak memiliki hak akses ke MyTIC.', 'error');
       await signOut(auth);
       return;
     }
     showToast('Berhasil masuk', 'success');
   } catch (err) {
-    console.error('Admin login error:', err);
-    showToast('Login gagal. Periksa email dan password.', 'error');
+    if (!isAuto) {
+      console.error('Admin login error:', err);
+      showToast('Login gagal. Periksa email dan password.', 'error');
+    }
   } finally {
-    btn.textContent = 'Masuk Manajemen'; btn.disabled = false;
+    if (btn) { btn.textContent = 'Masuk Manajemen'; btn.disabled = false; }
   }
 }
 
