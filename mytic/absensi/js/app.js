@@ -239,7 +239,7 @@ function renderLeaderboard() {
         if (['Sakit','Izin','Cuti'].includes(r.status)) score += 2; // Keterangan sah
       }
     });
-    return { name: emp.name, present, totalSecLate };
+    return { name: emp.name, photo: emp.profile_picture || null, present, totalSecLate };
   }).filter(e => e.present > 0).sort((a, b) => {
     return a.totalSecLate - b.totalSecLate; // The lowest total SecLate (most early cumulatively) wins
   });
@@ -259,9 +259,12 @@ function renderLeaderboard() {
   const generateListHTML = (list, isTop3) => list.map((s, i) => {
     const isMedal = i < 3;
     const isClickable = isTop3 ? (allData.settings.rank_clickable || false) : true;
+    const rankVisual = s.photo
+      ? `<img src="${s.photo}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; display:block; border: 2px solid ${isMedal ? (i === 0 ? '#F59E0B' : (i === 1 ? '#9CA3AF' : '#B45309')) : 'var(--border)'}; margin: 0 auto;">`
+      : getRankIcon(i);
     return `
     <div class="leaderboard-item rank-${i + 1}" data-emp="${esc(s.name)}" style="${isClickable ? 'cursor:pointer;' : 'cursor:default;'}${!isTop3 ? 'background:var(--bg);box-shadow:none;border:1px solid var(--border);margin-bottom:0.5rem;' : ''}">
-      <div class="leaderboard-rank" style="${isMedal ? 'font-size:1.6rem; background:transparent;' : 'font-size:1.1rem; background:var(--border); color:var(--text); border-radius:var(--radius-sm); height:30px; display:flex; align-items:center; justify-content:center; margin:auto 0;'}">${getRankIcon(i)}</div>
+      <div class="leaderboard-rank" style="${s.photo ? 'background:transparent; display:flex; align-items:center; justify-content:center;' : (isMedal ? 'font-size:1.6rem; background:transparent;' : 'font-size:1.1rem; background:var(--border); color:var(--text); border-radius:var(--radius-sm); height:30px; display:flex; align-items:center; justify-content:center; margin:auto 0;')}">${rankVisual}</div>
       <div class="leaderboard-info">
         <div class="leaderboard-name">${esc(s.name)}</div>
       </div>
@@ -692,11 +695,14 @@ function renderAdminEmployees() {
     return;
   }
   container.innerHTML = emps.map(e => `
-    <div class="card mb-2 flex items-center justify-between" style="padding:1rem;">
+    <div class="card mb-2 flex items-center justify-between" style="padding:1rem; display:flex; justify-content:space-between; align-items:center;">
       <div>
         <div style="font-weight:700;">${esc(e.name)}</div>
-        <div class="text-xs text-muted">${esc(e.position)}${e.nickname ? ' • ' + esc(e.nickname) : ''}</div>
+        <div class="text-xs text-muted">${esc(e.position)}${e.nickname ? ' • Panggilan: ' + esc(e.nickname) : ''}</div>
       </div>
+      <button class="btn btn-secondary edit-emp-btn" data-key="${e._key}" style="padding:0.25rem 0.5rem; font-size:0.75rem;">
+        Edit Panggilan
+      </button>
     </div>
   `).join('');
 
@@ -735,7 +741,7 @@ $('edit-save').addEventListener('click', async () => {
   if (!newName) { showToast('Nama harus diisi', 'warning'); return; }
 
   const oldEmp = getEmployees().find(e => e._key === editingKey);
-  await update(ref(db, 'absensi/employees/' + editingKey), { name: newName, nickname: newNick, position: newPos });
+  await update(ref(db, 'users/' + editingKey), { name: newName, nickname: newNick, position: newPos });
 
   // Update name in records if changed
   if (oldEmp && oldEmp.name !== newName) {
