@@ -156,6 +156,14 @@ function showModal(html) {
 }
 function hideModal() { const m = $('global-modal'); if (m) m.classList.remove('show'); }
 
+function isEmailAllowedForMyTic(email) {
+  if (!email) return false;
+  const s = allData.settings || {};
+  const allowedEmailsStr = s.mytic_mgmt_emails || 'spbugontor02@gmail.com';
+  const allowedList = allowedEmailsStr.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+  return allowedList.includes(email.trim().toLowerCase());
+}
+
 // ==========================================
 // INITIALIZATION
 // ==========================================
@@ -165,7 +173,14 @@ function init() {
 
   onAuthStateChanged(auth, user => {
     if (user) {
-      currentUser = { role: 'admin', name: 'Manajemen', username: 'admin' };
+      const email = user.email || '';
+      if (!isEmailAllowedForMyTic(email)) {
+        showToast('Akun ini adalah akun Pemesanan LPG dan tidak memiliki hak akses ke MyTIC.', 'error');
+        signOut(auth);
+        doLogout(false);
+        return;
+      }
+      currentUser = { role: 'admin', name: 'Manajemen', username: 'admin', email: email };
       loginSuccess();
     } else {
       const s = sessionStorage.getItem('mytic_emp_session');
@@ -242,10 +257,27 @@ async function handleAdminLogin() {
   const email = $('inp-mgmt-username').value.trim().toLowerCase();
   const pin = $('inp-mgmt-pin').value.trim();
   if (!email || !pin) { showToast('Isi email dan password!', 'warning'); return; }
+
+  if (!isEmailAllowedForMyTic(email)) {
+    showToast('Akun ini adalah akun Pemesanan LPG dan tidak memiliki hak akses ke MyTIC.', 'error');
+    return;
+  }
+
   const btn = $('btn-login-mgmt'); btn.textContent = 'Memproses...'; btn.disabled = true;
-  try { await signInWithEmailAndPassword(auth, email, pin); showToast('Berhasil masuk', 'success'); }
-  catch { showToast('Login gagal. Periksa email dan password.', 'error'); }
-  finally { btn.textContent = 'Masuk Manajemen'; btn.disabled = false; }
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, pin);
+    if (!isEmailAllowedForMyTic(cred.user.email)) {
+      showToast('Akun ini adalah akun Pemesanan LPG dan tidak memiliki hak akses ke MyTIC.', 'error');
+      await signOut(auth);
+      return;
+    }
+    showToast('Berhasil masuk', 'success');
+  } catch (err) {
+    console.error('Admin login error:', err);
+    showToast('Login gagal. Periksa email dan password.', 'error');
+  } finally {
+    btn.textContent = 'Masuk Manajemen'; btn.disabled = false;
+  }
 }
 
 async function handleEmpLogin() {
@@ -1110,6 +1142,14 @@ function renderSettings() {
       <h3 class="text-xl font-bold">Pengaturan Sistem</h3>
     </div>
     
+    <div class="card mb-4">
+      <h3 class="card-title mb-2">Email Manajemen Terotorisasi MyTIC</h3>
+      <p class="text-sm text-muted mb-3">Masukkan email yang diizinkan untuk login sebagai Manajemen di MyTIC. Pisahkan dengan koma jika lebih dari satu. Akun email LPG yang tidak ada di daftar ini akan ditolak otomatis oleh MyTIC.</p>
+      <div class="form-group mb-0">
+        <input type="text" id="set-mgmt-emails" class="form-control" value="${esc(s.mytic_mgmt_emails || 'spbugontor02@gmail.com')}" placeholder="spbugontor02@gmail.com, admin@spbugontor.com">
+      </div>
+    </div>
+
     <div class="card mb-4">
       <h3 class="card-title mb-4">Izin Edit Profil Karyawan</h3>
       <p class="text-sm text-muted mb-4">Pilih data mana saja yang diizinkan untuk diubah sendiri oleh karyawan melalui akun mereka.</p>
@@ -2594,14 +2634,17 @@ window._saveCriteria = async (key) => {
 window._deleteCriteria = async (key) => { if (confirm('Hapus kriteria?')) { await remove(ref(db, 'criteria/' + key)); showToast('Dihapus!', 'success'); } };
 
 window._saveSettings = async () => {
+  const currentSettings = allData.settings || {};
   const settingsData = {
+    ...currentSettings,
     emp_profile_edit: {
       name: $('set-edit-name').checked,
       photo: $('set-edit-photo').checked,
       phone: $('set-edit-phone').checked,
       email: $('set-edit-email').checked,
       dob: $('set-edit-dob').checked
-    }
+    },
+    mytic_mgmt_emails: $('set-mgmt-emails').value.trim()
   };
   await set(ref(db, 'settings'), settingsData);
   showToast('Pengaturan berhasil disimpan!', 'success');
