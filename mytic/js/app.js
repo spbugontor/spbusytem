@@ -1372,18 +1372,28 @@ function renderCriteriaPage() {
   return `<div class="fade-in">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
       <h3 class="text-xl font-bold">Kriteria Penilaian</h3>
-      <button class="btn btn-primary" onclick="window._showCriteriaForm()">+ Tambah</button>
+      <button class="btn btn-primary" onclick="window._showCriteriaForm()">+ Tambah Kriteria</button>
     </div>
     <div id="crit-form-area"></div>
     ${criteria.length === 0 ? '<div class="card"><p class="text-muted">Belum ada kriteria.</p></div>' :
       Object.keys(grouped).map(ind => `
       <div style="margin-bottom:1.5rem">
-        <h4 style="font-weight:700;margin-bottom:0.75rem;padding-bottom:0.25rem;border-bottom:2px solid var(--border)">Indikator: ${esc(ind)}</h4>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;padding-bottom:0.4rem;border-bottom:2px solid var(--border);flex-wrap:wrap;gap:0.5rem">
+          <h4 style="font-weight:700;margin:0;font-size:1.05rem;color:var(--text-color)">Indikator: <span style="color:var(--primary)">${esc(ind)}</span></h4>
+          <div style="display:flex;gap:0.4rem;">
+            <button class="btn btn-outline-primary" style="padding:0.25rem 0.6rem;font-size:0.7rem;display:inline-flex;align-items:center;gap:0.3rem;" onclick="window._editIndicatorName('${esc(ind)}')">
+              ✏️ Edit Nama Indikator
+            </button>
+            <button class="btn btn-outline-danger" style="padding:0.25rem 0.6rem;font-size:0.7rem;display:inline-flex;align-items:center;gap:0.3rem;" onclick="window._deleteIndicatorGroup('${esc(ind)}')">
+              🗑️ Hapus Indikator
+            </button>
+          </div>
+        </div>
         ${grouped[ind].map(c => `<div class="card" style="margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center">
           <div><strong>${esc(c.name)}</strong><br><span class="text-xs text-muted">Berlaku: ${esc(c.position || 'Semua')}</span></div>
           <div style="display:flex;gap:0.5rem">
-            <button class="btn btn-secondary" style="padding:0.4rem 0.6rem;font-size:0.7rem" onclick="window._showCriteriaForm('${c._key}')">Edit</button>
-            <button class="btn btn-outline-danger" style="padding:0.4rem 0.6rem;font-size:0.7rem" onclick="window._deleteCriteria('${c._key}')">Hapus</button>
+            <button class="btn btn-secondary" style="padding:0.4rem 0.6rem;font-size:0.7rem" onclick="window._showCriteriaForm('${c._key}')">Edit Sub</button>
+            <button class="btn btn-outline-danger" style="padding:0.4rem 0.6rem;font-size:0.7rem" onclick="window._deleteCriteria('${c._key}')">Hapus Sub</button>
           </div>
         </div>`).join('')}
       </div>
@@ -3141,6 +3151,52 @@ window._saveCriteria = async (key) => {
   $('crit-form-area').innerHTML = '';
 };
 window._deleteCriteria = async (key) => { if (confirm('Hapus kriteria?')) { await remove(ref(db, 'criteria/' + key)); showToast('Dihapus!', 'success'); } };
+
+window._editIndicatorName = async (oldName) => {
+  const newName = prompt(`Ubah nama Indikator "${oldName}" menjadi:`, oldName);
+  if (!newName || newName.trim() === '' || newName.trim() === oldName) return;
+  
+  const trimmedNewName = newName.trim();
+  const allCrit = getCriteria();
+  const matched = allCrit.filter(c => (c.indicator || 'Umum') === oldName);
+  
+  if (matched.length === 0) return;
+  
+  const updates = {};
+  matched.forEach(c => {
+    updates[`criteria/${c._key}/indicator`] = trimmedNewName;
+  });
+
+  try {
+    await update(ref(db), updates);
+    showToast(`Nama indikator berhasil diubah menjadi "${trimmedNewName}"!`, 'success');
+  } catch (err) {
+    console.error('Error updating indicator name:', err);
+    showToast('Gagal mengubah nama indikator.', 'error');
+  }
+};
+
+window._deleteIndicatorGroup = async (indName) => {
+  const allCrit = getCriteria();
+  const matched = allCrit.filter(c => (c.indicator || 'Umum') === indName);
+  
+  if (matched.length === 0) return;
+
+  if (confirm(`Apakah Anda yakin ingin menghapus Indikator "${indName}" beserta seluruh (${matched.length}) sub-kriteria di dalamnya?`)) {
+    const updates = {};
+    matched.forEach(c => {
+      updates[`criteria/${c._key}`] = null;
+    });
+
+    try {
+      await update(ref(db), updates);
+      showToast(`Indikator "${indName}" dan kriteria di dalamnya berhasil dihapus!`, 'success');
+    } catch (err) {
+      console.error('Error deleting indicator group:', err);
+      showToast('Gagal menghapus indikator.', 'error');
+    }
+  }
+};
 
 window._saveSettings = async () => {
   const currentSettings = allData.settings || {};
