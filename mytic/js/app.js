@@ -455,13 +455,8 @@ function setupNavigation() {
     }
   }
 
-  const lastReadChat = parseInt(sessionStorage.getItem('mytic_read_internal_chat') || '0');
-  const rawInternalChats = allData.internal_chats ? Object.values(allData.internal_chats) : [];
-  const unreadChatCount = rawInternalChats.filter(c => {
-    if (!currentUser) return false;
-    const isMe = (currentUser.role === 'employee' && c.sender_id === currentUser.id) || (currentUser.role === 'admin' && c.sender_role === 'Manajemen');
-    return !isMe && (c.timestamp || 0) > lastReadChat;
-  }).length;
+  // User-specific unread chat tracking
+  const unreadChatCount = getUnreadChatCount();
 
   const redDot = `<span style="width:8px;height:8px;background:var(--danger);border-radius:50%;display:inline-block;margin-left:5px;box-shadow:0 0 6px var(--danger);vertical-align:middle"></span>`;
   const chatBadge = unreadChatCount > 0 
@@ -2047,9 +2042,42 @@ window._saveTxn = async (empId, type) => {
 window._deleteTxn = async (key) => { if (confirm('Hapus transaksi?')) { await remove(ref(db, 'transactions/' + key)); showToast('Dihapus!', 'success'); } };
 
 // --- INTERNAL PRIVAT CHAT ---
-function renderInternalChat() {
+function markInternalChatAsRead() {
+  if (!currentUser) return;
   const now = Date.now();
-  sessionStorage.setItem('mytic_read_internal_chat', now);
+  if (currentUser.role === 'admin') {
+    localStorage.setItem('mytic_lastread_chat_admin', now);
+    update(ref(db, 'settings'), { lastRead_InternalChat_admin: now });
+  } else if (currentUser.id) {
+    localStorage.setItem(`mytic_lastread_chat_${currentUser.id}`, now);
+    update(ref(db, `users/${currentUser.id}`), { lastRead_InternalChat: now });
+  }
+}
+
+function getUnreadChatCount() {
+  if (!currentUser) return 0;
+  
+  let lastRead = 0;
+  if (currentUser.role === 'admin') {
+    const fromDb = allData.settings ? allData.settings.lastRead_InternalChat_admin : 0;
+    const fromLocal = parseInt(localStorage.getItem('mytic_lastread_chat_admin') || '0');
+    lastRead = Math.max(fromDb || 0, fromLocal || 0);
+  } else if (currentUser.id) {
+    const emp = allData.users ? allData.users[currentUser.id] : null;
+    const fromDb = emp ? emp.lastRead_InternalChat : 0;
+    const fromLocal = parseInt(localStorage.getItem(`mytic_lastread_chat_${currentUser.id}`) || '0');
+    lastRead = Math.max(fromDb || 0, fromLocal || 0);
+  }
+
+  const rawInternalChats = allData.internal_chats ? Object.values(allData.internal_chats) : [];
+  return rawInternalChats.filter(c => {
+    const isMe = (currentUser.role === 'employee' && c.sender_id === currentUser.id) || (currentUser.role === 'admin' && c.sender_role === 'Manajemen');
+    return !isMe && (c.timestamp || 0) > lastRead;
+  }).length;
+}
+
+function renderInternalChat() {
+  markInternalChatAsRead();
 
   const chatEntries = allData.internal_chats ? Object.entries(allData.internal_chats) : [];
   const rawChats = chatEntries.map(([key, val]) => ({ ...val, _key: key }));
