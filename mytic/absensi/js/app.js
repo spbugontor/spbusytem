@@ -260,7 +260,7 @@ function renderLeaderboard() {
     const isMedal = i < 3;
     const isClickable = isTop3 ? (allData.settings.rank_clickable || false) : true;
     const rankVisual = s.photo
-      ? `<img src="${s.photo}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; display:block; border: 2px solid ${isMedal ? (i === 0 ? '#F59E0B' : (i === 1 ? '#9CA3AF' : '#B45309')) : 'var(--border)'}; margin: 0 auto;">`
+      ? `<img src="${s.photo}" class="leaderboard-photo" data-name="${esc(s.name)}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; display:block; border: 2px solid ${isMedal ? (i === 0 ? '#F59E0B' : (i === 1 ? '#9CA3AF' : '#B45309')) : 'var(--border)'}; margin: 0 auto; cursor: pointer;">`
       : getRankIcon(i);
     return `
     <div class="leaderboard-item rank-${i + 1}" data-emp="${esc(s.name)}" style="${isClickable ? 'cursor:pointer;' : 'cursor:default;'}${!isTop3 ? 'background:var(--bg);box-shadow:none;border:1px solid var(--border);margin-bottom:0.5rem;' : ''}">
@@ -271,6 +271,16 @@ function renderLeaderboard() {
     </div>
   `}).join('');
   container.innerHTML = generateListHTML(scores, true);
+
+  // Tambahkan listener klik untuk melihat foto profil besar
+  document.querySelectorAll('.leaderboard-photo').forEach(img => {
+    img.addEventListener('click', (e) => {
+      e.stopPropagation(); // Agar tidak mentrigger detail absensi
+      $('photo-title').textContent = `Foto Profil: ${img.dataset.name}`;
+      $('photo-img').src = img.src;
+      $('photo-overlay').classList.add('active');
+    });
+  });
 
   if (allData.settings.rank_clickable) {
     container.querySelectorAll('.leaderboard-item').forEach(item => {
@@ -494,6 +504,7 @@ $('btn-clock-out').addEventListener('click', async () => {
 // ==========================================
 $('modal-close').addEventListener('click', () => $('modal-overlay').classList.remove('active'));
 $('detail-close').addEventListener('click', () => $('detail-overlay').classList.remove('active'));
+$('photo-close').addEventListener('click', () => $('photo-overlay').classList.remove('active'));
 $('confirm-ok').addEventListener('click', () => {
   $('confirm-overlay').classList.remove('active');
   if (confirmCallback) { confirmCallback(); confirmCallback = null; }
@@ -735,23 +746,13 @@ function renderAdminEmployees() {
 // Edit modal
 $('edit-save').addEventListener('click', async () => {
   if (!editingKey) return;
-  const newName = $('edit-name').value.trim();
   const newNick = $('edit-nickname').value.trim();
-  const newPos = $('edit-position').value;
-  if (!newName) { showToast('Nama harus diisi', 'warning'); return; }
 
-  const oldEmp = getEmployees().find(e => e._key === editingKey);
-  await update(ref(db, 'users/' + editingKey), { name: newName, nickname: newNick, position: newPos });
-
-  // Update name in records if changed
-  if (oldEmp && oldEmp.name !== newName) {
-    const recs = getRecords(oldEmp.name);
-    for (const r of recs) { await update(ref(db, 'absensi/records/' + r._key), { emp_name: newName }); }
-  }
+  await update(ref(db, 'users/' + editingKey), { nickname: newNick });
 
   $('edit-overlay').classList.remove('active');
   editingKey = null;
-  showToast('Karyawan diperbarui!', 'success');
+  showToast('Nama panggilan diperbarui!', 'success');
 });
 $('edit-cancel').addEventListener('click', () => { $('edit-overlay').classList.remove('active'); editingKey = null; });
 

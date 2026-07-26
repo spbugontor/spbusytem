@@ -89,7 +89,7 @@
         <h3 class="modal-title mb-4">Edit Karyawan</h3>
         <div class="form-group">
           <label class="form-label">Nama</label>
-          <input id="edit-name" class="form-input">
+          <input id="edit-name" class="form-input" disabled>
         </div>
         <div class="form-group">
           <label class="form-label">Nama Panggilan</label>
@@ -97,7 +97,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">Jabatan</label>
-          <select id="edit-position" class="form-select">
+          <select id="edit-position" class="form-select" disabled>
             <option value="Admin">Admin</option>
             <option value="Pengawas">Pengawas</option>
             <option value="Operator">Operator</option>
@@ -161,6 +161,15 @@
       </div>
     </div>
 
+
+    <!-- ==================== MODAL: LIHAT FOTO PROFIL ==================== -->
+    <div id="photo-overlay" class="modal-overlay">
+      <div class="modal-box" style="text-align:center;max-width:400px;padding:1.5rem;">
+        <h3 id="photo-title" class="modal-title mb-4">Foto Profil</h3>
+        <img id="photo-img" src="" style="width:100%;max-height:350px;border-radius:var(--radius-lg);object-fit:contain;margin-bottom:1rem;background:#0f172a;">
+        <button id="photo-close" class="btn btn-primary" style="width:100%;">Tutup</button>
+      </div>
+    </div>
 
     <!-- ==================== MODAL: DETAIL PERINGKAT ==================== -->
     <div id="detail-overlay" class="modal-overlay">
