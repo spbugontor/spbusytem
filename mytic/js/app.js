@@ -460,7 +460,7 @@ function setupNavigation() {
 
   const redDot = `<span style="width:8px;height:8px;background:var(--danger);border-radius:50%;display:inline-block;margin-left:5px;box-shadow:0 0 6px var(--danger);vertical-align:middle"></span>`;
   const chatBadge = unreadChatCount > 0 
-    ? `<span style="background:var(--danger);color:#fff;font-size:0.6rem;padding:1px 6px;border-radius:10px;font-weight:700;margin-left:4px;box-shadow:0 0 6px var(--danger);">${unreadChatCount} Baru!</span>`
+    ? `${redDot}<span style="background:var(--danger);color:#fff;font-size:0.6rem;padding:1px 6px;border-radius:10px;font-weight:700;margin-left:4px;box-shadow:0 0 6px var(--danger);">${unreadChatCount} Baru!</span>`
     : '';
 
   let dHTML = '';
@@ -544,7 +544,11 @@ function setupNavigation() {
         </div>
         <div style="padding:0.75rem">${mobileMore.map(m => {
       const isLeaveMenu = (m.id === 'leaves' && adminHasPendingLeave) || (m.id === 'emp-leaves' && empHasUnreadLeave);
-      const labelWithBadge = isLeaveMenu ? `${m.label}${redDot}` : m.label;
+      const isChatMenu = m.id === 'internal-chat' && unreadChatCount > 0;
+
+      let labelWithBadge = m.label;
+      if (isLeaveMenu) labelWithBadge = `${m.label}${redDot}`;
+      if (isChatMenu) labelWithBadge = `${m.label}${chatBadge}`;
 
       if (m.href) {
         return `<a href="${m.href}" class="more-menu-item">
@@ -608,6 +612,7 @@ function switchSection(id) {
 
   renderCurrentSection();
 }
+window.switchSection = switchSection;
 
 // Auto-hide PC sidebar when clicking outside
 document.addEventListener('click', (e) => {

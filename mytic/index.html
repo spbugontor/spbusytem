@@ -144,7 +144,7 @@
           <p id="display-mobile-name" style="font-size: 0.65rem; opacity: 0.9;">Nama User</p>
         </div>
         <div style="display:flex;align-items:center;gap:0.5rem;">
-          <button id="btn-nav-chat-bell" onclick="switchSection('internal-chat')" title="Diskusi Internal"
+          <button id="btn-nav-chat-bell" onclick="window.switchSection && window.switchSection('internal-chat')" title="Diskusi Internal"
             style="background: rgba(255,255,255,0.15); border: none; padding: 0.5rem; border-radius: 50%; color: white; cursor:pointer; position:relative; display:none;">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
             <span id="badge-bell-count" class="hidden" style="position:absolute;top:-3px;right:-3px;background:var(--danger);color:#fff;font-size:0.55rem;font-weight:800;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 6px var(--danger);">1</span>
@@ -203,7 +203,7 @@
 
   <!-- MODULES (Firebase + App Logic) -->
   <script type="module" src="js/firebase-config.js?v=20260720a"></script>
-  <script type="module" src="js/app.js?v=20260726_bellbadge"></script>
+  <script type="module" src="js/app.js?v=20260726_clickablebell"></script>
 
   <!-- Service Worker Registration -->
   <script>
