@@ -11,12 +11,12 @@ let allData = { users: {}, transactions: {}, leaves: {}, savings: {}, violations
 // THEME
 // ==========================================
 const THEME_PALETTES = {
-  orange: { primary: '#F15800', hover: '#D94500', bg: '#FFF0E6' },
-  blue: { primary: '#2563EB', hover: '#1D4ED8', bg: '#EFF6FF' },
-  emerald: { primary: '#059669', hover: '#047857', bg: '#ECFDF5' },
-  purple: { primary: '#7C3AED', hover: '#6D28D9', bg: '#F5F3FF' },
-  red: { primary: '#DC2626', hover: '#B91C1C', bg: '#FEF2F2' },
-  slate: { primary: '#334155', hover: '#1E293B', bg: '#F1F5F9' }
+  orange: { primary: '#F15800', hover: '#D94500', bg: '#FFF0E6', shadow: 'rgba(241, 88, 0, 0.39)' },
+  blue: { primary: '#2563EB', hover: '#1D4ED8', bg: '#EFF6FF', shadow: 'rgba(37, 99, 235, 0.39)' },
+  emerald: { primary: '#059669', hover: '#047857', bg: '#ECFDF5', shadow: 'rgba(5, 150, 105, 0.39)' },
+  purple: { primary: '#7C3AED', hover: '#6D28D9', bg: '#F5F3FF', shadow: 'rgba(124, 58, 237, 0.39)' },
+  red: { primary: '#DC2626', hover: '#B91C1C', bg: '#FEF2F2', shadow: 'rgba(220, 38, 38, 0.39)' },
+  slate: { primary: '#334155', hover: '#1E293B', bg: '#F1F5F9', shadow: 'rgba(51, 65, 85, 0.39)' }
 };
 
 function applyTheme(themeKey) {
@@ -25,6 +25,7 @@ function applyTheme(themeKey) {
   document.documentElement.style.setProperty('--primary', t.primary);
   document.documentElement.style.setProperty('--primary-hover', t.hover);
   document.documentElement.style.setProperty('--primary-bg', t.bg);
+  document.documentElement.style.setProperty('--primary-shadow', t.shadow || 'rgba(0,0,0,0.2)');
 
   // Dynamically update PWA & Mobile status bar header colors (Android, Chrome, Safari, Samsung)
   let metaTheme = document.querySelector('meta[name="theme-color"]');

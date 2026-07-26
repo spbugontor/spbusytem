@@ -120,7 +120,7 @@ body {
 .btn-primary {
   background: var(--primary);
   color: white;
-  box-shadow: 0 4px 14px 0 rgba(241, 88, 0, 0.39);
+  box-shadow: 0 4px 14px 0 var(--primary-shadow, rgba(241, 88, 0, 0.39));
 }
 .btn-primary:hover { background: var(--primary-hover); }
 .btn-secondary {
