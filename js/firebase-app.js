@@ -30,6 +30,7 @@ let orders = [];
 let settings = {};
 let countdownTimer = null;
 let pendingPaymentId = null;
+let pendingPaymentState = true;
 let pendingDeleteId = null;
 let pendingDeleteName = '';
 let isAdmin = false;
@@ -307,8 +308,8 @@ function renderAdminList() {
     '</div>' +
     '<div class="admin-order-actions">' +
     (o.sudah_bayar
-      ? '<button class="btn btn-success-sm" disabled>✓ Lunas</button>'
-      : '<button class="btn btn-warning-sm" onclick="onMarkPaid(\'' + o.id + '\', \'' + esc(o.nama) + '\', \'' + esc(o.kk) + '\', \'' + esc(o.nik) + '\')">Tandai Bayar</button>'
+      ? '<button class="btn btn-success-sm" onclick="onMarkPaid(\'' + o.id + '\', \'' + esc(o.nama) + '\', \'' + esc(o.kk) + '\', \'' + esc(o.nik) + '\', true)">✓ Lunas (Ubah)</button>'
+      : '<button class="btn btn-warning-sm" onclick="onMarkPaid(\'' + o.id + '\', \'' + esc(o.nama) + '\', \'' + esc(o.kk) + '\', \'' + esc(o.nik) + '\', false)">Tandai Bayar</button>'
     ) +
     '<button class="btn btn-danger-sm" onclick="onDeleteOrder(\'' + o.id + '\', \'' + esc(o.nama) + '\')">Hapus</button>' +
     '</div></div>'
@@ -573,8 +574,8 @@ async function handleConfirmPayment() {
   btn.disabled = true; btn.innerHTML = '<span class="spinner spinner-white"></span>';
 
   try {
-    await update(ref(db, `orders/${pendingPaymentId}`), { sudah_bayar: true });
-    toast('Pembayaran dikonfirmasi', 'success');
+    await update(ref(db, `orders/${pendingPaymentId}`), { sudah_bayar: pendingPaymentState });
+    toast(pendingPaymentState ? 'Pembayaran dikonfirmasi' : 'Pembayaran dibatalkan', 'success');
     hideModal('modal-verify-payment');
   } catch (error) {
     console.error(error);
@@ -848,8 +849,30 @@ function resetInactivityTimer() {
 }
 
 // Global functions for inline onclick in HTML string renders
-window.onMarkPaid = (id, nama, kk, nik) => {
+window.onMarkPaid = (id, nama, kk, nik, currentState) => {
   pendingPaymentId = id;
+  pendingPaymentState = !currentState;
+
+  const title = document.querySelector('#modal-verify-payment .modal-title');
+  const alertBox = document.querySelector('#modal-verify-payment .modal-alert');
+  const confirmBtn = document.getElementById('btn-confirm-paid');
+
+  if (pendingPaymentState) {
+    if (title) title.textContent = 'Verifikasi Pembayaran';
+    if (alertBox) {
+      alertBox.className = 'modal-alert modal-alert-info';
+      alertBox.textContent = 'Pastikan pemesan telah membayar dan menunjukkan bukti foto/fotokopi KK sebelum melanjutkan.';
+    }
+    if (confirmBtn) confirmBtn.textContent = 'Ya, Konfirmasi Lunas';
+  } else {
+    if (title) title.textContent = 'Batalkan Pembayaran';
+    if (alertBox) {
+      alertBox.className = 'modal-alert modal-alert-error';
+      alertBox.textContent = 'Apakah Anda yakin ingin membatalkan status lunas dan mengubahnya kembali menjadi belum bayar?';
+    }
+    if (confirmBtn) confirmBtn.textContent = 'Ya, Batalkan Lunas';
+  }
+
   setText('verify-nama', nama);
   setText('verify-kk', kk);
   setText('verify-nik', nik);
