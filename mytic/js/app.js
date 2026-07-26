@@ -225,7 +225,9 @@ function init() {
           const latestChat = rawChats[rawChats.length - 1];
           const isMe = (currentUser.role === 'employee' && latestChat.sender_id === currentUser.id) || (currentUser.role === 'admin' && latestChat.sender_role === 'Manajemen');
           
-          if (!isMe && window._lastNotifiedChatTs !== latestChat.timestamp) {
+          if (!window._lastNotifiedChatTs) {
+            window._lastNotifiedChatTs = latestChat.timestamp;
+          } else if (!isMe && window._lastNotifiedChatTs < latestChat.timestamp) {
             window._lastNotifiedChatTs = latestChat.timestamp;
             if (currentSection !== 'internal-chat') {
               showToast(`💬 Pesan Diskusi dari ${latestChat.sender_name}: "${latestChat.message}"`, 'info');
@@ -244,19 +246,30 @@ function init() {
           rawLeaves.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
           const latestLeave = rawLeaves[0];
           
-          if (currentUser.role === 'admin' && latestLeave.status === 'Menunggu' && window._lastNotifiedLeaveTs !== latestLeave.timestamp) {
-            window._lastNotifiedLeaveTs = latestLeave.timestamp;
-            triggerSystemNotification(`🏖️ Pengajuan Izin Baru - ${latestLeave.emp_name}`, {
-              body: `Alasan: ${latestLeave.reason} (${latestLeave.start_date} s/d ${latestLeave.end_date})`,
-              tag: 'mytic-leave-new'
-            });
-          } else if (currentUser.role === 'employee' && currentUser.id === latestLeave.emp_id && window._lastNotifiedLeaveStatusTs !== `${latestLeave.timestamp}_${latestLeave.status}`) {
-            window._lastNotifiedLeaveStatusTs = `${latestLeave.timestamp}_${latestLeave.status}`;
-            if (latestLeave.status === 'Disetujui' || latestLeave.status === 'Ditolak') {
-              triggerSystemNotification(`🏖️ Status Izin: ${latestLeave.status}`, {
-                body: `Pengajuan izin Anda tanggal ${latestLeave.start_date} telah ${latestLeave.status.toLowerCase()} oleh Manajemen.`,
-                tag: 'mytic-leave-status'
+          if (currentUser.role === 'admin' && latestLeave.status === 'Menunggu') {
+            if (!window._lastNotifiedLeaveTs) {
+              window._lastNotifiedLeaveTs = latestLeave.timestamp;
+            } else if (window._lastNotifiedLeaveTs < latestLeave.timestamp) {
+              window._lastNotifiedLeaveTs = latestLeave.timestamp;
+              showToast(`🏖️ Pengajuan Izin Baru: ${latestLeave.emp_name}`, 'info');
+              triggerSystemNotification(`🏖️ Pengajuan Izin Baru - ${latestLeave.emp_name}`, {
+                body: `Alasan: ${latestLeave.reason} (${latestLeave.start_date} s/d ${latestLeave.end_date})`,
+                tag: 'mytic-leave-new'
               });
+            }
+          } else if (currentUser.role === 'employee' && (latestLeave.emp_id === currentUser.id || latestLeave.emp_id === currentUser.emp_id || latestLeave.emp_id === currentUser.username)) {
+            const statusKey = `${latestLeave.timestamp}_${latestLeave.status}`;
+            if (!window._lastNotifiedLeaveStatusKey) {
+              window._lastNotifiedLeaveStatusKey = statusKey;
+            } else if (window._lastNotifiedLeaveStatusKey !== statusKey) {
+              window._lastNotifiedLeaveStatusKey = statusKey;
+              if (latestLeave.status === 'Disetujui' || latestLeave.status === 'Ditolak') {
+                showToast(`🏖️ Status Izin Anda: ${latestLeave.status}`, 'info');
+                triggerSystemNotification(`🏖️ Status Izin: ${latestLeave.status}`, {
+                  body: `Pengajuan izin Anda tanggal ${latestLeave.start_date} telah ${latestLeave.status.toLowerCase()} oleh Manajemen.`,
+                  tag: 'mytic-leave-status'
+                });
+              }
             }
           }
         }
@@ -264,14 +277,17 @@ function init() {
 
       if (node === 'violations' && currentUser && currentUser.role === 'employee') {
         const rawViolations = snap.exists() ? Object.values(snap.val()) : [];
-        const myViolations = rawViolations.filter(v => v.emp_id === currentUser.id);
+        const myViolations = rawViolations.filter(v => v.emp_id === currentUser.id || v.emp_id === currentUser.emp_id || v.emp_id === currentUser.username);
         if (myViolations.length > 0) {
           myViolations.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
           const latestV = myViolations[0];
-          if (window._lastNotifiedViolationTs !== latestV.timestamp) {
+          if (!window._lastNotifiedViolationTs) {
             window._lastNotifiedViolationTs = latestV.timestamp;
+          } else if (window._lastNotifiedViolationTs < latestV.timestamp) {
+            window._lastNotifiedViolationTs = latestV.timestamp;
+            showToast(`⚠️ Catatan Pelanggaran Baru: ${latestV.type}`, 'warning');
             triggerSystemNotification(`⚠️ Catatan Pelanggaran Baru`, {
-              body: `Jenis: ${latestV.type} (-${latestV.points} Poin). Catatan: ${latestV.note}`,
+              body: `Jenis: ${latestV.type} (-${latestV.points} Poin). Catatan: ${latestV.note || '-'}`,
               tag: 'mytic-violation'
             });
           }
@@ -280,15 +296,19 @@ function init() {
 
       if (node === 'transactions' && currentUser && currentUser.role === 'employee') {
         const rawTxns = snap.exists() ? Object.values(snap.val()) : [];
-        const myTxns = rawTxns.filter(t => t.emp_id === currentUser.id);
+        const myTxns = rawTxns.filter(t => t.emp_id === currentUser.id || t.emp_id === currentUser.emp_id || t.emp_id === currentUser.username);
         if (myTxns.length > 0) {
           myTxns.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
           const latestT = myTxns[0];
-          if (window._lastNotifiedTxnTs !== latestT.timestamp) {
+          if (!window._lastNotifiedTxnTs) {
+            window._lastNotifiedTxnTs = latestT.timestamp;
+          } else if (window._lastNotifiedTxnTs < latestT.timestamp) {
             window._lastNotifiedTxnTs = latestT.timestamp;
             const title = latestT.type === 'credit' ? '💳 Pembayaran Tunggakan (Kredit)' : '💳 Catatan Tunggakan Baru (Debit)';
+            const formattedAmt = `Rp ${Number(latestT.amount || 0).toLocaleString('id-ID')}`;
+            showToast(`${title}: ${formattedAmt}`, 'info');
             triggerSystemNotification(title, {
-              body: `Nominal: Rp ${Number(latestT.amount || 0).toLocaleString('id-ID')}. Ket: ${latestT.note || '-'}`,
+              body: `Nominal: ${formattedAmt}. Ket: ${latestT.note || '-'}`,
               tag: 'mytic-txn'
             });
           }
@@ -297,12 +317,15 @@ function init() {
 
       if (node === 'ratings' && currentUser && currentUser.role === 'employee') {
         const rawRatings = snap.exists() ? Object.values(snap.val()) : [];
-        const myRatings = rawRatings.filter(r => r.emp_id === currentUser.id);
+        const myRatings = rawRatings.filter(r => r.emp_id === currentUser.id || r.emp_id === currentUser.emp_id || r.emp_id === currentUser.username);
         if (myRatings.length > 0) {
           myRatings.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
           const latestR = myRatings[0];
-          if (window._lastNotifiedRatingTs !== latestR.timestamp) {
+          if (!window._lastNotifiedRatingTs) {
             window._lastNotifiedRatingTs = latestR.timestamp;
+          } else if (window._lastNotifiedRatingTs < latestR.timestamp) {
+            window._lastNotifiedRatingTs = latestR.timestamp;
+            showToast(`⭐ Penilaian Kinerja Baru (${latestR.period || ''})`, 'info');
             triggerSystemNotification('⭐ Penilaian Kinerja Karyawan Baru', {
               body: `Periode: ${latestR.period || '-'}. Total Skor: ${latestR.total_score || latestR.score || 0} (${latestR.category || 'Tercatat'})`,
               tag: 'mytic-rating'
@@ -313,14 +336,18 @@ function init() {
 
       if (node === 'savings' && currentUser && currentUser.role === 'employee') {
         const rawSavings = snap.exists() ? Object.values(snap.val()) : [];
-        const mySavings = rawSavings.filter(s => s.emp_id === currentUser.id);
+        const mySavings = rawSavings.filter(s => s.emp_id === currentUser.id || s.emp_id === currentUser.emp_id || s.emp_id === currentUser.username);
         if (mySavings.length > 0) {
           mySavings.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
           const latestS = mySavings[0];
-          if (window._lastNotifiedSavingTs !== latestS.timestamp) {
+          if (!window._lastNotifiedSavingTs) {
             window._lastNotifiedSavingTs = latestS.timestamp;
+          } else if (window._lastNotifiedSavingTs < latestS.timestamp) {
+            window._lastNotifiedSavingTs = latestS.timestamp;
+            const formattedAmt = `Rp ${Number(latestS.amount || 0).toLocaleString('id-ID')}`;
+            showToast(`💰 Transaksi Tabungan: ${latestS.type || 'Setoran'} ${formattedAmt}`, 'info');
             triggerSystemNotification('💰 Transaksi Tabungan Karyawan', {
-              body: `${latestS.type || 'Transaksi'}: Rp ${Number(latestS.amount || 0).toLocaleString('id-ID')}. Ket: ${latestS.note || '-'}`,
+              body: `${latestS.type || 'Transaksi'}: ${formattedAmt}. Ket: ${latestS.note || '-'}`,
               tag: 'mytic-savings'
             });
           }
