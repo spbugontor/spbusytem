@@ -154,7 +154,16 @@
       <!-- CONTENT AREA -->
       <div class="main-area">
         <header class="topbar" style="display: flex; justify-content: space-between; align-items: center;">
-          <h2 id="topbar-title" class="page-title">Dashboard</h2>
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <button id="btn-toggle-sidebar" onclick="window._toggleDesktopSidebar()" style="background:none; border:none; color:var(--text-main); cursor:pointer; padding:0.4rem; display:flex; align-items:center; justify-content:center; border-radius:var(--radius-md);" title="Sembunyikan/Tampilkan Sidebar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
+            <h2 id="topbar-title" class="page-title">Dashboard</h2>
+          </div>
           <button id="btn-dark-mode" style="background:none; border:none; color:var(--text-muted); cursor:pointer; padding:0.5rem;" onclick="window.toggleDarkMode()">
             <!-- Moon Icon by default -->
             <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
@@ -179,7 +188,7 @@
 
   <!-- MODULES (Firebase + App Logic) -->
   <script type="module" src="js/firebase-config.js?v=20260720a"></script>
-  <script type="module" src="js/app.js?v=20260723d"></script>
+  <script type="module" src="js/app.js?v=20260726a"></script>
 </body>
 
 </html>

@@ -244,6 +244,17 @@ function loginSuccess() {
   $('display-user-name').textContent = currentUser.name;
   $('display-user-role').textContent = currentUser.role === 'admin' ? 'Manajemen' : currentUser.position;
   $('display-mobile-name').textContent = currentUser.name;
+
+  const savedCollapsed = localStorage.getItem('mytic_sidebar_collapsed');
+  const screenMain = document.getElementById('screen-main');
+  if (screenMain) {
+    if (savedCollapsed === 'true') {
+      screenMain.classList.add('sidebar-collapsed');
+    } else {
+      screenMain.classList.remove('sidebar-collapsed');
+    }
+  }
+
   setupNavigation();
   switchSection('dashboard');
 }
@@ -397,6 +408,30 @@ window._toggleMoreMenu = () => {
   if (popup) popup.classList.toggle('hidden');
 };
 
+window._toggleDesktopSidebar = () => {
+  const screenMain = document.getElementById('screen-main');
+  if (!screenMain) return;
+  screenMain.classList.toggle('sidebar-collapsed');
+  const isCollapsed = screenMain.classList.contains('sidebar-collapsed');
+  localStorage.setItem('mytic_sidebar_collapsed', isCollapsed ? 'true' : 'false');
+};
+
+window._previewImage = (imgSrc, title = '') => {
+  if (!imgSrc) return;
+  showModal(`
+    <div class="modal-header" style="border-bottom:1px solid var(--border)">
+      <h3 class="modal-title">${esc(title || 'Foto Profil')}</h3>
+      <button class="modal-close" onclick="window._hideModal()">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:1rem;">
+      <img src="${imgSrc}" alt="Preview" style="max-width:100%;max-height:70vh;border-radius:var(--radius-lg);object-fit:contain;box-shadow:var(--shadow-lg);">
+    </div>
+    <div class="modal-footer" style="text-align:right;">
+      <button class="btn btn-secondary" onclick="window._hideModal()">Tutup</button>
+    </div>
+  `);
+};
+
 function switchSection(id) {
   currentSection = id;
   document.querySelectorAll('[data-target]').forEach(el => el.classList.toggle('active', el.getAttribute('data-target') === id));
@@ -485,7 +520,7 @@ function renderEmployees() {
     ${users.length === 0 ? '<div class="card" style="text-align:center;padding:3rem"><p class="text-muted">Belum ada karyawan. Klik Tambah.</p></div>' :
       users.map(e => {
         const avatarHtml = e.profile_picture
-          ? `<img src="${e.profile_picture}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">`
+          ? `<img src="${e.profile_picture}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;cursor:pointer;transition:transform 0.2s" onclick="window._previewImage('${e.profile_picture}', '${esc(e.name)}')" title="Klik untuk lihat foto penuh" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">`
           : `<div style="width:44px;height:44px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem">${(e.name || '?')[0]}</div>`;
         return `<div class="card" style="margin-bottom:0.75rem">
       <div style="display:flex;align-items:center;gap:1rem">
@@ -1117,7 +1152,7 @@ function renderEmpProfile() {
   const ep = s.emp_profile_edit || {};
 
   const avatarHtml = emp.profile_picture
-    ? `<img src="${emp.profile_picture}" alt="Profil" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin:0 auto 1rem;border:2px solid var(--primary);">`
+    ? `<img src="${emp.profile_picture}" alt="Profil" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin:0 auto 1rem;border:2px solid var(--primary);cursor:pointer;transition:transform 0.2s" onclick="window._previewImage('${emp.profile_picture}', '${esc(emp.name)}')" title="Klik untuk lihat foto penuh" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">`
     : `<div style="width:80px;height:80px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;margin:0 auto 1rem">${(emp.name || '?')[0]}</div>`;
 
   return `<div class="fade-in">
@@ -1295,8 +1330,15 @@ window._showEmpDetail = (key) => {
     if (!hasQuota) leaveQuotaHtml = '';
   }
 
+  const avatarHeaderHtml = emp.profile_picture
+    ? `<div style="text-align:center;margin-bottom:1rem">
+        <img src="${emp.profile_picture}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid var(--primary);transition:transform 0.2s" onclick="window._previewImage('${emp.profile_picture}', '${esc(emp.name)}')" title="Klik untuk lihat foto penuh" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+       </div>`
+    : '';
+
   showModal(`<div class="modal-header"><h3 class="modal-title">${esc(emp.name)}</h3><button class="modal-close" onclick="window._hideModal()">✕</button></div>
     <div class="modal-body">
+      ${avatarHeaderHtml}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
         <div><p class="form-label">Jabatan</p><p class="font-semibold text-sm">${esc(emp.position)}</p></div>
         <div><p class="form-label">ID</p><p class="font-semibold text-sm">${esc(emp.emp_id)}</p></div>
