@@ -35,6 +35,12 @@
   --error-bg: #FEF2F2;
   --warning: #D97706;
   --warning-bg: #FFFBEB;
+  
+  --alert-error-text: #991B1B;
+  --alert-success-text: #065F46;
+  --alert-info-bg: #EFF6FF;
+  --alert-info-text: #1E40AF;
+  --alert-warning-text: #92400E;
 
   --shadow-sm: 0 1px 2px rgba(28, 25, 23, 0.04);
   --shadow: 0 1px 3px rgba(28, 25, 23, 0.06), 0 2px 8px rgba(28, 25, 23, 0.04);
@@ -69,6 +75,13 @@
   --success-bg: #064E3B;
   --error-bg: #7F1D1D;
   --warning-bg: #451A03;
+  
+  --alert-error-text: #FEE2E2;
+  --alert-success-text: #D1FAE5;
+  --alert-info-bg: #1E3A8A;
+  --alert-info-text: #DBEAFE;
+  --alert-warning-text: #FEF3C7;
+  
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -828,25 +841,25 @@ input, select, textarea { font-family: inherit; }
 .modal-alert-error {
   background: var(--error-bg);
   border-left: 3px solid var(--error);
-  color: #991B1B;
+  color: var(--alert-error-text);
 }
 
 .modal-alert-success {
   background: var(--success-bg);
   border-left: 3px solid var(--success);
-  color: #065F46;
+  color: var(--alert-success-text);
 }
 
 .modal-alert-info {
-  background: #EFF6FF;
+  background: var(--alert-info-bg);
   border-left: 3px solid #3B82F6;
-  color: #1E40AF;
+  color: var(--alert-info-text);
 }
 
 .modal-alert-warning {
   background: var(--warning-bg);
   border-left: 3px solid var(--warning);
-  color: #92400E;
+  color: var(--alert-warning-text);
 }
 
 .modal-data-row {
