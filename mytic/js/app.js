@@ -45,10 +45,29 @@ function syncDarkIcons(isDark) {
   });
 }
 
+window._myTicCharts = window._myTicCharts || {};
+
+function destroyChart(id) {
+  if (window._myTicCharts[id]) {
+    window._myTicCharts[id].destroy();
+    delete window._myTicCharts[id];
+  }
+}
+
+function getChartColors() {
+  const isDark = document.documentElement.classList.contains('dark-mode');
+  return {
+    text: isDark ? '#94A3B8' : '#64748B',
+    grid: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+    cardBg: isDark ? '#1E293B' : '#FFFFFF'
+  };
+}
+
 window.toggleDarkMode = () => {
   const isDark = document.documentElement.classList.toggle('dark-mode');
   localStorage.setItem('spbu_dark_mode', isDark);
   syncDarkIcons(isDark);
+  if (currentUser) renderCurrentSection();
 };
 
 // Update icons on load if they exist
@@ -502,7 +521,9 @@ function renderAdminDashboard() {
   const leaves = getLeaves();
   const pending = leaves.filter(l => l.status === 'Menunggu').length;
   let totalDebit = 0; users.forEach(u => totalDebit += calcBalance(u.emp_id));
-  let totalSavings = 0; Object.values(allData.savings).forEach(s => totalSavings += (s.amount || 0));
+  let totalSavings = 0; Object.values(allData.savings || {}).forEach(s => totalSavings += (s.amount || 0));
+
+  setTimeout(() => initAdminDashboardCharts(), 50);
 
   return `<div class="fade-in">
     <div class="dashboard-grid">
@@ -511,6 +532,46 @@ function renderAdminDashboard() {
       <div class="stat-card" onclick="window._nav('leaves')"><div class="stat-title">Menunggu Approve</div><div class="stat-value" style="color:var(--warning)">${pending}</div></div>
       <div class="stat-card" onclick="window._nav('savings')"><div class="stat-title">Total Tabungan</div><div class="stat-value" style="color:var(--success)">${fmt(totalSavings)}</div></div>
     </div>
+
+    <!-- GRAPHICS GRID -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:1.5rem;margin-bottom:1.5rem;">
+      <div class="card" style="padding:1.25rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+          <h3 class="card-title" style="font-size:1rem;">📈 Tren Kehadiran & Ketepatan Waktu</h3>
+        </div>
+        <div style="position:relative;height:240px;">
+          <canvas id="chart-admin-attendance"></canvas>
+        </div>
+      </div>
+
+      <div class="card" style="padding:1.25rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+          <h3 class="card-title" style="font-size:1rem;">🍩 Distribusi Pengajuan Cuti & Izin</h3>
+        </div>
+        <div style="position:relative;height:240px;">
+          <canvas id="chart-admin-leaves"></canvas>
+        </div>
+      </div>
+
+      <div class="card" style="padding:1.25rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+          <h3 class="card-title" style="font-size:1rem;">📊 Performa Ceklis SOP per Kategori</h3>
+        </div>
+        <div style="position:relative;height:240px;">
+          <canvas id="chart-admin-sop"></canvas>
+        </div>
+      </div>
+
+      <div class="card" style="padding:1.25rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+          <h3 class="card-title" style="font-size:1rem;">⚠️ Ringkasan Pelanggaran & Teguran SP</h3>
+        </div>
+        <div style="position:relative;height:240px;">
+          <canvas id="chart-admin-violations"></canvas>
+        </div>
+      </div>
+    </div>
+
     <div class="card"><div class="card-header"><h3 class="card-title">Pengajuan Terbaru</h3></div>
       ${leaves.length === 0 ? '<p class="text-muted text-sm">Belum ada pengajuan.</p>' :
       leaves.slice(0, 5).map(l => {
@@ -522,6 +583,153 @@ function renderAdminDashboard() {
       }).join('')}
     </div>
   </div>`;
+}
+
+function initAdminDashboardCharts() {
+  if (typeof Chart === 'undefined') return;
+  const colors = getChartColors();
+
+  // 1. Attendance Trend (Last 14 days)
+  const attCanvas = document.getElementById('chart-admin-attendance');
+  if (attCanvas) {
+    destroyChart('admin-attendance');
+    const days = [];
+    const onTimeData = [];
+    const lateData = [];
+
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      days.push(d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
+
+      const recs = Object.values(allData.absensi_records || {}).filter(r => r.date === dateStr);
+      let onTime = 0, late = 0;
+      recs.forEach(r => {
+        if (r.clock_in && r.clock_in !== '-') {
+          if ((r.late_minutes || 0) > 0) late++; else onTime++;
+        }
+      });
+      onTimeData.push(onTime);
+      lateData.push(late);
+    }
+
+    window._myTicCharts['admin-attendance'] = new Chart(attCanvas, {
+      type: 'line',
+      data: {
+        labels: days,
+        datasets: [
+          { label: 'Tepat Waktu', data: onTimeData, borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.3 },
+          { label: 'Terlambat', data: lateData, borderColor: '#EF4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.3 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: colors.text } } },
+        scales: {
+          x: { ticks: { color: colors.text }, grid: { color: colors.grid } },
+          y: { ticks: { color: colors.text, stepSize: 1 }, grid: { color: colors.grid }, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  // 2. Leave Distribution (Doughnut)
+  const leaveCanvas = document.getElementById('chart-admin-leaves');
+  if (leaveCanvas) {
+    destroyChart('admin-leaves');
+    const leaves = Object.values(allData.leaves || {});
+    const approved = leaves.filter(l => l.status === 'Disetujui').length;
+    const pending = leaves.filter(l => l.status === 'Menunggu').length;
+    const rejected = leaves.filter(l => l.status === 'Ditolak').length;
+
+    window._myTicCharts['admin-leaves'] = new Chart(leaveCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['Disetujui', 'Menunggu', 'Ditolak'],
+        datasets: [{
+          data: [approved, pending, rejected],
+          backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
+          borderWidth: 2,
+          borderColor: colors.cardBg
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { color: colors.text } } }
+      }
+    });
+  }
+
+  // 3. SOP Performance per Category (Bar)
+  const sopCanvas = document.getElementById('chart-admin-sop');
+  if (sopCanvas) {
+    destroyChart('admin-sop');
+    const sopRecords = Object.values(allData.ceklissop_records || {});
+    const catScores = {};
+    sopRecords.forEach(r => {
+      const cat = r.category || 'Umum';
+      if (!catScores[cat]) catScores[cat] = { total: 0, count: 0 };
+      catScores[cat].total += (r.score || 0);
+      catScores[cat].count++;
+    });
+
+    const labels = Object.keys(catScores);
+    const dataAvg = labels.map(c => catScores[c].count ? Math.round(catScores[c].total / catScores[c].count) : 0);
+
+    window._myTicCharts['admin-sop'] = new Chart(sopCanvas, {
+      type: 'bar',
+      data: {
+        labels: labels.length ? labels : ['Belum Ada Data'],
+        datasets: [{
+          label: 'Rata-rata Kepatuhan (%)',
+          data: dataAvg.length ? dataAvg : [0],
+          backgroundColor: '#3B82F6',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: colors.text } } },
+        scales: {
+          x: { ticks: { color: colors.text }, grid: { color: colors.grid } },
+          y: { ticks: { color: colors.text }, grid: { color: colors.grid }, min: 0, max: 100 }
+        }
+      }
+    });
+  }
+
+  // 4. Violation Breakdown (Pie)
+  const viosCanvas = document.getElementById('chart-admin-violations');
+  if (viosCanvas) {
+    destroyChart('admin-violations');
+    const vios = Object.values(allData.violations || {});
+    const sp1 = vios.filter(v => v.level === 'SP1').length;
+    const sp2 = vios.filter(v => v.level === 'SP2').length;
+    const sp3 = vios.filter(v => v.level === 'SP3').length;
+    const teguran = vios.filter(v => v.level === 'Teguran' || v.level === 'Lisan' || !['SP1','SP2','SP3'].includes(v.level)).length;
+
+    window._myTicCharts['admin-violations'] = new Chart(viosCanvas, {
+      type: 'pie',
+      data: {
+        labels: ['SP1', 'SP2', 'SP3', 'Teguran'],
+        datasets: [{
+          data: [sp1, sp2, sp3, teguran],
+          backgroundColor: ['#F59E0B', '#EC4899', '#EF4444', '#3B82F6'],
+          borderWidth: 2,
+          borderColor: colors.cardBg
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { color: colors.text } } }
+      }
+    });
+  }
 }
 
 // ==========================================
@@ -953,12 +1161,33 @@ function renderEmpDashboard() {
   const bal = calcBalance(emp.emp_id);
   const savTotal = getSavings(emp.emp_id).reduce((s, x) => s + (x.amount || 0), 0);
   const pendingLeaves = getLeaves(emp.emp_id).filter(l => l.status === 'Menunggu').length;
+
+  setTimeout(() => initEmpDashboardCharts(), 50);
+
   return `<div class="fade-in">
     <div class="dashboard-grid">
       <div class="stat-card"><div class="stat-title">Tunggakan Saya</div><div class="stat-value" style="color:${bal > 0 ? 'var(--danger)' : 'var(--success)'}">${fmt(bal)}</div></div>
       <div class="stat-card"><div class="stat-title">Tabungan Saya</div><div class="stat-value" style="color:var(--success)">${fmt(savTotal)}</div></div>
       <div class="stat-card"><div class="stat-title">Izin Pending</div><div class="stat-value" style="color:var(--warning)">${pendingLeaves}</div></div>
     </div>
+
+    <!-- EMPLOYEE GRAPHICS GRID -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:1.5rem;margin-bottom:1.5rem;">
+      <div class="card" style="padding:1.25rem;">
+        <h3 class="card-title mb-2" style="font-size:1rem;">🎯 Kedisiplinan Kehadiran Bulan Ini</h3>
+        <div style="position:relative;height:220px;">
+          <canvas id="chart-emp-attendance-gauge"></canvas>
+        </div>
+      </div>
+
+      <div class="card" style="padding:1.25rem;">
+        <h3 class="card-title mb-2" style="font-size:1rem;">📈 Riwayat Evaluasi / Rating Diri</h3>
+        <div style="position:relative;height:220px;">
+          <canvas id="chart-emp-rating-trend"></canvas>
+        </div>
+      </div>
+    </div>
+
     <div class="card"><h3 class="card-title mb-4">Informasi Pribadi</h3>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
         <div><p class="form-label">Nama</p><p class="font-bold">${esc(emp.name)}</p></div>
@@ -968,6 +1197,92 @@ function renderEmpDashboard() {
       </div>
     </div>
   </div>`;
+}
+
+function initEmpDashboardCharts() {
+  if (typeof Chart === 'undefined') return;
+  const emp = getUserByUsername(currentUser.username);
+  if (!emp) return;
+  const colors = getChartColors();
+
+  // 1. Employee Attendance Rate (Donut Gauge)
+  const gaugeCanvas = document.getElementById('chart-emp-attendance-gauge');
+  if (gaugeCanvas) {
+    destroyChart('emp-attendance-gauge');
+    const now = new Date();
+    const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const myRecs = Object.values(allData.absensi_records || {}).filter(r => r.emp_name === emp.name && r.date && r.date.startsWith(currentMonthStr));
+
+    let onTime = 0, late = 0;
+    myRecs.forEach(r => {
+      if (r.clock_in && r.clock_in !== '-') {
+        if ((r.late_minutes || 0) > 0) late++; else onTime++;
+      }
+    });
+
+    const total = onTime + late;
+
+    window._myTicCharts['emp-attendance-gauge'] = new Chart(gaugeCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['Tepat Waktu', 'Terlambat'],
+        datasets: [{
+          data: total > 0 ? [onTime, late] : [1, 0],
+          backgroundColor: ['#10B981', '#EF4444'],
+          borderWidth: 2,
+          borderColor: colors.cardBg
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: colors.text } },
+          tooltip: { enabled: total > 0 }
+        }
+      }
+    });
+  }
+
+  // 2. Employee Rating History (Line Chart)
+  const ratingCanvas = document.getElementById('chart-emp-rating-trend');
+  if (ratingCanvas) {
+    destroyChart('emp-rating-trend');
+    const myRatings = Object.values(allData.ratings || {})
+      .filter(r => r.emp_id === emp.emp_id)
+      .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+    const labels = myRatings.map(r => r.date ? fmtMonthYear(r.date) : 'Periode');
+    const scores = myRatings.map(r => {
+      const vals = r.ratings ? Object.values(r.ratings) : [];
+      return vals.length > 0 ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) : 0;
+    });
+
+    window._myTicCharts['emp-rating-trend'] = new Chart(ratingCanvas, {
+      type: 'line',
+      data: {
+        labels: labels.length ? labels : ['Belum Ada Rating'],
+        datasets: [{
+          label: 'Skor Evaluasi (1-5)',
+          data: scores.length ? scores : [0],
+          borderColor: '#F59E0B',
+          backgroundColor: 'rgba(245,158,11,0.15)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: colors.text } } },
+        scales: {
+          x: { ticks: { color: colors.text }, grid: { color: colors.grid } },
+          y: { ticks: { color: colors.text }, grid: { color: colors.grid }, min: 1, max: 5 }
+        }
+      }
+    });
+  }
 }
 
 function renderEmpHistory() {
