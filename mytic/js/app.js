@@ -2833,20 +2833,28 @@ window._saveSaving = async (empId) => {
   const tabMonth = dateVal.substring(0, 7);
   const nextPayrollMonth = getNextMonthStr(tabMonth);
 
-  await set(push(ref(db, 'savings')), { emp_id: empId, amount: amt, month: mStr, date: dateVal, timestamp: Date.now() });
+  const newRef = push(ref(db, 'savings'));
+  const newKey = newRef.key;
+  const newRecord = { emp_id: empId, amount: amt, month: mStr, date: dateVal, timestamp: Date.now() };
+
+  allData.savings = allData.savings || {};
+  allData.savings[newKey] = newRecord;
+
+  const totalTab = getEmployeeSavingsForMonth(empId, tabMonth);
 
   allData.payroll = allData.payroll || {};
   allData.payroll[nextPayrollMonth] = allData.payroll[nextPayrollMonth] || {};
   allData.payroll[nextPayrollMonth].internal_data = allData.payroll[nextPayrollMonth].internal_data || {};
   allData.payroll[nextPayrollMonth].internal_data[empId] = allData.payroll[nextPayrollMonth].internal_data[empId] || {};
+  allData.payroll[nextPayrollMonth].internal_data[empId].savings_deduction = totalTab;
 
-  const currentSavings = Number(allData.payroll[nextPayrollMonth].internal_data[empId].savings_deduction || 0);
-  const newSavings = currentSavings + amt;
-  allData.payroll[nextPayrollMonth].internal_data[empId].savings_deduction = newSavings;
+  const updates = {};
+  updates[`savings/${newKey}`] = newRecord;
+  updates[`payroll/${nextPayrollMonth}/internal_data/${empId}/savings_deduction`] = totalTab;
 
-  await set(ref(db, `payroll/${nextPayrollMonth}/internal_data/${empId}/savings_deduction`), newSavings);
+  await update(ref(db), updates);
 
-  showToast('Tabungan disimpan & otomatis terisi ke Gaji Payroll bulan berikutnya!', 'success');
+  showToast('Tabungan disimpan & otomatis terisi ke Gaji Payroll!', 'success');
   $('sav-form-' + empId).innerHTML = '';
   renderCurrentSection();
 };
@@ -2900,17 +2908,21 @@ window._saveMassSaving = async () => {
   for (const cb of cbs) {
     const empId = cb.value;
     const newRefKey = push(ref(db, 'savings')).key;
-    dbUpdates[`savings/${newRefKey}`] = { emp_id: empId, amount: amt, month, date: dateVal, timestamp: Date.now() };
+    const newRecord = { emp_id: empId, amount: amt, month, date: dateVal, timestamp: Date.now() };
+
+    allData.savings = allData.savings || {};
+    allData.savings[newRefKey] = newRecord;
+    dbUpdates[`savings/${newRefKey}`] = newRecord;
+
+    const totalTab = getEmployeeSavingsForMonth(empId, tabMonth);
 
     allData.payroll[nextPayrollMonth].internal_data[empId] = allData.payroll[nextPayrollMonth].internal_data[empId] || {};
-    const currentSavings = Number(allData.payroll[nextPayrollMonth].internal_data[empId].savings_deduction || 0);
-    const newSavings = currentSavings + amt;
-    allData.payroll[nextPayrollMonth].internal_data[empId].savings_deduction = newSavings;
+    allData.payroll[nextPayrollMonth].internal_data[empId].savings_deduction = totalTab;
 
-    dbUpdates[`payroll/${nextPayrollMonth}/internal_data/${empId}/savings_deduction`] = newSavings;
+    dbUpdates[`payroll/${nextPayrollMonth}/internal_data/${empId}/savings_deduction`] = totalTab;
   }
 
-  showToast(cbs.length + ' tabungan berhasil disimpan & otomatis terisi ke Gaji Payroll bulan berikutnya!', 'success');
+  showToast(cbs.length + ' tabungan berhasil disimpan & terisi ke Gaji Payroll!', 'success');
   $('mass-sav-form-area').innerHTML = '';
   renderCurrentSection();
   await update(ref(db), dbUpdates);
@@ -5035,15 +5047,7 @@ window._exportToExcel = (reportType) => {
       const otAmt = otShifts * 50000;
 
       const prevMonth = getPrevMonthStr(month);
-      const savedSavingsFromMenu = getEmployeeSavingsForMonth(empId, prevMonth);
-      let tabunganAmt = 0;
-      if (savedSavingsFromMenu > 0) {
-        tabunganAmt = savedSavingsFromMenu;
-      } else if (empData.savings_deduction !== undefined && empData.savings_deduction !== 50000 && Number(empData.savings_deduction) > 0) {
-        tabunganAmt = Number(empData.savings_deduction);
-      } else {
-        tabunganAmt = 0;
-      }
+      const tabunganAmt = getEmployeeSavingsForMonth(empId, prevMonth);
 
       const gajiKotor = gajiPokok + tunjJabatanAmt + tunjKinerjaAmt + tunjMasaKerjaAmt + pwAmount + otAmt;
       const gajiBersih = gajiKotor - tabunganAmt;
@@ -5198,15 +5202,7 @@ function renderInternalPayrollTab() {
                           otAmt + customTunjSum;
     const gajiKotor = gajiPokok + totalTambahan;
     const prevMonth = getPrevMonthStr(month);
-    const savedSavingsFromMenu = getEmployeeSavingsForMonth(empId, prevMonth);
-    let tabunganAmt = 0;
-    if (savedSavingsFromMenu > 0) {
-      tabunganAmt = savedSavingsFromMenu;
-    } else if (empData.savings_deduction !== undefined && empData.savings_deduction !== 50000 && Number(empData.savings_deduction) > 0) {
-      tabunganAmt = Number(empData.savings_deduction);
-    } else {
-      tabunganAmt = 0;
-    }
+    const tabunganAmt = getEmployeeSavingsForMonth(empId, prevMonth);
     const gajiBersih = gajiKotor - tabunganAmt;
 
     totalGajiKotorAll += gajiKotor;
@@ -5573,15 +5569,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 4) => {
 
     const gajiKotor = gajiPokok + totalTambahan;
     const prevMonth = getPrevMonthStr(month);
-    const savedSavingsFromMenu = getEmployeeSavingsForMonth(empId, prevMonth);
-    let tabunganAmt = 0;
-    if (savedSavingsFromMenu > 0) {
-      tabunganAmt = savedSavingsFromMenu;
-    } else if (empData.savings_deduction !== undefined && empData.savings_deduction !== 50000 && Number(empData.savings_deduction) > 0) {
-      tabunganAmt = Number(empData.savings_deduction);
-    } else {
-      tabunganAmt = 0;
-    }
+    const tabunganAmt = getEmployeeSavingsForMonth(empId, prevMonth);
     const gajiBersih = gajiKotor - tabunganAmt;
 
     const slipHTML = `<div class="slip-box">
@@ -5989,12 +5977,7 @@ window._printInternalPayrollSummary = () => {
     const pwVal = pwEnabled ? pwAmount : 0;
 
     const prevMonth = getPrevMonthStr(month);
-    const tabunganAmt = (() => {
-      const savedSavingsFromMenu = getEmployeeSavingsForMonth(u.emp_id, prevMonth);
-      if (savedSavingsFromMenu > 0) return savedSavingsFromMenu;
-      if (empData.savings_deduction !== undefined && empData.savings_deduction !== 50000 && Number(empData.savings_deduction) > 0) return Number(empData.savings_deduction);
-      return 0;
-    })();
+    const tabunganAmt = getEmployeeSavingsForMonth(u.emp_id, prevMonth);
     const gajiKotor = gajiPokok + jAmt + kAmt + mkAmt + pwVal + otAmt;
     const gajiBersih = gajiKotor - tabunganAmt;
 
@@ -6131,17 +6114,7 @@ window._printSavingsSummary = () => {
     let empTotal = 0;
     const monthCells = monthsList.map((m, mIdx) => {
       const tabMonthKey = `${currentYear}-${(mIdx + 1).toString().padStart(2, '0')}`;
-      const payrollMonthKey = getNextMonthStr(tabMonthKey);
-      const mData = (allData.payroll && allData.payroll[payrollMonthKey] && allData.payroll[payrollMonthKey].internal_data && allData.payroll[payrollMonthKey].internal_data[u.emp_id]) || {};
-      const menuSavings = getEmployeeSavingsForMonth(u.emp_id, tabMonthKey);
-      let amt = 0;
-      if (menuSavings > 0) {
-        amt = menuSavings;
-      } else if (mData.savings_deduction !== undefined && mData.savings_deduction !== 50000 && Number(mData.savings_deduction) > 0) {
-        amt = Number(mData.savings_deduction);
-      } else {
-        amt = 0;
-      }
+      const amt = getEmployeeSavingsForMonth(u.emp_id, tabMonthKey);
 
       if (amt > 0) empTotal += amt;
       return `<td style="text-align:right;">${amt > 0 ? fmt(amt) : 'Rp -'}</td>`;
