@@ -868,6 +868,25 @@ function renderCurrentSection() {
     }
   }
   w.innerHTML = html;
+  if (currentSection === 'criteria' && window._activeCriteriaFormState) {
+    const state = { ...window._activeCriteriaFormState };
+    window._showCriteriaForm();
+    setTimeout(() => {
+      const sel = $('cf-indicator-select');
+      if (sel) {
+        const opt = Array.from(sel.options).find(o => o.value === state.indicator);
+        if (opt) {
+          sel.value = state.indicator;
+          sel.dispatchEvent(new Event('change'));
+        }
+      }
+      const nameInp = $('cf-name');
+      if (nameInp) {
+        nameInp.value = '';
+        nameInp.focus();
+      }
+    }, 30);
+  }
 }
 
 // ==========================================
@@ -3257,9 +3276,15 @@ window._showCriteriaForm = (key) => {
     </div>
     <div style="display:flex;gap:0.75rem;margin-top:0.5rem">
       <button class="btn btn-primary" onclick="window._saveCriteria('${key || ''}')">${c ? 'Perbarui' : 'Simpan'}</button>
-      <button class="btn btn-secondary" onclick="document.getElementById('crit-form-area').innerHTML=''">Batal</button>
+      <button class="btn btn-secondary" onclick="window._cancelCriteriaForm()">Batal</button>
     </div>
   </div>`;
+};
+
+window._cancelCriteriaForm = () => {
+  window._activeCriteriaFormState = null;
+  const area = $('crit-form-area');
+  if (area) area.innerHTML = '';
 };
 
 window._onCriteriaPosCheck = (el) => {
@@ -3293,41 +3318,14 @@ window._saveCriteria = async (key) => {
 
   const data = { indicator, name, position };
   if (key) {
+    window._activeCriteriaFormState = null;
     await update(ref(db, 'criteria/' + key), data);
     showToast('Kriteria diperbarui!', 'success');
     $('crit-form-area').innerHTML = '';
   } else {
+    window._activeCriteriaFormState = { indicator };
     await set(push(ref(db, 'criteria')), data);
     showToast(`Sub-kriteria "${name}" tersimpan! Form tetap terbuka untuk entri berikutnya.`, 'success');
-
-    // Retain selected indicator and keep form open for fast continuous input
-    const savedInd = indicator;
-    const mainWrapper = document.querySelector('.content-wrapper');
-    if (mainWrapper && typeof renderCriteria === 'function') {
-      mainWrapper.innerHTML = renderCriteria();
-      window._showCriteriaForm();
-      setTimeout(() => {
-        const sel = $('cf-indicator-select');
-        if (sel) {
-          const opt = Array.from(sel.options).find(o => o.value === savedInd);
-          if (opt) {
-            sel.value = savedInd;
-            sel.dispatchEvent(new Event('change'));
-          }
-        }
-        const nameInp = $('cf-name');
-        if (nameInp) {
-          nameInp.value = '';
-          nameInp.focus();
-        }
-      }, 50);
-    } else {
-      const nameInp = $('cf-name');
-      if (nameInp) {
-        nameInp.value = '';
-        nameInp.focus();
-      }
-    }
   }
 };
 window._deleteCriteria = async (key) => { if (confirm('Hapus kriteria?')) { await remove(ref(db, 'criteria/' + key)); showToast('Dihapus!', 'success'); } };
