@@ -5152,7 +5152,7 @@ function renderInternalPayrollTab() {
                           (tunjMasaKerjaEnabled ? tunjMasaKerjaAmt : 0) +
                           (pwEnabled ? pwAmount : 0) +
                           otAmt + customTunjSum;
-
+    const gajiKotor = gajiPokok + totalTambahan;
     const savedSavingsFromMenu = getEmployeeSavingsForMonth(empId, month);
     const tabunganAmt = Number(empData.savings_deduction !== undefined ? empData.savings_deduction : savedSavingsFromMenu);
     const gajiBersih = gajiKotor - tabunganAmt;
