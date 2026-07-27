@@ -3809,7 +3809,7 @@ function calculateEmployeeKpi(emp, period) {
       if (s.status === 'Selesai' || s.completed || s.is_completed) completedSop++;
     });
 
-    sopRate = totalSop > 0 ? Math.round((completedSop / totalSop) * 100) : 0;
+    sopRate = totalSop > 0 ? Math.round((completedSop / totalSop) * 100) : 100;
   }
 
   // 3. Performance Appraisal Rating (0 - 100)
