@@ -4078,9 +4078,9 @@ window._printEmployeeKpiPDF = (empId) => {
         <td style="text-align:center; font-weight:bold;">4</td>
         <td>
           <strong>💳 Akuntabilitas Keuangan (Tunggakan & Tabungan)</strong><br>
-          <span style="font-size:8.5px; color:#64748b;">Total Tunggakan: Rp ${fmt(kpi.totalDebitAmt)} (${kpi.debitTxCount} Transaksi)</span>
+          <span style="font-size:8.5px; color:#64748b;">Total Tunggakan: ${fmt(kpi.totalDebitAmt)} (${kpi.debitTxCount} Catatan Transaksi)</span>
         </td>
-        <td style="text-align:center; font-weight:bold;">${kpi.totalDebitAmt > 0 ? `Rp ${fmt(kpi.totalDebitAmt)}` : 'Clean (Rp 0)'}</td>
+        <td style="text-align:center; font-weight:bold;">${kpi.totalDebitAmt > 0 ? fmt(kpi.totalDebitAmt) : 'Clean (Rp 0)'}</td>
         <td style="text-align:center;">15%</td>
         <td style="text-align:center; font-weight:bold; color:#1d4ed8;">${kpi.debitScore} / 100</td>
       </tr>
@@ -4117,13 +4117,6 @@ window._printEmployeeKpiPDF = (empId) => {
     <tbody>${leaveQuotaRows}</tbody>
   </table>` : '<p style="color:#64748b;font-style:italic;font-size:9.5px;margin-bottom:5px;">Tidak ada jenis cuti terdaftar.</p>'}
 
-  <h4 style="margin:6px 0 3px 0; color:#1e40af; font-size:10.5px; border-bottom:1px solid #cbd5e1; padding-bottom:2px;">💳 REKAPITULASI AKUNTABILITAS KEUANGAN / MINUS KASIR</h4>
-  <table class="info-table" style="margin-bottom:6px;">
-    <tr>
-      <td class="label" style="width:130px;">Total Balance Tunggakan</td>
-      <td><strong style="color:${kpi.totalDebitAmt > 0 ? '#dc2626' : '#166534'};">Rp ${fmt(kpi.totalDebitAmt)} ${kpi.totalDebitAmt === 0 ? '(Bersih / Clean ✨)' : `(${kpi.debitTxCount} Catatan Transaksi)`}</strong></td>
-    </tr>
-  </table>
   <div style="border:1px solid #cbd5e1; border-radius:4px; padding:6px 10px; background:#f8fafc; margin-bottom:8px;">
     <div style="font-weight:bold; font-size:9.5px; color:#334155; margin-bottom:2px; text-transform:uppercase;">💬 CATATAN & EVALUASI DARI MANAJEMEN:</div>
     <div style="font-size:10px; color:#1e293b; font-style:italic; line-height:1.2;">
