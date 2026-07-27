@@ -3832,11 +3832,10 @@ window._printEmployeeKpiPDF = (empId) => {
     .no-print button { padding: 8px 16px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 12px; }
     .btn-print { background: #1d4ed8; color: #fff; }
     .btn-close { background: #64748b; color: #fff; margin-left: 8px; }
-    .kop-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px double #1d4ed8; padding-bottom: 10px; margin-bottom: 15px; }
-    .kop-left { display: flex; align-items: center; gap: 14px; }
-    .kop-title { font-family: 'Times New Roman', Times, serif; font-weight: 900; font-size: 22px; color: #1e40af; letter-spacing: 0.5px; }
-    .kop-subtitle { font-family: 'Times New Roman', Times, serif; font-weight: 700; font-size: 14px; color: #1d4ed8; margin-top: 1px; }
-    .kop-address { font-size: 10.5px; color: #1e3a8a; margin-top: 3px; line-height: 1.35; }
+    .kop-header { text-align: center; border-bottom: 3px double #1d4ed8; padding-bottom: 12px; margin-bottom: 18px; width: 100%; }
+    .kop-title { font-family: 'Times New Roman', Times, serif; font-weight: 900; font-size: 26px; color: #1e40af; letter-spacing: 1px; }
+    .kop-subtitle { font-family: 'Times New Roman', Times, serif; font-weight: 700; font-size: 16px; color: #1d4ed8; margin-top: 4px; letter-spacing: 0.5px; }
+    .kop-address { font-size: 11.5px; color: #1e3a8a; margin-top: 6px; line-height: 1.4; }
     .doc-title-box { text-align: center; margin-bottom: 15px; }
     .doc-title { font-size: 15px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 2px solid #0f172a; display: inline-block; padding-bottom: 2px; }
     .doc-subtitle { font-size: 10.5px; color: #64748b; margin-top: 4px; font-weight: 600; }
@@ -3863,23 +3862,12 @@ window._printEmployeeKpiPDF = (empId) => {
     <button class="btn-close" onclick="window.close()">✕ Tutup</button>
   </div>
   <div class="kop-header">
-    <div class="kop-left">
-      <svg width="75" height="60" viewBox="0 0 100 80">
-        <rect x="5" y="5" width="40" height="15" fill="#dc2626" />
-        <rect x="5" y="22" width="40" height="15" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" />
-        <rect x="5" y="39" width="40" height="15" fill="#16a34a" />
-        <text x="45" y="48" font-family="'Times New Roman', serif" font-weight="bold" font-style="italic" font-size="44" fill="#1e293b">sDM</text>
-        <text x="5" y="66" font-family="Arial, sans-serif" font-size="9" fill="#334155" font-style="italic" font-weight="bold">Estafet Dwi Masa</text>
-      </svg>
-      <div>
-        <div class="kop-title">PT. ESTAFET DWI MASA</div>
-        <div class="kop-subtitle">SPBU 54.634.25 GONTOR MLARAK</div>
-        <div class="kop-address">
-          Kantor Pusat : Ds. Gontor, Kec. Mlarak, Kab. Ponorogo - Jawa Timur 63472<br>
-          Kantor Cabang : Jalan Mayjend Bambang Sugeng Km. 01 Sidojoyo Wonosobo<br>
-          Email: estafetdwimasa@gmail.com
-        </div>
-      </div>
+    <div class="kop-title">PT. ESTAFET DWI MASA</div>
+    <div class="kop-subtitle">SPBU 54.634.25 GONTOR MLARAK</div>
+    <div class="kop-address">
+      Kantor Pusat : Ds. Gontor, Kec. Mlarak, Kab. Ponorogo - Jawa Timur 63472<br>
+      Kantor Cabang : Jalan Mayjend Bambang Sugeng Km. 01 Sidojoyo Wonosobo<br>
+      Email: estafetdwimasa@gmail.com
     </div>
   </div>
   <div class="doc-title-box">
