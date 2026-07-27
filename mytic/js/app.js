@@ -3835,10 +3835,10 @@ window._printEmployeeKpiPDF = (empId) => {
     .no-print-bar button { padding: 8px 16px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 12px; }
     .btn-print { background: #1d4ed8; color: #fff; }
     .btn-close { background: #64748b; color: #fff; margin-left: 8px; }
-    .kop-header { text-align: center; border-bottom: 3px double #1d4ed8; padding-bottom: 12px; margin-bottom: 18px; width: 100%; }
-    .kop-title { font-family: 'Times New Roman', Times, serif; font-weight: 900; font-size: 26px; color: #1e40af; letter-spacing: 1px; }
-    .kop-subtitle { font-family: 'Times New Roman', Times, serif; font-weight: 700; font-size: 16px; color: #1d4ed8; margin-top: 4px; letter-spacing: 0.5px; }
-    .kop-address { font-size: 11.5px; color: #1e3a8a; margin-top: 6px; line-height: 1.4; }
+    .kop-header { text-align: center; border-bottom: 3px double #1d4ed8; padding-bottom: 8px; margin-bottom: 12px; width: 100%; }
+    .kop-title { font-family: 'Times New Roman', Times, serif; font-weight: 900; font-size: 34px; color: #1e40af; letter-spacing: 1.5px; line-height: 1.1; margin-bottom: 2px; }
+    .kop-subtitle { font-family: 'Times New Roman', Times, serif; font-weight: 800; font-size: 20px; color: #1d4ed8; margin-top: 1px; letter-spacing: 0.5px; line-height: 1.1; margin-bottom: 4px; }
+    .kop-address { font-size: 11px; color: #1e3a8a; margin-top: 2px; line-height: 1.25; }
     .doc-title-box { text-align: center; margin-bottom: 15px; }
     .doc-title { font-size: 15px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 2px solid #0f172a; display: inline-block; padding-bottom: 2px; }
     .doc-subtitle { font-size: 10.5px; color: #64748b; margin-top: 4px; font-weight: 600; }
