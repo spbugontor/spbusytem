@@ -3232,16 +3232,18 @@ window._downloadSingleRatingPDF = (key) => {
   const empName = emp ? emp.name : rating.emp_id;
   const filename = `Evaluasi_${empName.replace(/\s+/g, '_')}_${rating.date}.pdf`;
 
-  const opt = {
-    margin: 10,
-    filename: filename,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-
   const div = document.createElement('div');
   div.innerHTML = html;
+  // Strip out control bar so downloaded PDF starts directly with Kop Surat
+  div.querySelectorAll('.no-print-bar, .no-print').forEach(el => el.remove());
+
+  const opt = {
+    margin: [6, 8, 6, 8],
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2.5, useCORS: true, logging: false },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
 
   showToast('Menyiapkan file unduhan...', 'info');
   html2pdf().set(opt).from(div).save().then(() => {
@@ -3281,17 +3283,19 @@ window._downloadAllRatingsPDF = () => {
     return;
   }
 
+  const div = document.createElement('div');
+  div.innerHTML = combinedHtml;
+  // Strip out control bar so downloaded PDF starts directly with Kop Surat
+  div.querySelectorAll('.no-print-bar, .no-print').forEach(el => el.remove());
+
   const opt = {
-    margin: 10,
+    margin: [6, 8, 6, 8],
     filename: `Evaluasi_Semua_Karyawan_${today()}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
+    html2canvas: { scale: 2.5, useCORS: true, logging: false },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     pagebreak: { mode: ['css'] }
   };
-
-  const div = document.createElement('div');
-  div.innerHTML = combinedHtml;
 
   showToast('Menyiapkan file unduhan massal...', 'info');
   html2pdf().set(opt).from(div).save().then(() => {
