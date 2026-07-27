@@ -3033,34 +3033,36 @@ window._generateRatingPDFHtml = (key) => {
   <meta charset="utf-8">
   <title>Evaluasi Kriteria Penilaian ${esc(empName)} - SPBU Gontor</title>
   <style id="page-style">
-    @page { size: A4 portrait; margin: 12mm 15mm; }
+    @page { size: A4 portrait; margin: 6mm 10mm; }
   </style>
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; margin: 0; padding: 15px; background: #e2e8f0; font-size: 12px; line-height: 1.4; }
-    .rapor-container { background: #fff; max-width: 210mm; margin: 0 auto; padding: 20px 25px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; }
-    .no-print-bar { display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 10px 16px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 210mm; margin-left: auto; margin-right: auto; }
-    .no-print-bar button { padding: 8px 16px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 12px; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; margin: 0; padding: 10px; background: #e2e8f0; font-size: 10.5px; line-height: 1.25; }
+    .rapor-container { background: #fff; max-width: 210mm; margin: 0 auto; padding: 12px 18px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; page-break-inside: avoid; page-break-after: avoid; }
+    .no-print-bar { display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 6px 14px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 210mm; margin-left: auto; margin-right: auto; }
+    .no-print-bar button { padding: 5px 12px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 11px; }
     .btn-print { background: #1d4ed8; color: #fff; }
     .btn-close { background: #64748b; color: #fff; margin-left: 8px; }
-    .kop-header { text-align: center; border-bottom: 3px double #1d4ed8; padding-bottom: 8px; margin-bottom: 12px; width: 100%; }
-    .kop-title { font-family: 'Times New Roman', Times, serif; font-weight: 900; font-size: 34px; color: #1e40af; letter-spacing: 1.5px; line-height: 1.1; margin-bottom: 2px; }
-    .kop-subtitle { font-family: 'Times New Roman', Times, serif; font-weight: 800; font-size: 20px; color: #1d4ed8; margin-top: 1px; letter-spacing: 0.5px; line-height: 1.1; margin-bottom: 4px; }
-    .kop-address { font-size: 11px; color: #1e3a8a; margin-top: 2px; line-height: 1.25; }
-    .doc-title-box { text-align: center; margin-bottom: 15px; }
-    .doc-title { font-size: 15px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 2px solid #0f172a; display: inline-block; padding-bottom: 2px; }
-    .doc-subtitle { font-size: 10.5px; color: #64748b; margin-top: 4px; font-weight: 600; }
-    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; }
-    .info-table td { padding: 7px 12px; font-size: 11.5px; vertical-align: top; border-bottom: 1px solid #e2e8f0; color: #0f172a !important; }
-    .info-table td.label { font-weight: 700; color: #475569 !important; width: 130px; background: #f1f5f9; }
-    .metric-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-    .metric-table th, .metric-table td { border: 1px solid #cbd5e1; padding: 7px 10px; font-size: 11px; }
+    .kop-header { text-align: center; border-bottom: 2.5px double #1d4ed8; padding-bottom: 4px; margin-bottom: 6px; width: 100%; }
+    .kop-title { font-family: 'Times New Roman', Times, serif; font-weight: 900; font-size: 26px; color: #1e40af; letter-spacing: 1.2px; line-height: 1.05; margin-bottom: 1px; }
+    .kop-subtitle { font-family: 'Times New Roman', Times, serif; font-weight: 800; font-size: 15px; color: #1d4ed8; margin-top: 1px; letter-spacing: 0.5px; line-height: 1.05; margin-bottom: 2px; }
+    .kop-address { font-size: 9.5px; color: #1e3a8a; margin-top: 1px; line-height: 1.2; }
+    .doc-title-box { text-align: center; margin-bottom: 6px; }
+    .doc-title { font-size: 13px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 1.5px solid #0f172a; display: inline-block; padding-bottom: 1px; }
+    .doc-subtitle { font-size: 9px; color: #64748b; margin-top: 2px; font-weight: 600; }
+    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; }
+    .info-table td { padding: 4px 8px; font-size: 10px; vertical-align: top; border-bottom: 1px solid #e2e8f0; color: #0f172a !important; }
+    .info-table td.label { font-weight: 700; color: #475569 !important; width: 120px; background: #f1f5f9; }
+    .metric-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+    .metric-table th, .metric-table td { border: 1px solid #cbd5e1; padding: 4px 8px; font-size: 9.5px; }
     .metric-table th { background: #1e40af; color: #ffffff !important; font-weight: 700; text-align: left; }
-    .signature-area { margin-top: 25px; display: flex; justify-content: space-between; page-break-inside: avoid; }
-    .sig-box { width: 220px; text-align: center; font-size: 11px; color: #0f172a !important; }
-    .sig-space { height: 55px; }
+    tr { page-break-inside: avoid !important; page-break-after: auto !important; }
+    .signature-area { margin-top: 10px; display: flex; justify-content: space-between; page-break-inside: avoid; }
+    .sig-box { width: 200px; text-align: center; font-size: 9.5px; color: #0f172a !important; }
+    .sig-space { height: 35px; }
     @media print {
-      body { background: #fff; padding: 0; }
-      .rapor-container { box-shadow: none; padding: 0; max-width: 100% !important; border-radius: 0; }
+      html, body { height: 100%; overflow: hidden; background: #fff; padding: 0; }
+      .rapor-container { box-shadow: none; padding: 0; max-width: 100% !important; border-radius: 0; page-break-inside: avoid; page-break-after: avoid; }
       .no-print { display: none !important; }
     }
   </style>
@@ -3068,15 +3070,15 @@ window._generateRatingPDFHtml = (key) => {
 <body>
   <div class="no-print no-print-bar">
     <div style="display:flex; align-items:center; gap:8px;">
-      <label style="font-weight:bold; font-size:12px; color:#334155;">📐 Ukuran Kertas:</label>
-      <select id="paper-size-select" style="padding:5px 10px; font-size:12px; border-radius:4px; border:1px solid #94a3b8; font-weight:600; cursor:pointer;" onchange="
+      <label style="font-weight:bold; font-size:11.5px; color:#334155;">📐 Ukuran Kertas:</label>
+      <select id="paper-size-select" style="padding:4px 8px; font-size:11px; border-radius:4px; border:1px solid #94a3b8; font-weight:600; cursor:pointer;" onchange="
         const styleEl = document.getElementById('page-style');
         const containers = document.querySelectorAll('.rapor-container, .no-print-bar');
         if (this.value === 'F4') {
-          styleEl.innerHTML = '@page { size: 215mm 330mm portrait; margin: 12mm 15mm; }';
+          styleEl.innerHTML = '@page { size: 215mm 330mm portrait; margin: 6mm 10mm; }';
           containers.forEach(c => c.style.maxWidth = '215mm');
         } else {
-          styleEl.innerHTML = '@page { size: A4 portrait; margin: 12mm 15mm; }';
+          styleEl.innerHTML = '@page { size: A4 portrait; margin: 6mm 10mm; }';
           containers.forEach(c => c.style.maxWidth = '210mm');
         }
       ">
@@ -3118,30 +3120,30 @@ window._generateRatingPDFHtml = (key) => {
         <td class="label">Jabatan / Posisi</td>
         <td>${esc(empPos)}</td>
         <td class="label">Rata-Rata Rating</td>
-        <td><strong style="color:#1d4ed8; font-size:13px;">⭐ ${avg} / 5.0</strong></td>
+        <td><strong style="color:#1d4ed8; font-size:12px;">⭐ ${avg} / 5.0</strong></td>
       </tr>
     </table>
 
-    <h4 style="margin:12px 0 6px 0; color:#1e40af; font-size:12px; border-bottom:1.5px solid #cbd5e1; padding-bottom:3px;">A. PENILAIAN KRITERIA INDIKATOR</h4>
+    <h4 style="margin:6px 0 4px 0; color:#1e40af; font-size:10.5px; border-bottom:1px solid #cbd5e1; padding-bottom:2px;">A. PENILAIAN KRITERIA INDIKATOR</h4>
     <table class="metric-table">
       <thead>
         <tr>
-          <th style="border:1px solid #cbd5e1;padding:6px 8px;text-align:left;background:#1e40af;color:#fff;">Indikator / Sub-Indikator Kriteria</th>
-          <th style="border:1px solid #cbd5e1;padding:6px 8px;text-align:center;width:100px;background:#1e40af;color:#fff;">Skor (1-5)</th>
+          <th style="border:1px solid #cbd5e1;padding:4px 8px;text-align:left;background:#1e40af;color:#fff !important;">Indikator / Sub-Indikator Kriteria</th>
+          <th style="border:1px solid #cbd5e1;padding:4px 8px;text-align:center;width:90px;background:#1e40af;color:#fff !important;">Skor (1-5)</th>
         </tr>
       </thead>
       <tbody>
         ${criteriaRows}
         <tr>
-          <td style="border:1px solid #cbd5e1;padding:6px 8px;text-align:right;color:#0f172a !important;"><strong>Rata-Rata Skor Kriteria:</strong></td>
-          <td style="border:1px solid #cbd5e1;padding:6px 8px;text-align:center;font-size:12px;font-weight:bold;color:#1d4ed8 !important;">⭐ ${avg} / 5.0</td>
+          <td style="border:1px solid #cbd5e1;padding:4px 8px;text-align:right;color:#0f172a !important;"><strong>Rata-Rata Skor Kriteria:</strong></td>
+          <td style="border:1px solid #cbd5e1;padding:4px 8px;text-align:center;font-size:11px;font-weight:bold;color:#1d4ed8 !important;">⭐ ${avg} / 5.0</td>
         </tr>
       </tbody>
     </table>
     
-    <div style="border:1px solid #cbd5e1; border-radius:6px; padding:10px 14px; background:#f8fafc; margin-bottom:20px;">
-      <div style="font-weight:bold; font-size:10.5px; color:#334155; margin-bottom:4px; text-transform:uppercase;">💬 CATATAN EVALUASI ATASAN:</div>
-      <div style="font-size:11px; color:#1e293b; font-style:italic;">${esc(rating.note || 'Tidak ada catatan khusus.')}</div>
+    <div style="border:1px solid #cbd5e1; border-radius:4px; padding:6px 10px; background:#f8fafc !important; color:#0f172a !important; margin-bottom:8px;">
+      <div style="font-weight:bold; font-size:9.5px; color:#1e40af !important; margin-bottom:2px; text-transform:uppercase;">💬 CATATAN EVALUASI ATASAN:</div>
+      <div style="font-size:10px; color:#0f172a !important; font-style:italic; line-height:1.2;">${esc(rating.note || 'Tidak ada catatan khusus.')}</div>
     </div>
 
     <div class="signature-area">
@@ -3149,13 +3151,13 @@ window._generateRatingPDFHtml = (key) => {
         <div>Penerima Evaluasi (Karyawan),</div>
         <div class="sig-space"></div>
         <div><strong>( ${esc(empName)} )</strong></div>
-        <div style="font-size:9.5px; color:#64748b;">ID: ${esc(rating.emp_id)}</div>
+        <div style="font-size:8.5px; color:#64748b;">ID: ${esc(rating.emp_id)}</div>
       </div>
       <div class="sig-box">
         <div>Gontor, ${formattedDate}<br><strong>Manager SPBU Gontor Mlarak</strong>,</div>
         <div class="sig-space"></div>
         <div><strong>( ______________________ )</strong></div>
-        <div style="font-size:9.5px; color:#64748b;">PT. ESTAFET DWI MASA</div>
+        <div style="font-size:8.5px; color:#64748b;">PT. ESTAFET DWI MASA</div>
       </div>
     </div>
   </div>
