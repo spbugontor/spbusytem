@@ -869,39 +869,39 @@ function renderAdminDashboard() {
     </div>
 
     <!-- GRAPHICS GRID -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:1.5rem;margin-bottom:1.5rem;">
-      <div class="card" style="padding:1.25rem;">
+    <div class="graphics-grid">
+      <div class="card chart-card-wide" style="padding:1.25rem;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
           <h3 class="card-title" style="font-size:1rem;">📈 Tren Kehadiran & Ketepatan Waktu</h3>
         </div>
-        <div style="position:relative;height:240px;">
+        <div style="position:relative;height:260px;">
           <canvas id="chart-admin-attendance"></canvas>
         </div>
       </div>
 
-      <div class="card" style="padding:1.25rem;">
+      <div class="card chart-card-compact" style="padding:1.25rem;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
           <h3 class="card-title" style="font-size:1rem;">🍩 Distribusi Pengajuan Cuti & Izin</h3>
         </div>
-        <div style="position:relative;height:240px;">
+        <div style="position:relative;height:260px;">
           <canvas id="chart-admin-leaves"></canvas>
         </div>
       </div>
 
-      <div class="card" style="padding:1.25rem;">
+      <div class="card chart-card-wide" style="padding:1.25rem;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
           <h3 class="card-title" style="font-size:1rem;">📊 Performa Ceklis SOP per Kategori</h3>
         </div>
-        <div style="position:relative;height:240px;">
+        <div style="position:relative;height:260px;">
           <canvas id="chart-admin-sop"></canvas>
         </div>
       </div>
 
-      <div class="card" style="padding:1.25rem;">
+      <div class="card chart-card-compact" style="padding:1.25rem;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
           <h3 class="card-title" style="font-size:1rem;">⚠️ Ringkasan Pelanggaran & Teguran SP</h3>
         </div>
-        <div style="position:relative;height:240px;">
+        <div style="position:relative;height:260px;">
           <canvas id="chart-admin-violations"></canvas>
         </div>
       </div>

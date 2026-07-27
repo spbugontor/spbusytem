@@ -500,6 +500,35 @@ body {
 /* -------------------------------------
    CARDS & DASHBOARD
 ------------------------------------- */
+/* Dashboard Graphics Grid System */
+.graphics-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 992px) {
+  .graphics-grid {
+    grid-template-columns: repeat(12, 1fr);
+  }
+  .chart-card-wide {
+    grid-column: span 7;
+  }
+  .chart-card-compact {
+    grid-column: span 5;
+  }
+}
+
+@media (min-width: 1400px) {
+  .chart-card-wide {
+    grid-column: span 8;
+  }
+  .chart-card-compact {
+    grid-column: span 4;
+  }
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
