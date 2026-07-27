@@ -3873,7 +3873,7 @@ function calculateEmployeeKpi(emp, period) {
 
   // 6. FAIR Composite KPI Score Calculation:
   // For Operator: 30% Attendance + 20% SOP + 25% Rating + 15% Debit + 10% Track Record = 100%
-  // For Non-Operator: 45% Attendance + 30% Rating + 15% Debit + 10% Track Record = 100%
+  // For Non-Operator (Admin/Supervisor/Cleaning Service): 45% Attendance + 40% Rating + 5% Debit + 10% Track Record = 100%
   let compositeScore = 0;
   if (isOperator) {
     compositeScore = Math.round(
@@ -3886,8 +3886,8 @@ function calculateEmployeeKpi(emp, period) {
   } else {
     compositeScore = Math.round(
       (attendanceRate * 0.45) +
-      (ratingScore * 0.30) +
-      (debitScore * 0.15) +
+      (ratingScore * 0.40) +
+      (debitScore * 0.05) +
       (trackRecordScore * 0.10)
     );
   }
@@ -4127,7 +4127,7 @@ function _generateEmployeeKpiPDFHtml(empId) {
           <span style="font-size:8.5px; color:#475569 !important;">Rating rata-rata: ${kpi.avgRating} dari 5.0 Bintang</span>
         </td>
         <td style="text-align:center; font-weight:bold; color:#0f172a !important;">${kpi.avgRating} / 5.0</td>
-        <td style="text-align:center; color:#0f172a !important;">${kpi.isOperator ? '25%' : '30%'}</td>
+        <td style="text-align:center; color:#0f172a !important;">${kpi.isOperator ? '25%' : '40%'}</td>
         <td style="text-align:center; font-weight:bold; color:#1d4ed8 !important;">${kpi.ratingScore} / 100</td>
       </tr>
       <tr>
@@ -4137,7 +4137,7 @@ function _generateEmployeeKpiPDFHtml(empId) {
           <span style="font-size:8.5px; color:#475569 !important;">Total Tunggakan: ${fmt(kpi.totalDebitAmt)} (${kpi.debitTxCount} Catatan Transaksi)</span>
         </td>
         <td style="text-align:center; font-weight:bold; color:#0f172a !important;">${kpi.totalDebitAmt > 0 ? fmt(kpi.totalDebitAmt) : 'Clean (Rp 0)'}</td>
-        <td style="text-align:center; color:#0f172a !important;">15%</td>
+        <td style="text-align:center; color:#0f172a !important;">${kpi.isOperator ? '15%' : '5%'}</td>
         <td style="text-align:center; font-weight:bold; color:#1d4ed8 !important;">${kpi.debitScore} / 100</td>
       </tr>
       <tr>
