@@ -4772,9 +4772,9 @@ window._openMassAllowanceModal = () => {
 
   const empCheckboxes = users.map(u => {
     const pos = u.position || '-';
-    return `<label style="display:flex; align-items:center; gap:0.5rem; background:var(--surface); border:1px solid var(--border); padding:0.4rem 0.6rem; border-radius:var(--radius-sm); font-size:0.8rem; cursor:pointer;">
-      <input type="checkbox" class="mass-emp-chk" value="${u.emp_id}" data-pos="${esc(pos)}" checked>
-      <span><strong>${esc(u.name)}</strong> (${esc(pos)})</span>
+    return `<label style="display:flex; align-items:center; gap:0.5rem; background:var(--surface); border:1px solid var(--border); padding:0.45rem 0.6rem; border-radius:var(--radius-sm); font-size:0.8rem; cursor:pointer; box-sizing:border-box; overflow:hidden;">
+      <input type="checkbox" class="mass-emp-chk" value="${u.emp_id}" data-pos="${esc(pos)}" checked style="flex-shrink:0;">
+      <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><strong>${esc(u.name)}</strong> (${esc(pos)})</span>
     </label>`;
   }).join('');
 
@@ -4786,14 +4786,14 @@ window._openMassAllowanceModal = () => {
     <div class="modal-body" style="padding:1rem 0;">
       <div style="margin-bottom:1rem;">
         <label class="form-label" style="font-size:0.8rem; font-weight:700;">1. Pilih Jenis Tunjangan</label>
-        <select id="mass-tunj-select" class="form-input form-select" style="padding:0.45rem 0.75rem; font-size:0.85rem;">
+        <select id="mass-tunj-select" class="form-input form-select" style="padding:0.45rem 0.75rem; font-size:0.85rem; width:100%; box-sizing:border-box;">
           ${tunjOptions}
         </select>
       </div>
 
       <div style="margin-bottom:1rem;">
         <label class="form-label" style="font-size:0.8rem; font-weight:700;">2. Input Nominal Tunjangan (Rp)</label>
-        <input id="mass-tunj-amt" type="number" class="form-input" placeholder="Misal: 400000" style="padding:0.45rem 0.75rem; font-size:0.85rem;">
+        <input id="mass-tunj-amt" type="number" class="form-input" placeholder="Misal: 400000" style="padding:0.45rem 0.75rem; font-size:0.85rem; width:100%; box-sizing:border-box;">
       </div>
 
       <div style="margin-bottom:0.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
@@ -4806,7 +4806,7 @@ window._openMassAllowanceModal = () => {
         </div>
       </div>
 
-      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:0.4rem; max-height:220px; overflow-y:auto; border:1px solid var(--border); padding:0.6rem; border-radius:var(--radius-sm);">
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap:0.4rem; max-height:220px; overflow-y:auto; border:1px solid var(--border); padding:0.6rem; border-radius:var(--radius-sm); box-sizing:border-box;">
         ${empCheckboxes}
       </div>
     </div>
@@ -4817,7 +4817,7 @@ window._openMassAllowanceModal = () => {
   `, 'modal-md');
 };
 
-window._applyMassAllowance = async () => {
+window._applyMassAllowance = () => {
   const selectElem = document.getElementById('mass-tunj-select');
   const amtElem = document.getElementById('mass-tunj-amt');
   if (!selectElem || !amtElem) {
@@ -4840,6 +4840,7 @@ window._applyMassAllowance = async () => {
   allData.payroll[month].internal_data = allData.payroll[month].internal_data || {};
 
   const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
+  const dbUpdates = {};
 
   for (const u of users) {
     const empId = u.emp_id;
@@ -4851,13 +4852,19 @@ window._applyMassAllowance = async () => {
       amount: isSelected ? amt : 0
     };
 
-    const path = `payroll/${month}/internal_data/${empId}/tunjangan/${tunjId}`;
-    await set(ref(db, path), { enabled: isSelected, amount: isSelected ? amt : 0 });
+    dbUpdates[`payroll/${month}/internal_data/${empId}/tunjangan/${tunjId}`] = {
+      enabled: isSelected,
+      amount: isSelected ? amt : 0
+    };
   }
 
+  // Instant UI Feedback (0ms delay!)
   hideModal();
   renderCurrentSection();
   showToast(`Tunjangan massal berhasil diterapkan ke ${selectedEmpIds.length} karyawan!`, 'success');
+
+  // Background non-blocking update to Firebase
+  update(ref(db), dbUpdates).catch(err => console.error('Firebase update error:', err));
 };
 
 window._exportToExcel = (reportType) => {
@@ -5073,24 +5080,24 @@ function renderInternalPayrollTab() {
       <td style="padding:4px 6px;"><strong>${esc(u.name)}</strong><br><span class="text-xs text-muted">ID: ${esc(u.emp_id)} | Masa: ${tenureMonths} Bln</span></td>
       <td style="padding:4px 6px;"><span class="badge" style="background:var(--bg-color); color:var(--text-main); font-size:0.7rem; padding:2px 5px;">${esc(pos)}</span></td>
       <td style="font-size:0.75rem; padding:4px 6px;">
-        <input type="number" value="${gajiPokok}" style="width:85px; padding:0.15rem 0.3rem; font-size:0.7rem;" onchange="window._saveInternalPayrollItem('${empId}', 'gaji_pokok', Number(this.value))">
+        <input type="number" value="${gajiPokok}" class="form-input" style="width:100%; max-width:92px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.75rem; font-weight:600; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'gaji_pokok', Number(this.value))">
         <div class="text-xs text-muted" style="margin-top:0.1rem; font-size:0.65rem;">${fmt(gajiPokok)}</div>
       </td>
       <td style="font-size:0.75rem; padding:4px 6px;">
         <div style="display:flex; align-items:center; gap:0.25rem;">
           <input type="checkbox" ${tunjJabatanEnabled ? 'checked' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_jabatan', this.checked)">
-          <span style="font-size:0.7rem;">Jabatan:</span>
-          <input type="number" value="${tunjJabatanAmt}" style="width:75px; padding:0.15rem 0.3rem; font-size:0.7rem;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_jabatan', this.value)">
+          <span style="font-size:0.7rem; min-width:48px;">Jabatan:</span>
+          <input type="number" value="${tunjJabatanAmt}" class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_jabatan', this.value)">
         </div>
         <div style="display:flex; align-items:center; gap:0.25rem; margin-top:0.2rem;">
           <input type="checkbox" ${tunjKinerjaEnabled ? 'checked' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_kinerja', this.checked)">
-          <span style="font-size:0.7rem;">Kinerja:</span>
-          <input type="number" value="${tunjKinerjaAmt}" style="width:75px; padding:0.15rem 0.3rem; font-size:0.7rem;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_kinerja', this.value)">
+          <span style="font-size:0.7rem; min-width:48px;">Kinerja:</span>
+          <input type="number" value="${tunjKinerjaAmt}" class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_kinerja', this.value)">
         </div>
         <div style="display:flex; align-items:center; gap:0.25rem; margin-top:0.2rem;">
           <input type="checkbox" ${tunjMasaKerjaEnabled ? 'checked' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_masa_kerja', this.checked)">
-          <span style="font-size:0.7rem;">Masa Kerja:</span>
-          <input type="number" value="${tunjMasaKerjaAmt}" style="width:75px; padding:0.15rem 0.3rem; font-size:0.7rem;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_masa_kerja', this.value)">
+          <span style="font-size:0.7rem; min-width:48px;">Masa:</span>
+          <input type="number" value="${tunjMasaKerjaAmt}" class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_masa_kerja', this.value)">
         </div>
         ${customTunjHTML}
       </td>
@@ -5098,19 +5105,19 @@ function renderInternalPayrollTab() {
         <div style="display:flex; align-items:center; gap:0.25rem;">
           <input type="checkbox" ${pwEnabled ? 'checked' : ''} onchange="window._saveInternalPayrollItem('${empId}', 'pw_enabled', this.checked)">
           <span style="font-size:0.7rem;">PW:</span>
-          <input type="number" value="${pwAmount}" style="width:75px; padding:0.15rem 0.3rem; font-size:0.7rem;" onchange="window._saveInternalPayrollItem('${empId}', 'pw_amount', Number(this.value))">
+          <input type="number" value="${pwAmount}" class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'pw_amount', Number(this.value))">
         </div>
         <div class="text-xs text-muted" style="margin-top:0.15rem; font-size:0.65rem;">Est: ${fmt(isSpvAdmin ? rawPwSpvAdmin : rawPwOprCs)}</div>
       </td>
       <td style="font-size:0.75rem; padding:4px 6px;">
         <div style="display:flex; align-items:center; gap:0.2rem;">
-          <input type="number" value="${otShifts}" style="width:45px; padding:0.15rem 0.3rem; font-size:0.7rem;" min="0" onchange="window._saveInternalPayrollItem('${empId}', 'overtime_shifts', Number(this.value))">
+          <input type="number" value="${otShifts}" class="form-input" style="width:100%; max-width:48px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:center;" min="0" onchange="window._saveInternalPayrollItem('${empId}', 'overtime_shifts', Number(this.value))">
           <span style="font-size:0.7rem;">Shf</span>
         </div>
         <strong style="color:var(--primary); font-size:0.75rem;">${fmt(otAmt)}</strong>
       </td>
       <td style="font-size:0.75rem; padding:4px 6px;">
-        <input type="number" value="${tabunganAmt}" style="width:70px; padding:0.15rem 0.3rem; font-size:0.7rem;" onchange="window._saveInternalPayrollItem('${empId}', 'savings_deduction', Number(this.value))">
+        <input type="number" value="${tabunganAmt}" class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'savings_deduction', Number(this.value))">
       </td>
       <td style="text-align:right; padding:4px 6px;">
         <div style="font-size:0.68rem; color:var(--text-muted);">Kotor: ${fmt(gajiKotor)}</div>
