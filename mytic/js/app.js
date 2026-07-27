@@ -3871,10 +3871,10 @@ function calculateEmployeeKpi(emp, period) {
   };
 }
 
-window._printEmployeeKpiPDF = (empId) => {
+function _generateEmployeeKpiPDFHtml(empId) {
   const users = getUsers();
   const u = users.find(x => x.emp_id === empId);
-  if (!u) { showToast('Karyawan tidak ditemukan', 'error'); return; }
+  if (!u) return '';
 
   const period = window._leaderboardPeriod || 'month';
   const periodTitles = {
@@ -3933,15 +3933,15 @@ window._printEmployeeKpiPDF = (empId) => {
       });
       const remaining = t.quota - taken;
       leaveQuotaRows += `<tr>
-        <td style="border:1px solid #cbd5e1;padding:5px 8px;">${esc(t.name)}</td>
-        <td style="border:1px solid #cbd5e1;padding:5px 8px;text-align:center;">${t.quota} hari</td>
-        <td style="border:1px solid #cbd5e1;padding:5px 8px;text-align:center;">${taken} hari</td>
-        <td style="border:1px solid #cbd5e1;padding:5px 8px;text-align:center;font-weight:bold;color:${remaining <= 0 ? '#dc2626' : '#166534'}">${remaining} hari</td>
+        <td style="border:1px solid #cbd5e1;padding:3px 6px;">${esc(t.name)}</td>
+        <td style="border:1px solid #cbd5e1;padding:3px 6px;text-align:center;">${t.quota} hari</td>
+        <td style="border:1px solid #cbd5e1;padding:3px 6px;text-align:center;">${taken} hari</td>
+        <td style="border:1px solid #cbd5e1;padding:3px 6px;text-align:center;font-weight:bold;color:${remaining <= 0 ? '#dc2626' : '#166534'}">${remaining} hari</td>
       </tr>`;
     }
   });
 
-  const pdfHtml = `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -4004,7 +4004,7 @@ window._printEmployeeKpiPDF = (empId) => {
       </select>
     </div>
     <div>
-      <button id="btn-dl-pdf" style="background:#16a34a; color:#fff; font-weight:bold; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; font-size:11px;" onclick="downloadPdfDirect()">📥 Simpan File PDF</button>
+      <button id="btn-dl-pdf" style="background:#16a34a; color:#fff; font-weight:bold; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; font-size:11px;" onclick="window._downloadEmployeeKpiDirectPDF('${empId}')">📥 Simpan File PDF</button>
       <button class="btn-print" onclick="window.print()">🖨️ Cetak / Print</button>
       <button class="btn-close" onclick="window.close()">✕ Tutup</button>
     </div>
@@ -4157,50 +4157,13 @@ window._printEmployeeKpiPDF = (empId) => {
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script>
-    function downloadPdfDirect() {
-      const btn = document.getElementById('btn-dl-pdf');
-      const noPrintBar = document.querySelector('.no-print-bar');
-      const oldText = btn ? btn.innerHTML : '';
-      if (btn) { btn.innerHTML = '⏳ Mengunduh...'; btn.disabled = true; }
-
-      const paperSize = document.getElementById('paper-size-select') ? document.getElementById('paper-size-select').value : 'A4';
-      
-      // Hide top control bar completely before rendering
-      if (noPrintBar) {
-        noPrintBar.style.setProperty('display', 'none', 'important');
-      }
-
-      const element = document.querySelector('.rapor-container');
-      const safeName = '${esc(u.name).replace(/[^a-zA-Z0-9]/g, '_')}';
-      const safePeriod = '${periodTitle.replace(/[^a-zA-Z0-9]/g, '_')}';
-
-      const opt = {
-        margin: [4, 6, 4, 6],
-        filename: 'Rapor_Kinerja_' + safeName + '_' + safePeriod + '.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2.5,
-          useCORS: true,
-          logging: false,
-          ignoreElements: (node) => node.classList && (node.classList.contains('no-print') || node.classList.contains('no-print-bar'))
-        },
-        jsPDF: { unit: 'mm', format: paperSize === 'F4' ? [215, 330] : 'a4', orientation: 'portrait' }
-      };
-
-      html2pdf().set(opt).from(element).save().then(() => {
-        if (noPrintBar) noPrintBar.style.setProperty('display', 'flex');
-        if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
-      }).catch(err => {
-        console.error(err);
-        if (noPrintBar) noPrintBar.style.setProperty('display', 'flex');
-        if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
-        alert('Tanda peringatan: Jika unduh otomatis terhalang, silakan gunakan tombol Cetak / Print lalu pilih Tujuan: Simpan sebagai PDF.');
-      });
-    }
-  </script>
 </body>
 </html>`;
+}
+
+window._printEmployeeKpiPDF = (empId) => {
+  const pdfHtml = _generateEmployeeKpiPDFHtml(empId);
+  if (!pdfHtml) { showToast('Karyawan tidak ditemukan', 'error'); return; }
 
   const win = window.open('', '_blank');
   if (win) {
@@ -4209,6 +4172,51 @@ window._printEmployeeKpiPDF = (empId) => {
   } else {
     showToast('Izinkan pop-up di browser untuk mencetak PDF Rapor.', 'error');
   }
+};
+
+window._downloadEmployeeKpiDirectPDF = (empId) => {
+  if (typeof html2pdf === 'undefined') {
+    showToast('Library PDF sedang dimuat, coba sebentar lagi', 'warning');
+    return;
+  }
+
+  const users = getUsers();
+  const u = users.find(x => x.emp_id === empId);
+  if (!u) { showToast('Karyawan tidak ditemukan', 'error'); return; }
+
+  const pdfHtml = _generateEmployeeKpiPDFHtml(empId);
+  if (!pdfHtml) return;
+
+  const period = window._leaderboardPeriod || 'month';
+  const periodTitles = {
+    'month': 'Bulan_Ini',
+    'last_month': 'Bulan_Lalu',
+    'quarter': 'Triwulan',
+    'year': 'Tahun_' + new Date().getFullYear()
+  };
+  const safeName = esc(u.name).replace(/[^a-zA-Z0-9]/g, '_');
+  const safePeriod = periodTitles[period] || 'Bulan_Ini';
+  const filename = `Rapor_Kinerja_${safeName}_${safePeriod}.pdf`;
+
+  const div = document.createElement('div');
+  div.innerHTML = pdfHtml;
+  div.querySelectorAll('.no-print-bar, .no-print').forEach(el => el.remove());
+
+  const opt = {
+    margin: [4, 6, 4, 6],
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2.5, useCORS: true, logging: false },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  showToast('Menyiapkan file Rapor PDF...', 'info');
+  html2pdf().set(opt).from(div).save().then(() => {
+    showToast('Rapor KPI berhasil diunduh!', 'success');
+  }).catch(e => {
+    console.error(e);
+    showToast('Gagal mengunduh Rapor KPI PDF', 'error');
+  });
 };
 
 function renderLeaderboardPage() {
@@ -4374,9 +4382,14 @@ function renderLeaderboardPage() {
                     <span class="kpi-score-badge ${isNA ? 'kpi-score-low' : scoreClass}" style="${isNA ? 'opacity:0.55;' : ''}">${displayScore}</span>
                   </td>
                   <td style="text-align:center;">
-                    <button class="btn btn-outline-primary" style="padding:0.25rem 0.55rem; font-size:0.75rem; display:inline-flex; align-items:center; gap:0.25rem;" onclick="window._printEmployeeKpiPDF('${u.emp_id}')" title="Cetak Rapor Kinerja PDF ${esc(u.name)}">
-                      📄 Rapor PDF
-                    </button>
+                    <div style="display:flex; justify-content:center; gap:0.35rem;">
+                      <button class="btn btn-sm btn-outline-success" style="padding:0.25rem 0.45rem; font-size:0.75rem; display:inline-flex; align-items:center; gap:0.2rem;" onclick="window._downloadEmployeeKpiDirectPDF('${u.emp_id}')" title="Unduh File PDF Rapor KPI ${esc(u.name)}">
+                        📥 Unduh PDF
+                      </button>
+                      <button class="btn btn-sm btn-outline-primary" style="padding:0.25rem 0.45rem; font-size:0.75rem; display:inline-flex; align-items:center; gap:0.2rem;" onclick="window._printEmployeeKpiPDF('${u.emp_id}')" title="Pratinjau / Cetak Rapor KPI ${esc(u.name)}">
+                        🖨️ Cetak
+                      </button>
+                    </div>
                   </td>
                 </tr>
               `;
