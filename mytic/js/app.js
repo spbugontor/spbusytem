@@ -5052,8 +5052,8 @@ function renderInternalPayrollTab() {
 
   const oprCsCount = users.length - spvAdminCount || 11;
 
-  const rawPwSpvAdmin = Math.round((pwInt.total * 0.20) / Math.max(1, spvAdminCount));
-  const rawPwOprCs = Math.round((pwInt.total * 0.80) / Math.max(1, oprCsCount));
+  const rawPwSpvAdmin = (pwInt.total * 0.20) / Math.max(1, spvAdminCount);
+  const rawPwOprCs = (pwInt.total * 0.80) / Math.max(1, oprCsCount);
 
   let totalGajiKotorAll = 0;
   let totalTabunganAll = 0;
@@ -5249,8 +5249,8 @@ function renderAuditPayrollTab() {
   const staffUsers = users.filter(u => u.emp_id !== managerObj.emp_id);
   const auditUsers = [managerObj, ...staffUsers];
 
-  const pwMgrAdminEach = Math.round((pwAudit.total * 0.20) / 2);
-  const pwStaffEach = Math.round((pwAudit.total * 0.80) / 13);
+  const pwMgrAdminEach = (pwAudit.total * 0.20) / 2;
+  const pwStaffEach = (pwAudit.total * 0.80) / 13;
 
   let totalGajiPokokAll = 0;
   let totalPwAll = 0;
@@ -5264,7 +5264,7 @@ function renderAuditPayrollTab() {
 
     const gajiPokok = isMgr ? settings.umk_manager : settings.umk_staf;
     const pwVal = (isMgr || isAdmin) ? pwMgrAdminEach : pwStaffEach;
-    const bpjsVal = Math.round(gajiPokok * (settings.bpjs_percent / 100));
+    const bpjsVal = gajiPokok * (settings.bpjs_percent / 100);
     const thpVal = gajiPokok + pwVal - bpjsVal;
 
     totalGajiPokokAll += gajiPokok;
@@ -5501,7 +5501,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 4) => {
       <div>
         <div class="yellow-bar">
           <span>GAJI BERSIH</span>
-          <span>Rp ${fmt(gajiBersih)}</span>
+          <span>${fmt(gajiBersih)}</span>
         </div>
         <div style="text-align:right; font-size:9.5px; margin-top:6px;">
           Ponorogo, ${formattedPrintDate}<br>
@@ -5572,8 +5572,8 @@ window._printAuditDocuments = () => {
   const staffUsers = users.filter(u => u.emp_id !== managerObj.emp_id);
   const auditUsers = [managerObj, ...staffUsers];
 
-  const pwMgrAdminEach = Math.round((pwAudit.total * 0.20) / 2);
-  const pwStaffEach = Math.round((pwAudit.total * 0.80) / 13);
+  const pwMgrAdminEach = (pwAudit.total * 0.20) / 2;
+  const pwStaffEach = (pwAudit.total * 0.80) / 13;
 
   let totalGajiPokokAll = 0;
   let totalPwAll = 0;
@@ -5587,7 +5587,7 @@ window._printAuditDocuments = () => {
 
     const gajiPokok = isMgr ? settings.umk_manager : settings.umk_staf;
     const pwVal = (isMgr || isAdmin) ? pwMgrAdminEach : pwStaffEach;
-    const bpjsVal = Math.round(gajiPokok * (settings.bpjs_percent / 100));
+    const bpjsVal = gajiPokok * (settings.bpjs_percent / 100);
     const thpVal = gajiPokok + pwVal - bpjsVal;
 
     totalGajiPokokAll += gajiPokok;
@@ -5602,10 +5602,10 @@ window._printAuditDocuments = () => {
       <td style="text-align:center;">${idx + 1}</td>
       <td><strong>${esc(u.name)}</strong></td>
       <td style="text-align:center;">${esc(pos.toUpperCase())}</td>
-      <td style="text-align:right;">Rp ${fmt(gajiPokok)}</td>
-      <td style="text-align:right;">Rp ${fmt(pwVal)}</td>
-      <td style="text-align:right;">Rp ${fmt(bpjsVal)}</td>
-      <td style="text-align:right; font-weight:bold;">Rp ${fmt(thpVal)}</td>
+      <td style="text-align:right;">${fmt(gajiPokok)}</td>
+      <td style="text-align:right;">${fmt(pwVal)}</td>
+      <td style="text-align:right;">${fmt(bpjsVal)}</td>
+      <td style="text-align:right; font-weight:bold;">${fmt(thpVal)}</td>
       <td style="width:40px; font-size:9px; vertical-align:top; border-right:none;">${ttdLeft}</td>
       <td style="width:40px; font-size:9px; vertical-align:bottom; text-align:right; border-left:none;">${ttdRight}</td>
     </tr>`;
