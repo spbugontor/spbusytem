@@ -3202,9 +3202,7 @@ window._showCriteriaForm = (key) => {
 
   const allCrits = getCriteria();
   const uniqueIndicators = [...new Set(allCrits.map(x => x.indicator || 'Umum'))];
-  const currentInd = c?.indicator || 'Umum';
-  if (!uniqueIndicators.includes(currentInd)) uniqueIndicators.push(currentInd);
-  if (uniqueIndicators.length === 0) uniqueIndicators.push('Umum');
+  const currentInd = c?.indicator || (uniqueIndicators.length > 0 ? uniqueIndicators[0] : '__NEW__');
 
   const rawPos = c?.position;
   let selectedPositions = [];
@@ -3223,12 +3221,22 @@ window._showCriteriaForm = (key) => {
     <h3 class="card-title mb-4">${c ? 'Edit' : 'Tambah'} Kriteria</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
       <div class="form-group">
-        <label class="form-label">Nama Indikator</label>
-        <select id="cf-indicator-select" class="form-input form-select mb-2" onchange="document.getElementById('cf-indicator').style.display = this.value === '__NEW__' ? 'block' : 'none';">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+          <label class="form-label" style="margin-bottom:0;">Nama Indikator</label>
+          <button id="btn-del-selected-ind" type="button" class="btn btn-outline-danger" style="padding:0.15rem 0.5rem; font-size:0.7rem; display:${currentInd !== '__NEW__' ? 'inline-flex' : 'none'}; align-items:center; gap:0.25rem;" onclick="window._deleteIndicatorGroup(document.getElementById('cf-indicator-select').value)">
+            🗑️ Hapus Indikator Ini
+          </button>
+        </div>
+        <select id="cf-indicator-select" class="form-input form-select mb-2" onchange="
+          const isNew = this.value === '__NEW__';
+          document.getElementById('cf-indicator').style.display = isNew ? 'block' : 'none';
+          const delBtn = document.getElementById('btn-del-selected-ind');
+          if (delBtn) delBtn.style.display = isNew ? 'none' : 'inline-flex';
+        ">
           ${uniqueIndicators.map(ind => `<option value="${esc(ind)}" ${ind === currentInd ? 'selected' : ''}>${esc(ind)}</option>`).join('')}
-          <option value="__NEW__">+ Tambah Indikator Baru</option>
+          <option value="__NEW__" ${currentInd === '__NEW__' ? 'selected' : ''}>+ Tambah Indikator Baru</option>
         </select>
-        <input id="cf-indicator" class="form-input" value="" placeholder="Ketik nama indikator baru..." style="display:none;">
+        <input id="cf-indicator" class="form-input" value="" placeholder="Ketik nama indikator baru..." style="display:${currentInd === '__NEW__' ? 'block' : 'none'};">
       </div>
       <div class="form-group"><label class="form-label">Sub-Indikator</label><input id="cf-name" class="form-input" value="${esc(c?.name || '')}" placeholder="Misal: Tepat Waktu"></div>
       <div class="form-group" style="grid-column: 1 / -1">
@@ -3315,25 +3323,74 @@ window._editIndicatorName = async (oldName) => {
   }
 };
 
-window._deleteIndicatorGroup = async (indName) => {
+window._deleteIndicatorGroup = (indName) => {
+  if (!indName || indName === '__NEW__') return;
   const allCrit = getCriteria();
   const matched = allCrit.filter(c => (c.indicator || 'Umum') === indName);
   
-  if (matched.length === 0) return;
+  const subCount = matched.length;
+  showModal(`
+    <div class="modal-header" style="background:var(--danger-bg); border-bottom:1px solid rgba(239,68,68,0.3);">
+      <h3 class="modal-title" style="color:var(--danger); display:flex; align-items:center; gap:0.5rem;">
+        ⚠️ Konfirmasi Hapus Indikator
+      </h3>
+      <button class="modal-close" onclick="window._hideModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:1.5rem;">
+      <p style="font-size:0.95rem; color:var(--text-main); margin-bottom:1rem; line-height:1.5;">
+        Apakah Anda <strong>100% YAKIN</strong> ingin menghapus Indikator <strong>"${esc(indName)}"</strong>?
+      </p>
+      ${subCount > 0 ? `
+        <div style="background:rgba(239,68,68,0.1); border-left:4px solid var(--danger); padding:0.85rem; border-radius:var(--radius-md); margin-bottom:1.25rem;">
+          <strong style="color:var(--danger); font-size:0.85rem;">🔴 PERINGATAN KRUSIAL:</strong>
+          <p style="font-size:0.82rem; color:var(--text-main); margin-top:0.25rem;">
+            Menghapus indikator ini akan secara permanen menghapus <strong>${subCount} sub-kriteria</strong> yang terikat di bawahnya!
+          </p>
+        </div>
+      ` : `
+        <p class="text-xs text-muted mb-4">Indikator ini saat ini belum memiliki sub-kriteria.</p>
+      `}
+      <div class="form-group mb-2">
+        <label class="form-label" style="font-weight:700; color:var(--danger);">
+          Ketik kata <span style="background:var(--danger); color:#fff; padding:2px 8px; border-radius:4px;">HAPUS</span> di bawah ini untuk mengonfirmasi keyakinan Anda:
+        </label>
+        <input id="inp-confirm-delete-indicator" type="text" class="form-input" placeholder="Ketik HAPUS di sini..." oninput="document.getElementById('btn-confirm-execute-delete-ind').disabled = (this.value.trim().toUpperCase() !== 'HAPUS');">
+      </div>
+    </div>
+    <div class="modal-footer" style="gap:0.75rem;">
+      <button id="btn-confirm-execute-delete-ind" class="btn btn-danger" disabled onclick="window._executeDeleteIndicatorGroup('${esc(indName)}')">
+        🗑️ Ya, Saya Yakin Hapus Indikator Ini
+      </button>
+      <button class="btn btn-secondary" onclick="window._hideModal()">Batal</button>
+    </div>
+  `);
+};
 
-  if (confirm(`Apakah Anda yakin ingin menghapus Indikator "${indName}" beserta seluruh (${matched.length}) sub-kriteria di dalamnya?`)) {
-    const updates = {};
-    matched.forEach(c => {
-      updates[`criteria/${c._key}`] = null;
-    });
+window._executeDeleteIndicatorGroup = async (indName) => {
+  const allCrit = getCriteria();
+  const matched = allCrit.filter(c => (c.indicator || 'Umum') === indName);
+  
+  const updates = {};
+  matched.forEach(c => {
+    updates[`criteria/${c._key}`] = null;
+  });
 
-    try {
+  try {
+    if (Object.keys(updates).length > 0) {
       await update(ref(db), updates);
-      showToast(`Indikator "${indName}" dan kriteria di dalamnya berhasil dihapus!`, 'success');
-    } catch (err) {
-      console.error('Error deleting indicator group:', err);
-      showToast('Gagal menghapus indikator.', 'error');
     }
+    hideModal();
+    showToast(`Indikator "${indName}" berhasil dihapus!`, 'success');
+    const formArea = $('crit-form-area');
+    if (formArea) formArea.innerHTML = '';
+    // Re-render criteria view if active
+    if (typeof renderCriteria === 'function') {
+      const mainWrapper = document.querySelector('.content-wrapper');
+      if (mainWrapper) mainWrapper.innerHTML = renderCriteria();
+    }
+  } catch (err) {
+    console.error('Error deleting indicator group:', err);
+    showToast('Gagal menghapus indikator.', 'error');
   }
 };
 
