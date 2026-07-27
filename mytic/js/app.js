@@ -2999,39 +2999,7 @@ window._generateRatingPDFHtml = (key) => {
   // --- Hitung Tunggakan ---
   const balance = calcBalance(rating.emp_id);
 
-  let html = `
-    <div style="font-family:sans-serif;font-size:0.8rem;padding:0;">
-    <div style="text-align:center;margin-bottom:10px;border-bottom:1px solid #000;padding-bottom:5px;">
-      <h2 style="margin:0 0 2px 0;font-size:1.1rem;">Laporan Evaluasi Kinerja Karyawan</h2>
-      <p style="font-size:1rem;font-weight:bold;margin:0;">SPBU GONTOR</p>
-    </div>
-    
-    <table style="width:100%;margin-bottom:10px;">
-      <tr>
-        <td style="width:120px;"><strong>Nama Karyawan</strong></td>
-        <td>: ${esc(empName)}</td>
-      </tr>
-      <tr>
-        <td><strong>Jabatan</strong></td>
-        <td>: ${esc(empPos)}</td>
-      </tr>
-      <tr>
-        <td><strong>Periode Penilaian</strong></td>
-        <td>: ${fmtMonthYear(rating.date)}</td>
-      </tr>
-    </table>
-
-    <h3 style="margin:10px 0 5px;border-bottom:1px dotted #999;font-size:0.9rem;">A. Penilaian Kinerja</h3>
-    <table style="width:100%;border-collapse:collapse;font-size:0.75rem;">
-      <thead>
-        <tr>
-          <th style="border:1px solid #000;padding:4px;text-align:left;background:#f0f0f0;">Indikator / Sub-Indikator</th>
-          <th style="border:1px solid #000;padding:4px;text-align:center;width:80px;background:#f0f0f0;">Skor (1-5)</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
-
+  let criteriaRows = '';
   if (rating.scores) {
     const allCrits = getCriteria();
     const groupedScores = {};
@@ -3045,88 +3013,192 @@ window._generateRatingPDFHtml = (key) => {
     });
 
     Object.keys(groupedScores).forEach(ind => {
-      html += `<tr><td colspan="2" style="border:1px solid #000;padding:4px;background:#f8fafc;font-weight:bold;text-transform:uppercase;font-size:0.7rem;">${esc(ind)}</td></tr>`;
+      criteriaRows += `<tr><td colspan="2" style="border:1px solid #cbd5e1;padding:5px 8px;background:#f1f5f9;font-weight:bold;text-transform:uppercase;font-size:10.5px;color:#334155;">${esc(ind)}</td></tr>`;
       groupedScores[ind].forEach(item => {
-        html += `
+        criteriaRows += `
           <tr>
-            <td style="border:1px solid #000;padding:4px;padding-left:12px;">${esc(item.name)}</td>
-            <td style="border:1px solid #000;padding:4px;text-align:center;">${item.score}</td>
+            <td style="border:1px solid #cbd5e1;padding:5px 8px;padding-left:14px;font-size:11px;">${esc(item.name)}</td>
+            <td style="border:1px solid #cbd5e1;padding:5px 8px;text-align:center;font-weight:bold;font-size:11px;color:#1e40af;">${item.score} / 5</td>
           </tr>
         `;
       });
     });
   }
 
-  html += `
+  const formattedDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Evaluasi Kriteria Penilaian ${esc(empName)} - SPBU Gontor</title>
+  <style id="page-style">
+    @page { size: A4 portrait; margin: 12mm 15mm; }
+  </style>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; margin: 0; padding: 15px; background: #e2e8f0; font-size: 12px; line-height: 1.4; }
+    .rapor-container { background: #fff; max-width: 210mm; margin: 0 auto; padding: 20px 25px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; }
+    .no-print-bar { display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 10px 16px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 210mm; margin-left: auto; margin-right: auto; }
+    .no-print-bar button { padding: 8px 16px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 12px; }
+    .btn-print { background: #1d4ed8; color: #fff; }
+    .btn-close { background: #64748b; color: #fff; margin-left: 8px; }
+    .kop-header { text-align: center; border-bottom: 3px double #1d4ed8; padding-bottom: 8px; margin-bottom: 12px; width: 100%; }
+    .kop-title { font-family: 'Times New Roman', Times, serif; font-weight: 900; font-size: 34px; color: #1e40af; letter-spacing: 1.5px; line-height: 1.1; margin-bottom: 2px; }
+    .kop-subtitle { font-family: 'Times New Roman', Times, serif; font-weight: 800; font-size: 20px; color: #1d4ed8; margin-top: 1px; letter-spacing: 0.5px; line-height: 1.1; margin-bottom: 4px; }
+    .kop-address { font-size: 11px; color: #1e3a8a; margin-top: 2px; line-height: 1.25; }
+    .doc-title-box { text-align: center; margin-bottom: 15px; }
+    .doc-title { font-size: 15px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 2px solid #0f172a; display: inline-block; padding-bottom: 2px; }
+    .doc-subtitle { font-size: 10.5px; color: #64748b; margin-top: 4px; font-weight: 600; }
+    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; }
+    .info-table td { padding: 7px 12px; font-size: 11.5px; vertical-align: top; border-bottom: 1px solid #e2e8f0; }
+    .info-table td.label { font-weight: 700; color: #475569; width: 130px; background: #f1f5f9; }
+    .metric-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+    .metric-table th, .metric-table td { border: 1px solid #cbd5e1; padding: 7px 10px; font-size: 11px; }
+    .metric-table th { background: #1e40af; color: #ffffff; font-weight: 700; text-align: left; }
+    .signature-area { margin-top: 25px; display: flex; justify-content: space-between; page-break-inside: avoid; }
+    .sig-box { width: 220px; text-align: center; font-size: 11px; }
+    .sig-space { height: 55px; }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .rapor-container { box-shadow: none; padding: 0; max-width: 100% !important; border-radius: 0; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print no-print-bar">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <label style="font-weight:bold; font-size:12px; color:#334155;">📐 Ukuran Kertas:</label>
+      <select id="paper-size-select" style="padding:5px 10px; font-size:12px; border-radius:4px; border:1px solid #94a3b8; font-weight:600; cursor:pointer;" onchange="
+        const styleEl = document.getElementById('page-style');
+        const containers = document.querySelectorAll('.rapor-container, .no-print-bar');
+        if (this.value === 'F4') {
+          styleEl.innerHTML = '@page { size: 215mm 330mm portrait; margin: 12mm 15mm; }';
+          containers.forEach(c => c.style.maxWidth = '215mm');
+        } else {
+          styleEl.innerHTML = '@page { size: A4 portrait; margin: 12mm 15mm; }';
+          containers.forEach(c => c.style.maxWidth = '210mm');
+        }
+      ">
+        <option value="A4" selected>A4 (210 x 297 mm)</option>
+        <option value="F4">F4 / Folio (215 x 330 mm)</option>
+      </select>
+    </div>
+    <div>
+      <button class="btn-print" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+      <button class="btn-close" onclick="window.close()">✕ Tutup</button>
+    </div>
+  </div>
+
+  <div class="rapor-container">
+    <div class="kop-header">
+      <div class="kop-title">PT. ESTAFET DWI MASA</div>
+      <div class="kop-subtitle">SPBU 54.634.25 GONTOR MLARAK</div>
+      <div class="kop-address">
+        Kantor Pusat : Ds. Gontor, Kec. Mlarak, Kab. Ponorogo - Jawa Timur 63472<br>
+        Kantor Cabang : Jalan Mayjend Bambang Sugeng Km. 01 Sidojoyo Wonosobo<br>
+        Email: estafetdwimasa@gmail.com
+      </div>
+    </div>
+    
+    <div class="doc-title-box">
+      <div class="doc-title">LEMBAR EVALUASI PENILAIAN ATASAN</div>
+      <div class="doc-subtitle">PERIODE EVALUASI: ${fmtMonthYear(rating.date).toUpperCase()} | TANGGAL CETAK: ${formattedDate.toUpperCase()}</div>
+    </div>
+
+    <table class="info-table">
+      <tr>
+        <td class="label">Nama Karyawan</td>
+        <td><strong>${esc(empName)}</strong></td>
+        <td class="label">ID Karyawan</td>
+        <td><strong>${esc(rating.emp_id)}</strong></td>
+      </tr>
+      <tr>
+        <td class="label">Jabatan / Posisi</td>
+        <td>${esc(empPos)}</td>
+        <td class="label">Rata-Rata Rating</td>
+        <td><strong style="color:#1d4ed8; font-size:13px;">⭐ ${avg} / 5.0</strong></td>
+      </tr>
+    </table>
+
+    <h4 style="margin:12px 0 6px 0; color:#1e40af; font-size:12px; border-bottom:1.5px solid #cbd5e1; padding-bottom:3px;">A. PENILAIAN KRITERIA INDIKATOR</h4>
+    <table class="metric-table">
+      <thead>
         <tr>
-          <td style="border:1px solid #000;padding:4px;text-align:right;"><strong>Rata-Rata:</strong></td>
-          <td style="border:1px solid #000;padding:4px;text-align:center;font-size:0.9rem;"><strong>${avg}</strong></td>
+          <th style="border:1px solid #cbd5e1;padding:6px 8px;text-align:left;background:#1e40af;color:#fff;">Indikator / Sub-Indikator Kriteria</th>
+          <th style="border:1px solid #cbd5e1;padding:6px 8px;text-align:center;width:100px;background:#1e40af;color:#fff;">Skor (1-5)</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${criteriaRows}
+        <tr>
+          <td style="border:1px solid #cbd5e1;padding:6px 8px;text-align:right;"><strong>Rata-Rata Skor Kriteria:</strong></td>
+          <td style="border:1px solid #cbd5e1;padding:6px 8px;text-align:center;font-size:12px;font-weight:bold;color:#1d4ed8;">⭐ ${avg} / 5.0</td>
         </tr>
       </tbody>
     </table>
     
-    <div style="margin-top:10px;">
-      <strong>Catatan Evaluasi:</strong>
-      <p style="border:1px solid #000;padding:6px;min-height:30px;margin-top:2px;">${esc(rating.note || 'Tidak ada catatan.')}</p>
+    <div style="border:1px solid #cbd5e1; border-radius:6px; padding:8px 12px; background:#f8fafc; margin-bottom:14px;">
+      <div style="font-weight:bold; font-size:10.5px; color:#334155; margin-bottom:3px; text-transform:uppercase;">💬 CATATAN EVALUASI ATASAN:</div>
+      <div style="font-size:11px; color:#1e293b; font-style:italic;">${esc(rating.note || 'Tidak ada catatan khusus.')}</div>
     </div>
 
-    <h3 style="margin:10px 0 5px;border-bottom:1px dotted #999;font-size:0.9rem;">B. Rekap Izin/Cuti</h3>
-    <table style="width:100%;border-collapse:collapse;margin-bottom:5px;font-size:0.75rem;">
+    <h4 style="margin:12px 0 6px 0; color:#1e40af; font-size:12px; border-bottom:1.5px solid #cbd5e1; padding-bottom:3px;">B. REKAPITULASI IZIN / CUTI (PERIODE BERJALAN)</h4>
+    <table class="info-table" style="margin-bottom:8px;">
       <tr>
-        <td style="width:180px;"><strong>Izin Disetujui (Bulan Ini)</strong></td>
-        <td>: <strong>${totalIzinBulanIni} kali</strong></td>
+        <td class="label">Izin Disetujui (Bulan Ini)</td>
+        <td><strong>${totalIzinBulanIni} Kali</strong></td>
       </tr>
     </table>
     ${leaveQuotaRows ? `
-    <table style="width:100%;border-collapse:collapse;font-size:0.75rem;">
+    <table class="metric-table">
       <thead>
         <tr>
-          <th style="border:1px solid #000;padding:4px;text-align:left;background:#f0f0f0;">Jenis Cuti</th>
-          <th style="border:1px solid #000;padding:4px;text-align:center;background:#f0f0f0;">Jatah</th>
-          <th style="border:1px solid #000;padding:4px;text-align:center;background:#f0f0f0;">Terpakai</th>
-          <th style="border:1px solid #000;padding:4px;text-align:center;background:#f0f0f0;">Sisa</th>
+          <th style="border:1px solid #cbd5e1;padding:5px 8px;text-align:left;background:#334155;color:#fff;">Jenis Cuti</th>
+          <th style="border:1px solid #cbd5e1;padding:5px 8px;text-align:center;background:#334155;color:#fff;width:80px;">Jatah</th>
+          <th style="border:1px solid #cbd5e1;padding:5px 8px;text-align:center;background:#334155;color:#fff;width:80px;">Terpakai</th>
+          <th style="border:1px solid #cbd5e1;padding:5px 8px;text-align:center;background:#334155;color:#fff;width:80px;">Sisa</th>
         </tr>
       </thead>
       <tbody>${leaveQuotaRows}</tbody>
-    </table>` : '<p style="color:#666;font-style:italic;font-size:0.75rem;">Tidak ada jenis cuti terdaftar.</p>'}
+    </table>` : '<p style="color:#64748b;font-style:italic;font-size:11px;margin-bottom:10px;">Tidak ada jenis cuti terdaftar.</p>'}
 
-    <h3 style="margin:10px 0 5px;border-bottom:1px dotted #999;font-size:0.9rem;">C. Tunggakan</h3>
-    <table style="width:100%;border-collapse:collapse;font-size:0.75rem;">
+    <h4 style="margin:12px 0 6px 0; color:#1e40af; font-size:12px; border-bottom:1.5px solid #cbd5e1; padding-bottom:3px;">C. REKAPITULASI TUNGGAKAN / MINUS KASIR</h4>
+    <table class="info-table">
       <tr>
-        <td style="width:150px;"><strong>Total Tunggakan</strong></td>
-        <td>: <strong style="color:${balance > 0 ? 'red' : '#065F46'}">${fmt(balance)}</strong></td>
+        <td class="label">Total Balance Tunggakan</td>
+        <td><strong style="color:${balance > 0 ? '#dc2626' : '#166534'};">Rp ${fmt(balance)} ${balance === 0 ? '(Clean)' : ''}</strong></td>
       </tr>
     </table>
 
-    <table style="width:100%;margin-top:20px;text-align:center;font-size:0.8rem;">
-      <tr>
-        <td style="width:50%;">
-          <p>Karyawan,</p>
-          <br><br><br>
-          <p><strong>(${esc(empName)})</strong></p>
-        </td>
-        <td style="width:50%;">
-          <p>Manajemen,</p>
-          <br><br><br>
-          <p><strong>(...............................)</strong></p>
-        </td>
-      </tr>
-    </table>
+    <div class="signature-area">
+      <div class="sig-box">
+        <div>Penerima Evaluasi (Karyawan),</div>
+        <div class="sig-space"></div>
+        <div><strong>( ${esc(empName)} )</strong></div>
+        <div style="font-size:9.5px; color:#64748b;">ID: ${esc(rating.emp_id)}</div>
+      </div>
+      <div class="sig-box">
+        <div>Gontor, ${formattedDate}<br><strong>Manager SPBU Gontor Mlarak</strong>,</div>
+        <div class="sig-space"></div>
+        <div><strong>( ______________________ )</strong></div>
+        <div style="font-size:9.5px; color:#64748b;">PT. ESTAFET DWI MASA</div>
+      </div>
     </div>
-  `;
-  return html;
+  </div>
+</body>
+</html>`;
 };
 
 window._exportSingleRatingPDF = (key) => {
   const html = _generateRatingPDFHtml(key);
   if (!html) return;
-  const printArea = document.getElementById('print-area');
-  if (printArea) {
-    printArea.innerHTML = html;
-    window.print();
-    setTimeout(() => { printArea.innerHTML = ''; }, 1000);
+  const win = window.open('', '_blank');
+  if (win) {
+    win.document.write(html);
+    win.document.close();
   } else {
-    showToast('Elemen print-area tidak ditemukan', 'error');
+    showToast('Izinkan pop-up di browser untuk mencetak PDF Evaluasi.', 'error');
   }
 };
 
