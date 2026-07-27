@@ -3176,7 +3176,7 @@ window._generateRatingPDFHtml = (key) => {
         margin: [6, 10, 6, 10],
         filename: 'Evaluasi_Penilaian_' + safeName + '.pdf',
         image: { type: 'jpeg', quality: 1.0 },
-        html2canvas: { scale: 3, useCORS: true, logging: false, dpi: 300, letterRendering: true },
+        html2canvas: { scale: 4, useCORS: true, logging: false, dpi: 400, letterRendering: true, windowWidth: 1200 },
         jsPDF: { unit: 'mm', format: paperSize === 'F4' ? [215, 330] : 'a4', orientation: 'portrait' }
       };
 
@@ -4156,7 +4156,7 @@ window._printEmployeeKpiPDF = (empId) => {
         margin: [4, 6, 4, 6],
         filename: 'Rapor_Kinerja_' + safeName + '_' + safePeriod + '.pdf',
         image: { type: 'jpeg', quality: 1.0 },
-        html2canvas: { scale: 3, useCORS: true, logging: false, dpi: 300, letterRendering: true },
+        html2canvas: { scale: 4, useCORS: true, logging: false, dpi: 400, letterRendering: true, windowWidth: 1200 },
         jsPDF: { unit: 'mm', format: paperSize === 'F4' ? [215, 330] : 'a4', orientation: 'portrait' }
       };
 
