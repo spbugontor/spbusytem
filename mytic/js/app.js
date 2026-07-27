@@ -4778,21 +4778,21 @@ function renderInternalPayrollTab() {
           <span>PW Bulatan:</span>
           <input type="number" value="${pwAmount}" style="width:95px; padding:0.2rem 0.4rem; font-size:0.75rem;" onchange="window._saveInternalPayrollItem('${empId}', 'pw_amount', Number(this.value))">
         </div>
-        <div class="text-xs text-muted" style="margin-top:0.25rem;">Est. Hitung: Rp ${fmt(isSpvAdmin ? rawPwSpvAdmin : rawPwOprCs)}</div>
+        <div class="text-xs text-muted" style="margin-top:0.25rem;">Est. Hitung: ${fmt(isSpvAdmin ? rawPwSpvAdmin : rawPwOprCs)}</div>
       </td>
       <td style="font-size:0.8rem;">
         <div style="display:flex; align-items:center; gap:0.4rem;">
           <input type="number" value="${otShifts}" style="width:55px; padding:0.2rem 0.4rem; font-size:0.75rem;" min="0" onchange="window._saveInternalPayrollItem('${empId}', 'overtime_shifts', Number(this.value))">
           <span>Shift</span>
         </div>
-        <strong style="color:var(--primary); font-size:0.8rem;">Rp ${fmt(otAmt)}</strong>
+        <strong style="color:var(--primary); font-size:0.8rem;">${fmt(otAmt)}</strong>
       </td>
       <td style="font-size:0.8rem;">
         <input type="number" value="${tabunganAmt}" style="width:85px; padding:0.2rem 0.4rem; font-size:0.75rem;" onchange="window._saveInternalPayrollItem('${empId}', 'savings_deduction', Number(this.value))">
       </td>
       <td style="text-align:right;">
-        <div style="font-size:0.75rem; color:var(--text-muted);">Kotor: Rp ${fmt(gajiKotor)}</div>
-        <strong style="font-size:0.95rem; color:#16a34a;">Rp ${fmt(gajiBersih)}</strong>
+        <div style="font-size:0.75rem; color:var(--text-muted);">Kotor: ${fmt(gajiKotor)}</div>
+        <strong style="font-size:0.95rem; color:#16a34a;">${fmt(gajiBersih)}</strong>
       </td>
     </tr>`;
   }).join('');
@@ -4810,7 +4810,7 @@ function renderInternalPayrollTab() {
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.85rem; flex-wrap:wrap; gap:0.5rem;">
         <div style="font-size:0.8rem; font-weight:700; color:var(--text-main);">
-          Total PW Internal: <span style="color:var(--primary); font-size:0.95rem;">Rp ${fmt(pwInt.total)}</span> (SPV+Admin 20%: Rp ${fmt(pwInt.total * 0.2)} | OPR+CS 80%: Rp ${fmt(pwInt.total * 0.8)})
+          Total PW Internal: <span style="color:var(--primary); font-size:0.95rem;">${fmt(pwInt.total)}</span> (SPV+Admin 20%: ${fmt(pwInt.total * 0.2)} | OPR+CS 80%: ${fmt(pwInt.total * 0.8)})
         </div>
         <button class="btn btn-primary" style="padding:0.4rem 0.9rem; font-size:0.8rem;" onclick="window._saveBbmSales()">Simpan Penjualan BBM</button>
       </div>
@@ -4848,8 +4848,8 @@ function renderInternalPayrollTab() {
       </table>
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem; padding-top:0.75rem; border-top:2px solid var(--border); font-weight:bold; font-size:0.9rem;">
-        <div>Total Pengeluaran Gaji Internal: <span style="color:#16a34a; font-size:1.1rem;">Rp ${fmt(totalGajiBersihAll)}</span></div>
-        <div style="font-size:0.8rem; color:var(--text-muted);">Total Tabungan: Rp ${fmt(totalTabunganAll)} | Total Lembur: Rp ${fmt(totalLemburAll)}</div>
+        <div>Total Pengeluaran Gaji Internal: <span style="color:#16a34a; font-size:1.1rem;">${fmt(totalGajiBersihAll)}</span></div>
+        <div style="font-size:0.8rem; color:var(--text-muted);">Total Tabungan: ${fmt(totalTabunganAll)} | Total Lembur: ${fmt(totalLemburAll)}</div>
       </div>
     </div>
   </div>`;
