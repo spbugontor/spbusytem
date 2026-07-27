@@ -3689,7 +3689,7 @@ function renderLeaderboardPage() {
     const kpi = calculateEmployeeKpi(u, period);
     let targetValue = kpi.compositeScore;
     if (selectedMetric === 'attendance') targetValue = kpi.attendanceRate;
-    else if (selectedMetric === 'sop') targetValue = kpi.isOperator ? (kpi.sopRate || 0) : kpi.compositeScore;
+    else if (selectedMetric === 'sop') targetValue = kpi.isOperator ? (kpi.sopRate || 0) : 0;
     else if (selectedMetric === 'rating') targetValue = kpi.ratingScore;
 
     return {
@@ -3796,10 +3796,13 @@ function renderLeaderboardPage() {
 
               const avatarSrc = u.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || u.emp_id)}&background=random`;
 
+              const displayScore = (selectedMetric === 'sop' && !kpi.isOperator) ? 'N/A' : score;
+              const isNA = displayScore === 'N/A';
+
               return `
-                <tr style="${rank <= 3 ? 'background:var(--surface-hover);' : ''}">
+                <tr style="${rank <= 3 && !isNA ? 'background:var(--surface-hover);' : ''}">
                   <td style="text-align:center;">
-                    <span class="rank-badge ${rankBadgeClass}">${rankLabel}</span>
+                    <span class="rank-badge ${isNA ? 'rank-badge-other' : rankBadgeClass}">${isNA ? `#${rank}` : rankLabel}</span>
                   </td>
                   <td>
                     <div style="display:flex; align-items:center; gap:0.75rem;">
@@ -3821,11 +3824,11 @@ function renderLeaderboardPage() {
                       ${kpi.violationCount > 0 ? `<span class="kpi-pill" style="color:var(--danger); border-color:var(--danger-bg);" title="Jumlah Pelanggaran Active">⚠️ ${kpi.violationCount} SP</span>` : `<span class="kpi-pill" style="color:var(--success);" title="Bebas Pelanggaran">🛡️ Clean</span>`}
                     </div>
                     <div class="kpi-bar-bg">
-                      <div class="kpi-bar-fill" style="width:${Math.min(100, Math.max(5, score))}%; background:${barColor};"></div>
+                      <div class="kpi-bar-fill" style="width:${isNA ? 0 : Math.min(100, Math.max(5, score))}%; background:${isNA ? 'var(--border)' : barColor};"></div>
                     </div>
                   </td>
                   <td style="text-align:right;">
-                    <span class="kpi-score-badge ${scoreClass}">${score}</span>
+                    <span class="kpi-score-badge ${isNA ? 'kpi-score-low' : scoreClass}" style="${isNA ? 'opacity:0.55;' : ''}">${displayScore}</span>
                   </td>
                 </tr>
               `;
