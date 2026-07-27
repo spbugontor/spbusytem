@@ -4568,11 +4568,11 @@ function getBbmSalesData(month) {
   const m = p[month] || {};
   const b = m.bbm_sales || {};
   return {
-    pertalite: Number(b.pertalite !== undefined ? b.pertalite : 337244.21),
+    pertalite: Number(b.pertalite !== undefined ? b.pertalite : 0),
     solar: Number(b.solar !== undefined ? b.solar : 0),
-    turbo: Number(b.turbo !== undefined ? b.turbo : 4286.60),
-    px92: Number(b.px92 !== undefined ? b.px92 : 92039.21),
-    dex: Number(b.dex !== undefined ? b.dex : 3945.54)
+    turbo: Number(b.turbo !== undefined ? b.turbo : 0),
+    px92: Number(b.px92 !== undefined ? b.px92 : 0),
+    dex: Number(b.dex !== undefined ? b.dex : 0)
   };
 }
 
@@ -4637,6 +4637,20 @@ window._saveBbmSales = async () => {
 
   await set(ref(db, `payroll/${month}/bbm_sales`), bbm);
   showToast('Data Penjualan Liter BBM berhasil disimpan!', 'success');
+};
+
+window._resetPayrollMonthData = async () => {
+  const month = window._payrollMonth || getTodayStr().substring(0, 7);
+  if (!confirm(`Apakah Anda yakin ingin BERSIHKAN / RESET semua data gaji & BBM untuk bulan ${month}? Data akan kembali ke nilai bersih awal.`)) return;
+
+  if (allData.payroll && allData.payroll[month]) {
+    delete allData.payroll[month];
+  }
+
+  renderCurrentSection();
+
+  await remove(ref(db, `payroll/${month}`));
+  showToast(`Data penggajian bulan ${month} berhasil dibersihkan!`, 'success');
 };
 
 window._savePayrollSettings = async () => {
@@ -5111,7 +5125,10 @@ function renderInternalPayrollTab() {
         <div style="font-size:0.8rem; font-weight:700; color:var(--text-main);">
           Total PW Internal: <span style="color:var(--primary); font-size:0.95rem;">${fmt(pwInt.total)}</span> (SPV+Admin 20%: ${fmt(pwInt.total * 0.2)} | OPR+CS 80%: ${fmt(pwInt.total * 0.8)})
         </div>
-        <button class="btn btn-primary" style="padding:0.4rem 0.9rem; font-size:0.8rem;" onclick="window._saveBbmSales()">Simpan Penjualan BBM</button>
+        <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+          <button class="btn btn-outline-danger" style="padding:0.4rem 0.9rem; font-size:0.8rem;" onclick="window._resetPayrollMonthData()">🗑️ Bersihkan Data Bulan Ini</button>
+          <button class="btn btn-primary" style="padding:0.4rem 0.9rem; font-size:0.8rem;" onclick="window._saveBbmSales()">Simpan Penjualan BBM</button>
+        </div>
       </div>
     </div>
 
