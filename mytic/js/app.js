@@ -3085,7 +3085,8 @@ window._generateRatingPDFHtml = (key) => {
       </select>
     </div>
     <div>
-      <button class="btn-print" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+      <button id="btn-dl-rating-pdf" style="background:#16a34a; color:#fff; font-weight:bold; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; font-size:11px;" onclick="downloadRatingPdfDirect()">📥 Simpan File PDF</button>
+      <button class="btn-print" onclick="window.print()">🖨️ Cetak / Print</button>
       <button class="btn-close" onclick="window.close()">✕ Tutup</button>
     </div>
   </div>
@@ -3158,6 +3159,38 @@ window._generateRatingPDFHtml = (key) => {
       </div>
     </div>
   </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    function downloadRatingPdfDirect() {
+      const btn = document.getElementById('btn-dl-rating-pdf');
+      const oldText = btn.innerHTML;
+      btn.innerHTML = '⏳ Mengunduh...';
+      btn.disabled = true;
+
+      const element = document.querySelector('.rapor-container');
+      const paperSize = document.getElementById('paper-size-select').value;
+      const safeName = '${esc(empName).replace(/[^a-zA-Z0-9]/g, '_')}';
+
+      const opt = {
+        margin: [6, 10, 6, 10],
+        filename: 'Evaluasi_Penilaian_' + safeName + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: paperSize === 'F4' ? [215, 330] : 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save().then(() => {
+        btn.innerHTML = oldText;
+        btn.disabled = false;
+      }).catch(err => {
+        console.error(err);
+        btn.innerHTML = oldText;
+        btn.disabled = false;
+        alert('Tanda peringatan: Jika unduh otomatis terhalang, silakan gunakan tombol Cetak / Print lalu pilih Tujuan: Simpan sebagai PDF.');
+      });
+    }
+  </script>
 </body>
 </html>`;
 };
@@ -3954,7 +3987,8 @@ window._printEmployeeKpiPDF = (empId) => {
       </select>
     </div>
     <div>
-      <button class="btn-print" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+      <button id="btn-dl-pdf" style="background:#16a34a; color:#fff; font-weight:bold; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; font-size:11px;" onclick="downloadPdfDirect()">📥 Simpan File PDF</button>
+      <button class="btn-print" onclick="window.print()">🖨️ Cetak / Print</button>
       <button class="btn-close" onclick="window.close()">✕ Tutup</button>
     </div>
   </div>
@@ -4111,6 +4145,39 @@ window._printEmployeeKpiPDF = (empId) => {
     </div>
   </div>
   </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    function downloadPdfDirect() {
+      const btn = document.getElementById('btn-dl-pdf');
+      const oldText = btn.innerHTML;
+      btn.innerHTML = '⏳ Mengunduh...';
+      btn.disabled = true;
+
+      const element = document.querySelector('.rapor-container');
+      const paperSize = document.getElementById('paper-size-select').value;
+      const safeName = '${esc(u.name).replace(/[^a-zA-Z0-9]/g, '_')}';
+      const safePeriod = '${periodTitle.replace(/[^a-zA-Z0-9]/g, '_')}';
+
+      const opt = {
+        margin: [4, 6, 4, 6],
+        filename: 'Rapor_Kinerja_' + safeName + '_' + safePeriod + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: paperSize === 'F4' ? [215, 330] : 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save().then(() => {
+        btn.innerHTML = oldText;
+        btn.disabled = false;
+      }).catch(err => {
+        console.error(err);
+        btn.innerHTML = oldText;
+        btn.disabled = false;
+        alert('Tanda peringatan: Jika unduh otomatis terhalang, silakan gunakan tombol Cetak / Print lalu pilih Tujuan: Simpan sebagai PDF.');
+      });
+    }
+  </script>
 </body>
 </html>`;
 
