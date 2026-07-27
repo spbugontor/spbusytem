@@ -97,8 +97,16 @@ document.addEventListener('DOMContentLoaded', () => {
 // UTILITIES
 // ==========================================
 function esc(s) { if (!s) return ''; return String(s).replace(/[&<>"']/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[t])); }
-function fmt(n, dec = 2) { const num = Number(n) || 0; return 'Rp ' + num.toLocaleString('id-ID', { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
-function fmtNum(n, dec = 2) { const num = Number(n) || 0; return num.toLocaleString('id-ID', { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
+function fmt(n) {
+  const num = Number(n) || 0;
+  const hasDec = Math.abs(num % 1) > 0.001;
+  return 'Rp ' + num.toLocaleString('id-ID', { minimumFractionDigits: hasDec ? 2 : 0, maximumFractionDigits: 2 });
+}
+function fmtNum(n) {
+  const num = Number(n) || 0;
+  const hasDec = Math.abs(num % 1) > 0.001;
+  return num.toLocaleString('id-ID', { minimumFractionDigits: hasDec ? 2 : 0, maximumFractionDigits: 2 });
+}
 function fmtDate(d) { if (!d) return '-'; try { return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }); } catch { return d; } }
 function fmtMonthYear(d) { if (!d) return '-'; try { const [y, m] = d.split('-'); const date = new Date(y, parseInt(m) - 1, 1); return date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }); } catch { return d; } }
 function today() { return new Date().toISOString().split('T')[0]; }
@@ -5268,10 +5276,10 @@ function renderAuditPayrollTab() {
       <td style="text-align:center; font-weight:bold;">${idx + 1}</td>
       <td><strong>${esc(u.name)}</strong></td>
       <td><span class="badge" style="background:var(--bg-color); color:var(--text-main); font-size:0.75rem;">${esc(pos)}</span></td>
-      <td style="text-align:right;">Rp ${fmt(gajiPokok)}</td>
-      <td style="text-align:right; color:var(--primary); font-weight:bold;">Rp ${fmt(pwVal)}</td>
-      <td style="text-align:right; color:var(--danger);">Rp ${fmt(bpjsVal)}</td>
-      <td style="text-align:right; font-weight:bold; color:#16a34a;">Rp ${fmt(thpVal)}</td>
+      <td style="text-align:right;">${fmt(gajiPokok)}</td>
+      <td style="text-align:right; color:var(--primary); font-weight:bold;">${fmt(pwVal)}</td>
+      <td style="text-align:right; color:var(--danger);">${fmt(bpjsVal)}</td>
+      <td style="text-align:right; font-weight:bold; color:#16a34a;">${fmt(thpVal)}</td>
     </tr>`;
   }).join('');
 
@@ -5289,9 +5297,9 @@ function renderAuditPayrollTab() {
       </div>
 
       <div style="background:var(--surface); border:1px solid var(--border); padding:0.75rem; border-radius:var(--radius-md); margin-bottom:1rem; font-size:0.8rem;">
-        <strong>Omset Penjualan Liter BBM (Audit):</strong> Total PW Audit = <strong style="color:var(--primary);">Rp ${fmt(pwAudit.total)}</strong><br>
-        • Manager & Admin (20%): Rp ${fmt(pwAudit.total * 0.2)} (Per @ Rp ${fmt(pwMgrAdminEach)})<br>
-        • SPV, Operator, & CS (80%): Rp ${fmt(pwAudit.total * 0.8)} (Per @ Rp ${fmt(pwStaffEach)})
+        <strong>Omset Penjualan Liter BBM (Audit):</strong> Total PW Audit = <strong style="color:var(--primary);">${fmt(pwAudit.total)}</strong><br>
+        • Manager & Admin (20%): ${fmt(pwAudit.total * 0.2)} (Per @ ${fmt(pwMgrAdminEach)})<br>
+        • SPV, Operator, & CS (80%): ${fmt(pwAudit.total * 0.8)} (Per @ ${fmt(pwStaffEach)})
       </div>
 
       <div style="overflow-x:auto;">
@@ -5311,10 +5319,10 @@ function renderAuditPayrollTab() {
           <tfoot>
             <tr style="font-weight:bold; background:var(--surface);">
               <td colspan="3" style="text-align:right;">TOTAL:</td>
-              <td style="text-align:right;">Rp ${fmt(totalGajiPokokAll)}</td>
-              <td style="text-align:right; color:var(--primary);">Rp ${fmt(totalPwAll)}</td>
-              <td style="text-align:right; color:var(--danger);">Rp ${fmt(totalBpjsAll)}</td>
-              <td style="text-align:right; color:#16a34a; font-size:0.95rem;">Rp ${fmt(totalThpAll)}</td>
+              <td style="text-align:right;">${fmt(totalGajiPokokAll)}</td>
+              <td style="text-align:right; color:var(--primary);">${fmt(totalPwAll)}</td>
+              <td style="text-align:right; color:var(--danger);">${fmt(totalBpjsAll)}</td>
+              <td style="text-align:right; color:#16a34a; font-size:0.95rem;">${fmt(totalThpAll)}</td>
             </tr>
           </tfoot>
         </table>
