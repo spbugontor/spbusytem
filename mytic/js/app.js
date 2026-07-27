@@ -4506,6 +4506,45 @@ window._setPayrollPrintDate = (dateVal) => {
   if (dateVal) window._payrollPrintDate = dateVal;
 };
 
+function renderPayrollPage() {
+  if (!isManagerUser() && currentUser.role !== 'admin') {
+    return '<div class="card p-6 text-center text-muted">Akses Khusus Panel Manajemen.</div>';
+  }
+
+  const tab = window._payrollActiveTab || 'internal';
+  const month = window._payrollMonth || getTodayStr().substring(0, 7);
+
+  return `<div class="fade-in">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem;">
+      <div>
+        <h3 style="font-size:1.3rem; font-weight:800; color:var(--text-main); margin:0;">💵 Sistem Gaji & Payroll SPBU Gontor</h3>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;">Pengelolaan Penggajian Mode Internal, Mode Audit, & Pengaturan Master</p>
+      </div>
+      <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+        <label style="font-size:0.8rem; font-weight:700; color:var(--text-main);">Periode Penggajian:</label>
+        <input type="month" value="${month}" class="form-input" style="padding:0.4rem 0.6rem; font-size:0.85rem; width:150px;" onchange="window._setPayrollMonth(this.value)">
+      </div>
+    </div>
+
+    <!-- TABS NAV -->
+    <div style="display:flex; gap:0.5rem; border-bottom:2px solid var(--border); margin-bottom:1.5rem; flex-wrap:wrap;">
+      <button class="btn ${tab === 'internal' ? 'btn-primary' : 'btn-secondary'}" style="border-radius:var(--radius-md) var(--radius-md) 0 0; font-weight:700; padding:0.5rem 1.1rem;" onclick="window._setPayrollTab('internal')">
+        🏠 Gaji Internal (Asli)
+      </button>
+      <button class="btn ${tab === 'audit' ? 'btn-primary' : 'btn-secondary'}" style="border-radius:var(--radius-md) var(--radius-md) 0 0; font-weight:700; padding:0.5rem 1.1rem;" onclick="window._setPayrollTab('audit')">
+        📋 Gaji Audit (Pertamina)
+      </button>
+      <button class="btn ${tab === 'settings' ? 'btn-primary' : 'btn-secondary'}" style="border-radius:var(--radius-md) var(--radius-md) 0 0; font-weight:700; padding:0.5rem 1.1rem;" onclick="window._setPayrollTab('settings')">
+        ⚙️ Pengaturan Master & TTD
+      </button>
+    </div>
+
+    <div id="payroll-tab-content">
+      ${tab === 'internal' ? renderInternalPayrollTab() : tab === 'audit' ? renderAuditPayrollTab() : renderPayrollSettingsTab()}
+    </div>
+  </div>`;
+}
+
 function getPayrollSettings() {
   const s = allData.payroll_settings || {};
   return {
