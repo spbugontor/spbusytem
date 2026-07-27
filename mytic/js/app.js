@@ -4687,6 +4687,43 @@ function getNextMonthStr(monthStr) {
   return `${y}-${m.toString().padStart(2, '0')}`;
 }
 
+function getEmployeeSavingsForSpecificMonth(empId, monthIdx, year) {
+  const indonesianMonths = [
+    'januari', 'februari', 'maret', 'april', 'mei', 'juni',
+    'juli', 'agustus', 'september', 'oktober', 'november', 'desember'
+  ];
+  const englishMonths = [
+    'january', 'february', 'march', 'april', 'may', 'june',
+    'july', 'august', 'september', 'october', 'november', 'december'
+  ];
+  const shortMonths = [
+    'jan', 'feb', 'mar', 'apr', 'may', 'jun',
+    'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
+  ];
+
+  const targetIndo = indonesianMonths[monthIdx];
+  const targetEng = englishMonths[monthIdx];
+  const targetShort = shortMonths[monthIdx];
+  const monthIso = `${year}-${(monthIdx + 1).toString().padStart(2, '0')}`;
+
+  const list = Object.values(allData.savings || {}).filter(s => {
+    if (!s || !s.emp_id || s.emp_id !== empId) return false;
+
+    if (s.month) {
+      const smLower = s.month.toLowerCase();
+      const hasMonth = smLower.includes(targetIndo) || smLower.includes(targetEng) || smLower.includes(targetShort);
+      const hasYear = s.month.includes(year.toString());
+      if (hasMonth && (hasYear || !s.month.match(/\d{4}/))) return true;
+    }
+
+    if (s.date && s.date.startsWith(monthIso)) return true;
+
+    return false;
+  });
+
+  return list.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+}
+
 function getEmployeeSavingsForMonth(empId, monthStr) {
   const savings = Object.values(allData.savings || {}).filter(s => {
     if (!s || !s.emp_id || s.emp_id !== empId) return false;
@@ -6136,7 +6173,10 @@ window._printSavingsSummary = () => {
     const monthCells = monthsList.map((m, mIdx) => {
       const monthKey = `${currentYear}-${(mIdx + 1).toString().padStart(2, '0')}`;
       const mData = (allData.payroll && allData.payroll[monthKey] && allData.payroll[monthKey].internal_data && allData.payroll[monthKey].internal_data[u.emp_id]) || {};
-      const amt = Number(mData.savings_deduction || 0);
+
+      const menuSavings = getEmployeeSavingsForSpecificMonth(u.emp_id, mIdx, currentYear);
+      const payrollSavings = Number(mData.savings_deduction || 0);
+      const amt = menuSavings > 0 ? menuSavings : payrollSavings;
 
       if (amt > 0) empTotal += amt;
       return `<td style="text-align:right;">${amt > 0 ? fmt(amt) : 'Rp -'}</td>`;
