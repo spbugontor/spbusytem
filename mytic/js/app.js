@@ -3473,6 +3473,12 @@ window._triggerPwaInstall = () => {
     if (choiceResult.outcome === 'accepted') {
       showToast('Aplikasi MyTIC berhasil dipasang!', 'success');
     }
+    deferredPrompt = null;
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) banner.remove();
+  });
+};
+
 // ==========================================
 // LEADERBOARD & KPI ENGINE (EXCLUSIVELY FOR MANAGER)
 // ==========================================
