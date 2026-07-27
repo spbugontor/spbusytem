@@ -2826,10 +2826,28 @@ window._showSavingForm = (empId) => {
 };
 window._saveSaving = async (empId) => {
   const amt = parseFloat($('sf-amt').value) || 0;
+  const dateVal = $('sf-date').value || today();
   if (amt <= 0) { showToast('Jumlah harus > 0', 'error'); return; }
-  await set(push(ref(db, 'savings')), { emp_id: empId, amount: amt, month: $('sf-month').value.trim(), date: $('sf-date').value, timestamp: Date.now() });
-  showToast('Tabungan disimpan!', 'success');
+
+  const mStr = $('sf-month').value.trim();
+  const payrollMonth = dateVal.substring(0, 7);
+
+  await set(push(ref(db, 'savings')), { emp_id: empId, amount: amt, month: mStr, date: dateVal, timestamp: Date.now() });
+
+  allData.payroll = allData.payroll || {};
+  allData.payroll[payrollMonth] = allData.payroll[payrollMonth] || {};
+  allData.payroll[payrollMonth].internal_data = allData.payroll[payrollMonth].internal_data || {};
+  allData.payroll[payrollMonth].internal_data[empId] = allData.payroll[payrollMonth].internal_data[empId] || {};
+
+  const currentSavings = Number(allData.payroll[payrollMonth].internal_data[empId].savings_deduction || 0);
+  const newSavings = currentSavings + amt;
+  allData.payroll[payrollMonth].internal_data[empId].savings_deduction = newSavings;
+
+  await set(ref(db, `payroll/${payrollMonth}/internal_data/${empId}/savings_deduction`), newSavings);
+
+  showToast('Tabungan disimpan & otomatis terisi ke Gaji Payroll!', 'success');
   $('sav-form-' + empId).innerHTML = '';
+  renderCurrentSection();
 };
 
 window._showMassSavingForm = () => {
@@ -2863,20 +2881,37 @@ window._showMassSavingForm = () => {
 window._saveMassSaving = async () => {
   const amt = parseFloat($('msf-amt').value) || 0;
   const month = $('msf-month').value.trim();
-  const date = $('msf-date').value;
+  const dateVal = $('msf-date').value || today();
   const cbs = document.querySelectorAll('.msf-emp-cb:checked');
 
   if (amt <= 0) { showToast('Jumlah harus > 0', 'error'); return; }
-  if (!month || !date) { showToast('Bulan dan tanggal wajib diisi!', 'error'); return; }
+  if (!month || !dateVal) { showToast('Bulan dan tanggal wajib diisi!', 'error'); return; }
   if (cbs.length === 0) { showToast('Pilih minimal 1 karyawan!', 'error'); return; }
+
+  const payrollMonth = dateVal.substring(0, 7);
+  allData.payroll = allData.payroll || {};
+  allData.payroll[payrollMonth] = allData.payroll[payrollMonth] || {};
+  allData.payroll[payrollMonth].internal_data = allData.payroll[payrollMonth].internal_data || {};
+
+  const dbUpdates = {};
 
   for (const cb of cbs) {
     const empId = cb.value;
-    await set(push(ref(db, 'savings')), { emp_id: empId, amount: amt, month, date, timestamp: Date.now() });
+    const newRefKey = push(ref(db, 'savings')).key;
+    dbUpdates[`savings/${newRefKey}`] = { emp_id: empId, amount: amt, month, date: dateVal, timestamp: Date.now() };
+
+    allData.payroll[payrollMonth].internal_data[empId] = allData.payroll[payrollMonth].internal_data[empId] || {};
+    const currentSavings = Number(allData.payroll[payrollMonth].internal_data[empId].savings_deduction || 0);
+    const newSavings = currentSavings + amt;
+    allData.payroll[payrollMonth].internal_data[empId].savings_deduction = newSavings;
+
+    dbUpdates[`payroll/${payrollMonth}/internal_data/${empId}/savings_deduction`] = newSavings;
   }
 
-  showToast(cbs.length + ' tabungan berhasil disimpan!', 'success');
+  showToast(cbs.length + ' tabungan berhasil disimpan & otomatis terisi ke Gaji Payroll!', 'success');
   $('mass-sav-form-area').innerHTML = '';
+  renderCurrentSection();
+  await update(ref(db), dbUpdates);
 };
 window._deleteSaving = async (key) => { if (confirm('Hapus?')) { await remove(ref(db, 'savings/' + key)); showToast('Dihapus!', 'success'); } };
 
@@ -4589,6 +4624,15 @@ function getBbmSalesData(month) {
   };
 }
 
+function getEmployeeSavingsForMonth(empId, monthStr) {
+  const savings = Object.values(allData.savings || {}).filter(s => {
+    if (!s || !s.emp_id || s.emp_id !== empId) return false;
+    const sDate = s.date || '';
+    return sDate.startsWith(monthStr);
+  });
+  return savings.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+}
+
 function computePwInternal(bbm) {
   const pwPertalite = bbm.pertalite * 2;
   const pwSolar = bbm.solar * 2;
@@ -5109,8 +5153,8 @@ function renderInternalPayrollTab() {
                           (pwEnabled ? pwAmount : 0) +
                           otAmt + customTunjSum;
 
-    const gajiKotor = gajiPokok + totalTambahan;
-    const tabunganAmt = Number(empData.savings_deduction !== undefined ? empData.savings_deduction : 0);
+    const savedSavingsFromMenu = getEmployeeSavingsForMonth(empId, month);
+    const tabunganAmt = Number(empData.savings_deduction !== undefined ? empData.savings_deduction : savedSavingsFromMenu);
     const gajiBersih = gajiKotor - tabunganAmt;
 
     totalGajiKotorAll += gajiKotor;
