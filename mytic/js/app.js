@@ -924,13 +924,21 @@ function initAdminDashboardCharts() {
   if (typeof Chart === 'undefined') return;
   const colors = getChartColors();
 
-  // 1. Attendance Trend (Last 14 days)
+  // 1. Attendance Trend (Last 14 days with Sakit / Izin / Cuti / Libur / Lainnya breakdown)
   const attCanvas = document.getElementById('chart-admin-attendance');
   if (attCanvas) {
     destroyChart('admin-attendance');
     const days = [];
     const onTimeData = [];
     const lateData = [];
+    const sakitData = [];
+    const izinData = [];
+    const cutiData = [];
+    const liburData = [];
+    const otherData = [];
+
+    const allLeaves = Object.values(allData.leaves || {}).filter(l => l.status === 'Disetujui');
+    const allAbsensi = Object.values(allData.absensi_records || {});
 
     for (let i = 13; i >= 0; i--) {
       const d = new Date();
@@ -938,15 +946,46 @@ function initAdminDashboardCharts() {
       const dateStr = d.toISOString().split('T')[0];
       days.push(d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
 
-      const recs = Object.values(allData.absensi_records || {}).filter(r => r.date === dateStr);
-      let onTime = 0, late = 0;
+      const recs = allAbsensi.filter(r => r.date === dateStr);
+      let onTime = 0, late = 0, sakit = 0, izin = 0, cuti = 0, libur = 0, other = 0;
+
       recs.forEach(r => {
-        if (r.clock_in && r.clock_in !== '-') {
-          if ((r.late_minutes || 0) > 0) late++; else onTime++;
+        const st = (r.status || r.type || '').toString().toLowerCase();
+        if (r.clock_in && r.clock_in !== '-' && !['sakit', 'izin', 'cuti', 'libur', 'off'].includes(st)) {
+          if ((r.late_minutes || 0) > 0 || st === 'terlambat') late++;
+          else onTime++;
+        } else if (st === 'sakit') {
+          sakit++;
+        } else if (st === 'izin') {
+          izin++;
+        } else if (st === 'cuti') {
+          cuti++;
+        } else if (st === 'libur' || st === 'off') {
+          libur++;
+        } else if (st && st !== 'hadir') {
+          other++;
         }
       });
+
+      // Count approved leaves active on dateStr
+      allLeaves.forEach(l => {
+        if (l.start_date && l.end_date && dateStr >= l.start_date && dateStr <= l.end_date) {
+          const lType = (l.leave_type || '').toString().toLowerCase();
+          if (lType.includes('sakit')) sakit++;
+          else if (lType.includes('izin')) izin++;
+          else if (lType.includes('cuti')) cuti++;
+          else if (lType.includes('libur') || lType.includes('off')) libur++;
+          else other++;
+        }
+      });
+
       onTimeData.push(onTime);
       lateData.push(late);
+      sakitData.push(sakit);
+      izinData.push(izin);
+      cutiData.push(cuti);
+      liburData.push(libur);
+      otherData.push(other);
     }
 
     window._myTicCharts['admin-attendance'] = new Chart(attCanvas, {
@@ -954,14 +993,27 @@ function initAdminDashboardCharts() {
       data: {
         labels: days,
         datasets: [
-          { label: 'Tepat Waktu', data: onTimeData, borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.3 },
-          { label: 'Terlambat', data: lateData, borderColor: '#EF4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.3 }
+          { label: 'Tepat Waktu', data: onTimeData, borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.1)', fill: false, tension: 0.3 },
+          { label: 'Terlambat', data: lateData, borderColor: '#EF4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: false, tension: 0.3 },
+          { label: 'Sakit', data: sakitData, borderColor: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.1)', fill: false, tension: 0.3 },
+          { label: 'Izin', data: izinData, borderColor: '#3B82F6', backgroundColor: 'rgba(59,130,246,0.1)', fill: false, tension: 0.3 },
+          { label: 'Cuti', data: cutiData, borderColor: '#8B5CF6', backgroundColor: 'rgba(139,92,246,0.1)', fill: false, tension: 0.3 },
+          { label: 'Libur', data: liburData, borderColor: '#6366F1', backgroundColor: 'rgba(99,102,241,0.1)', fill: false, tension: 0.3 },
+          { label: 'Lainnya', data: otherData, borderColor: '#EC4899', backgroundColor: 'rgba(236,72,153,0.1)', fill: false, tension: 0.3 }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { labels: { color: colors.text } } },
+        plugins: {
+          legend: {
+            labels: {
+              color: colors.text,
+              usePointStyle: true,
+              boxWidth: 8
+            }
+          }
+        },
         scales: {
           x: { ticks: { color: colors.text }, grid: { color: colors.grid } },
           y: { ticks: { color: colors.text, stepSize: 1 }, grid: { color: colors.grid }, beginAtZero: true }
