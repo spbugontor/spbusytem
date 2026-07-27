@@ -2830,22 +2830,23 @@ window._saveSaving = async (empId) => {
   if (amt <= 0) { showToast('Jumlah harus > 0', 'error'); return; }
 
   const mStr = $('sf-month').value.trim();
-  const payrollMonth = dateVal.substring(0, 7);
+  const tabMonth = dateVal.substring(0, 7);
+  const nextPayrollMonth = getNextMonthStr(tabMonth);
 
   await set(push(ref(db, 'savings')), { emp_id: empId, amount: amt, month: mStr, date: dateVal, timestamp: Date.now() });
 
   allData.payroll = allData.payroll || {};
-  allData.payroll[payrollMonth] = allData.payroll[payrollMonth] || {};
-  allData.payroll[payrollMonth].internal_data = allData.payroll[payrollMonth].internal_data || {};
-  allData.payroll[payrollMonth].internal_data[empId] = allData.payroll[payrollMonth].internal_data[empId] || {};
+  allData.payroll[nextPayrollMonth] = allData.payroll[nextPayrollMonth] || {};
+  allData.payroll[nextPayrollMonth].internal_data = allData.payroll[nextPayrollMonth].internal_data || {};
+  allData.payroll[nextPayrollMonth].internal_data[empId] = allData.payroll[nextPayrollMonth].internal_data[empId] || {};
 
-  const currentSavings = Number(allData.payroll[payrollMonth].internal_data[empId].savings_deduction || 0);
+  const currentSavings = Number(allData.payroll[nextPayrollMonth].internal_data[empId].savings_deduction || 0);
   const newSavings = currentSavings + amt;
-  allData.payroll[payrollMonth].internal_data[empId].savings_deduction = newSavings;
+  allData.payroll[nextPayrollMonth].internal_data[empId].savings_deduction = newSavings;
 
-  await set(ref(db, `payroll/${payrollMonth}/internal_data/${empId}/savings_deduction`), newSavings);
+  await set(ref(db, `payroll/${nextPayrollMonth}/internal_data/${empId}/savings_deduction`), newSavings);
 
-  showToast('Tabungan disimpan & otomatis terisi ke Gaji Payroll!', 'success');
+  showToast('Tabungan disimpan & otomatis terisi ke Gaji Payroll bulan berikutnya!', 'success');
   $('sav-form-' + empId).innerHTML = '';
   renderCurrentSection();
 };
@@ -2888,10 +2889,11 @@ window._saveMassSaving = async () => {
   if (!month || !dateVal) { showToast('Bulan dan tanggal wajib diisi!', 'error'); return; }
   if (cbs.length === 0) { showToast('Pilih minimal 1 karyawan!', 'error'); return; }
 
-  const payrollMonth = dateVal.substring(0, 7);
+  const tabMonth = dateVal.substring(0, 7);
+  const nextPayrollMonth = getNextMonthStr(tabMonth);
   allData.payroll = allData.payroll || {};
-  allData.payroll[payrollMonth] = allData.payroll[payrollMonth] || {};
-  allData.payroll[payrollMonth].internal_data = allData.payroll[payrollMonth].internal_data || {};
+  allData.payroll[nextPayrollMonth] = allData.payroll[nextPayrollMonth] || {};
+  allData.payroll[nextPayrollMonth].internal_data = allData.payroll[nextPayrollMonth].internal_data || {};
 
   const dbUpdates = {};
 
@@ -2900,15 +2902,15 @@ window._saveMassSaving = async () => {
     const newRefKey = push(ref(db, 'savings')).key;
     dbUpdates[`savings/${newRefKey}`] = { emp_id: empId, amount: amt, month, date: dateVal, timestamp: Date.now() };
 
-    allData.payroll[payrollMonth].internal_data[empId] = allData.payroll[payrollMonth].internal_data[empId] || {};
-    const currentSavings = Number(allData.payroll[payrollMonth].internal_data[empId].savings_deduction || 0);
+    allData.payroll[nextPayrollMonth].internal_data[empId] = allData.payroll[nextPayrollMonth].internal_data[empId] || {};
+    const currentSavings = Number(allData.payroll[nextPayrollMonth].internal_data[empId].savings_deduction || 0);
     const newSavings = currentSavings + amt;
-    allData.payroll[payrollMonth].internal_data[empId].savings_deduction = newSavings;
+    allData.payroll[nextPayrollMonth].internal_data[empId].savings_deduction = newSavings;
 
-    dbUpdates[`payroll/${payrollMonth}/internal_data/${empId}/savings_deduction`] = newSavings;
+    dbUpdates[`payroll/${nextPayrollMonth}/internal_data/${empId}/savings_deduction`] = newSavings;
   }
 
-  showToast(cbs.length + ' tabungan berhasil disimpan & otomatis terisi ke Gaji Payroll!', 'success');
+  showToast(cbs.length + ' tabungan berhasil disimpan & otomatis terisi ke Gaji Payroll bulan berikutnya!', 'success');
   $('mass-sav-form-area').innerHTML = '';
   renderCurrentSection();
   await update(ref(db), dbUpdates);
@@ -4624,11 +4626,43 @@ function getBbmSalesData(month) {
   };
 }
 
+function getPrevMonthStr(monthStr) {
+  if (!monthStr || !monthStr.includes('-')) return '';
+  const parts = monthStr.split('-');
+  let y = parseInt(parts[0], 10);
+  let m = parseInt(parts[1], 10) - 1;
+  if (m < 1) {
+    m = 12;
+    y -= 1;
+  }
+  return `${y}-${m.toString().padStart(2, '0')}`;
+}
+
+function getNextMonthStr(monthStr) {
+  if (!monthStr || !monthStr.includes('-')) return '';
+  const parts = monthStr.split('-');
+  let y = parseInt(parts[0], 10);
+  let m = parseInt(parts[1], 10) + 1;
+  if (m > 12) {
+    m = 1;
+    y += 1;
+  }
+  return `${y}-${m.toString().padStart(2, '0')}`;
+}
+
 function getEmployeeSavingsForMonth(empId, monthStr) {
   const savings = Object.values(allData.savings || {}).filter(s => {
     if (!s || !s.emp_id || s.emp_id !== empId) return false;
     const sDate = s.date || '';
-    return sDate.startsWith(monthStr);
+    if (sDate.startsWith(monthStr)) return true;
+    if (s.month) {
+      const year = monthStr.split('-')[0];
+      const monthNum = parseInt(monthStr.split('-')[1], 10);
+      const months = ['januari', 'februari', 'maret', 'april', 'mei', 'juni', 'juli', 'agustus', 'september', 'oktober', 'november', 'desember'];
+      const mName = months[monthNum - 1];
+      if (s.month.toLowerCase().includes(mName) && s.month.includes(year)) return true;
+    }
+    return false;
   });
   return savings.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
 }
@@ -5000,11 +5034,12 @@ window._exportToExcel = (reportType) => {
       const otShifts = Number(empData.overtime_shifts || 0);
       const otAmt = otShifts * 50000;
 
-      const savedSavingsFromMenu = getEmployeeSavingsForMonth(empId, month);
+      const prevMonth = getPrevMonthStr(month);
+      const savedSavingsFromMenu = getEmployeeSavingsForMonth(empId, prevMonth);
       let tabunganAmt = 0;
       if (savedSavingsFromMenu > 0) {
         tabunganAmt = savedSavingsFromMenu;
-      } else if (empData.savings_deduction !== undefined && empData.savings_deduction !== 50000) {
+      } else if (empData.savings_deduction !== undefined && empData.savings_deduction !== 50000 && Number(empData.savings_deduction) > 0) {
         tabunganAmt = Number(empData.savings_deduction);
       } else {
         tabunganAmt = 0;
@@ -5162,11 +5197,12 @@ function renderInternalPayrollTab() {
                           (pwEnabled ? pwAmount : 0) +
                           otAmt + customTunjSum;
     const gajiKotor = gajiPokok + totalTambahan;
-    const savedSavingsFromMenu = getEmployeeSavingsForMonth(empId, month);
+    const prevMonth = getPrevMonthStr(month);
+    const savedSavingsFromMenu = getEmployeeSavingsForMonth(empId, prevMonth);
     let tabunganAmt = 0;
     if (savedSavingsFromMenu > 0) {
       tabunganAmt = savedSavingsFromMenu;
-    } else if (empData.savings_deduction !== undefined && empData.savings_deduction !== 50000) {
+    } else if (empData.savings_deduction !== undefined && empData.savings_deduction !== 50000 && Number(empData.savings_deduction) > 0) {
       tabunganAmt = Number(empData.savings_deduction);
     } else {
       tabunganAmt = 0;
@@ -5536,11 +5572,12 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 4) => {
                           otAmt;
 
     const gajiKotor = gajiPokok + totalTambahan;
-    const savedSavingsFromMenu = getEmployeeSavingsForMonth(empId, month);
+    const prevMonth = getPrevMonthStr(month);
+    const savedSavingsFromMenu = getEmployeeSavingsForMonth(empId, prevMonth);
     let tabunganAmt = 0;
     if (savedSavingsFromMenu > 0) {
       tabunganAmt = savedSavingsFromMenu;
-    } else if (empData.savings_deduction !== undefined && empData.savings_deduction !== 50000) {
+    } else if (empData.savings_deduction !== undefined && empData.savings_deduction !== 50000 && Number(empData.savings_deduction) > 0) {
       tabunganAmt = Number(empData.savings_deduction);
     } else {
       tabunganAmt = 0;
@@ -5951,10 +5988,11 @@ window._printInternalPayrollSummary = () => {
     const mkAmt = tunjMasaKerjaEnabled ? tunjMasaKerjaAmt : 0;
     const pwVal = pwEnabled ? pwAmount : 0;
 
+    const prevMonth = getPrevMonthStr(month);
     const tabunganAmt = (() => {
-      const savedSavingsFromMenu = getEmployeeSavingsForMonth(u.emp_id, month);
+      const savedSavingsFromMenu = getEmployeeSavingsForMonth(u.emp_id, prevMonth);
       if (savedSavingsFromMenu > 0) return savedSavingsFromMenu;
-      if (empData.savings_deduction !== undefined && empData.savings_deduction !== 50000) return Number(empData.savings_deduction);
+      if (empData.savings_deduction !== undefined && empData.savings_deduction !== 50000 && Number(empData.savings_deduction) > 0) return Number(empData.savings_deduction);
       return 0;
     })();
     const gajiKotor = gajiPokok + jAmt + kAmt + mkAmt + pwVal + otAmt;
@@ -6092,13 +6130,14 @@ window._printSavingsSummary = () => {
   const rows = users.map((u, idx) => {
     let empTotal = 0;
     const monthCells = monthsList.map((m, mIdx) => {
-      const monthKey = `${currentYear}-${(mIdx + 1).toString().padStart(2, '0')}`;
-      const mData = (allData.payroll && allData.payroll[monthKey] && allData.payroll[monthKey].internal_data && allData.payroll[monthKey].internal_data[u.emp_id]) || {};
-      const menuSavings = getEmployeeSavingsForMonth(u.emp_id, monthKey);
+      const tabMonthKey = `${currentYear}-${(mIdx + 1).toString().padStart(2, '0')}`;
+      const payrollMonthKey = getNextMonthStr(tabMonthKey);
+      const mData = (allData.payroll && allData.payroll[payrollMonthKey] && allData.payroll[payrollMonthKey].internal_data && allData.payroll[payrollMonthKey].internal_data[u.emp_id]) || {};
+      const menuSavings = getEmployeeSavingsForMonth(u.emp_id, tabMonthKey);
       let amt = 0;
       if (menuSavings > 0) {
         amt = menuSavings;
-      } else if (mData.savings_deduction !== undefined && mData.savings_deduction !== 50000) {
+      } else if (mData.savings_deduction !== undefined && mData.savings_deduction !== 50000 && Number(mData.savings_deduction) > 0) {
         amt = Number(mData.savings_deduction);
       } else {
         amt = 0;
