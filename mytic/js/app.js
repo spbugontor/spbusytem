@@ -3933,10 +3933,10 @@ function _generateEmployeeKpiPDFHtml(empId) {
       });
       const remaining = t.quota - taken;
       leaveQuotaRows += `<tr>
-        <td style="border:1px solid #cbd5e1;padding:3px 6px;">${esc(t.name)}</td>
-        <td style="border:1px solid #cbd5e1;padding:3px 6px;text-align:center;">${t.quota} hari</td>
-        <td style="border:1px solid #cbd5e1;padding:3px 6px;text-align:center;">${taken} hari</td>
-        <td style="border:1px solid #cbd5e1;padding:3px 6px;text-align:center;font-weight:bold;color:${remaining <= 0 ? '#dc2626' : '#166534'}">${remaining} hari</td>
+        <td style="border:1px solid #cbd5e1;padding:3px 6px;color:#0f172a !important;">${esc(t.name)}</td>
+        <td style="border:1px solid #cbd5e1;padding:3px 6px;text-align:center;color:#0f172a !important;">${t.quota} hari</td>
+        <td style="border:1px solid #cbd5e1;padding:3px 6px;text-align:center;color:#0f172a !important;">${taken} hari</td>
+        <td style="border:1px solid #cbd5e1;padding:3px 6px;text-align:center;font-weight:bold;color:${remaining <= 0 ? '#dc2626' : '#166534'} !important;">${remaining} hari</td>
       </tr>`;
     }
   });
@@ -3950,35 +3950,37 @@ function _generateEmployeeKpiPDFHtml(empId) {
     @page { size: A4 portrait; margin: 6mm 10mm; }
   </style>
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; margin: 0; padding: 10px; background: #e2e8f0; font-size: 10.5px; line-height: 1.25; }
-    .rapor-container { background: #fff; max-width: 210mm; margin: 0 auto; padding: 12px 18px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; page-break-inside: avoid; page-break-after: avoid; }
-    .no-print-bar { display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 6px 14px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 210mm; margin-left: auto; margin-right: auto; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #0f172a !important; margin: 0; padding: 10px; background: #e2e8f0 !important; font-size: 10.5px; line-height: 1.25; }
+    .rapor-container { background: #ffffff !important; color: #0f172a !important; max-width: 210mm; margin: 0 auto; padding: 12px 18px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; page-break-inside: avoid; page-break-after: avoid; }
+    .no-print-bar { display: flex; justify-content: space-between; align-items: center; background: #ffffff !important; padding: 6px 14px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 210mm; margin-left: auto; margin-right: auto; }
     .no-print-bar button { padding: 5px 12px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 11px; }
     .btn-print { background: #1d4ed8; color: #fff; }
     .btn-close { background: #64748b; color: #fff; margin-left: 8px; }
     .kop-header { text-align: center; border-bottom: 2.5px double #1d4ed8; padding-bottom: 4px; margin-bottom: 6px; width: 100%; }
-    .kop-title { font-family: 'Times New Roman', Times, serif; font-weight: 900; font-size: 26px; color: #1e40af; letter-spacing: 1.2px; line-height: 1.05; margin-bottom: 1px; }
-    .kop-subtitle { font-family: 'Times New Roman', Times, serif; font-weight: 800; font-size: 15px; color: #1d4ed8; margin-top: 1px; letter-spacing: 0.5px; line-height: 1.05; margin-bottom: 2px; }
-    .kop-address { font-size: 9.5px; color: #1e3a8a; margin-top: 1px; line-height: 1.2; }
+    .kop-title { font-family: 'Times New Roman', Times, serif; font-weight: 900; font-size: 26px; color: #1e40af !important; letter-spacing: 1.2px; line-height: 1.05; margin-bottom: 1px; }
+    .kop-subtitle { font-family: 'Times New Roman', Times, serif; font-weight: 800; font-size: 15px; color: #1d4ed8 !important; margin-top: 1px; letter-spacing: 0.5px; line-height: 1.05; margin-bottom: 2px; }
+    .kop-address { font-size: 9.5px; color: #1e3a8a !important; margin-top: 1px; line-height: 1.2; }
     .doc-title-box { text-align: center; margin-bottom: 6px; }
-    .doc-title { font-size: 13px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 1.5px solid #0f172a; display: inline-block; padding-bottom: 1px; }
-    .doc-subtitle { font-size: 9px; color: #64748b; margin-top: 2px; font-weight: 600; }
-    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; }
-    .info-table td { padding: 4px 8px; font-size: 10px; vertical-align: middle; border-bottom: 1px solid #e2e8f0; }
-    .info-table td.label { font-weight: 700; color: #475569; width: 115px; background: #f1f5f9; }
+    .doc-title { font-size: 13px; font-weight: 800; text-transform: uppercase; color: #0f172a !important; border-bottom: 1.5px solid #0f172a; display: inline-block; padding-bottom: 1px; }
+    .doc-subtitle { font-size: 9px; color: #64748b !important; margin-top: 2px; font-weight: 600; }
+    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; background: #f8fafc !important; border: 1px solid #cbd5e1; border-radius: 4px; }
+    .info-table td { padding: 4px 8px; font-size: 10px; vertical-align: middle; border-bottom: 1px solid #e2e8f0; color: #0f172a !important; }
+    .info-table td.label { font-weight: 700; color: #475569 !important; width: 115px; background: #f1f5f9 !important; }
     .score-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px; }
-    .score-card { background: #eff6ff; border: 1.5px solid #3b82f6; border-radius: 5px; padding: 4px 8px; text-align: center; }
-    .score-card.rank-card { background: #f0fdf4; border-color: #22c55e; }
-    .score-value { font-size: 18px; font-weight: 900; color: #1e40af; margin: 1px 0; }
-    .rank-card .score-value { color: #15803d; }
+    .score-card { background: #eff6ff !important; border: 1.5px solid #3b82f6; border-radius: 5px; padding: 4px 8px; text-align: center; }
+    .score-card.rank-card { background: #f0fdf4 !important; border-color: #22c55e; }
+    .score-value { font-size: 18px; font-weight: 900; color: #1e40af !important; margin: 1px 0; }
+    .rank-card .score-value { color: #15803d !important; }
     .metric-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
-    .metric-table th, .metric-table td { border: 1px solid #cbd5e1; padding: 4px 6px; font-size: 9.5px; }
-    .metric-table th { background: #1e40af; color: #ffffff; font-weight: 700; text-align: left; }
+    .metric-table th, .metric-table td { border: 1px solid #cbd5e1; padding: 4px 6px; font-size: 9.5px; color: #0f172a !important; }
+    .metric-table th { background: #1e40af !important; color: #ffffff !important; font-weight: 700; text-align: left; }
+    tr { page-break-inside: avoid !important; page-break-after: auto !important; }
     .signature-area { margin-top: 8px; display: flex; justify-content: space-between; page-break-inside: avoid; }
-    .sig-box { width: 200px; text-align: center; font-size: 9.5px; }
+    .sig-box { width: 200px; text-align: center; font-size: 9.5px; color: #0f172a !important; }
     .sig-space { height: 35px; }
     @media print {
-      html, body { height: 100%; overflow: hidden; background: #fff; padding: 0; }
+      html, body { height: 100%; overflow: hidden; background: #fff !important; padding: 0; }
       .rapor-container { box-shadow: none; padding: 0; max-width: 100% !important; border-radius: 0; }
       .no-print { display: none !important; }
     }
@@ -4027,116 +4029,116 @@ function _generateEmployeeKpiPDFHtml(empId) {
   <table class="info-table">
     <tr>
       <td class="label">Nama Karyawan</td>
-      <td><strong>${esc(u.name)}</strong></td>
+      <td><strong style="color:#0f172a !important;">${esc(u.name)}</strong></td>
       <td class="label">ID Karyawan</td>
-      <td><strong>${esc(u.emp_id)}</strong></td>
+      <td><strong style="color:#0f172a !important;">${esc(u.emp_id)}</strong></td>
     </tr>
     <tr>
       <td class="label">Jabatan / Posisi</td>
-      <td>${esc(u.position)}</td>
+      <td style="color:#0f172a !important;">${esc(u.position)}</td>
       <td class="label">Status Evaluasi</td>
-      <td><span style="color:#16a34a; font-weight:bold;">Selesai (Aktif)</span></td>
+      <td><span style="color:#16a34a !important; font-weight:bold;">Selesai (Aktif)</span></td>
     </tr>
   </table>
   <div class="score-summary-grid">
     <div class="score-card">
-      <div style="font-size:9.5px; font-weight:700; color:#1e40af; text-transform:uppercase;">SKOR KPI KOMPOSIT AKHIR</div>
-      <div class="score-value">${kpi.compositeScore} <span style="font-size:11px; font-weight:normal;">/ 100</span></div>
-      <div style="font-size:9.5px; font-weight:bold; color:#1e3a8a;">Kategori: ${kpiCategoryStr}</div>
+      <div style="font-size:9.5px; font-weight:700; color:#1e40af !important; text-transform:uppercase;">SKOR KPI KOMPOSIT AKHIR</div>
+      <div class="score-value">${kpi.compositeScore} <span style="font-size:11px; font-weight:normal; color:#475569 !important;">/ 100</span></div>
+      <div style="font-size:9.5px; font-weight:bold; color:#1e3a8a !important;">Kategori: ${kpiCategoryStr}</div>
     </div>
     <div class="score-card rank-card">
-      <div style="font-size:9.5px; font-weight:700; color:#15803d; text-transform:uppercase;">PERINGKAT PERUSAHAAN</div>
-      <div class="score-value">#${userRank} <span style="font-size:11px; font-weight:normal;">dari ${totalUsers} Karyawan</span></div>
-      <div style="font-size:9.5px; font-weight:bold; color:#166534;">${rankBadgeEmoji} Peringkat Seluruh Perusahaan</div>
+      <div style="font-size:9.5px; font-weight:700; color:#15803d !important; text-transform:uppercase;">PERINGKAT PERUSAHAAN</div>
+      <div class="score-value">#${userRank} <span style="font-size:11px; font-weight:normal; color:#166534 !important;">dari ${totalUsers} Karyawan</span></div>
+      <div style="font-size:9.5px; font-weight:bold; color:#166534 !important;">${rankBadgeEmoji} Peringkat Seluruh Perusahaan</div>
     </div>
   </div>
   <table class="metric-table">
     <thead>
       <tr>
-        <th style="width:20px; text-align:center;">#</th>
-        <th>Indikator Evaluasi Kinerja</th>
-        <th style="width:95px; text-align:center;">Pencapaian Riil</th>
-        <th style="width:65px; text-align:center;">Bobot</th>
-        <th style="width:75px; text-align:center;">Skor Metrik</th>
+        <th style="width:20px; text-align:center; background:#1e40af !important; color:#ffffff !important;">#</th>
+        <th style="background:#1e40af !important; color:#ffffff !important;">Indikator Evaluasi Kinerja</th>
+        <th style="width:95px; text-align:center; background:#1e40af !important; color:#ffffff !important;">Pencapaian Riil</th>
+        <th style="width:65px; text-align:center; background:#1e40af !important; color:#ffffff !important;">Bobot</th>
+        <th style="width:75px; text-align:center; background:#1e40af !important; color:#ffffff !important;">Skor Metrik</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td style="text-align:center; font-weight:bold;">1</td>
-        <td>
-          <strong>⏱️ Kedisiplinan Kehadiran (Sistem Absensi)</strong><br>
-          <span style="font-size:8.5px; color:#64748b;">Hadir tepat waktu: ${kpi.attendanceRate}% | Total Keterlambatan: ${Math.round(kpi.totalSecLate / 60)} Menit</span>
+        <td style="text-align:center; font-weight:bold; color:#0f172a !important;">1</td>
+        <td style="color:#0f172a !important;">
+          <strong style="color:#0f172a !important;">⏱️ Kedisiplinan Kehadiran (Sistem Absensi)</strong><br>
+          <span style="font-size:8.5px; color:#475569 !important;">Hadir tepat waktu: ${kpi.attendanceRate}% | Total Keterlambatan: ${Math.round(kpi.totalSecLate / 60)} Menit</span>
         </td>
-        <td style="text-align:center; font-weight:bold;">${kpi.attendanceRate}%</td>
-        <td style="text-align:center;">${kpi.isOperator ? '30%' : '45%'}</td>
-        <td style="text-align:center; font-weight:bold; color:#1d4ed8;">${kpi.attendanceRate} / 100</td>
+        <td style="text-align:center; font-weight:bold; color:#0f172a !important;">${kpi.attendanceRate}%</td>
+        <td style="text-align:center; color:#0f172a !important;">${kpi.isOperator ? '30%' : '45%'}</td>
+        <td style="text-align:center; font-weight:bold; color:#1d4ed8 !important;">${kpi.attendanceRate} / 100</td>
       </tr>
       <tr>
-        <td style="text-align:center; font-weight:bold;">2</td>
-        <td>
-          <strong>📋 Kepatuhan Ceklis SOP (Aplikasi Ceklis SOP)</strong><br>
-          <span style="font-size:8.5px; color:#64748b;">${kpi.isOperator ? `Kepatuhan pengisian SOP shift kerja: ${kpi.sopRate}%` : 'Metrik SOP khusus untuk Jabatan Operator (Non-Operator N/A)'}</span>
+        <td style="text-align:center; font-weight:bold; color:#0f172a !important;">2</td>
+        <td style="color:#0f172a !important;">
+          <strong style="color:#0f172a !important;">📋 Kepatuhan Ceklis SOP (Aplikasi Ceklis SOP)</strong><br>
+          <span style="font-size:8.5px; color:#475569 !important;">${kpi.isOperator ? `Kepatuhan pengisian SOP shift kerja: ${kpi.sopRate}%` : 'Metrik SOP khusus untuk Jabatan Operator (Non-Operator N/A)'}</span>
         </td>
-        <td style="text-align:center; font-weight:bold;">${kpi.isOperator ? `${kpi.sopRate}%` : 'N/A'}</td>
-        <td style="text-align:center;">${kpi.isOperator ? '20%' : '0%'}</td>
-        <td style="text-align:center; font-weight:bold; color:#1d4ed8;">${kpi.isOperator ? `${kpi.sopRate} / 100` : 'N/A'}</td>
+        <td style="text-align:center; font-weight:bold; color:#0f172a !important;">${kpi.isOperator ? `${kpi.sopRate}%` : 'N/A'}</td>
+        <td style="text-align:center; color:#0f172a !important;">${kpi.isOperator ? '20%' : '0%'}</td>
+        <td style="text-align:center; font-weight:bold; color:#1d4ed8 !important;">${kpi.isOperator ? `${kpi.sopRate} / 100` : 'N/A'}</td>
       </tr>
       <tr>
-        <td style="text-align:center; font-weight:bold;">3</td>
-        <td>
-          <strong>⭐ Rating Evaluasi Kinerja Atasan (Per Criteria)</strong><br>
-          <span style="font-size:8.5px; color:#64748b;">Rating rata-rata: ${kpi.avgRating} dari 5.0 Bintang</span>
+        <td style="text-align:center; font-weight:bold; color:#0f172a !important;">3</td>
+        <td style="color:#0f172a !important;">
+          <strong style="color:#0f172a !important;">⭐ Rating Evaluasi Kinerja Atasan (Per Criteria)</strong><br>
+          <span style="font-size:8.5px; color:#475569 !important;">Rating rata-rata: ${kpi.avgRating} dari 5.0 Bintang</span>
         </td>
-        <td style="text-align:center; font-weight:bold;">${kpi.avgRating} / 5.0</td>
-        <td style="text-align:center;">${kpi.isOperator ? '25%' : '30%'}</td>
-        <td style="text-align:center; font-weight:bold; color:#1d4ed8;">${kpi.ratingScore} / 100</td>
+        <td style="text-align:center; font-weight:bold; color:#0f172a !important;">${kpi.avgRating} / 5.0</td>
+        <td style="text-align:center; color:#0f172a !important;">${kpi.isOperator ? '25%' : '30%'}</td>
+        <td style="text-align:center; font-weight:bold; color:#1d4ed8 !important;">${kpi.ratingScore} / 100</td>
       </tr>
       <tr>
-        <td style="text-align:center; font-weight:bold;">4</td>
-        <td>
-          <strong>💳 Akuntabilitas Keuangan (Tunggakan & Tabungan)</strong><br>
-          <span style="font-size:8.5px; color:#64748b;">Total Tunggakan: ${fmt(kpi.totalDebitAmt)} (${kpi.debitTxCount} Catatan Transaksi)</span>
+        <td style="text-align:center; font-weight:bold; color:#0f172a !important;">4</td>
+        <td style="color:#0f172a !important;">
+          <strong style="color:#0f172a !important;">💳 Akuntabilitas Keuangan (Tunggakan & Tabungan)</strong><br>
+          <span style="font-size:8.5px; color:#475569 !important;">Total Tunggakan: ${fmt(kpi.totalDebitAmt)} (${kpi.debitTxCount} Catatan Transaksi)</span>
         </td>
-        <td style="text-align:center; font-weight:bold;">${kpi.totalDebitAmt > 0 ? fmt(kpi.totalDebitAmt) : 'Clean (Rp 0)'}</td>
-        <td style="text-align:center;">15%</td>
-        <td style="text-align:center; font-weight:bold; color:#1d4ed8;">${kpi.debitScore} / 100</td>
+        <td style="text-align:center; font-weight:bold; color:#0f172a !important;">${kpi.totalDebitAmt > 0 ? fmt(kpi.totalDebitAmt) : 'Clean (Rp 0)'}</td>
+        <td style="text-align:center; color:#0f172a !important;">15%</td>
+        <td style="text-align:center; font-weight:bold; color:#1d4ed8 !important;">${kpi.debitScore} / 100</td>
       </tr>
       <tr>
-        <td style="text-align:center; font-weight:bold;">5</td>
-        <td>
-          <strong>🛡️ Rekam Pelanggaran & Kedisiplinan (Track Record)</strong><br>
-          <span style="font-size:8.5px; color:#64748b;">Jumlah Surat Peringatan (SP) Aktif: ${kpi.violationCount} Catatan</span>
+        <td style="text-align:center; font-weight:bold; color:#0f172a !important;">5</td>
+        <td style="color:#0f172a !important;">
+          <strong style="color:#0f172a !important;">🛡️ Rekam Pelanggaran & Kedisiplinan (Track Record)</strong><br>
+          <span style="font-size:8.5px; color:#475569 !important;">Jumlah Surat Peringatan (SP) Aktif: ${kpi.violationCount} Catatan</span>
         </td>
-        <td style="text-align:center; font-weight:bold;">${kpi.violationCount > 0 ? `${kpi.violationCount} SP` : 'Clean'}</td>
-        <td style="text-align:center;">10%</td>
-        <td style="text-align:center; font-weight:bold; color:#1d4ed8;">${kpi.trackRecordScore} / 100</td>
+        <td style="text-align:center; font-weight:bold; color:#0f172a !important;">${kpi.violationCount > 0 ? `${kpi.violationCount} SP` : 'Clean'}</td>
+        <td style="text-align:center; color:#0f172a !important;">10%</td>
+        <td style="text-align:center; font-weight:bold; color:#1d4ed8 !important;">${kpi.trackRecordScore} / 100</td>
       </tr>
     </tbody>
   </table>
 
-  <h4 style="margin:6px 0 3px 0; color:#1e40af; font-size:10.5px; border-bottom:1px solid #cbd5e1; padding-bottom:2px;">📋 REKAPITULASI IZIN & HAK CUTI KARYAWAN</h4>
+  <h4 style="margin:6px 0 3px 0; color:#1e40af !important; font-size:10.5px; border-bottom:1px solid #cbd5e1; padding-bottom:2px;">📋 REKAPITULASI IZIN & HAK CUTI KARYAWAN</h4>
   <table class="info-table" style="margin-bottom:5px;">
     <tr>
       <td class="label" style="width:130px;">Izin Disetujui (Bulan Ini)</td>
-      <td><strong>${totalIzinBulanIni} Kali</strong></td>
+      <td><strong style="color:#0f172a !important;">${totalIzinBulanIni} Kali</strong></td>
     </tr>
   </table>
   ${leaveQuotaRows ? `
   <table class="metric-table" style="margin-bottom:6px;">
     <thead>
       <tr>
-        <th style="border:1px solid #cbd5e1;padding:3px 6px;text-align:left;background:#334155;color:#fff;">Jenis Hak Cuti</th>
-        <th style="border:1px solid #cbd5e1;padding:3px 6px;text-align:center;background:#334155;color:#fff;width:75px;">Jatah (${currentYear})</th>
-        <th style="border:1px solid #cbd5e1;padding:3px 6px;text-align:center;background:#334155;color:#fff;width:75px;">Terpakai</th>
-        <th style="border:1px solid #cbd5e1;padding:3px 6px;text-align:center;background:#334155;color:#fff;width:75px;">Sisa Cuti</th>
+        <th style="border:1px solid #cbd5e1;padding:3px 6px;text-align:left;background:#334155 !important;color:#fff !important;">Jenis Hak Cuti</th>
+        <th style="border:1px solid #cbd5e1;padding:3px 6px;text-align:center;background:#334155 !important;color:#fff !important;width:75px;">Jatah (${currentYear})</th>
+        <th style="border:1px solid #cbd5e1;padding:3px 6px;text-align:center;background:#334155 !important;color:#fff !important;width:75px;">Terpakai</th>
+        <th style="border:1px solid #cbd5e1;padding:3px 6px;text-align:center;background:#334155 !important;color:#fff !important;width:75px;">Sisa Cuti</th>
       </tr>
     </thead>
     <tbody>${leaveQuotaRows}</tbody>
-  </table>` : '<p style="color:#64748b;font-style:italic;font-size:9.5px;margin-bottom:5px;">Tidak ada jenis cuti terdaftar.</p>'}
+  </table>` : '<p style="color:#64748b !important;font-style:italic;font-size:9.5px;margin-bottom:5px;">Tidak ada jenis cuti terdaftar.</p>'}
 
-  <div style="border:1px solid #cbd5e1; border-radius:4px; padding:6px 10px; background:#f8fafc; margin-bottom:8px;">
-    <div style="font-weight:bold; font-size:9.5px; color:#334155; margin-bottom:2px; text-transform:uppercase;">💬 CATATAN & EVALUASI DARI MANAJEMEN:</div>
-    <div style="font-size:10px; color:#1e293b; font-style:italic; line-height:1.2;">
+  <div style="border:1px solid #cbd5e1; border-radius:4px; padding:6px 10px; background:#f8fafc !important; color:#0f172a !important; margin-bottom:8px;">
+    <div style="font-weight:bold; font-size:9.5px; color:#1e40af !important; margin-bottom:2px; text-transform:uppercase;">💬 CATATAN & EVALUASI DARI MANAJEMEN:</div>
+    <div style="font-size:10px; color:#0f172a !important; font-style:italic; line-height:1.2;">
       ${empNote ? esc(empNote) : 'Terima kasih atas kontribusi dan dedikasi Anda. Tingkatkan terus kedisiplinan dan kualitas pelayanan demi kemajuan bersama SPBU 54.634.25 GONTOR MLARAK.'}
     </div>
   </div>
@@ -4144,14 +4146,14 @@ function _generateEmployeeKpiPDFHtml(empId) {
     <div class="sig-box">
       <div>Penerima Rapor (Karyawan),</div>
       <div class="sig-space"></div>
-      <div><strong>( ${esc(u.name)} )</strong></div>
-      <div style="font-size:8.5px; color:#64748b;">ID: ${esc(u.emp_id)}</div>
+      <div><strong style="color:#0f172a !important;">( ${esc(u.name)} )</strong></div>
+      <div style="font-size:8.5px; color:#64748b !important;">ID: ${esc(u.emp_id)}</div>
     </div>
     <div class="sig-box">
-      <div>Gontor, ${formattedDate}<br><strong>Manager SPBU Gontor Mlarak</strong>,</div>
+      <div>Gontor, ${formattedDate}<br><strong style="color:#0f172a !important;">Manager SPBU Gontor Mlarak</strong>,</div>
       <div class="sig-space"></div>
-      <div><strong>( ______________________ )</strong></div>
-      <div style="font-size:8.5px; color:#64748b;">PT. ESTAFET DWI MASA</div>
+      <div><strong style="color:#0f172a !important;">( ______________________ )</strong></div>
+      <div style="font-size:8.5px; color:#64748b !important;">PT. ESTAFET DWI MASA</div>
     </div>
   </div>
   </div>
@@ -4198,9 +4200,23 @@ window._downloadEmployeeKpiDirectPDF = (empId) => {
   const safePeriod = periodTitles[period] || 'Bulan_Ini';
   const filename = `Rapor_Kinerja_${safeName}_${safePeriod}.pdf`;
 
-  const div = document.createElement('div');
-  div.innerHTML = pdfHtml;
-  div.querySelectorAll('.no-print-bar, .no-print').forEach(el => el.remove());
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.left = '-9999px';
+  iframe.style.top = '0';
+  iframe.style.width = '210mm';
+  iframe.style.height = '297mm';
+  iframe.style.border = 'none';
+  document.body.appendChild(iframe);
+
+  iframe.contentDocument.open();
+  iframe.contentDocument.write(pdfHtml);
+  iframe.contentDocument.close();
+
+  const noPrintBar = iframe.contentDocument.querySelector('.no-print-bar');
+  if (noPrintBar) noPrintBar.remove();
+
+  const element = iframe.contentDocument.querySelector('.rapor-container');
 
   const opt = {
     margin: [4, 6, 4, 6],
@@ -4211,11 +4227,13 @@ window._downloadEmployeeKpiDirectPDF = (empId) => {
   };
 
   showToast('Menyiapkan file Rapor PDF...', 'info');
-  html2pdf().set(opt).from(div).save().then(() => {
+  html2pdf().set(opt).from(element).save().then(() => {
     showToast('Rapor KPI berhasil diunduh!', 'success');
+    iframe.remove();
   }).catch(e => {
     console.error(e);
     showToast('Gagal mengunduh Rapor KPI PDF', 'error');
+    iframe.remove();
   });
 };
 
