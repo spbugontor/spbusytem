@@ -4844,18 +4844,19 @@ window._applyMassAllowance = () => {
 
   for (const u of users) {
     const empId = u.emp_id;
-    const isSelected = selectedEmpIds.includes(empId);
-    allData.payroll[month].internal_data[empId] = allData.payroll[month].internal_data[empId] || {};
-    allData.payroll[month].internal_data[empId].tunjangan = allData.payroll[month].internal_data[empId].tunjangan || {};
-    allData.payroll[month].internal_data[empId].tunjangan[tunjId] = {
-      enabled: isSelected,
-      amount: isSelected ? amt : 0
-    };
+    if (selectedEmpIds.includes(empId)) {
+      allData.payroll[month].internal_data[empId] = allData.payroll[month].internal_data[empId] || {};
+      allData.payroll[month].internal_data[empId].tunjangan = allData.payroll[month].internal_data[empId].tunjangan || {};
+      allData.payroll[month].internal_data[empId].tunjangan[tunjId] = {
+        enabled: true,
+        amount: amt
+      };
 
-    dbUpdates[`payroll/${month}/internal_data/${empId}/tunjangan/${tunjId}`] = {
-      enabled: isSelected,
-      amount: isSelected ? amt : 0
-    };
+      dbUpdates[`payroll/${month}/internal_data/${empId}/tunjangan/${tunjId}`] = {
+        enabled: true,
+        amount: amt
+      };
+    }
   }
 
   // Instant UI Feedback (0ms delay!)
