@@ -4692,33 +4692,17 @@ function getEmployeeSavingsForSpecificMonth(empId, monthIdx, year) {
     'januari', 'februari', 'maret', 'april', 'mei', 'juni',
     'juli', 'agustus', 'september', 'oktober', 'november', 'desember'
   ];
-  const englishMonths = [
-    'january', 'february', 'march', 'april', 'may', 'june',
-    'july', 'august', 'september', 'october', 'november', 'december'
-  ];
-  const shortMonths = [
-    'jan', 'feb', 'mar', 'apr', 'may', 'jun',
-    'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
-  ];
 
   const targetIndo = indonesianMonths[monthIdx];
-  const targetEng = englishMonths[monthIdx];
-  const targetShort = shortMonths[monthIdx];
-  const monthIso = `${year}-${(monthIdx + 1).toString().padStart(2, '0')}`;
+  const targetYear = year.toString();
 
   const list = Object.values(allData.savings || {}).filter(s => {
     if (!s || !s.emp_id || s.emp_id !== empId) return false;
+    if (!s.month) return false;
 
-    if (s.month) {
-      const smLower = s.month.toLowerCase();
-      const hasMonth = smLower.includes(targetIndo) || smLower.includes(targetEng) || smLower.includes(targetShort);
-      const hasYear = s.month.includes(year.toString());
-      if (hasMonth && (hasYear || !s.month.match(/\d{4}/))) return true;
-    }
-
-    if (s.date && s.date.startsWith(monthIso)) return true;
-
-    return false;
+    const smLower = s.month.toLowerCase().trim();
+    // Match exact month name + year, e.g. "januari 2026"
+    return smLower.includes(targetIndo) && smLower.includes(targetYear);
   });
 
   return list.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
