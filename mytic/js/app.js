@@ -4799,10 +4799,10 @@ window._openMassAllowanceModal = () => {
       <div style="margin-bottom:0.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
         <label class="form-label" style="font-size:0.8rem; font-weight:700; margin:0;">3. Pilih Karyawan Yang Berhak Menerima</label>
         <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
-          <button class="btn btn-xs btn-outline-primary" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = true)">Centang Semua</button>
-          <button class="btn btn-xs btn-outline-secondary" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = false)">Hapus Centang</button>
-          <button class="btn btn-xs btn-outline-info" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = (c.getAttribute('data-pos')||'').toLowerCase().includes('operator'))">Khusus Operator</button>
-          <button class="btn btn-xs btn-outline-warning" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = !(c.getAttribute('data-pos')||'').toLowerCase().includes('operator'))">Khusus Non-Operator</button>
+          <button type="button" class="btn btn-sm btn-outline-primary" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = true)">Centang Semua</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = false)">Hapus Centang</button>
+          <button type="button" class="btn btn-sm btn-outline-info" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = (c.getAttribute('data-pos')||'').toLowerCase().includes('operator'))">Khusus Operator</button>
+          <button type="button" class="btn btn-sm btn-outline-warning" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = !(c.getAttribute('data-pos')||'').toLowerCase().includes('operator'))">Khusus Non-Operator</button>
         </div>
       </div>
 
@@ -4811,15 +4811,22 @@ window._openMassAllowanceModal = () => {
       </div>
     </div>
     <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:0.5rem; border-top:1px solid var(--border); padding-top:0.75rem;">
-      <button class="btn btn-secondary" onclick="hideModal()">Batal</button>
-      <button class="btn btn-success" style="font-weight:bold;" onclick="window._applyMassAllowance()">💾 Terapkan Tunjangan Massal</button>
+      <button type="button" class="btn btn-secondary" onclick="hideModal()">Batal</button>
+      <button type="button" class="btn btn-success" style="font-weight:bold;" onclick="window._applyMassAllowance()">💾 Terapkan Tunjangan Massal</button>
     </div>
   `, 'modal-md');
 };
 
 window._applyMassAllowance = async () => {
-  const tunjId = $('mass-tunj-select').value;
-  const amt = Number($('mass-tunj-amt').value || 0);
+  const selectElem = document.getElementById('mass-tunj-select');
+  const amtElem = document.getElementById('mass-tunj-amt');
+  if (!selectElem || !amtElem) {
+    showToast('Elemen modal tidak ditemukan!', 'warning');
+    return;
+  }
+
+  const tunjId = selectElem.value;
+  const amt = Number(amtElem.value || 0);
   const selectedEmpIds = Array.from(document.querySelectorAll('.mass-emp-chk:checked')).map(c => c.value);
 
   if (selectedEmpIds.length === 0) {
@@ -4841,11 +4848,11 @@ window._applyMassAllowance = async () => {
     allData.payroll[month].internal_data[empId].tunjangan = allData.payroll[month].internal_data[empId].tunjangan || {};
     allData.payroll[month].internal_data[empId].tunjangan[tunjId] = {
       enabled: isSelected,
-      amount: amt
+      amount: isSelected ? amt : 0
     };
 
     const path = `payroll/${month}/internal_data/${empId}/tunjangan/${tunjId}`;
-    await set(ref(db, path), { enabled: isSelected, amount: amt });
+    await set(ref(db, path), { enabled: isSelected, amount: isSelected ? amt : 0 });
   }
 
   hideModal();
@@ -5011,22 +5018,22 @@ function renderInternalPayrollTab() {
     const isSpvAdmin = pos.toLowerCase().includes('admin') || pos.toLowerCase().includes('supervisor') || pos.toLowerCase().includes('spv');
     const defaultPwRound = isSpvAdmin ? 150000 : 100000;
     
-    const pwEnabled = empData.pw_enabled !== undefined ? empData.pw_enabled : true;
-    const pwAmount = Number(empData.pw_amount !== undefined ? empData.pw_amount : defaultPwRound);
+    const pwEnabled = empData.pw_enabled !== undefined ? empData.pw_enabled : false;
+    const pwAmount = Number(empData.pw_amount !== undefined ? empData.pw_amount : 0);
 
     const tenureMonths = getTenureMonths(u.join_date || u.created_at);
 
     // Allowances
     const tunjData = empData.tunjangan || {};
 
-    const tunjJabatanEnabled = tunjData['tunj_jabatan'] ? tunjData['tunj_jabatan'].enabled : (pos.toLowerCase() !== 'cleaning service' && !pos.toLowerCase().includes('cs'));
-    const tunjJabatanAmt = Number((tunjData['tunj_jabatan'] && tunjData['tunj_jabatan'].amount !== undefined) ? tunjData['tunj_jabatan'].amount : getDefaultPositionAllowance(pos));
+    const tunjJabatanEnabled = tunjData['tunj_jabatan'] ? tunjData['tunj_jabatan'].enabled : false;
+    const tunjJabatanAmt = Number((tunjData['tunj_jabatan'] && tunjData['tunj_jabatan'].amount !== undefined) ? tunjData['tunj_jabatan'].amount : 0);
 
-    const tunjKinerjaEnabled = tunjData['tunj_kinerja'] ? tunjData['tunj_kinerja'].enabled : (tenureMonths >= 6);
-    const tunjKinerjaAmt = Number((tunjData['tunj_kinerja'] && tunjData['tunj_kinerja'].amount !== undefined) ? tunjData['tunj_kinerja'].amount : (tenureMonths >= 6 ? 400000 : 200000));
+    const tunjKinerjaEnabled = tunjData['tunj_kinerja'] ? tunjData['tunj_kinerja'].enabled : false;
+    const tunjKinerjaAmt = Number((tunjData['tunj_kinerja'] && tunjData['tunj_kinerja'].amount !== undefined) ? tunjData['tunj_kinerja'].amount : 0);
 
-    const tunjMasaKerjaEnabled = tunjData['tunj_masa_kerja'] ? tunjData['tunj_masa_kerja'].enabled : (tenureMonths >= 12);
-    const tunjMasaKerjaAmt = Number((tunjData['tunj_masa_kerja'] && tunjData['tunj_masa_kerja'].amount !== undefined) ? tunjData['tunj_masa_kerja'].amount : getDefaultTenureAllowance(tenureMonths));
+    const tunjMasaKerjaEnabled = tunjData['tunj_masa_kerja'] ? tunjData['tunj_masa_kerja'].enabled : false;
+    const tunjMasaKerjaAmt = Number((tunjData['tunj_masa_kerja'] && tunjData['tunj_masa_kerja'].amount !== undefined) ? tunjData['tunj_masa_kerja'].amount : 0);
 
     let customTunjSum = 0;
     const customTunjHTML = settings.custom_allowances.map(ca => {
@@ -5046,7 +5053,7 @@ function renderInternalPayrollTab() {
     const otAmt = otShifts * 50000;
     totalLemburAll += otAmt;
 
-    const gajiPokok = Number(empData.gaji_pokok !== undefined ? empData.gaji_pokok : settings.gaji_pokok_internal_staf);
+    const gajiPokok = Number(empData.gaji_pokok !== undefined ? empData.gaji_pokok : 0);
     const totalTambahan = (tunjJabatanEnabled ? tunjJabatanAmt : 0) +
                           (tunjKinerjaEnabled ? tunjKinerjaAmt : 0) +
                           (tunjMasaKerjaEnabled ? tunjMasaKerjaAmt : 0) +
@@ -5054,7 +5061,7 @@ function renderInternalPayrollTab() {
                           otAmt + customTunjSum;
 
     const gajiKotor = gajiPokok + totalTambahan;
-    const tabunganAmt = Number(empData.savings_deduction !== undefined ? empData.savings_deduction : (tenureMonths >= 6 ? 50000 : 0));
+    const tabunganAmt = Number(empData.savings_deduction !== undefined ? empData.savings_deduction : 0);
     const gajiBersih = gajiKotor - tabunganAmt;
 
     totalGajiKotorAll += gajiKotor;
