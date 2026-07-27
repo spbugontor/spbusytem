@@ -157,7 +157,11 @@ function showModal(html, sizeClass = '') {
   contentEl.innerHTML = html;
   requestAnimationFrame(() => overlay.classList.add('show'));
 }
-function hideModal() { const m = $('global-modal'); if (m) m.classList.remove('show'); }
+window.hideModal = function() {
+  const m = document.getElementById('global-modal') || (typeof $ === 'function' ? $('global-modal') : null);
+  if (m) m.classList.remove('show');
+};
+function hideModal() { window.hideModal(); }
 
 function isEmailAllowedForMyTic(email) {
   if (!email) return false;
@@ -4768,11 +4772,22 @@ window._openMassAllowanceModal = () => {
   const settings = getPayrollSettings();
   const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
   
-  const tunjOptions = settings.custom_allowances.map(ca => `<option value="${ca.id}">${esc(ca.name)}</option>`).join('');
+  let optionsHTML = `
+    <optgroup label="💵 Gaji & Komponen Utama">
+      <option value="item_gaji_pokok">Gaji Pokok Internal (Rp)</option>
+      <option value="item_pw_amount">Pertamina Way Bulatan (Rp)</option>
+      <option value="item_overtime_shifts">Shift Lembur Kerja (Jumlah Shift)</option>
+      <option value="item_savings_deduction">Potongan Tabungan (Rp)</option>
+    </optgroup>
+    <optgroup label="🎁 Tunjangan Karyawan">
+  `;
+  
+  optionsHTML += settings.custom_allowances.map(ca => `<option value="${ca.id}">${esc(ca.name)}</option>`).join('');
+  optionsHTML += `</optgroup>`;
 
   const empCheckboxes = users.map(u => {
     const pos = u.position || '-';
-    return `<label style="display:flex; align-items:center; gap:0.5rem; background:var(--surface); border:1px solid var(--border); padding:0.45rem 0.6rem; border-radius:var(--radius-sm); font-size:0.8rem; cursor:pointer; box-sizing:border-box; overflow:hidden;">
+    return `<label style="display:flex; align-items:center; gap:0.5rem; background:var(--surface); border:1px solid var(--border); padding:0.45rem 0.6rem; border-radius:var(--radius-sm); font-size:0.8rem; cursor:pointer; box-sizing:border-box; width:100%; overflow:hidden;">
       <input type="checkbox" class="mass-emp-chk" value="${u.emp_id}" data-pos="${esc(pos)}" checked style="flex-shrink:0;">
       <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><strong>${esc(u.name)}</strong> (${esc(pos)})</span>
     </label>`;
@@ -4780,24 +4795,24 @@ window._openMassAllowanceModal = () => {
 
   showModal(`
     <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:0.75rem;">
-      <h3 class="modal-title" style="font-size:1.1rem; font-weight:800; color:var(--text-main);">⚡ Pengaturan Tunjangan Massal (Sekaligus)</h3>
-      <button class="modal-close" onclick="hideModal()">✕</button>
+      <h3 class="modal-title" style="font-size:1.1rem; font-weight:800; color:var(--text-main); margin:0;">⚡ Pengaturan Gaji & Tunjangan Massal</h3>
+      <button type="button" class="btn btn-icon btn-sm btn-outline-secondary" onclick="window.hideModal()" style="border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.1rem; cursor:pointer;">✕</button>
     </div>
-    <div class="modal-body" style="padding:1rem 0;">
+    <div class="modal-body" style="padding:1rem 0; box-sizing:border-box; overflow:hidden;">
       <div style="margin-bottom:1rem;">
-        <label class="form-label" style="font-size:0.8rem; font-weight:700;">1. Pilih Jenis Tunjangan</label>
+        <label class="form-label" style="font-size:0.8rem; font-weight:700;">1. Pilih Komponen Gaji / Tunjangan</label>
         <select id="mass-tunj-select" class="form-input form-select" style="padding:0.45rem 0.75rem; font-size:0.85rem; width:100%; box-sizing:border-box;">
-          ${tunjOptions}
+          ${optionsHTML}
         </select>
       </div>
 
       <div style="margin-bottom:1rem;">
-        <label class="form-label" style="font-size:0.8rem; font-weight:700;">2. Input Nominal Tunjangan (Rp)</label>
-        <input id="mass-tunj-amt" type="number" class="form-input" placeholder="Misal: 400000" style="padding:0.45rem 0.75rem; font-size:0.85rem; width:100%; box-sizing:border-box;">
+        <label class="form-label" style="font-size:0.8rem; font-weight:700;">2. Input Nominal (Rp) atau Jumlah Shift</label>
+        <input id="mass-tunj-amt" type="number" class="form-input" placeholder="Misal: 1000000 atau 400000" style="padding:0.45rem 0.75rem; font-size:0.85rem; width:100%; box-sizing:border-box;">
       </div>
 
       <div style="margin-bottom:0.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-        <label class="form-label" style="font-size:0.8rem; font-weight:700; margin:0;">3. Pilih Karyawan Yang Berhak Menerima</label>
+        <label class="form-label" style="font-size:0.8rem; font-weight:700; margin:0;">3. Pilih Karyawan Yang Menerima</label>
         <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
           <button type="button" class="btn btn-sm btn-outline-primary" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = true)">Centang Semua</button>
           <button type="button" class="btn btn-sm btn-outline-secondary" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = false)">Hapus Centang</button>
@@ -4806,13 +4821,13 @@ window._openMassAllowanceModal = () => {
         </div>
       </div>
 
-      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap:0.4rem; max-height:220px; overflow-y:auto; border:1px solid var(--border); padding:0.6rem; border-radius:var(--radius-sm); box-sizing:border-box;">
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap:0.4rem; max-height:210px; overflow-y:auto; border:1px solid var(--border); padding:0.6rem; border-radius:var(--radius-sm); box-sizing:border-box; margin:0;">
         ${empCheckboxes}
       </div>
     </div>
-    <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:0.5rem; border-top:1px solid var(--border); padding-top:0.75rem;">
-      <button type="button" class="btn btn-secondary" onclick="hideModal()">Batal</button>
-      <button type="button" class="btn btn-success" style="font-weight:bold;" onclick="window._applyMassAllowance()">💾 Terapkan Tunjangan Massal</button>
+    <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:0.5rem; border-top:1px solid var(--border); padding-top:0.75rem; margin-top:0.5rem;">
+      <button type="button" class="btn btn-secondary" onclick="window.hideModal()" style="padding:0.45rem 1.2rem; cursor:pointer;">Batal</button>
+      <button type="button" class="btn btn-success" style="font-weight:bold; padding:0.45rem 1.5rem; cursor:pointer;" onclick="window._applyMassAllowance()">💾 Terapkan Pengaturan Massal</button>
     </div>
   `, 'modal-md');
 };
@@ -4825,7 +4840,7 @@ window._applyMassAllowance = () => {
     return;
   }
 
-  const tunjId = selectElem.value;
+  const itemId = selectElem.value;
   const amt = Number(amtElem.value || 0);
   const selectedEmpIds = Array.from(document.querySelectorAll('.mass-emp-chk:checked')).map(c => c.value);
 
@@ -4846,23 +4861,39 @@ window._applyMassAllowance = () => {
     const empId = u.emp_id;
     if (selectedEmpIds.includes(empId)) {
       allData.payroll[month].internal_data[empId] = allData.payroll[month].internal_data[empId] || {};
-      allData.payroll[month].internal_data[empId].tunjangan = allData.payroll[month].internal_data[empId].tunjangan || {};
-      allData.payroll[month].internal_data[empId].tunjangan[tunjId] = {
-        enabled: true,
-        amount: amt
-      };
 
-      dbUpdates[`payroll/${month}/internal_data/${empId}/tunjangan/${tunjId}`] = {
-        enabled: true,
-        amount: amt
-      };
+      if (itemId === 'item_gaji_pokok') {
+        allData.payroll[month].internal_data[empId].gaji_pokok = amt;
+        dbUpdates[`payroll/${month}/internal_data/${empId}/gaji_pokok`] = amt;
+      } else if (itemId === 'item_pw_amount') {
+        allData.payroll[month].internal_data[empId].pw_enabled = true;
+        allData.payroll[month].internal_data[empId].pw_amount = amt;
+        dbUpdates[`payroll/${month}/internal_data/${empId}/pw_enabled`] = true;
+        dbUpdates[`payroll/${month}/internal_data/${empId}/pw_amount`] = amt;
+      } else if (itemId === 'item_overtime_shifts') {
+        allData.payroll[month].internal_data[empId].overtime_shifts = amt;
+        dbUpdates[`payroll/${month}/internal_data/${empId}/overtime_shifts`] = amt;
+      } else if (itemId === 'item_savings_deduction') {
+        allData.payroll[month].internal_data[empId].savings_deduction = amt;
+        dbUpdates[`payroll/${month}/internal_data/${empId}/savings_deduction`] = amt;
+      } else {
+        allData.payroll[month].internal_data[empId].tunjangan = allData.payroll[month].internal_data[empId].tunjangan || {};
+        allData.payroll[month].internal_data[empId].tunjangan[itemId] = {
+          enabled: true,
+          amount: amt
+        };
+        dbUpdates[`payroll/${month}/internal_data/${empId}/tunjangan/${itemId}`] = {
+          enabled: true,
+          amount: amt
+        };
+      }
     }
   }
 
   // Instant UI Feedback (0ms delay!)
-  hideModal();
+  window.hideModal();
   renderCurrentSection();
-  showToast(`Tunjangan massal berhasil diterapkan ke ${selectedEmpIds.length} karyawan!`, 'success');
+  showToast(`Pengaturan massal berhasil diterapkan ke ${selectedEmpIds.length} karyawan!`, 'success');
 
   // Background non-blocking update to Firebase
   update(ref(db), dbUpdates).catch(err => console.error('Firebase update error:', err));
@@ -5154,7 +5185,7 @@ function renderInternalPayrollTab() {
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
         <h4 style="font-size:1rem; font-weight:800; color:var(--text-main); margin:0;">📋 Daftar Gaji Internal Karyawan (${users.length} Karyawan)</h4>
         <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
-          <button class="btn btn-warning" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._openMassAllowanceModal()">⚡ Atur Tunjangan Massal</button>
+          <button class="btn btn-warning" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._openMassAllowanceModal()">⚡ Input Massal Gaji & Tunjangan</button>
           <label style="font-size:0.75rem; font-weight:700;">Tgl Cetak:</label>
           <input type="date" value="${printDate}" class="form-input" style="padding:0.3rem 0.5rem; font-size:0.75rem; width:135px;" onchange="window._setPayrollPrintDate(this.value)">
           <button class="btn btn-outline-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._exportToExcel('internal')">📊 Export Excel</button>
