@@ -4617,7 +4617,6 @@ function getDefaultPositionAllowance(position) {
   if (p.includes('operator') || p.includes('opr')) return 250000;
   return 0;
 }
-
 window._saveBbmSales = async () => {
   const month = window._payrollMonth || getTodayStr().substring(0, 7);
   const bbm = {
@@ -4629,9 +4628,14 @@ window._saveBbmSales = async () => {
     updated_at: Date.now()
   };
 
+  allData.payroll = allData.payroll || {};
+  allData.payroll[month] = allData.payroll[month] || {};
+  allData.payroll[month].bbm_sales = bbm;
+
+  renderCurrentSection();
+
   await set(ref(db, `payroll/${month}/bbm_sales`), bbm);
   showToast('Data Penjualan Liter BBM berhasil disimpan!', 'success');
-  switchSection('payroll');
 };
 
 window._savePayrollSettings = async () => {
@@ -4646,9 +4650,11 @@ window._savePayrollSettings = async () => {
     updated_at: Date.now()
   };
 
+  allData.payroll_settings = settings;
+  renderCurrentSection();
+
   await set(ref(db, 'payroll_settings'), settings);
   showToast('Pengaturan Master Gaji berhasil disimpan!', 'success');
-  switchSection('payroll');
 };
 
 window._addCustomAllowance = async () => {
@@ -4662,15 +4668,18 @@ window._addCustomAllowance = async () => {
   const currentSettings = getPayrollSettings();
   const list = [...currentSettings.custom_allowances, { id, name }];
   
-  await set(ref(db, 'payroll_settings'), {
+  const updatedSettings = {
     ...currentSettings,
     custom_allowances: list,
     updated_at: Date.now()
-  });
+  };
 
+  allData.payroll_settings = updatedSettings;
+  renderCurrentSection();
+
+  await set(ref(db, 'payroll_settings'), updatedSettings);
   showToast(`Tunjangan "${name}" berhasil ditambahkan!`, 'success');
   nameInput.value = '';
-  switchSection('payroll');
 };
 
 window._deleteCustomAllowance = async (id) => {
@@ -4678,25 +4687,65 @@ window._deleteCustomAllowance = async (id) => {
   const currentSettings = getPayrollSettings();
   const list = currentSettings.custom_allowances.filter(a => a.id !== id);
 
-  await set(ref(db, 'payroll_settings'), {
+  const updatedSettings = {
     ...currentSettings,
     custom_allowances: list,
     updated_at: Date.now()
-  });
+  };
 
+  allData.payroll_settings = updatedSettings;
+  renderCurrentSection();
+
+  await set(ref(db, 'payroll_settings'), updatedSettings);
   showToast('Tunjangan dihapus!', 'success');
-  switchSection('payroll');
 };
 
 window._saveInternalPayrollItem = async (empId, field, value) => {
   const month = window._payrollMonth || getTodayStr().substring(0, 7);
+  allData.payroll = allData.payroll || {};
+  allData.payroll[month] = allData.payroll[month] || {};
+  allData.payroll[month].internal_data = allData.payroll[month].internal_data || {};
+  allData.payroll[month].internal_data[empId] = allData.payroll[month].internal_data[empId] || {};
+  allData.payroll[month].internal_data[empId][field] = value;
+
+  renderCurrentSection();
+
   const path = `payroll/${month}/internal_data/${empId}/${field}`;
   await set(ref(db, path), value);
-  showToast('Data diperbarui', 'info');
 };
 
 window._toggleEmpAllowance = async (empId, tunjId, isChecked) => {
   const month = window._payrollMonth || getTodayStr().substring(0, 7);
+  allData.payroll = allData.payroll || {};
+  allData.payroll[month] = allData.payroll[month] || {};
+  allData.payroll[month].internal_data = allData.payroll[month].internal_data || {};
+  allData.payroll[month].internal_data[empId] = allData.payroll[month].internal_data[empId] || {};
+  allData.payroll[month].internal_data[empId].tunjangan = allData.payroll[month].internal_data[empId].tunjangan || {};
+  allData.payroll[month].internal_data[empId].tunjangan[tunjId] = allData.payroll[month].internal_data[empId].tunjangan[tunjId] || {};
+  allData.payroll[month].internal_data[empId].tunjangan[tunjId].enabled = isChecked;
+
+  renderCurrentSection();
+
+  const path = `payroll/${month}/internal_data/${empId}/tunjangan/${tunjId}/enabled`;
+  await set(ref(db, path), isChecked);
+};
+
+window._updateEmpAllowanceAmt = async (empId, tunjId, amt) => {
+  const month = window._payrollMonth || getTodayStr().substring(0, 7);
+  const numAmt = Number(amt || 0);
+  allData.payroll = allData.payroll || {};
+  allData.payroll[month] = allData.payroll[month] || {};
+  allData.payroll[month].internal_data = allData.payroll[month].internal_data || {};
+  allData.payroll[month].internal_data[empId] = allData.payroll[month].internal_data[empId] || {};
+  allData.payroll[month].internal_data[empId].tunjangan = allData.payroll[month].internal_data[empId].tunjangan || {};
+  allData.payroll[month].internal_data[empId].tunjangan[tunjId] = allData.payroll[month].internal_data[empId].tunjangan[tunjId] || {};
+  allData.payroll[month].internal_data[empId].tunjangan[tunjId].amount = numAmt;
+
+  renderCurrentSection();
+
+  const path = `payroll/${month}/internal_data/${empId}/tunjangan/${tunjId}/amount`;
+  await set(ref(db, path), numAmt);
+};t month = window._payrollMonth || getTodayStr().substring(0, 7);
   const path = `payroll/${month}/internal_data/${empId}/tunjangan/${tunjId}/enabled`;
   await set(ref(db, path), isChecked);
 };
@@ -4950,9 +4999,9 @@ function renderAuditPayrollTab() {
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
         <div>
           <h4 style="font-size:1rem; font-weight:800; color:var(--text-main); margin:0;">📋 Lembar Penggajian & Pertamina Way Mode Audit (${auditUsers.length} Karyawan)</h4>
-          <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Berisi 15 Karyawan (Termasuk Manager ${esc(settings.name_audit_manager)}) | UMK Staf: Rp ${fmt(settings.umk_staf)} | UMK Manager: Rp ${fmt(settings.umk_manager)}</p>
+          <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Berisi 15 Karyawan (Termasuk Manager ${esc(settings.name_audit_manager)}) | UMK Staf: ${fmt(settings.umk_staf)} | UMK Manager: ${fmt(settings.umk_manager)}</p>
         </div>
-        <button class="btn btn-primary" style="font-weight:bold;" onclick="window._printAuditDocuments()">🖨️ Cetak Paket Dokumen Audit (3 Hal)</button>
+        <button class="btn btn-primary" style="font-weight:bold; padding:0.45rem 1rem;" onclick="window._printAuditDocuments()">📥 UNDUH FILE / CETAK DOKUMEN AUDIT (PDF)</button>
       </div>
 
       <div style="background:var(--surface); border:1px solid var(--border); padding:0.75rem; border-radius:var(--radius-md); margin-bottom:1rem; font-size:0.8rem;">
@@ -5198,7 +5247,8 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 4) => {
   </head>
   <body>
     <div class="no-print" style="padding:10px; background:#f1f5f9; text-align:right; border-bottom:1px solid #cbd5e1;">
-      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Slip Gaji (${paperSize})</button>
+      <button onclick="window.print()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Pilih Save as PDF)</button>
+      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">🖨️ Cetak Slip Gaji (${paperSize})</button>
       <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">✕ Tutup</button>
     </div>
     ${slipsHTML}
@@ -5286,7 +5336,8 @@ window._printAuditDocuments = () => {
   </head>
   <body>
     <div class="no-print" style="padding:8px; background:#f1f5f9; text-align:right; border-bottom:1px solid #cbd5e1; margin-bottom:10px;">
-      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Dokumen Audit (3 Halaman)</button>
+      <button onclick="window.print()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Pilih Save as PDF)</button>
+      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">🖨️ Cetak Dokumen Audit (3 Halaman)</button>
       <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">✕ Tutup</button>
     </div>
 
@@ -5546,7 +5597,8 @@ window._printInternalPayrollSummary = () => {
   </head>
   <body>
     <div class="no-print" style="padding:8px; background:#f1f5f9; text-align:right; border-bottom:1px solid #cbd5e1; margin-bottom:10px;">
-      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Rekapitulasi Gaji Internal</button>
+      <button onclick="window.print()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Pilih Save as PDF)</button>
+      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">🖨️ Cetak Rekapitulasi Gaji Internal</button>
       <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">✕ Tutup</button>
     </div>
 
@@ -5652,7 +5704,8 @@ window._printSavingsSummary = () => {
   </head>
   <body>
     <div class="no-print" style="padding:8px; background:#f1f5f9; text-align:right; border-bottom:1px solid #cbd5e1; margin-bottom:10px;">
-      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Rekap Tabungan</button>
+      <button onclick="window.print()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Pilih Save as PDF)</button>
+      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">🖨️ Cetak Rekap Tabungan</button>
       <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">✕ Tutup</button>
     </div>
 
@@ -5725,7 +5778,8 @@ window._printOvertimeSummary = () => {
   </head>
   <body>
     <div class="no-print" style="padding:8px; background:#f1f5f9; text-align:right; border-bottom:1px solid #cbd5e1; margin-bottom:10px;">
-      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Rekap Lemburan</button>
+      <button onclick="window.print()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Pilih Save as PDF)</button>
+      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">🖨️ Cetak Rekap Lemburan</button>
       <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">✕ Tutup</button>
     </div>
 
