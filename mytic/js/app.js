@@ -4161,6 +4161,11 @@ function _generateEmployeeKpiPDFHtml(empId) {
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script>
     function downloadPdfDirect(autoClose = false) {
+      if (typeof html2pdf === 'undefined') {
+        setTimeout(() => downloadPdfDirect(autoClose), 150);
+        return;
+      }
+
       const btn = document.getElementById('btn-dl-pdf');
       const noPrintBar = document.querySelector('.no-print-bar');
       const oldText = btn ? btn.innerHTML : '';
@@ -4192,7 +4197,7 @@ function _generateEmployeeKpiPDFHtml(empId) {
       html2pdf().set(opt).from(element).save().then(() => {
         if (noPrintBar) noPrintBar.style.setProperty('display', 'flex');
         if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
-        if (autoClose) { window.close(); }
+        if (autoClose) { setTimeout(() => window.close(), 300); }
       }).catch(err => {
         console.error(err);
         if (noPrintBar) noPrintBar.style.setProperty('display', 'flex');
@@ -4226,13 +4231,21 @@ window._downloadEmployeeKpiDirectPDF = (empId) => {
     win.document.write(pdfHtml);
     win.document.close();
     showToast('Menyiapkan file unduhan Rapor...', 'info');
-    win.onload = () => {
-      setTimeout(() => {
-        if (win.downloadPdfDirect) {
-          win.downloadPdfDirect(true);
-        }
-      }, 250);
-    };
+
+    let attempts = 0;
+    const timer = setInterval(() => {
+      attempts++;
+      if (win.closed) {
+        clearInterval(timer);
+        return;
+      }
+      if (typeof win.downloadPdfDirect === 'function') {
+        clearInterval(timer);
+        win.downloadPdfDirect(true);
+      } else if (attempts > 40) {
+        clearInterval(timer);
+      }
+    }, 100);
   } else {
     showToast('Izinkan pop-up di browser untuk mengunduh PDF Rapor.', 'error');
   }
