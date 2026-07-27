@@ -3825,11 +3825,14 @@ window._printEmployeeKpiPDF = (empId) => {
 <head>
   <meta charset="utf-8">
   <title>Rapor Kinerja ${esc(u.name)} - SPBU Gontor</title>
-  <style>
+  <style id="page-style">
     @page { size: A4 portrait; margin: 12mm 15mm; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; margin: 0; padding: 10px; background: #fff; font-size: 12px; line-height: 1.4; }
-    .no-print { margin-bottom: 15px; text-align: right; }
-    .no-print button { padding: 8px 16px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 12px; }
+  </style>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; margin: 0; padding: 15px; background: #e2e8f0; font-size: 12px; line-height: 1.4; }
+    .rapor-container { background: #fff; max-width: 210mm; margin: 0 auto; padding: 20px 25px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; }
+    .no-print-bar { display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 10px 16px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 210mm; margin-left: auto; margin-right: auto; }
+    .no-print-bar button { padding: 8px 16px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 12px; }
     .btn-print { background: #1d4ed8; color: #fff; }
     .btn-close { background: #64748b; color: #fff; margin-left: 8px; }
     .kop-header { text-align: center; border-bottom: 3px double #1d4ed8; padding-bottom: 12px; margin-bottom: 18px; width: 100%; }
@@ -3853,23 +3856,48 @@ window._printEmployeeKpiPDF = (empId) => {
     .signature-area { margin-top: 25px; display: flex; justify-content: space-between; page-break-inside: avoid; }
     .sig-box { width: 220px; text-align: center; font-size: 11px; }
     .sig-space { height: 55px; }
-    @media print { body { padding: 0; } .no-print { display: none !important; } }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .rapor-container { box-shadow: none; padding: 0; max-width: 100% !important; border-radius: 0; }
+      .no-print { display: none !important; }
+    }
   </style>
 </head>
 <body>
-  <div class="no-print">
-    <button class="btn-print" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
-    <button class="btn-close" onclick="window.close()">✕ Tutup</button>
-  </div>
-  <div class="kop-header">
-    <div class="kop-title">PT. ESTAFET DWI MASA</div>
-    <div class="kop-subtitle">SPBU 54.634.25 GONTOR MLARAK</div>
-    <div class="kop-address">
-      Kantor Pusat : Ds. Gontor, Kec. Mlarak, Kab. Ponorogo - Jawa Timur 63472<br>
-      Kantor Cabang : Jalan Mayjend Bambang Sugeng Km. 01 Sidojoyo Wonosobo<br>
-      Email: estafetdwimasa@gmail.com
+  <div class="no-print no-print-bar">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <label style="font-weight:bold; font-size:12px; color:#334155;">📐 Ukuran Kertas:</label>
+      <select id="paper-size-select" style="padding:5px 10px; font-size:12px; border-radius:4px; border:1px solid #94a3b8; font-weight:600; cursor:pointer;" onchange="
+        const styleEl = document.getElementById('page-style');
+        const containers = document.querySelectorAll('.rapor-container, .no-print-bar');
+        if (this.value === 'F4') {
+          styleEl.innerHTML = '@page { size: 215mm 330mm portrait; margin: 12mm 15mm; }';
+          containers.forEach(c => c.style.maxWidth = '215mm');
+        } else {
+          styleEl.innerHTML = '@page { size: A4 portrait; margin: 12mm 15mm; }';
+          containers.forEach(c => c.style.maxWidth = '210mm');
+        }
+      ">
+        <option value="A4" selected>A4 (210 x 297 mm)</option>
+        <option value="F4">F4 / Folio (215 x 330 mm)</option>
+      </select>
+    </div>
+    <div>
+      <button class="btn-print" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+      <button class="btn-close" onclick="window.close()">✕ Tutup</button>
     </div>
   </div>
+
+  <div class="rapor-container">
+    <div class="kop-header">
+      <div class="kop-title">PT. ESTAFET DWI MASA</div>
+      <div class="kop-subtitle">SPBU 54.634.25 GONTOR MLARAK</div>
+      <div class="kop-address">
+        Kantor Pusat : Ds. Gontor, Kec. Mlarak, Kab. Ponorogo - Jawa Timur 63472<br>
+        Kantor Cabang : Jalan Mayjend Bambang Sugeng Km. 01 Sidojoyo Wonosobo<br>
+        Email: estafetdwimasa@gmail.com
+      </div>
+    </div>
   <div class="doc-title-box">
     <div class="doc-title">RAPOR EVALUASI KINERJA INDIVIDUAL KARYAWAN</div>
     <div class="doc-subtitle">PERIODE EVALUASI: ${esc(periodTitle).toUpperCase()} | TANGGAL CETAK: ${formattedDate.toUpperCase()}</div>
@@ -3982,6 +4010,7 @@ window._printEmployeeKpiPDF = (empId) => {
       <div><strong>( ______________________ )</strong></div>
       <div style="font-size:9.5px; color:#64748b;">PT. ESTAFET DWI MASA</div>
     </div>
+  </div>
   </div>
 </body>
 </html>`;
