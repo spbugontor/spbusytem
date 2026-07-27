@@ -3777,6 +3777,236 @@ function calculateEmployeeKpi(emp, period) {
   };
 }
 
+window._printEmployeeKpiPDF = (empId) => {
+  const users = getUsers();
+  const u = users.find(x => x.emp_id === empId);
+  if (!u) { showToast('Karyawan tidak ditemukan', 'error'); return; }
+
+  const period = window._leaderboardPeriod || 'month';
+  const periodTitles = {
+    'month': 'Bulan Ini (' + new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) + ')',
+    'last_month': 'Bulan Lalu',
+    'quarter': 'Triwulan (3 Bulan)',
+    'year': 'Tahun ' + new Date().getFullYear()
+  };
+  const periodTitle = periodTitles[period] || 'Bulan Ini';
+
+  // Compute ranking among all employees
+  const rankedUsers = users.map(userItem => {
+    const kpi = calculateEmployeeKpi(userItem, period);
+    return { user: userItem, kpi, targetValue: kpi.compositeScore };
+  }).sort((a, b) => b.targetValue - a.targetValue || a.kpi.totalSecLate - b.kpi.totalSecLate);
+
+  const totalUsers = rankedUsers.length;
+  const userRankIdx = rankedUsers.findIndex(r => r.user.emp_id === empId);
+  const userRank = userRankIdx >= 0 ? userRankIdx + 1 : '-';
+
+  const kpi = calculateEmployeeKpi(u, period);
+
+  let rankBadgeEmoji = '🏆';
+  if (userRank === 1) rankBadgeEmoji = '🥇';
+  else if (userRank === 2) rankBadgeEmoji = '🥈';
+  else if (userRank === 3) rankBadgeEmoji = '🥉';
+
+  let kpiCategoryStr = 'Sangat Baik (Excellent 🟢)';
+  if (kpi.compositeScore < 60) kpiCategoryStr = 'Perlu Evaluasi Khusus (Needs Improvement 🔴)';
+  else if (kpi.compositeScore < 75) kpiCategoryStr = 'Cukup (Fair 🟡)';
+  else if (kpi.compositeScore < 90) kpiCategoryStr = 'Baik (Good 🔵)';
+
+  const formattedDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  // Check if employee has recent manager evaluation note
+  const ratings = getRatings(empId);
+  const latestRating = ratings.length > 0 ? ratings[0] : null;
+  const empNote = latestRating ? latestRating.note : '';
+
+  const pdfHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Rapor Kinerja ${esc(u.name)} - SPBU Gontor</title>
+  <style>
+    @page { size: A4 portrait; margin: 12mm 15mm; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; margin: 0; padding: 10px; background: #fff; font-size: 12px; line-height: 1.4; }
+    .no-print { margin-bottom: 15px; text-align: right; }
+    .no-print button { padding: 8px 16px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 12px; }
+    .btn-print { background: #1d4ed8; color: #fff; }
+    .btn-close { background: #64748b; color: #fff; margin-left: 8px; }
+    .kop-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px double #1d4ed8; padding-bottom: 10px; margin-bottom: 15px; }
+    .kop-left { display: flex; align-items: center; gap: 14px; }
+    .kop-title { font-family: 'Times New Roman', Times, serif; font-weight: 900; font-size: 22px; color: #1e40af; letter-spacing: 0.5px; }
+    .kop-subtitle { font-family: 'Times New Roman', Times, serif; font-weight: 700; font-size: 14px; color: #1d4ed8; margin-top: 1px; }
+    .kop-address { font-size: 10.5px; color: #1e3a8a; margin-top: 3px; line-height: 1.35; }
+    .doc-title-box { text-align: center; margin-bottom: 15px; }
+    .doc-title { font-size: 15px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 2px solid #0f172a; display: inline-block; padding-bottom: 2px; }
+    .doc-subtitle { font-size: 10.5px; color: #64748b; margin-top: 4px; font-weight: 600; }
+    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; }
+    .info-table td { padding: 7px 12px; font-size: 11.5px; vertical-align: top; border-bottom: 1px solid #e2e8f0; }
+    .info-table td.label { font-weight: 700; color: #475569; width: 130px; background: #f1f5f9; }
+    .score-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+    .score-card { background: #eff6ff; border: 2px solid #3b82f6; border-radius: 8px; padding: 10px 14px; text-align: center; }
+    .score-card.rank-card { background: #f0fdf4; border-color: #22c55e; }
+    .score-value { font-size: 26px; font-weight: 900; color: #1e40af; margin: 2px 0; }
+    .rank-card .score-value { color: #15803d; }
+    .metric-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+    .metric-table th, .metric-table td { border: 1px solid #cbd5e1; padding: 8px 10px; font-size: 11px; }
+    .metric-table th { background: #1e40af; color: #ffffff; font-weight: 700; text-align: left; }
+    .signature-area { margin-top: 25px; display: flex; justify-content: space-between; page-break-inside: avoid; }
+    .sig-box { width: 220px; text-align: center; font-size: 11px; }
+    .sig-space { height: 55px; }
+    @media print { body { padding: 0; } .no-print { display: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button class="btn-print" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+    <button class="btn-close" onclick="window.close()">✕ Tutup</button>
+  </div>
+  <div class="kop-header">
+    <div class="kop-left">
+      <svg width="75" height="60" viewBox="0 0 100 80">
+        <rect x="5" y="5" width="40" height="15" fill="#dc2626" />
+        <rect x="5" y="22" width="40" height="15" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" />
+        <rect x="5" y="39" width="40" height="15" fill="#16a34a" />
+        <text x="45" y="48" font-family="'Times New Roman', serif" font-weight="bold" font-style="italic" font-size="44" fill="#1e293b">sDM</text>
+        <text x="5" y="66" font-family="Arial, sans-serif" font-size="9" fill="#334155" font-style="italic" font-weight="bold">Estafet Dwi Masa</text>
+      </svg>
+      <div>
+        <div class="kop-title">PT. ESTAFET DWI MASA</div>
+        <div class="kop-subtitle">SPBU 54.634.25 GONTOR MLARAK</div>
+        <div class="kop-address">
+          Kantor Pusat : Ds. Gontor, Kec. Mlarak, Kab. Ponorogo - Jawa Timur 63472<br>
+          Kantor Cabang : Jalan Mayjend Bambang Sugeng Km. 01 Sidojoyo Wonosobo<br>
+          Email: estafetdwimasa@gmail.com
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="doc-title-box">
+    <div class="doc-title">RAPOR EVALUASI KINERJA INDIVIDUAL KARYAWAN</div>
+    <div class="doc-subtitle">PERIODE EVALUASI: ${esc(periodTitle).toUpperCase()} | TANGGAL CETAK: ${formattedDate.toUpperCase()}</div>
+  </div>
+  <table class="info-table">
+    <tr>
+      <td class="label">Nama Karyawan</td>
+      <td><strong>${esc(u.name)}</strong></td>
+      <td class="label">ID Karyawan</td>
+      <td><strong>${esc(u.emp_id)}</strong></td>
+    </tr>
+    <tr>
+      <td class="label">Jabatan / Posisi</td>
+      <td>${esc(u.position)}</td>
+      <td class="label">Status Evaluasi</td>
+      <td><span style="color:#16a34a; font-weight:bold;">Selesai (Aktif)</span></td>
+    </tr>
+  </table>
+  <div class="score-summary-grid">
+    <div class="score-card">
+      <div style="font-size:10.5px; font-weight:700; color:#1e40af; text-transform:uppercase;">SKOR KPI KOMPOSIT AKHIR</div>
+      <div class="score-value">${kpi.compositeScore} <span style="font-size:13px; font-weight:normal;">/ 100</span></div>
+      <div style="font-size:10.5px; font-weight:bold; color:#1e3a8a;">Kategori: ${kpiCategoryStr}</div>
+    </div>
+    <div class="score-card rank-card">
+      <div style="font-size:10.5px; font-weight:700; color:#15803d; text-transform:uppercase;">PERINGKAT PERUSAHAAN</div>
+      <div class="score-value">#${userRank} <span style="font-size:13px; font-weight:normal;">dari ${totalUsers} Karyawan</span></div>
+      <div style="font-size:10.5px; font-weight:bold; color:#166534;">${rankBadgeEmoji} Peringkat Seluruh Perusahaan</div>
+    </div>
+  </div>
+  <table class="metric-table">
+    <thead>
+      <tr>
+        <th style="width:25px; text-align:center;">#</th>
+        <th>Indikator Evaluasi Kinerja</th>
+        <th style="width:105px; text-align:center;">Pencapaian Riil</th>
+        <th style="width:80px; text-align:center;">Bobot</th>
+        <th style="width:85px; text-align:center;">Skor Metrik</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="text-align:center; font-weight:bold;">1</td>
+        <td>
+          <strong>⏱️ Kedisiplinan Kehadiran (Sistem Absensi)</strong><br>
+          <span style="font-size:10px; color:#64748b;">Hadir tepat waktu: ${kpi.attendanceRate}% | Total Keterlambatan: ${Math.round(kpi.totalSecLate / 60)} Menit</span>
+        </td>
+        <td style="text-align:center; font-weight:bold;">${kpi.attendanceRate}%</td>
+        <td style="text-align:center;">${kpi.isOperator ? '30%' : '45%'}</td>
+        <td style="text-align:center; font-weight:bold; color:#1d4ed8;">${kpi.attendanceRate} / 100</td>
+      </tr>
+      <tr>
+        <td style="text-align:center; font-weight:bold;">2</td>
+        <td>
+          <strong>📋 Kepatuhan Ceklis SOP (Aplikasi Ceklis SOP)</strong><br>
+          <span style="font-size:10px; color:#64748b;">${kpi.isOperator ? `Kepatuhan pengisian SOP shift kerja: ${kpi.sopRate}%` : 'Metrik SOP khusus untuk Jabatan Operator (Non-Operator N/A)'}</span>
+        </td>
+        <td style="text-align:center; font-weight:bold;">${kpi.isOperator ? `${kpi.sopRate}%` : 'N/A'}</td>
+        <td style="text-align:center;">${kpi.isOperator ? '20%' : '0%'}</td>
+        <td style="text-align:center; font-weight:bold; color:#1d4ed8;">${kpi.isOperator ? `${kpi.sopRate} / 100` : 'N/A'}</td>
+      </tr>
+      <tr>
+        <td style="text-align:center; font-weight:bold;">3</td>
+        <td>
+          <strong>⭐ Rating Evaluasi Kinerja Atasan (Per Criteria)</strong><br>
+          <span style="font-size:10px; color:#64748b;">Rating rata-rata: ${kpi.avgRating} dari 5.0 Bintang</span>
+        </td>
+        <td style="text-align:center; font-weight:bold;">${kpi.avgRating} / 5.0</td>
+        <td style="text-align:center;">${kpi.isOperator ? '25%' : '30%'}</td>
+        <td style="text-align:center; font-weight:bold; color:#1d4ed8;">${kpi.ratingScore} / 100</td>
+      </tr>
+      <tr>
+        <td style="text-align:center; font-weight:bold;">4</td>
+        <td>
+          <strong>💳 Akuntabilitas Keuangan (Tunggakan & Tabungan)</strong><br>
+          <span style="font-size:10px; color:#64748b;">Total Tunggakan: Rp ${fmt(kpi.totalDebitAmt)} (${kpi.debitTxCount} Transaksi)</span>
+        </td>
+        <td style="text-align:center; font-weight:bold;">${kpi.totalDebitAmt > 0 ? `Rp ${fmt(kpi.totalDebitAmt)}` : 'Clean (Rp 0)'}</td>
+        <td style="text-align:center;">15%</td>
+        <td style="text-align:center; font-weight:bold; color:#1d4ed8;">${kpi.debitScore} / 100</td>
+      </tr>
+      <tr>
+        <td style="text-align:center; font-weight:bold;">5</td>
+        <td>
+          <strong>🛡️ Rekam Pelanggaran & Kedisiplinan (Track Record)</strong><br>
+          <span style="font-size:10px; color:#64748b;">Jumlah Surat Peringatan (SP) Aktif: ${kpi.violationCount} Catatan</span>
+        </td>
+        <td style="text-align:center; font-weight:bold;">${kpi.violationCount > 0 ? `${kpi.violationCount} SP` : 'Clean'}</td>
+        <td style="text-align:center;">10%</td>
+        <td style="text-align:center; font-weight:bold; color:#1d4ed8;">${kpi.trackRecordScore} / 100</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="border:1px solid #cbd5e1; border-radius:6px; padding:10px 14px; background:#f8fafc; margin-bottom:20px;">
+    <div style="font-weight:bold; font-size:10.5px; color:#334155; margin-bottom:4px; text-transform:uppercase;">💬 CATATAN & EVALUASI DARI MANAJEMEN:</div>
+    <div style="font-size:11px; color:#1e293b; font-style:italic;">
+      ${empNote ? esc(empNote) : 'Terima kasih atas kontribusi dan dedikasi Anda. Tingkatkan terus kedisiplinan dan kualitas pelayanan demi kemajuan bersama SPBU 54.634.25 GONTOR MLARAK.'}
+    </div>
+  </div>
+  <div class="signature-area">
+    <div class="sig-box">
+      <div>Penerima Rapor (Karyawan),</div>
+      <div class="sig-space"></div>
+      <div><strong>( ${esc(u.name)} )</strong></div>
+      <div style="font-size:9.5px; color:#64748b;">ID: ${esc(u.emp_id)}</div>
+    </div>
+    <div class="sig-box">
+      <div>Gontor, ${formattedDate}<br><strong>Manager SPBU Gontor Mlarak</strong>,</div>
+      <div class="sig-space"></div>
+      <div><strong>( ______________________ )</strong></div>
+      <div style="font-size:9.5px; color:#64748b;">PT. ESTAFET DWI MASA</div>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank');
+  if (win) {
+    win.document.write(pdfHtml);
+    win.document.close();
+  } else {
+    showToast('Izinkan pop-up di browser untuk mencetak PDF Rapor.', 'error');
+  }
+};
+
 function renderLeaderboardPage() {
   const users = getUsers();
   const period = window._leaderboardPeriod || 'month';
@@ -3877,12 +4107,13 @@ function renderLeaderboardPage() {
               <th>Nama Karyawan</th>
               <th>Jabatan</th>
               <th style="min-width:240px;">Rincian Indikator KPI</th>
-              <th style="text-align:right; width:130px;">Skor KPI</th>
+              <th style="text-align:right; width:100px;">Skor KPI</th>
+              <th style="text-align:center; width:120px;">Aksi Rapor</th>
             </tr>
           </thead>
           <tbody>
             ${rankedUsers.length === 0 ? `
-              <tr><td colspan="5" style="text-align:center; padding:2rem;" class="text-muted">Belum ada data karyawan untuk kriteria ini.</td></tr>
+              <tr><td colspan="6" style="text-align:center; padding:2rem;" class="text-muted">Belum ada data karyawan untuk kriteria ini.</td></tr>
             ` : rankedUsers.map((item, idx) => {
               const rank = idx + 1;
               const u = item.user;
@@ -3937,6 +4168,11 @@ function renderLeaderboardPage() {
                   </td>
                   <td style="text-align:right;">
                     <span class="kpi-score-badge ${isNA ? 'kpi-score-low' : scoreClass}" style="${isNA ? 'opacity:0.55;' : ''}">${displayScore}</span>
+                  </td>
+                  <td style="text-align:center;">
+                    <button class="btn btn-outline-primary" style="padding:0.25rem 0.55rem; font-size:0.75rem; display:inline-flex; align-items:center; gap:0.25rem;" onclick="window._printEmployeeKpiPDF('${u.emp_id}')" title="Cetak Rapor Kinerja PDF ${esc(u.name)}">
+                      📄 Rapor PDF
+                    </button>
                   </td>
                 </tr>
               `;
