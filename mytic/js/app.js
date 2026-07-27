@@ -3013,12 +3013,12 @@ window._generateRatingPDFHtml = (key) => {
     });
 
     Object.keys(groupedScores).forEach(ind => {
-      criteriaRows += `<tr><td colspan="2" style="border:1px solid #cbd5e1;padding:5px 8px;background:#f1f5f9;font-weight:bold;text-transform:uppercase;font-size:10.5px;color:#334155;">${esc(ind)}</td></tr>`;
+      criteriaRows += `<tr><td colspan="2" style="border:1px solid #cbd5e1;padding:6px 10px;background:#e2e8f0;font-weight:bold;text-transform:uppercase;font-size:11px;color:#0f172a !important;">${esc(ind)}</td></tr>`;
       groupedScores[ind].forEach(item => {
         criteriaRows += `
           <tr>
-            <td style="border:1px solid #cbd5e1;padding:5px 8px;padding-left:14px;font-size:11px;">${esc(item.name)}</td>
-            <td style="border:1px solid #cbd5e1;padding:5px 8px;text-align:center;font-weight:bold;font-size:11px;color:#1e40af;">${item.score} / 5</td>
+            <td style="border:1px solid #cbd5e1;padding:6px 10px;padding-left:16px;font-size:11px;color:#0f172a !important;font-weight:600;">${esc(item.name)}</td>
+            <td style="border:1px solid #cbd5e1;padding:6px 10px;text-align:center;font-weight:bold;font-size:11px;color:#1e40af !important;">${item.score} / 5</td>
           </tr>
         `;
       });
@@ -3050,13 +3050,13 @@ window._generateRatingPDFHtml = (key) => {
     .doc-title { font-size: 15px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 2px solid #0f172a; display: inline-block; padding-bottom: 2px; }
     .doc-subtitle { font-size: 10.5px; color: #64748b; margin-top: 4px; font-weight: 600; }
     .info-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; }
-    .info-table td { padding: 7px 12px; font-size: 11.5px; vertical-align: top; border-bottom: 1px solid #e2e8f0; }
-    .info-table td.label { font-weight: 700; color: #475569; width: 130px; background: #f1f5f9; }
+    .info-table td { padding: 7px 12px; font-size: 11.5px; vertical-align: top; border-bottom: 1px solid #e2e8f0; color: #0f172a !important; }
+    .info-table td.label { font-weight: 700; color: #475569 !important; width: 130px; background: #f1f5f9; }
     .metric-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
     .metric-table th, .metric-table td { border: 1px solid #cbd5e1; padding: 7px 10px; font-size: 11px; }
-    .metric-table th { background: #1e40af; color: #ffffff; font-weight: 700; text-align: left; }
+    .metric-table th { background: #1e40af; color: #ffffff !important; font-weight: 700; text-align: left; }
     .signature-area { margin-top: 25px; display: flex; justify-content: space-between; page-break-inside: avoid; }
-    .sig-box { width: 220px; text-align: center; font-size: 11px; }
+    .sig-box { width: 220px; text-align: center; font-size: 11px; color: #0f172a !important; }
     .sig-space { height: 55px; }
     @media print {
       body { background: #fff; padding: 0; }
@@ -3133,8 +3133,8 @@ window._generateRatingPDFHtml = (key) => {
       <tbody>
         ${criteriaRows}
         <tr>
-          <td style="border:1px solid #cbd5e1;padding:6px 8px;text-align:right;"><strong>Rata-Rata Skor Kriteria:</strong></td>
-          <td style="border:1px solid #cbd5e1;padding:6px 8px;text-align:center;font-size:12px;font-weight:bold;color:#1d4ed8;">⭐ ${avg} / 5.0</td>
+          <td style="border:1px solid #cbd5e1;padding:6px 8px;text-align:right;color:#0f172a !important;"><strong>Rata-Rata Skor Kriteria:</strong></td>
+          <td style="border:1px solid #cbd5e1;padding:6px 8px;text-align:center;font-size:12px;font-weight:bold;color:#1d4ed8 !important;">⭐ ${avg} / 5.0</td>
         </tr>
       </tbody>
     </table>
@@ -3164,9 +3164,11 @@ window._generateRatingPDFHtml = (key) => {
   <script>
     function downloadRatingPdfDirect() {
       const btn = document.getElementById('btn-dl-rating-pdf');
+      const noPrintBar = document.querySelector('.no-print-bar');
       const oldText = btn.innerHTML;
       btn.innerHTML = '⏳ Mengunduh...';
       btn.disabled = true;
+      if (noPrintBar) noPrintBar.style.display = 'none';
 
       const element = document.querySelector('.rapor-container');
       const paperSize = document.getElementById('paper-size-select').value;
@@ -3181,10 +3183,12 @@ window._generateRatingPDFHtml = (key) => {
       };
 
       html2pdf().set(opt).from(element).save().then(() => {
+        if (noPrintBar) noPrintBar.style.display = 'flex';
         btn.innerHTML = oldText;
         btn.disabled = false;
       }).catch(err => {
         console.error(err);
+        if (noPrintBar) noPrintBar.style.display = 'flex';
         btn.innerHTML = oldText;
         btn.disabled = false;
         alert('Tanda peringatan: Jika unduh otomatis terhalang, silakan gunakan tombol Cetak / Print lalu pilih Tujuan: Simpan sebagai PDF.');
@@ -4143,9 +4147,11 @@ window._printEmployeeKpiPDF = (empId) => {
   <script>
     function downloadPdfDirect() {
       const btn = document.getElementById('btn-dl-pdf');
+      const noPrintBar = document.querySelector('.no-print-bar');
       const oldText = btn.innerHTML;
       btn.innerHTML = '⏳ Mengunduh...';
       btn.disabled = true;
+      if (noPrintBar) noPrintBar.style.display = 'none';
 
       const element = document.querySelector('.rapor-container');
       const paperSize = document.getElementById('paper-size-select').value;
@@ -4161,10 +4167,12 @@ window._printEmployeeKpiPDF = (empId) => {
       };
 
       html2pdf().set(opt).from(element).save().then(() => {
+        if (noPrintBar) noPrintBar.style.display = 'flex';
         btn.innerHTML = oldText;
         btn.disabled = false;
       }).catch(err => {
         console.error(err);
+        if (noPrintBar) noPrintBar.style.display = 'flex';
         btn.innerHTML = oldText;
         btn.disabled = false;
         alert('Tanda peringatan: Jika unduh otomatis terhalang, silakan gunakan tombol Cetak / Print lalu pilih Tujuan: Simpan sebagai PDF.');
