@@ -625,15 +625,19 @@ function setupNavigation() {
     }
   }
 
-  // Ensure Leaderboard menu is strictly for Panel Manajemen (Manager)
+  // Ensure Leaderboard & Payroll menu is strictly for Panel Manajemen (Manager)
   if (!isAdmin) {
     if (isManagerUser()) {
       const hasLeaderboard = menu.some(m => m.id === 'leaderboard');
       if (!hasLeaderboard) {
         menu.splice(1, 0, { id: 'leaderboard', label: 'Peringkat & KPI', icon: 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z' });
       }
+      const hasPayroll = menu.some(m => m.id === 'payroll');
+      if (!hasPayroll) {
+        menu.splice(2, 0, { id: 'payroll', label: 'Gaji & Payroll', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 8v2m0-6c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' });
+      }
     } else {
-      menu = menu.filter(m => m.id !== 'leaderboard');
+      menu = menu.filter(m => m.id !== 'leaderboard' && m.id !== 'payroll');
     }
   }
 
@@ -4476,9 +4480,17 @@ function renderLeaderboardPage() {
 // ==========================================
 // GAJI & PAYROLL MODULE (MANAGEMENT PANEL ONLY)
 // ==========================================
+function getTodayStr() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 window._payrollActiveTab = window._payrollActiveTab || 'internal';
-window._payrollMonth = window._payrollMonth || today().substring(0, 7);
-window._payrollPrintDate = window._payrollPrintDate || today();
+window._payrollMonth = window._payrollMonth || getTodayStr().substring(0, 7);
+window._payrollPrintDate = window._payrollPrintDate || getTodayStr();
 
 window._setPayrollTab = (tab) => {
   window._payrollActiveTab = tab;
@@ -4568,7 +4580,7 @@ function getDefaultPositionAllowance(position) {
 }
 
 window._saveBbmSales = async () => {
-  const month = window._payrollMonth || today().substring(0, 7);
+  const month = window._payrollMonth || getTodayStr().substring(0, 7);
   const bbm = {
     pertalite: Number($('bbm-pertalite').value || 0),
     solar: Number($('bbm-solar').value || 0),
@@ -4638,27 +4650,27 @@ window._deleteCustomAllowance = async (id) => {
 };
 
 window._saveInternalPayrollItem = async (empId, field, value) => {
-  const month = window._payrollMonth || today().substring(0, 7);
+  const month = window._payrollMonth || getTodayStr().substring(0, 7);
   const path = `payroll/${month}/internal_data/${empId}/${field}`;
   await set(ref(db, path), value);
   showToast('Data diperbarui', 'info');
 };
 
 window._toggleEmpAllowance = async (empId, tunjId, isChecked) => {
-  const month = window._payrollMonth || today().substring(0, 7);
+  const month = window._payrollMonth || getTodayStr().substring(0, 7);
   const path = `payroll/${month}/internal_data/${empId}/tunjangan/${tunjId}/enabled`;
   await set(ref(db, path), isChecked);
 };
 
 window._updateEmpAllowanceAmt = async (empId, tunjId, amt) => {
-  const month = window._payrollMonth || today().substring(0, 7);
+  const month = window._payrollMonth || getTodayStr().substring(0, 7);
   const path = `payroll/${month}/internal_data/${empId}/tunjangan/${tunjId}/amount`;
   await set(ref(db, path), Number(amt || 0));
 };
 
 function renderInternalPayrollTab() {
-  const month = window._payrollMonth || today().substring(0, 7);
-  const printDate = window._payrollPrintDate || today();
+  const month = window._payrollMonth || getTodayStr().substring(0, 7);
+  const printDate = window._payrollPrintDate || getTodayStr();
   const settings = getPayrollSettings();
   const bbm = getBbmSalesData(month);
   const pwInt = computePwInternal(bbm);
@@ -4844,8 +4856,8 @@ function renderInternalPayrollTab() {
 }
 
 function renderAuditPayrollTab() {
-  const month = window._payrollMonth || today().substring(0, 7);
-  const printDate = window._payrollPrintDate || today();
+  const month = window._payrollMonth || getTodayStr().substring(0, 7);
+  const printDate = window._payrollPrintDate || getTodayStr();
   const settings = getPayrollSettings();
   const bbm = getBbmSalesData(month);
   const pwAudit = computePwAudit(bbm);
@@ -5001,8 +5013,8 @@ function renderPayrollSettingsTab() {
 // ==========================================
 
 window._printEnvelopeSlips = (paperSize = 'A4', perPage = 4) => {
-  const month = window._payrollMonth || today().substring(0, 7);
-  const printDate = window._payrollPrintDate || today();
+  const month = window._payrollMonth || getTodayStr().substring(0, 7);
+  const printDate = window._payrollPrintDate || getTodayStr();
   const settings = getPayrollSettings();
   const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
   const monthData = (allData.payroll && allData.payroll[month] && allData.payroll[month].internal_data) || {};
@@ -5157,8 +5169,8 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 4) => {
 };
 
 window._printAuditDocuments = () => {
-  const month = window._payrollMonth || today().substring(0, 7);
-  const printDate = window._payrollPrintDate || today();
+  const month = window._payrollMonth || getTodayStr().substring(0, 7);
+  const printDate = window._payrollPrintDate || getTodayStr();
   const settings = getPayrollSettings();
   const bbm = getBbmSalesData(month);
   const pwAudit = computePwAudit(bbm);
@@ -5397,8 +5409,8 @@ window._printAuditDocuments = () => {
 };
 
 window._printInternalPayrollSummary = () => {
-  const month = window._payrollMonth || today().substring(0, 7);
-  const printDate = window._payrollPrintDate || today();
+  const month = window._payrollMonth || getTodayStr().substring(0, 7);
+  const printDate = window._payrollPrintDate || getTodayStr();
   const settings = getPayrollSettings();
   const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
   const monthData = (allData.payroll && allData.payroll[month] && allData.payroll[month].internal_data) || {};
@@ -5629,8 +5641,8 @@ window._printSavingsSummary = () => {
 };
 
 window._printOvertimeSummary = () => {
-  const month = window._payrollMonth || today().substring(0, 7);
-  const printDate = window._payrollPrintDate || today();
+  const month = window._payrollMonth || getTodayStr().substring(0, 7);
+  const printDate = window._payrollPrintDate || getTodayStr();
   const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
   const monthData = (allData.payroll && allData.payroll[month] && allData.payroll[month].internal_data) || {};
   
