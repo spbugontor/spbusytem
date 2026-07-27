@@ -5000,7 +5000,16 @@ window._exportToExcel = (reportType) => {
       const otShifts = Number(empData.overtime_shifts || 0);
       const otAmt = otShifts * 50000;
 
-      const tabunganAmt = Number(empData.savings_deduction !== undefined ? empData.savings_deduction : (tenureMonths >= 6 ? 50000 : 0));
+      const savedSavingsFromMenu = getEmployeeSavingsForMonth(empId, month);
+      let tabunganAmt = 0;
+      if (savedSavingsFromMenu > 0) {
+        tabunganAmt = savedSavingsFromMenu;
+      } else if (empData.savings_deduction !== undefined && empData.savings_deduction !== 50000) {
+        tabunganAmt = Number(empData.savings_deduction);
+      } else {
+        tabunganAmt = 0;
+      }
+
       const gajiKotor = gajiPokok + tunjJabatanAmt + tunjKinerjaAmt + tunjMasaKerjaAmt + pwAmount + otAmt;
       const gajiBersih = gajiKotor - tabunganAmt;
 
@@ -5154,7 +5163,14 @@ function renderInternalPayrollTab() {
                           otAmt + customTunjSum;
     const gajiKotor = gajiPokok + totalTambahan;
     const savedSavingsFromMenu = getEmployeeSavingsForMonth(empId, month);
-    const tabunganAmt = Number(empData.savings_deduction !== undefined ? empData.savings_deduction : savedSavingsFromMenu);
+    let tabunganAmt = 0;
+    if (savedSavingsFromMenu > 0) {
+      tabunganAmt = savedSavingsFromMenu;
+    } else if (empData.savings_deduction !== undefined && empData.savings_deduction !== 50000) {
+      tabunganAmt = Number(empData.savings_deduction);
+    } else {
+      tabunganAmt = 0;
+    }
     const gajiBersih = gajiKotor - tabunganAmt;
 
     totalGajiKotorAll += gajiKotor;
@@ -5520,7 +5536,15 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 4) => {
                           otAmt;
 
     const gajiKotor = gajiPokok + totalTambahan;
-    const tabunganAmt = Number(empData.savings_deduction !== undefined ? empData.savings_deduction : 0);
+    const savedSavingsFromMenu = getEmployeeSavingsForMonth(empId, month);
+    let tabunganAmt = 0;
+    if (savedSavingsFromMenu > 0) {
+      tabunganAmt = savedSavingsFromMenu;
+    } else if (empData.savings_deduction !== undefined && empData.savings_deduction !== 50000) {
+      tabunganAmt = Number(empData.savings_deduction);
+    } else {
+      tabunganAmt = 0;
+    }
     const gajiBersih = gajiKotor - tabunganAmt;
 
     const slipHTML = `<div class="slip-box">
@@ -5927,7 +5951,12 @@ window._printInternalPayrollSummary = () => {
     const mkAmt = tunjMasaKerjaEnabled ? tunjMasaKerjaAmt : 0;
     const pwVal = pwEnabled ? pwAmount : 0;
 
-    const tabunganAmt = Number(empData.savings_deduction !== undefined ? empData.savings_deduction : 0);
+    const tabunganAmt = (() => {
+      const savedSavingsFromMenu = getEmployeeSavingsForMonth(u.emp_id, month);
+      if (savedSavingsFromMenu > 0) return savedSavingsFromMenu;
+      if (empData.savings_deduction !== undefined && empData.savings_deduction !== 50000) return Number(empData.savings_deduction);
+      return 0;
+    })();
     const gajiKotor = gajiPokok + jAmt + kAmt + mkAmt + pwVal + otAmt;
     const gajiBersih = gajiKotor - tabunganAmt;
 
@@ -6065,8 +6094,16 @@ window._printSavingsSummary = () => {
     const monthCells = monthsList.map((m, mIdx) => {
       const monthKey = `${currentYear}-${(mIdx + 1).toString().padStart(2, '0')}`;
       const mData = (allData.payroll && allData.payroll[monthKey] && allData.payroll[monthKey].internal_data && allData.payroll[monthKey].internal_data[u.emp_id]) || {};
-      const tenureMonths = getTenureMonths(u.join_date || u.created_at);
-      const amt = Number(mData.savings_deduction !== undefined ? mData.savings_deduction : 0);
+      const menuSavings = getEmployeeSavingsForMonth(u.emp_id, monthKey);
+      let amt = 0;
+      if (menuSavings > 0) {
+        amt = menuSavings;
+      } else if (mData.savings_deduction !== undefined && mData.savings_deduction !== 50000) {
+        amt = Number(mData.savings_deduction);
+      } else {
+        amt = 0;
+      }
+
       if (amt > 0) empTotal += amt;
       return `<td style="text-align:right;">${amt > 0 ? fmt(amt) : 'Rp -'}</td>`;
     }).join('');
