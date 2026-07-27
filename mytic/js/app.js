@@ -114,7 +114,7 @@ function getLeaves(empId) { return Object.entries(allData.leaves).filter(([, v])
 function getSavings(empId) { return Object.entries(allData.savings).filter(([, v]) => empId ? v.emp_id === empId : true).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (b.date || '').localeCompare(a.date || '') || b._key.localeCompare(a._key)); }
 function getViolations(empId) { return Object.entries(allData.violations).filter(([, v]) => empId ? v.emp_id === empId : true).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (b.date || '').localeCompare(a.date || '') || b._key.localeCompare(a._key)); }
 function getRatings(empId) { return Object.entries(allData.ratings).filter(([, v]) => empId ? v.emp_id === empId : true).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (b.date || '').localeCompare(a.date || '') || b._key.localeCompare(a._key)); }
-function getCriteria(pos) { return Object.entries(allData.criteria || {}).filter(([, v]) => { if (!pos) return true; const p = v.position; if (!p) return true; if (Array.isArray(p)) return p.includes('Semua') || p.includes(pos); const pStr = String(p); if (pStr === 'Semua' || pStr === pos) return true; return pStr.split(',').map(s => s.trim()).includes(pos); }).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (a.name || '').localeCompare(b.name || '')); }
+function getCriteria(pos) { return Object.entries(allData.criteria || {}).filter(([, v]) => { if (!pos) return true; const p = v.position; if (!p) return true; if (Array.isArray(p)) return p.includes('Semua') || p.includes(pos); const pStr = String(p); if (pStr === 'Semua' || pStr === pos) return true; return pStr.split(',').map(s => s.trim()).includes(pos); }).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0) || (a._key || '').localeCompare(b._key || '')); }
 function getLeaveTypes() { return Object.entries(allData.leave_types).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (a.name || '').localeCompare(b.name || '')); }
 function getPinHistory(empId) { return Object.entries(allData.pin_history || {}).filter(([, v]) => empId ? v.emp_id === empId : true).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || '')); }
 
@@ -3316,7 +3316,8 @@ window._saveCriteria = async (key) => {
   const checkedCbs = Array.from(document.querySelectorAll('.cf-pos-cb:checked')).map(cb => cb.value);
   const position = (checkedCbs.length === 0 || checkedCbs.includes('Semua')) ? ['Semua'] : checkedCbs;
 
-  const data = { indicator, name, position };
+  const existingTimestamp = key && allData.criteria[key] ? (allData.criteria[key].timestamp || Date.now()) : Date.now();
+  const data = { indicator, name, position, timestamp: existingTimestamp };
   if (key) {
     window._activeCriteriaFormState = null;
     await update(ref(db, 'criteria/' + key), data);
