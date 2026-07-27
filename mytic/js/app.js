@@ -4549,9 +4549,10 @@ function renderPayrollPage() {
 function getPayrollSettings() {
   const s = allData.payroll_settings || {};
   return {
-    umk_staf: Number(s.umk_staf || 2549876),
-    umk_manager: Number(s.umk_manager || 3059851),
-    bpjs_percent: Number(s.bpjs_percent || 1),
+    gaji_pokok_internal_staf: Number(s.gaji_pokok_internal_staf !== undefined ? s.gaji_pokok_internal_staf : 1000000),
+    umk_staf: Number(s.umk_staf !== undefined ? s.umk_staf : 2549876),
+    umk_manager: Number(s.umk_manager !== undefined ? s.umk_manager : 3059851),
+    bpjs_percent: Number(s.bpjs_percent !== undefined ? s.bpjs_percent : 1),
     name_finance_manager: s.name_finance_manager || 'Hazel Hudaya Bisri',
     name_audit_supervisor: s.name_audit_supervisor || 'Gilang Wahyu Ramadhan',
     name_audit_manager: s.name_audit_manager || 'Pedri Fauzi',
@@ -4655,6 +4656,7 @@ window._resetPayrollMonthData = async () => {
 
 window._savePayrollSettings = async () => {
   const settings = {
+    gaji_pokok_internal_staf: Number($('set-gaji-pokok-internal').value || 1000000),
     umk_staf: Number($('set-umk-staf').value || 2549876),
     umk_manager: Number($('set-umk-manager').value || 3059851),
     bpjs_percent: Number($('set-bpjs-percent').value || 1),
@@ -4880,7 +4882,7 @@ window._exportToExcel = (reportType) => {
       const defaultPwRound = isSpvAdmin ? 150000 : 100000;
       const tenureMonths = getTenureMonths(u.join_date || u.created_at);
 
-      const gajiPokok = Number(empData.gaji_pokok !== undefined ? empData.gaji_pokok : settings.umk_staf);
+      const gajiPokok = Number(empData.gaji_pokok !== undefined ? empData.gaji_pokok : settings.gaji_pokok_internal_staf);
 
       const tunjData = empData.tunjangan || {};
       const tunjJabatanEnabled = tunjData['tunj_jabatan'] ? tunjData['tunj_jabatan'].enabled : (pos.toLowerCase() !== 'cleaning service' && !pos.toLowerCase().includes('cs'));
@@ -5044,7 +5046,7 @@ function renderInternalPayrollTab() {
     const otAmt = otShifts * 50000;
     totalLemburAll += otAmt;
 
-    const gajiPokok = Number(empData.gaji_pokok !== undefined ? empData.gaji_pokok : settings.umk_staf);
+    const gajiPokok = Number(empData.gaji_pokok !== undefined ? empData.gaji_pokok : settings.gaji_pokok_internal_staf);
     const totalTambahan = (tunjJabatanEnabled ? tunjJabatanAmt : 0) +
                           (tunjKinerjaEnabled ? tunjKinerjaAmt : 0) +
                           (tunjMasaKerjaEnabled ? tunjMasaKerjaAmt : 0) +
@@ -5285,20 +5287,24 @@ function renderPayrollSettingsTab() {
   return `<div class="fade-in">
     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.25rem;">
       <div class="card">
-        <h4 style="font-size:1rem; font-weight:800; color:var(--primary); margin-bottom:1rem;">💰 Pengaturan UMK & BPJS (Mode Audit)</h4>
+        <h4 style="font-size:1rem; font-weight:800; color:var(--primary); margin-bottom:1rem;">💰 Pengaturan Gaji Pokok & UMK</h4>
         <div class="form-group">
-          <label class="form-label">Gaji Pokok UMK Staf (Rp)</label>
+          <label class="form-label">Gaji Pokok Internal Staf (Rp)</label>
+          <input id="set-gaji-pokok-internal" type="number" value="${s.gaji_pokok_internal_staf}" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Gaji Pokok UMK Staf (Audit) (Rp)</label>
           <input id="set-umk-staf" type="number" value="${s.umk_staf}" class="form-input">
         </div>
         <div class="form-group">
-          <label class="form-label">Gaji Pokok UMK Manajer (Rp)</label>
+          <label class="form-label">Gaji Pokok UMK Manajer (Audit) (Rp)</label>
           <input id="set-umk-manager" type="number" value="${s.umk_manager}" class="form-input">
         </div>
         <div class="form-group">
-          <label class="form-label">Potongan BPJS Kesehatan (%)</label>
+          <label class="form-label">Potongan BPJS Kesehatan Audit (%)</label>
           <input id="set-bpjs-percent" type="number" step="0.1" value="${s.bpjs_percent}" class="form-input">
         </div>
-        <button class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="window._savePayrollSettings()">Simpan Pengaturan UMK</button>
+        <button class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="window._savePayrollSettings()">Simpan Pengaturan Master Gaji</button>
       </div>
 
       <div class="card">
@@ -5406,7 +5412,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 4) => {
       }
     });
 
-    const gajiPokok = 1000000;
+    const gajiPokok = Number(empData.gaji_pokok !== undefined ? empData.gaji_pokok : settings.gaji_pokok_internal_staf);
     const totalTambahan = (tunjJabatanEnabled ? tunjJabatanAmt : 0) +
                           (tunjKinerjaEnabled ? tunjKinerjaAmt : 0) +
                           (tunjMasaKerjaEnabled ? tunjMasaKerjaAmt : 0) +
@@ -5775,7 +5781,7 @@ window._printInternalPayrollSummary = () => {
 
     const otShifts = Number(empData.overtime_shifts || 0);
     const otAmt = otShifts * 50000;
-    const gajiPokok = 1000000;
+    const gajiPokok = Number(empData.gaji_pokok !== undefined ? empData.gaji_pokok : settings.gaji_pokok_internal_staf);
 
     const jAmt = tunjJabatanEnabled ? tunjJabatanAmt : 0;
     const kAmt = tunjKinerjaEnabled ? tunjKinerjaAmt : 0;
