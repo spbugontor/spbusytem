@@ -3640,22 +3640,33 @@ function calculateEmployeeKpi(emp, period) {
 
   const trackRecordScore = Math.max(0, 100 - penalty);
 
-  // 5. FAIR Composite KPI Score Calculation:
-  // For Operator: 35% Attendance + 25% SOP + 25% Rating + 15% Track Record = 100%
-  // For Non-Operator (Admin, Supervisor, Manager, CS): 50% Attendance + 35% Rating + 15% Track Record = 100%
+  // 5. Debit / Tunggakan Akuntabilitas Keuangan (0 - 100)
+  const totalDebitAmt = Math.max(0, calcBalance(emp.emp_id));
+  const debitTxns = getTxns(emp.emp_id).filter(t => t.type === 'debit');
+  const debitTxCount = debitTxns.length;
+
+  const nominalPenalty = Math.floor(totalDebitAmt / 50000) * 5;
+  const frequencyPenalty = debitTxCount * 5;
+  const debitScore = Math.max(0, 100 - (nominalPenalty + frequencyPenalty));
+
+  // 6. FAIR Composite KPI Score Calculation:
+  // For Operator: 30% Attendance + 20% SOP + 25% Rating + 15% Debit + 10% Track Record = 100%
+  // For Non-Operator: 45% Attendance + 30% Rating + 15% Debit + 10% Track Record = 100%
   let compositeScore = 0;
   if (isOperator) {
     compositeScore = Math.round(
-      (attendanceRate * 0.35) +
-      ((sopRate || 95) * 0.25) +
+      (attendanceRate * 0.30) +
+      ((sopRate || 95) * 0.20) +
       (ratingScore * 0.25) +
-      (trackRecordScore * 0.15)
+      (debitScore * 0.15) +
+      (trackRecordScore * 0.10)
     );
   } else {
     compositeScore = Math.round(
-      (attendanceRate * 0.50) +
-      (ratingScore * 0.35) +
-      (trackRecordScore * 0.15)
+      (attendanceRate * 0.45) +
+      (ratingScore * 0.30) +
+      (debitScore * 0.15) +
+      (trackRecordScore * 0.10)
     );
   }
 
@@ -3666,6 +3677,9 @@ function calculateEmployeeKpi(emp, period) {
     sopRate,
     avgRating: avgRatingNum.toFixed(1),
     ratingScore,
+    totalDebitAmt,
+    debitTxCount,
+    debitScore,
     trackRecordScore,
     violationCount: violationRecords.length,
     compositeScore
@@ -3691,6 +3705,7 @@ function renderLeaderboardPage() {
     if (selectedMetric === 'attendance') targetValue = kpi.attendanceRate;
     else if (selectedMetric === 'sop') targetValue = kpi.isOperator ? (kpi.sopRate || 0) : 0;
     else if (selectedMetric === 'rating') targetValue = kpi.ratingScore;
+    else if (selectedMetric === 'debit') targetValue = kpi.debitScore;
 
     return {
       user: u,
@@ -3737,6 +3752,7 @@ function renderLeaderboardPage() {
               <option value="attendance" ${selectedMetric === 'attendance' ? 'selected' : ''}>Kedisiplinan Kehadiran</option>
               <option value="sop" ${selectedMetric === 'sop' ? 'selected' : ''}>Kepatuhan Ceklis SOP (Khusus Operator)</option>
               <option value="rating" ${selectedMetric === 'rating' ? 'selected' : ''}>Rating Evaluasi Kinerja</option>
+              <option value="debit" ${selectedMetric === 'debit' ? 'selected' : ''}>💳 Akuntabilitas Keuangan (Tunggakan)</option>
             </select>
           </div>
           <div>
@@ -3769,7 +3785,7 @@ function renderLeaderboardPage() {
               <th style="width:70px; text-align:center;">Peringkat</th>
               <th>Nama Karyawan</th>
               <th>Jabatan</th>
-              <th style="min-width:220px;">Rincian Indikator KPI</th>
+              <th style="min-width:240px;">Rincian Indikator KPI</th>
               <th style="text-align:right; width:130px;">Skor KPI</th>
             </tr>
           </thead>
@@ -3821,7 +3837,8 @@ function renderLeaderboardPage() {
                       <span class="kpi-pill" title="Kedisiplinan Kehadiran Tepat Waktu">⏱️ ${kpi.attendanceRate}% Hadir</span>
                       ${kpi.isOperator ? `<span class="kpi-pill" title="Kepatuhan Ceklis SOP">📋 ${kpi.sopRate}% SOP</span>` : `<span class="kpi-pill" style="opacity:0.6;" title="Ceklis SOP Hanya Khusus Jabatan Operator">📋 SOP (N/A)</span>`}
                       <span class="kpi-pill" title="Rating Penilaian Kinerja">⭐ ${kpi.avgRating} / 5</span>
-                      ${kpi.violationCount > 0 ? `<span class="kpi-pill" style="color:var(--danger); border-color:var(--danger-bg);" title="Jumlah Pelanggaran Active">⚠️ ${kpi.violationCount} SP</span>` : `<span class="kpi-pill" style="color:var(--success);" title="Bebas Pelanggaran">🛡️ Clean</span>`}
+                      ${kpi.totalDebitAmt > 0 ? `<span class="kpi-pill" style="color:var(--danger); border-color:var(--danger-bg);" title="Tunggakan Aktif Rp ${fmt(kpi.totalDebitAmt)} (${kpi.debitTxCount} Transaksi)">💳 Rp ${fmt(kpi.totalDebitAmt)}</span>` : `<span class="kpi-pill" style="color:var(--success);" title="Bebas Tunggakan / Minus">💳 Clean</span>`}
+                      ${kpi.violationCount > 0 ? `<span class="kpi-pill" style="color:var(--danger); border-color:var(--danger-bg);" title="Jumlah Pelanggaran Active">⚠️ ${kpi.violationCount} SP</span>` : `<span class="kpi-pill" style="color:var(--success);" title="Bebas Pelanggaran">🛡️ SP Clean</span>`}
                     </div>
                     <div class="kpi-bar-bg">
                       <div class="kpi-bar-fill" style="width:${isNA ? 0 : Math.min(100, Math.max(5, score))}%; background:${isNA ? 'var(--border)' : barColor};"></div>
