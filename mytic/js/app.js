@@ -5046,8 +5046,7 @@ window._exportToExcel = (reportType) => {
       const otShifts = Number(empData.overtime_shifts || 0);
       const otAmt = otShifts * 50000;
 
-      const prevMonth = getPrevMonthStr(month);
-      const tabunganAmt = getEmployeeSavingsForMonth(empId, prevMonth);
+      const tabunganAmt = Number(empData.savings_deduction || 0);
 
       const gajiKotor = gajiPokok + tunjJabatanAmt + tunjKinerjaAmt + tunjMasaKerjaAmt + pwAmount + otAmt;
       const gajiBersih = gajiKotor - tabunganAmt;
@@ -5201,8 +5200,7 @@ function renderInternalPayrollTab() {
                           (pwEnabled ? pwAmount : 0) +
                           otAmt + customTunjSum;
     const gajiKotor = gajiPokok + totalTambahan;
-    const prevMonth = getPrevMonthStr(month);
-    const tabunganAmt = getEmployeeSavingsForMonth(empId, prevMonth);
+    const tabunganAmt = Number(empData.savings_deduction || 0);
     const gajiBersih = gajiKotor - tabunganAmt;
 
     totalGajiKotorAll += gajiKotor;
@@ -5568,8 +5566,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 4) => {
                           otAmt;
 
     const gajiKotor = gajiPokok + totalTambahan;
-    const prevMonth = getPrevMonthStr(month);
-    const tabunganAmt = getEmployeeSavingsForMonth(empId, prevMonth);
+    const tabunganAmt = Number(empData.savings_deduction || 0);
     const gajiBersih = gajiKotor - tabunganAmt;
 
     const slipHTML = `<div class="slip-box">
@@ -5976,8 +5973,7 @@ window._printInternalPayrollSummary = () => {
     const mkAmt = tunjMasaKerjaEnabled ? tunjMasaKerjaAmt : 0;
     const pwVal = pwEnabled ? pwAmount : 0;
 
-    const prevMonth = getPrevMonthStr(month);
-    const tabunganAmt = getEmployeeSavingsForMonth(u.emp_id, prevMonth);
+    const tabunganAmt = Number(empData.savings_deduction || 0);
     const gajiKotor = gajiPokok + jAmt + kAmt + mkAmt + pwVal + otAmt;
     const gajiBersih = gajiKotor - tabunganAmt;
 
@@ -6113,8 +6109,9 @@ window._printSavingsSummary = () => {
   const rows = users.map((u, idx) => {
     let empTotal = 0;
     const monthCells = monthsList.map((m, mIdx) => {
-      const tabMonthKey = `${currentYear}-${(mIdx + 1).toString().padStart(2, '0')}`;
-      const amt = getEmployeeSavingsForMonth(u.emp_id, tabMonthKey);
+      const monthKey = `${currentYear}-${(mIdx + 1).toString().padStart(2, '0')}`;
+      const mData = (allData.payroll && allData.payroll[monthKey] && allData.payroll[monthKey].internal_data && allData.payroll[monthKey].internal_data[u.emp_id]) || {};
+      const amt = Number(mData.savings_deduction || 0);
 
       if (amt > 0) empTotal += amt;
       return `<td style="text-align:right;">${amt > 0 ? fmt(amt) : 'Rp -'}</td>`;
