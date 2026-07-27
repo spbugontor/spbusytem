@@ -3557,13 +3557,37 @@ function calculateEmployeeKpi(emp, period) {
   });
 
   let onTimeCount = 0;
+  let totalSecLate = 0;
   let totalWorkDays = absensiRecords.length;
+
+  const SHIFTS_DEF = {
+    'Pagi': { start: [6, 0] },
+    'Siang': { start: [14, 0] },
+    'Malam': { start: [22, 0] },
+    'Shift 1': { start: [6, 0] },
+    'Shift 2': { start: [14, 0] },
+    'Shift 3': { start: [22, 0] }
+  };
 
   absensiRecords.forEach(r => {
     const st = (r.status || r.type || '').toString().toLowerCase();
     if (r.clock_in && r.clock_in !== '-' && !['sakit', 'izin', 'cuti', 'libur', 'off'].includes(st)) {
       if ((r.late_minutes || 0) <= 0 && st !== 'terlambat') {
         onTimeCount++;
+      }
+      let parts = (r.clock_in || '').split(':').map(Number);
+      if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+        let h = parts[0], m = parts[1], s = parts[2] || 0;
+        let sName = (r.shift || 'Pagi').toString();
+        let sh = SHIFTS_DEF[sName] || SHIFTS_DEF['Pagi'];
+        let startSec = sh.start[0] * 3600 + sh.start[1] * 60;
+        let currentSec = h * 3600 + m * 60 + s;
+        let diffSec = currentSec - startSec;
+        if (sName.includes('3') || sName.toLowerCase().includes('malam')) {
+          if (diffSec < -43200) diffSec += 86400;
+          if (diffSec > 43200) diffSec -= 86400;
+        }
+        totalSecLate += diffSec;
       }
     }
   });
@@ -3640,6 +3664,7 @@ function calculateEmployeeKpi(emp, period) {
   return {
     isOperator,
     attendanceRate,
+    totalSecLate,
     sopRate,
     avgRating: avgRatingNum.toFixed(1),
     ratingScore,
@@ -3676,8 +3701,14 @@ function renderLeaderboardPage() {
     };
   });
 
-  // Sort descending by targetValue
-  rankedUsers.sort((a, b) => b.targetValue - a.targetValue);
+  // Sort descending by targetValue with exact cumulative early clock-in tie-breaker!
+  rankedUsers.sort((a, b) => {
+    if (b.targetValue !== a.targetValue) {
+      return b.targetValue - a.targetValue;
+    }
+    // Tie-breaker: lowest totalSecLate (earliest cumulative clock-in) wins #1 rank!
+    return (a.kpi.totalSecLate || 0) - (b.kpi.totalSecLate || 0);
+  });
 
   return `<div class="fade-in">
     <!-- FILTER BAR -->
