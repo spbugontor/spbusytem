@@ -3514,20 +3514,17 @@ window._onLeaderboardFilterChange = () => {
 
 function isRecordForUser(item, user) {
   if (!item || !user) return false;
-  const target = (item.emp_id || item.empId || item.username || item.emp_name || item.empName || item.user_id || '').toString().toLowerCase().trim();
-  if (!target) return false;
 
-  const uId = (user.id || '').toString().toLowerCase().trim();
-  const uKey = (user._key || '').toString().toLowerCase().trim();
-  const uEmpId = (user.emp_id || '').toString().toLowerCase().trim();
-  const uUsername = (user.username || '').toString().toLowerCase().trim();
-  const uName = (user.name || '').toString().toLowerCase().trim();
+  const itemEmpId = (item.emp_id || item.empId || item.user_id || '').toString().toLowerCase().trim();
+  const itemEmpName = (item.emp_name || item.empName || item.username || item.name || '').toString().toLowerCase().trim();
 
-  return (uId && target === uId) ||
-         (uKey && target === uKey) ||
-         (uEmpId && target === uEmpId) ||
-         (uUsername && target === uUsername) ||
-         (uName && target === uName);
+  const userEmpId = (user.emp_id || user.id || user._key || '').toString().toLowerCase().trim();
+  const userName = (user.name || user.username || '').toString().toLowerCase().trim();
+
+  if (itemEmpId && userEmpId && itemEmpId === userEmpId) return true;
+  if (itemEmpName && userName && (itemEmpName === userName || itemEmpName.includes(userName) || userName.includes(itemEmpName))) return true;
+
+  return false;
 }
 
 function calculateEmployeeKpi(emp, period) {
@@ -3560,13 +3557,11 @@ function calculateEmployeeKpi(emp, period) {
   let totalSecLate = 0;
   let totalWorkDays = absensiRecords.length;
 
-  const SHIFTS_DEF = {
-    'Pagi': { start: [6, 0] },
-    'Siang': { start: [14, 0] },
-    'Malam': { start: [22, 0] },
-    'Shift 1': { start: [6, 0] },
-    'Shift 2': { start: [14, 0] },
-    'Shift 3': { start: [22, 0] }
+  const ABSENSI_SHIFTS = {
+    '1': { start: [4, 45], label: 'Shift 1 (04:45–12:45)' },
+    '2': { start: [12, 45], label: 'Shift 2 (12:45–21:15)' },
+    '3': { start: [21, 15], label: 'Shift 3 (21:15–04:45)' },
+    'admin': { start: [7, 0], label: 'Admin (07:00–15:00)' }
   };
 
   absensiRecords.forEach(r => {
@@ -3578,15 +3573,18 @@ function calculateEmployeeKpi(emp, period) {
       let parts = (r.clock_in || '').split(':').map(Number);
       if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
         let h = parts[0], m = parts[1], s = parts[2] || 0;
-        let sName = (r.shift || 'Pagi').toString();
-        let sh = SHIFTS_DEF[sName] || SHIFTS_DEF['Pagi'];
-        let startSec = sh.start[0] * 3600 + sh.start[1] * 60;
+        let sName = (r.shift || '').toString();
+        let sKey = Object.keys(ABSENSI_SHIFTS).find(k => {
+          const lbl = ABSENSI_SHIFTS[k].label;
+          return sName === lbl || sName === k || sName.includes(lbl.split(' (')[0]);
+        }) || '1';
+
+        const sh = ABSENSI_SHIFTS[sKey] || ABSENSI_SHIFTS['1'];
+        const startSec = sh.start[0] * 3600 + sh.start[1] * 60;
         let currentSec = h * 3600 + m * 60 + s;
         let diffSec = currentSec - startSec;
-        if (sName.includes('3') || sName.toLowerCase().includes('malam')) {
-          if (diffSec < -43200) diffSec += 86400;
-          if (diffSec > 43200) diffSec -= 86400;
-        }
+        if (sKey === '3' && diffSec < -43200) diffSec += 86400;
+        if (sKey === '3' && diffSec > 43200) diffSec -= 86400;
         totalSecLate += diffSec;
       }
     }
@@ -3706,8 +3704,12 @@ function renderLeaderboardPage() {
     if (b.targetValue !== a.targetValue) {
       return b.targetValue - a.targetValue;
     }
-    // Tie-breaker: lowest totalSecLate (earliest cumulative clock-in) wins #1 rank!
-    return (a.kpi.totalSecLate || 0) - (b.kpi.totalSecLate || 0);
+    // Tie-breaker 1: Lowest totalSecLate (earliest cumulative clock-in) wins #1 rank!
+    if (a.kpi.totalSecLate !== b.kpi.totalSecLate) {
+      return a.kpi.totalSecLate - b.kpi.totalSecLate;
+    }
+    // Tie-breaker 2: Higher attendance rate
+    return b.kpi.attendanceRate - a.kpi.attendanceRate;
   });
 
   return `<div class="fade-in">
