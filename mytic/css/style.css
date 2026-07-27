@@ -151,20 +151,135 @@ body {
 .btn-primary:hover {
   background: linear-gradient(135deg, var(--primary-hover), var(--primary));
   transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 8px 20px rgba(241, 88, 0, 0.5);
+  box-shadow: 0 8px 20px 0 var(--primary-shadow, rgba(241, 88, 0, 0.5));
 }
 .btn-secondary {
   background: var(--bg-color);
   color: var(--text-main);
   border: 1px solid var(--border);
+  transition: all 0.25s ease;
 }
-.btn-secondary:hover { background: var(--surface-hover); }
-.btn-danger { background: var(--danger); color: white; }
-.btn-danger:hover { background: #DC2626; }
-.btn-outline-danger { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
-.btn-outline-danger:hover { background: var(--danger-bg); }
-.btn-warning { background: #F59E0B; color: white; }
-.btn-warning:hover { background: #D97706; }
+.btn-secondary:hover {
+  background: var(--surface-hover);
+  transform: translateY(-1px);
+}
+
+/* Red Danger/Debit Button Shimmer & Shadow Glow */
+.btn-danger {
+  position: relative;
+  background: linear-gradient(135deg, #EF4444, #DC2626);
+  color: white !important;
+  box-shadow: 0 4px 14px 0 rgba(239, 68, 68, 0.39);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-danger::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    60deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 70%
+  );
+  transform: rotate(30deg) translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.btn-danger:hover::before {
+  transform: rotate(30deg) translateX(100%);
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #B91C1C, #EF4444);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.5);
+}
+
+.btn-outline-danger { background: transparent; border: 1px solid var(--danger); color: var(--danger); transition: all 0.25s ease; }
+.btn-outline-danger:hover { background: var(--danger-bg); transform: translateY(-1px); }
+
+/* Green Success/Kredit Button Shimmer & Shadow Glow */
+.btn-success {
+  position: relative;
+  background: linear-gradient(135deg, #10B981, #059669);
+  color: white !important;
+  box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.39);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-success::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    60deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 70%
+  );
+  transform: rotate(30deg) translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.btn-success:hover::before {
+  transform: rotate(30deg) translateX(100%);
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #047857, #10B981);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.5);
+}
+
+/* Warning Button */
+.btn-warning {
+  position: relative;
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+  color: white !important;
+  box-shadow: 0 4px 14px 0 rgba(245, 158, 11, 0.39);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-warning::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    60deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 70%
+  );
+  transform: rotate(30deg) translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.btn-warning:hover::before {
+  transform: rotate(30deg) translateX(100%);
+}
+
+.btn-warning:hover {
+  background: linear-gradient(135deg, #B45309, #F59E0B);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.5);
+}
 
 /* -------------------------------------
    INPUTS & FORMS
