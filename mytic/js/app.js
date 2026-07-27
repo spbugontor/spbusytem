@@ -5532,27 +5532,33 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 4) => {
         const btnBar = document.querySelector('.no-print');
         if (btnBar) btnBar.style.display = 'none';
         if (window.html2pdf) {
-          const opt = { margin:[4,4,4,4], filename:'Slip_Gaji_Amplop_${month}.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} };
+          const opt = {
+            margin: [3, 3, 3, 3],
+            filename: 'Slip_Gaji_Amplop_${month}.pdf',
+            image: { type: 'jpeg', quality: 1.0 },
+            html2canvas: { scale: 4, useCORS: true, logging: false, letterRendering: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true }
+          };
           html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
         } else { if (btnBar) btnBar.style.display = 'flex'; window.print(); }
       }
     </script>
     <style>
-      @page { size: ${paperSize === 'F4' ? '215mm 330mm' : 'A4'} portrait; margin: 6mm; }
+      @page { size: ${paperSize === 'F4' ? '215mm 330mm' : 'A4'} portrait; margin: 5mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 0; background: #fff; }
+      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 0; background: #fff; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
       .page-grid { display: grid; grid-template-columns: 1fr 1fr; grid-gap: 8px; page-break-after: always; width: 100%; height: 100%; min-height: 95vh; }
       .per-page-4 { grid-template-rows: 1fr 1fr; }
       .per-page-6 { grid-template-rows: 1fr 1fr 1fr; }
       .slip-box { border: 1.5px dashed #000; padding: 8px 10px; display: flex; flex-direction: column; justify-content: space-between; background: #fff; }
-      .slip-header { background: #d1d5db !important; border: 1px solid #000; text-align: center; padding: 3px; font-weight: bold; }
-      .yellow-bar { background: #facc15 !important; border: 1px solid #000; padding: 4px 8px; font-weight: 900; font-size: 11.5px; display: flex; justify-content: space-between; align-items: center; }
+      .slip-header { background: #e2e8f0 !important; border: 1.2px solid #000; text-align: center; padding: 4px; font-weight: bold; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+      .yellow-bar { background: #fef08a !important; border: 1.2px solid #000; padding: 4px 8px; font-weight: 900; font-size: 11.5px; display: flex; justify-content: space-between; align-items: center; }
       @media print { .no-print { display: none !important; } }
     </style>
   </head>
   <body>
     <div class="no-print" style="padding:8px 12px; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-bottom:10px; display:flex; justify-content:flex-end; gap:8px; align-items:center;">
-      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE PDF DIRECT</button>
+      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Super HD)</button>
       <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Slip Amplop (Printer)</button>
       <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">✕ Tutup</button>
     </div>
@@ -5601,26 +5607,32 @@ window._printAuditDocuments = () => {
         const btnBar = document.querySelector('.no-print');
         if (btnBar) btnBar.style.display = 'none';
         if (window.html2pdf) {
-          const opt = { margin:[5,5,5,5], filename:'Dokumen_Audit_Pertamina_${month}.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} };
+          const opt = {
+            margin: [4, 4, 4, 4],
+            filename: 'Dokumen_Audit_Pertamina_${month}.pdf',
+            image: { type: 'jpeg', quality: 1.0 },
+            html2canvas: { scale: 4, useCORS: true, logging: false, letterRendering: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true }
+          };
           html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
         } else { if (btnBar) btnBar.style.display = 'flex'; window.print(); }
       }
     </script>
     <style>
-      @page { size: A4 portrait; margin: 10mm; }
+      @page { size: A4 portrait; margin: 8mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 10px; background: #fff; font-size: 11px; }
-      .title-head { text-align: center; font-weight: 900; font-size: 15px; text-decoration: underline; text-transform: uppercase; margin-bottom: 2px; }
-      .subtitle-head { text-align: center; font-weight: 800; font-size: 13px; margin-bottom: 12px; }
+      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 10px; background: #fff; font-size: 11px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+      .title-head { text-align: center; font-weight: 900; font-size: 15px; text-decoration: underline; text-transform: uppercase; margin-bottom: 3px; letter-spacing: 0.5px; }
+      .subtitle-head { text-align: center; font-weight: 800; font-size: 12.5px; margin-bottom: 12px; letter-spacing: 0.3px; }
       table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10.5px; }
-      th, td { border: 1px solid #000; padding: 4px 6px; }
-      th { background: #d1d5db !important; font-weight: bold; text-align: center; text-transform: uppercase; }
+      th, td { border: 1.2px solid #000; padding: 4.5px 6px; }
+      th { background: #e2e8f0 !important; font-weight: bold; text-align: center; text-transform: uppercase; font-size: 10px; letter-spacing: 0.3px; }
       @media print { .no-print { display: none !important; } }
     </style>
   </head>
   <body>
     <div class="no-print" style="padding:8px 12px; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-bottom:10px; display:flex; justify-content:flex-end; gap:8px; align-items:center;">
-      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE PDF DIRECT</button>
+      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Super HD)</button>
       <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Dokumen Audit (3 Halaman)</button>
       <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">✕ Tutup</button>
     </div>
@@ -5912,20 +5924,26 @@ window._printInternalPayrollSummary = () => {
         const btnBar = document.querySelector('.no-print');
         if (btnBar) btnBar.style.display = 'none';
         if (window.html2pdf) {
-          const opt = { margin:[4,4,4,4], filename:'Rekap_Gaji_Internal_${month}.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true}, jsPDF:{unit:'mm',format:'a4',orientation:'landscape'} };
+          const opt = {
+            margin: [3, 3, 3, 3],
+            filename: 'Rekap_Gaji_Internal_${month}.pdf',
+            image: { type: 'jpeg', quality: 1.0 },
+            html2canvas: { scale: 4, useCORS: true, logging: false, letterRendering: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }
+          };
           html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
         } else { if (btnBar) btnBar.style.display = 'flex'; window.print(); }
       }
     </script>
     <style>
-      @page { size: A4 landscape; margin: 8mm; }
+      @page { size: A4 landscape; margin: 6mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 10px; background: #fff; font-size: 10px; }
-      .title-head { text-align: center; font-weight: 900; font-size: 15px; text-decoration: underline; text-transform: uppercase; margin-bottom: 2px; }
-      .subtitle-head { text-align: center; font-weight: 800; font-size: 12px; margin-bottom: 12px; }
+      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 10px; background: #fff; font-size: 10px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+      .title-head { text-align: center; font-weight: 900; font-size: 16px; text-decoration: underline; text-transform: uppercase; margin-bottom: 3px; letter-spacing: 0.5px; }
+      .subtitle-head { text-align: center; font-weight: 800; font-size: 12.5px; margin-bottom: 14px; letter-spacing: 0.3px; }
       table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5px; }
-      th, td { border: 1px solid #000; padding: 4px; }
-      th { background: #d1d5db !important; font-weight: bold; text-align: center; text-transform: uppercase; }
+      th, td { border: 1.2px solid #000; padding: 4.5px 6px; }
+      th { background: #e2e8f0 !important; font-weight: bold; text-align: center; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.3px; }
       @media print { .no-print { display: none !important; } }
     </style>
   </head>
@@ -6031,25 +6049,31 @@ window._printSavingsSummary = () => {
         const btnBar = document.querySelector('.no-print');
         if (btnBar) btnBar.style.display = 'none';
         if (window.html2pdf) {
-          const opt = { margin:[4,4,4,4], filename:'Rekap_Tabungan_Karyawan_${currentYear}.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true}, jsPDF:{unit:'mm',format:'a4',orientation:'landscape'} };
+          const opt = {
+            margin: [3, 3, 3, 3],
+            filename: 'Rekap_Tabungan_Karyawan_${currentYear}.pdf',
+            image: { type: 'jpeg', quality: 1.0 },
+            html2canvas: { scale: 4, useCORS: true, logging: false, letterRendering: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }
+          };
           html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
         } else { if (btnBar) btnBar.style.display = 'flex'; window.print(); }
       }
     </script>
     <style>
-      @page { size: A4 landscape; margin: 8mm; }
+      @page { size: A4 landscape; margin: 6mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 10px; background: #fff; font-size: 9.5px; }
-      .title-head { font-weight: 900; font-size: 14px; text-transform: uppercase; margin-bottom: 8px; text-decoration: underline; }
+      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 10px; background: #fff; font-size: 9.5px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+      .title-head { font-weight: 900; font-size: 15px; text-transform: uppercase; margin-bottom: 8px; text-decoration: underline; letter-spacing: 0.5px; }
       table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9px; }
-      th, td { border: 1px solid #000; padding: 4px; }
-      th { background: #d1d5db !important; font-weight: bold; text-align: center; }
+      th, td { border: 1.2px solid #000; padding: 4.5px; }
+      th { background: #e2e8f0 !important; font-weight: bold; text-align: center; font-size: 9px; letter-spacing: 0.3px; }
       @media print { .no-print { display: none !important; } }
     </style>
   </head>
   <body>
     <div class="no-print" style="padding:8px 12px; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-bottom:10px; display:flex; justify-content:flex-end; gap:8px; align-items:center;">
-      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE PDF DIRECT</button>
+      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Super HD)</button>
       <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Rekap Tabungan (Printer)</button>
       <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">✕ Tutup</button>
     </div>
@@ -6115,26 +6139,32 @@ window._printOvertimeSummary = () => {
         const btnBar = document.querySelector('.no-print');
         if (btnBar) btnBar.style.display = 'none';
         if (window.html2pdf) {
-          const opt = { margin:[5,5,5,5], filename:'Rekap_Lembur_Karyawan_${month}.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} };
+          const opt = {
+            margin: [4, 4, 4, 4],
+            filename: 'Rekap_Lembur_Karyawan_${month}.pdf',
+            image: { type: 'jpeg', quality: 1.0 },
+            html2canvas: { scale: 4, useCORS: true, logging: false, letterRendering: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true }
+          };
           html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
         } else { if (btnBar) btnBar.style.display = 'flex'; window.print(); }
       }
     </script>
     <style>
-      @page { size: A4 portrait; margin: 10mm; }
+      @page { size: A4 portrait; margin: 8mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 10px; background: #fff; font-size: 11px; }
-      .title-head { text-align: center; font-weight: 900; font-size: 15px; text-decoration: underline; text-transform: uppercase; margin-bottom: 2px; }
-      .subtitle-head { text-align: center; font-weight: 800; font-size: 13px; margin-bottom: 12px; }
+      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 10px; background: #fff; font-size: 11px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+      .title-head { text-align: center; font-weight: 900; font-size: 15px; text-decoration: underline; text-transform: uppercase; margin-bottom: 3px; letter-spacing: 0.5px; }
+      .subtitle-head { text-align: center; font-weight: 800; font-size: 12.5px; margin-bottom: 12px; letter-spacing: 0.3px; }
       table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10.5px; }
-      th, td { border: 1px solid #000; padding: 4px 6px; }
-      th { background: #d1d5db !important; font-weight: bold; text-align: center; text-transform: uppercase; }
+      th, td { border: 1.2px solid #000; padding: 4.5px 6px; }
+      th { background: #e2e8f0 !important; font-weight: bold; text-align: center; text-transform: uppercase; font-size: 10px; letter-spacing: 0.3px; }
       @media print { .no-print { display: none !important; } }
     </style>
   </head>
   <body>
     <div class="no-print" style="padding:8px 12px; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-bottom:10px; display:flex; justify-content:flex-end; gap:8px; align-items:center;">
-      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE PDF DIRECT</button>
+      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Super HD)</button>
       <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Rekap Lemburan (Printer)</button>
       <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">✕ Tutup</button>
     </div>
