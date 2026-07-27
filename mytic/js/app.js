@@ -2812,15 +2812,40 @@ window._deleteVio = async (key) => { if (confirm('Hapus?')) { await remove(ref(d
 // --- SAVING CRUD ---
 window._showSavingForm = (empId) => {
   const area = $('sav-form-' + empId); if (!area) return;
-  const cm = new Date().toLocaleString('id-ID', { month: 'long', year: 'numeric' });
-  area.innerHTML = `<div style="padding:0.75rem;background:var(--success-bg);border-radius:var(--radius-lg);margin-bottom:1rem;border:1px solid var(--success)">
-    <p class="text-xs font-bold mb-2" style="color:#065F46">Tambah Tabungan</p>
-    <input id="sf-amt" type="number" inputmode="numeric" class="form-input mb-2" placeholder="Jumlah (Rp)" style="font-size:0.85rem;padding:0.5rem">
-    <input id="sf-month" class="form-input mb-2" value="${cm}" placeholder="Bulan" style="font-size:0.85rem;padding:0.5rem">
-    <input id="sf-date" type="date" value="${today()}" class="form-input mb-2" style="font-size:0.85rem;padding:0.5rem">
+  const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  const now = new Date();
+  const curMonthIdx = now.getMonth();
+  const curYear = now.getFullYear();
+  const years = [curYear - 1, curYear, curYear + 1];
+  let monthOptions = '';
+  years.forEach(y => {
+    months.forEach((m, i) => {
+      const isSel = (i === curMonthIdx && y === curYear);
+      monthOptions += `<option value="${m} ${y}" ${isSel ? 'selected' : ''}>${m} ${y}</option>`;
+    });
+  });
+
+  area.innerHTML = `<div style="padding:0.85rem;background:var(--success-bg);border-radius:var(--radius-lg);margin-bottom:1rem;border:1px solid var(--success)">
+    <p class="text-xs font-bold mb-3" style="color:#065F46;font-size:0.85rem;">💳 Tambah Transaksi Tabungan</p>
+    
+    <div style="margin-bottom:0.65rem;">
+      <label class="form-label" style="font-size:0.72rem;font-weight:700;color:#065F46;margin-bottom:0.2rem;display:block;">1. Jumlah Nominal (Rp)</label>
+      <input id="sf-amt" type="number" inputmode="numeric" class="form-input mb-1" placeholder="Masukkan jumlah Rp..." style="font-size:0.85rem;padding:0.45rem;">
+    </div>
+
+    <div style="margin-bottom:0.65rem;">
+      <label class="form-label" style="font-size:0.72rem;font-weight:700;color:#065F46;margin-bottom:0.2rem;display:block;">2. Tabungan Bulan Apa (Bulan & Tahun)</label>
+      <select id="sf-month" class="form-input form-select mb-1" style="font-size:0.85rem;padding:0.45rem;width:100%;">${monthOptions}</select>
+    </div>
+
+    <div style="margin-bottom:0.85rem;">
+      <label class="form-label" style="font-size:0.72rem;font-weight:700;color:#065F46;margin-bottom:0.2rem;display:block;">3. Tanggal Transaksi / Pengambilan</label>
+      <input id="sf-date" type="date" value="${today()}" class="form-input mb-1" style="font-size:0.85rem;padding:0.45rem;width:100%;">
+    </div>
+
     <div style="display:flex;gap:0.5rem">
-      <button class="btn btn-primary" style="padding:0.5rem 1rem;font-size:0.75rem;background:var(--success)" onclick="window._saveSaving('${empId}')">Simpan</button>
-      <button class="btn btn-secondary" style="padding:0.5rem 1rem;font-size:0.75rem" onclick="document.getElementById('sav-form-${empId}').innerHTML=''">Batal</button>
+      <button class="btn btn-primary" style="padding:0.45rem 1.1rem;font-size:0.75rem;background:var(--success)" onclick="window._saveSaving('${empId}')">Simpan</button>
+      <button class="btn btn-secondary" style="padding:0.45rem 1.1rem;font-size:0.75rem" onclick="document.getElementById('sav-form-${empId}').innerHTML=''">Batal</button>
     </div>
   </div>`;
 };
