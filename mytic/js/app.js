@@ -81,11 +81,30 @@ function getChartColors() {
   };
 }
 
-window.toggleDarkMode = () => {
-  const isDark = document.documentElement.classList.toggle('dark-mode');
-  localStorage.setItem('spbu_dark_mode', isDark);
-  syncDarkIcons(isDark);
-  if (currentUser) renderCurrentSection();
+window.toggleDarkMode = (e) => {
+  const x = (e && e.clientX) ? e.clientX : window.innerWidth / 2;
+  const y = (e && e.clientY) ? e.clientY : window.innerHeight / 2;
+
+  const ripple = document.createElement('div');
+  ripple.className = 'theme-radial-ripple';
+  ripple.style.left = `${x}px`;
+  ripple.style.top = `${y}px`;
+  document.body.appendChild(ripple);
+
+  requestAnimationFrame(() => {
+    ripple.classList.add('active');
+  });
+
+  setTimeout(() => {
+    const isDark = document.documentElement.classList.toggle('dark-mode');
+    localStorage.setItem('spbu_dark_mode', isDark);
+    syncDarkIcons(isDark);
+    if (currentUser) renderCurrentSection();
+    
+    setTimeout(() => {
+      if (ripple.parentNode) ripple.parentNode.removeChild(ripple);
+    }, 450);
+  }, 120);
 };
 
 // Update icons on load if they exist
