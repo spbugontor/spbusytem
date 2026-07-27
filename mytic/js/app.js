@@ -4794,40 +4794,42 @@ window._openMassAllowanceModal = () => {
   }).join('');
 
   showModal(`
-    <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:0.75rem;">
-      <h3 class="modal-title" style="font-size:1.1rem; font-weight:800; color:var(--text-main); margin:0;">⚡ Pengaturan Gaji & Tunjangan Massal</h3>
-      <button type="button" class="btn btn-icon btn-sm btn-outline-secondary" onclick="window.hideModal()" style="border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.1rem; cursor:pointer;">✕</button>
-    </div>
-    <div class="modal-body" style="padding:1rem 0; box-sizing:border-box; overflow:hidden;">
-      <div style="margin-bottom:1rem;">
-        <label class="form-label" style="font-size:0.8rem; font-weight:700;">1. Pilih Komponen Gaji / Tunjangan</label>
-        <select id="mass-tunj-select" class="form-input form-select" style="padding:0.45rem 0.75rem; font-size:0.85rem; width:100%; box-sizing:border-box;">
-          ${optionsHTML}
-        </select>
+    <div style="padding:1.25rem 1.5rem; box-sizing:border-box;">
+      <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:0.75rem;">
+        <h3 class="modal-title" style="font-size:1.1rem; font-weight:800; color:var(--text-main); margin:0;">⚡ Pengaturan Gaji & Tunjangan Massal</h3>
+        <button type="button" class="btn btn-icon btn-sm btn-outline-secondary" onclick="window.hideModal()" style="border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.1rem; cursor:pointer;">✕</button>
       </div>
+      <div class="modal-body" style="padding:1rem 0; box-sizing:border-box; overflow:hidden;">
+        <div style="margin-bottom:1rem;">
+          <label class="form-label" style="font-size:0.8rem; font-weight:700;">1. Pilih Komponen Gaji / Tunjangan</label>
+          <select id="mass-tunj-select" class="form-input form-select" style="padding:0.45rem 0.75rem; font-size:0.85rem; width:100%; box-sizing:border-box;">
+            ${optionsHTML}
+          </select>
+        </div>
 
-      <div style="margin-bottom:1rem;">
-        <label class="form-label" style="font-size:0.8rem; font-weight:700;">2. Input Nominal (Rp) atau Jumlah Shift</label>
-        <input id="mass-tunj-amt" type="number" class="form-input" placeholder="Misal: 1000000 atau 400000" style="padding:0.45rem 0.75rem; font-size:0.85rem; width:100%; box-sizing:border-box;">
-      </div>
+        <div style="margin-bottom:1rem;">
+          <label class="form-label" style="font-size:0.8rem; font-weight:700;">2. Input Nominal (Rp) atau Jumlah Shift</label>
+          <input id="mass-tunj-amt" type="number" class="form-input" placeholder="Misal: 1000000 atau 400000" style="padding:0.45rem 0.75rem; font-size:0.85rem; width:100%; box-sizing:border-box;">
+        </div>
 
-      <div style="margin-bottom:0.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-        <label class="form-label" style="font-size:0.8rem; font-weight:700; margin:0;">3. Pilih Karyawan Yang Menerima</label>
-        <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
-          <button type="button" class="btn btn-sm btn-outline-primary" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = true)">Centang Semua</button>
-          <button type="button" class="btn btn-sm btn-outline-secondary" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = false)">Hapus Centang</button>
-          <button type="button" class="btn btn-sm btn-outline-info" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = (c.getAttribute('data-pos')||'').toLowerCase().includes('operator'))">Khusus Operator</button>
-          <button type="button" class="btn btn-sm btn-outline-warning" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = !(c.getAttribute('data-pos')||'').toLowerCase().includes('operator'))">Khusus Non-Operator</button>
+        <div style="margin-bottom:0.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+          <label class="form-label" style="font-size:0.8rem; font-weight:700; margin:0;">3. Pilih Karyawan Yang Menerima</label>
+          <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
+            <button type="button" class="btn btn-sm btn-outline-primary" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = true)">Centang Semua</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = false)">Hapus Centang</button>
+            <button type="button" class="btn btn-sm btn-outline-info" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = (c.getAttribute('data-pos')||'').toLowerCase().includes('operator'))">Khusus Operator</button>
+            <button type="button" class="btn btn-sm btn-outline-warning" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = !(c.getAttribute('data-pos')||'').toLowerCase().includes('operator'))">Khusus Non-Operator</button>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap:0.4rem; max-height:210px; overflow-y:auto; border:1px solid var(--border); padding:0.6rem; border-radius:var(--radius-sm); box-sizing:border-box; margin:0;">
+          ${empCheckboxes}
         </div>
       </div>
-
-      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap:0.4rem; max-height:210px; overflow-y:auto; border:1px solid var(--border); padding:0.6rem; border-radius:var(--radius-sm); box-sizing:border-box; margin:0;">
-        ${empCheckboxes}
+      <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:0.5rem; border-top:1px solid var(--border); padding-top:0.75rem; margin-top:0.5rem;">
+        <button type="button" class="btn btn-secondary" onclick="window.hideModal()" style="padding:0.45rem 1.2rem; cursor:pointer;">Batal</button>
+        <button type="button" class="btn btn-success" style="font-weight:bold; padding:0.45rem 1.5rem; cursor:pointer;" onclick="window._applyMassAllowance()">💾 Terapkan Pengaturan Massal</button>
       </div>
-    </div>
-    <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:0.5rem; border-top:1px solid var(--border); padding-top:0.75rem; margin-top:0.5rem;">
-      <button type="button" class="btn btn-secondary" onclick="window.hideModal()" style="padding:0.45rem 1.2rem; cursor:pointer;">Batal</button>
-      <button type="button" class="btn btn-success" style="font-weight:bold; padding:0.45rem 1.5rem; cursor:pointer;" onclick="window._applyMassAllowance()">💾 Terapkan Pengaturan Massal</button>
     </div>
   `, 'modal-md');
 };
