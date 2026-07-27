@@ -578,7 +578,7 @@ function doLogout(msg = true) {
 // ==========================================
 const ADMIN_MENU = [
   { id: 'dashboard', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1' },
-  { id: 'leaderboard', label: '🏆 Peringkat & KPI', icon: 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z' },
+  { id: 'leaderboard', label: 'Peringkat & KPI', icon: 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z' },
   { id: 'employees', label: 'Karyawan', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197' },
   { id: 'debits', label: 'Tunggakan', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' },
   { id: 'leaves', label: 'Izin/Cuti', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
@@ -627,8 +627,12 @@ function setupNavigation() {
     if (isManagerUser()) {
       const hasLeaderboard = menu.some(m => m.id === 'leaderboard');
       if (!hasLeaderboard) {
-        menu.splice(1, 0, { id: 'leaderboard', label: '🏆 Peringkat & KPI', icon: 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z' });
+        menu.splice(1, 0, { id: 'leaderboard', label: 'Peringkat & KPI', icon: 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z' });
       }
+    } else {
+      menu = menu.filter(m => m.id !== 'leaderboard');
+    }
+  }
     } else {
       menu = menu.filter(m => m.id !== 'leaderboard');
     }
@@ -3752,7 +3756,7 @@ function renderLeaderboardPage() {
               <option value="attendance" ${selectedMetric === 'attendance' ? 'selected' : ''}>Kedisiplinan Kehadiran</option>
               <option value="sop" ${selectedMetric === 'sop' ? 'selected' : ''}>Kepatuhan Ceklis SOP (Khusus Operator)</option>
               <option value="rating" ${selectedMetric === 'rating' ? 'selected' : ''}>Rating Evaluasi Kinerja</option>
-              <option value="debit" ${selectedMetric === 'debit' ? 'selected' : ''}>💳 Akuntabilitas Keuangan (Tunggakan)</option>
+              <option value="debit" ${selectedMetric === 'debit' ? 'selected' : ''}>Akuntabilitas Keuangan (Tunggakan)</option>
             </select>
           </div>
           <div>
