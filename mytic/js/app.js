@@ -97,7 +97,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // UTILITIES
 // ==========================================
 function esc(s) { if (!s) return ''; return String(s).replace(/[&<>"']/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[t])); }
-function fmt(n) { return 'Rp ' + (parseInt(n) || 0).toLocaleString('id-ID'); }
+function fmt(n, dec = 2) { const num = Number(n) || 0; return 'Rp ' + num.toLocaleString('id-ID', { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
+function fmtNum(n, dec = 2) { const num = Number(n) || 0; return num.toLocaleString('id-ID', { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
 function fmtDate(d) { if (!d) return '-'; try { return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }); } catch { return d; } }
 function fmtMonthYear(d) { if (!d) return '-'; try { const [y, m] = d.split('-'); const date = new Date(y, parseInt(m) - 1, 1); return date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }); } catch { return d; } }
 function today() { return new Date().toISOString().split('T')[0]; }
@@ -4747,6 +4748,221 @@ window._updateEmpAllowanceAmt = async (empId, tunjId, amt) => {
   await set(ref(db, path), numAmt);
 };
 
+window._openMassAllowanceModal = () => {
+  const settings = getPayrollSettings();
+  const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
+  
+  const tunjOptions = settings.custom_allowances.map(ca => `<option value="${ca.id}">${esc(ca.name)}</option>`).join('');
+
+  const empCheckboxes = users.map(u => {
+    const pos = u.position || '-';
+    return `<label style="display:flex; align-items:center; gap:0.5rem; background:var(--surface); border:1px solid var(--border); padding:0.4rem 0.6rem; border-radius:var(--radius-sm); font-size:0.8rem; cursor:pointer;">
+      <input type="checkbox" class="mass-emp-chk" value="${u.emp_id}" data-pos="${esc(pos)}" checked>
+      <span><strong>${esc(u.name)}</strong> (${esc(pos)})</span>
+    </label>`;
+  }).join('');
+
+  showModal(`
+    <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:0.75rem;">
+      <h3 class="modal-title" style="font-size:1.1rem; font-weight:800; color:var(--text-main);">⚡ Pengaturan Tunjangan Massal (Sekaligus)</h3>
+      <button class="modal-close" onclick="hideModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:1rem 0;">
+      <div style="margin-bottom:1rem;">
+        <label class="form-label" style="font-size:0.8rem; font-weight:700;">1. Pilih Jenis Tunjangan</label>
+        <select id="mass-tunj-select" class="form-input form-select" style="padding:0.45rem 0.75rem; font-size:0.85rem;">
+          ${tunjOptions}
+        </select>
+      </div>
+
+      <div style="margin-bottom:1rem;">
+        <label class="form-label" style="font-size:0.8rem; font-weight:700;">2. Input Nominal Tunjangan (Rp)</label>
+        <input id="mass-tunj-amt" type="number" class="form-input" placeholder="Misal: 400000" style="padding:0.45rem 0.75rem; font-size:0.85rem;">
+      </div>
+
+      <div style="margin-bottom:0.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+        <label class="form-label" style="font-size:0.8rem; font-weight:700; margin:0;">3. Pilih Karyawan Yang Berhak Menerima</label>
+        <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
+          <button class="btn btn-xs btn-outline-primary" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = true)">Centang Semua</button>
+          <button class="btn btn-xs btn-outline-secondary" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = false)">Hapus Centang</button>
+          <button class="btn btn-xs btn-outline-info" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = (c.getAttribute('data-pos')||'').toLowerCase().includes('operator'))">Khusus Operator</button>
+          <button class="btn btn-xs btn-outline-warning" onclick="document.querySelectorAll('.mass-emp-chk').forEach(c => c.checked = !(c.getAttribute('data-pos')||'').toLowerCase().includes('operator'))">Khusus Non-Operator</button>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:0.4rem; max-height:220px; overflow-y:auto; border:1px solid var(--border); padding:0.6rem; border-radius:var(--radius-sm);">
+        ${empCheckboxes}
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:0.5rem; border-top:1px solid var(--border); padding-top:0.75rem;">
+      <button class="btn btn-secondary" onclick="hideModal()">Batal</button>
+      <button class="btn btn-success" style="font-weight:bold;" onclick="window._applyMassAllowance()">💾 Terapkan Tunjangan Massal</button>
+    </div>
+  `, 'modal-md');
+};
+
+window._applyMassAllowance = async () => {
+  const tunjId = $('mass-tunj-select').value;
+  const amt = Number($('mass-tunj-amt').value || 0);
+  const selectedEmpIds = Array.from(document.querySelectorAll('.mass-emp-chk:checked')).map(c => c.value);
+
+  if (selectedEmpIds.length === 0) {
+    showToast('Pilih setidaknya 1 karyawan!', 'warning');
+    return;
+  }
+
+  const month = window._payrollMonth || getTodayStr().substring(0, 7);
+  allData.payroll = allData.payroll || {};
+  allData.payroll[month] = allData.payroll[month] || {};
+  allData.payroll[month].internal_data = allData.payroll[month].internal_data || {};
+
+  const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
+
+  for (const u of users) {
+    const empId = u.emp_id;
+    const isSelected = selectedEmpIds.includes(empId);
+    allData.payroll[month].internal_data[empId] = allData.payroll[month].internal_data[empId] || {};
+    allData.payroll[month].internal_data[empId].tunjangan = allData.payroll[month].internal_data[empId].tunjangan || {};
+    allData.payroll[month].internal_data[empId].tunjangan[tunjId] = {
+      enabled: isSelected,
+      amount: amt
+    };
+
+    const path = `payroll/${month}/internal_data/${empId}/tunjangan/${tunjId}`;
+    await set(ref(db, path), { enabled: isSelected, amount: amt });
+  }
+
+  hideModal();
+  renderCurrentSection();
+  showToast(`Tunjangan massal berhasil diterapkan ke ${selectedEmpIds.length} karyawan!`, 'success');
+};
+
+window._exportToExcel = (reportType) => {
+  const month = window._payrollMonth || getTodayStr().substring(0, 7);
+  const settings = getPayrollSettings();
+  const monthName = new Date(month + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+  let csvContent = '\uFEFF';
+
+  if (reportType === 'internal') {
+    const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
+    const monthData = (allData.payroll && allData.payroll[month] && allData.payroll[month].internal_data) || {};
+    const bbm = getBbmSalesData(month);
+    const pwInt = computePwInternal(bbm);
+    const spvAdminCount = users.filter(u => {
+      const p = (u.position || '').toLowerCase();
+      return p.includes('admin') || p.includes('supervisor') || p.includes('spv');
+    }).length || 3;
+    const oprCsCount = users.length - spvAdminCount || 11;
+
+    csvContent += `REKAPITULASI GAJI INTERNAL KARYAWAN SPBU GONTOR 54.634.25 MLARAK\n`;
+    csvContent += `PERIODE: ${monthName.toUpperCase()}\n\n`;
+    csvContent += `No,Nama Karyawan,Jabatan,Masa Kerja,Gaji Pokok UMK,Tunjangan Jabatan,Tunjangan Kinerja,Tunjangan Masa Kerja,Pertamina Way,Lembur,Tabungan,Gaji Bersih (THP)\n`;
+
+    users.forEach((u, idx) => {
+      const empId = u.emp_id;
+      const empData = monthData[empId] || {};
+      const pos = u.position || '-';
+      const isSpvAdmin = pos.toLowerCase().includes('admin') || pos.toLowerCase().includes('supervisor') || pos.toLowerCase().includes('spv');
+      const defaultPwRound = isSpvAdmin ? 150000 : 100000;
+      const tenureMonths = getTenureMonths(u.join_date || u.created_at);
+
+      const gajiPokok = Number(empData.gaji_pokok !== undefined ? empData.gaji_pokok : settings.umk_staf);
+
+      const tunjData = empData.tunjangan || {};
+      const tunjJabatanEnabled = tunjData['tunj_jabatan'] ? tunjData['tunj_jabatan'].enabled : (pos.toLowerCase() !== 'cleaning service' && !pos.toLowerCase().includes('cs'));
+      const tunjJabatanAmt = tunjJabatanEnabled ? Number((tunjData['tunj_jabatan'] && tunjData['tunj_jabatan'].amount !== undefined) ? tunjData['tunj_jabatan'].amount : getDefaultPositionAllowance(pos)) : 0;
+
+      const tunjKinerjaEnabled = tunjData['tunj_kinerja'] ? tunjData['tunj_kinerja'].enabled : (tenureMonths >= 6);
+      const tunjKinerjaAmt = tunjKinerjaEnabled ? Number((tunjData['tunj_kinerja'] && tunjData['tunj_kinerja'].amount !== undefined) ? tunjData['tunj_kinerja'].amount : (tenureMonths >= 6 ? 400000 : 200000)) : 0;
+
+      const tunjMasaKerjaEnabled = tunjData['tunj_masa_kerja'] ? tunjData['tunj_masa_kerja'].enabled : (tenureMonths >= 12);
+      const tunjMasaKerjaAmt = tunjMasaKerjaEnabled ? Number((tunjData['tunj_masa_kerja'] && tunjData['tunj_masa_kerja'].amount !== undefined) ? tunjData['tunj_masa_kerja'].amount : getDefaultTenureAllowance(tenureMonths)) : 0;
+
+      const pwEnabled = empData.pw_enabled !== undefined ? empData.pw_enabled : true;
+      const pwAmount = pwEnabled ? Number(empData.pw_amount !== undefined ? empData.pw_amount : defaultPwRound) : 0;
+
+      const otShifts = Number(empData.overtime_shifts || 0);
+      const otAmt = otShifts * 50000;
+
+      const tabunganAmt = Number(empData.savings_deduction !== undefined ? empData.savings_deduction : (tenureMonths >= 6 ? 50000 : 0));
+      const gajiKotor = gajiPokok + tunjJabatanAmt + tunjKinerjaAmt + tunjMasaKerjaAmt + pwAmount + otAmt;
+      const gajiBersih = gajiKotor - tabunganAmt;
+
+      csvContent += `"${idx + 1}","${u.name}","${pos}","${tenureMonths} Bln","${gajiPokok}","${tunjJabatanAmt}","${tunjKinerjaAmt}","${tunjMasaKerjaAmt}","${pwAmount}","${otAmt}","${tabunganAmt}","${gajiBersih}"\n`;
+    });
+  } else if (reportType === 'audit') {
+    const bbm = getBbmSalesData(month);
+    const pwAudit = computePwAudit(bbm);
+    const users = getUsers();
+    let managerObj = users.find(u => (u.position || '').toLowerCase() === 'manager' || (u.name || '').toLowerCase().includes('pedri'));
+    if (!managerObj) managerObj = { emp_id: 'M1', name: settings.name_audit_manager, position: 'Manager' };
+    const staffUsers = users.filter(u => u.emp_id !== managerObj.emp_id);
+    const auditUsers = [managerObj, ...staffUsers];
+    const pwMgrAdminEach = Math.round((pwAudit.total * 0.20) / 2);
+    const pwStaffEach = Math.round((pwAudit.total * 0.80) / 13);
+
+    csvContent += `LEMBAR PENGGAJIAN AUDIT PERTAMINA SPBU GONTOR 54.634.25 MLARAK\n`;
+    csvContent += `PERIODE: ${monthName.toUpperCase()}\n\n`;
+    csvContent += `No,Nama Karyawan,Jabatan,Gaji Pokok UMK,Pertamina Way Audit,Potongan BPJS (1%),THP Audit\n`;
+
+    auditUsers.forEach((u, idx) => {
+      const pos = u.position || '-';
+      const isMgr = pos.toLowerCase() === 'manager' || u.emp_id === managerObj.emp_id;
+      const isAdmin = pos.toLowerCase().includes('admin');
+      const gajiPokok = isMgr ? settings.umk_manager : settings.umk_staf;
+      const pwVal = (isMgr || isAdmin) ? pwMgrAdminEach : pwStaffEach;
+      const bpjsVal = Math.round(gajiPokok * (settings.bpjs_percent / 100));
+      const thpVal = gajiPokok + pwVal - bpjsVal;
+
+      csvContent += `"${idx + 1}","${u.name}","${pos}","${gajiPokok}","${pwVal}","${bpjsVal}","${thpVal}"\n`;
+    });
+  } else if (reportType === 'overtime') {
+    const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
+    const monthData = (allData.payroll && allData.payroll[month] && allData.payroll[month].internal_data) || {};
+
+    csvContent += `REKAPITULASI LEMBURAN KARYAWAN SPBU GONTOR\nPERIODE: ${monthName.toUpperCase()}\n\n`;
+    csvContent += `No,Nama Karyawan,Jabatan,Nominal Lembur/Shift,Jumlah Shift Lembur,Total Nominal Lembur\n`;
+
+    users.forEach((u, idx) => {
+      const empData = monthData[u.emp_id] || {};
+      const shifts = Number(empData.overtime_shifts || 0);
+      const otAmt = shifts * 50000;
+      csvContent += `"${idx + 1}","${u.name}","${u.position || '-'}","50000","${shifts}","${otAmt}"\n`;
+    });
+  } else if (reportType === 'savings') {
+    const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
+    const currentYear = new Date().getFullYear();
+    const monthsList = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    csvContent += `REKAPITULASI TABUNGAN KARYAWAN SPBU GONTOR TAHUN ${currentYear}\n\n`;
+    csvContent += `No,Nama Karyawan,` + monthsList.map(m => `${m}-${currentYear}`).join(',') + `,Total Tabungan\n`;
+
+    users.forEach((u, idx) => {
+      let empTotal = 0;
+      const mAmts = monthsList.map((m, mIdx) => {
+        const monthKey = `${currentYear}-${(mIdx + 1).toString().padStart(2, '0')}`;
+        const mData = (allData.payroll && allData.payroll[monthKey] && allData.payroll[monthKey].internal_data && allData.payroll[monthKey].internal_data[u.emp_id]) || {};
+        const tenureMonths = getTenureMonths(u.join_date || u.created_at);
+        const amt = Number(mData.savings_deduction !== undefined ? mData.savings_deduction : (tenureMonths >= 6 ? 50000 : 0));
+        if (amt > 0) empTotal += amt;
+        return amt;
+      });
+
+      csvContent += `"${idx + 1}","${u.name}",` + mAmts.join(',') + `,"${empTotal}"\n`;
+    });
+  }
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `Rekap_${reportType.toUpperCase()}_${month}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast(`File Excel (${reportType.toUpperCase()}) berhasil diunduh!`, 'success');
+};
+
 function renderInternalPayrollTab() {
   const month = window._payrollMonth || getTodayStr().substring(0, 7);
   const printDate = window._payrollPrintDate || getTodayStr();
@@ -4814,7 +5030,7 @@ function renderInternalPayrollTab() {
     const otAmt = otShifts * 50000;
     totalLemburAll += otAmt;
 
-    const gajiPokok = 1000000;
+    const gajiPokok = Number(empData.gaji_pokok !== undefined ? empData.gaji_pokok : settings.umk_staf);
     const totalTambahan = (tunjJabatanEnabled ? tunjJabatanAmt : 0) +
                           (tunjKinerjaEnabled ? tunjKinerjaAmt : 0) +
                           (tunjMasaKerjaEnabled ? tunjMasaKerjaAmt : 0) +
@@ -4833,6 +5049,10 @@ function renderInternalPayrollTab() {
       <td style="text-align:center; font-weight:bold;">${idx + 1}</td>
       <td><strong>${esc(u.name)}</strong><br><span class="text-xs text-muted">ID: ${esc(u.emp_id)} | Masa Kerja: ${tenureMonths} Bln</span></td>
       <td><span class="badge" style="background:var(--bg-color); color:var(--text-main); font-size:0.75rem;">${esc(pos)}</span></td>
+      <td style="font-size:0.8rem;">
+        <input type="number" value="${gajiPokok}" style="width:105px; padding:0.2rem 0.4rem; font-size:0.75rem;" onchange="window._saveInternalPayrollItem('${empId}', 'gaji_pokok', Number(this.value))">
+        <div class="text-xs text-muted" style="margin-top:0.2rem;">${fmt(gajiPokok)}</div>
+      </td>
       <td style="font-size:0.8rem;">
         <div style="display:flex; align-items:center; gap:0.4rem;">
           <input type="checkbox" ${tunjJabatanEnabled ? 'checked' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_jabatan', this.checked)">
@@ -4900,8 +5120,10 @@ function renderInternalPayrollTab() {
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
         <h4 style="font-size:1rem; font-weight:800; color:var(--text-main); margin:0;">📋 Daftar Gaji Internal Karyawan (${users.length} Karyawan)</h4>
         <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+          <button class="btn btn-warning" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._openMassAllowanceModal()">⚡ Atur Tunjangan Massal</button>
           <label style="font-size:0.75rem; font-weight:700;">Tgl Cetak:</label>
           <input type="date" value="${printDate}" class="form-input" style="padding:0.3rem 0.5rem; font-size:0.75rem; width:135px;" onchange="window._setPayrollPrintDate(this.value)">
+          <button class="btn btn-outline-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._exportToExcel('internal')">📊 Export Excel</button>
           <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printInternalPayrollSummary()">🖨️ Rekap Gaji (1 Hal)</button>
           <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printOvertimeSummary()">⏰ Rekap Lemburan</button>
           <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printSavingsSummary()">🏦 Rekap Tabungan</button>
@@ -4916,6 +5138,7 @@ function renderInternalPayrollTab() {
             <th style="width:30px; text-align:center;">#</th>
             <th>Nama & Masa Kerja</th>
             <th>Jabatan</th>
+            <th style="width:130px; text-align:right;">Gaji Pokok UMK</th>
             <th style="min-width:240px;">Ceklis Tunjangan & Nominal</th>
             <th style="width:180px;">PW Internal</th>
             <th style="width:120px;">Lembur (Shift)</th>
@@ -4992,7 +5215,10 @@ function renderAuditPayrollTab() {
           <h4 style="font-size:1rem; font-weight:800; color:var(--text-main); margin:0;">📋 Lembar Penggajian & Pertamina Way Mode Audit (${auditUsers.length} Karyawan)</h4>
           <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Berisi 15 Karyawan (Termasuk Manager ${esc(settings.name_audit_manager)}) | UMK Staf: ${fmt(settings.umk_staf)} | UMK Manager: ${fmt(settings.umk_manager)}</p>
         </div>
-        <button class="btn btn-primary" style="font-weight:bold; padding:0.45rem 1rem;" onclick="window._printAuditDocuments()">📥 UNDUH FILE / CETAK DOKUMEN AUDIT (PDF)</button>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <button class="btn btn-outline-success" style="font-weight:bold; padding:0.45rem 1rem;" onclick="window._exportToExcel('audit')">📊 Export Excel (Audit)</button>
+          <button class="btn btn-primary" style="font-weight:bold; padding:0.45rem 1rem;" onclick="window._printAuditDocuments()">📥 UNDUH FILE / CETAK DOKUMEN AUDIT (PDF)</button>
+        </div>
       </div>
 
       <div style="background:var(--surface); border:1px solid var(--border); padding:0.75rem; border-radius:var(--radius-md); margin-bottom:1rem; font-size:0.8rem;">
