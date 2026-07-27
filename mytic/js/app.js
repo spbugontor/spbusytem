@@ -5526,6 +5526,17 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 4) => {
   <head>
     <meta charset="utf-8">
     <title>Slip Gaji Amplop - SPBU Gontor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+      function downloadPDF() {
+        const btnBar = document.querySelector('.no-print');
+        if (btnBar) btnBar.style.display = 'none';
+        if (window.html2pdf) {
+          const opt = { margin:[4,4,4,4], filename:'Slip_Gaji_Amplop_${month}.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} };
+          html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
+        } else { if (btnBar) btnBar.style.display = 'flex'; window.print(); }
+      }
+    </script>
     <style>
       @page { size: ${paperSize === 'F4' ? '215mm 330mm' : 'A4'} portrait; margin: 6mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
@@ -5536,16 +5547,14 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 4) => {
       .slip-box { border: 1.5px dashed #000; padding: 8px 10px; display: flex; flex-direction: column; justify-content: space-between; background: #fff; }
       .slip-header { background: #d1d5db !important; border: 1px solid #000; text-align: center; padding: 3px; font-weight: bold; }
       .yellow-bar { background: #facc15 !important; border: 1px solid #000; padding: 4px 8px; font-weight: 900; font-size: 11.5px; display: flex; justify-content: space-between; align-items: center; }
-      @media print {
-        .no-print { display: none !important; }
-      }
+      @media print { .no-print { display: none !important; } }
     </style>
   </head>
   <body>
-    <div class="no-print" style="padding:10px; background:#f1f5f9; text-align:right; border-bottom:1px solid #cbd5e1;">
-      <button onclick="window.print()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Pilih Save as PDF)</button>
-      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">🖨️ Cetak Slip Gaji (${paperSize})</button>
-      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">✕ Tutup</button>
+    <div class="no-print" style="padding:8px 12px; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-bottom:10px; display:flex; justify-content:flex-end; gap:8px; align-items:center;">
+      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE PDF DIRECT</button>
+      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Slip Amplop (Printer)</button>
+      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">✕ Tutup</button>
     </div>
     ${slipsHTML}
   </body>
@@ -5580,43 +5589,23 @@ window._printAuditDocuments = () => {
   let totalBpjsAll = 0;
   let totalThpAll = 0;
 
-  const rowsHTML = auditUsers.map((u, idx) => {
-    const pos = u.position || '-';
-    const isMgr = pos.toLowerCase() === 'manager' || u.emp_id === managerObj.emp_id;
-    const isAdmin = pos.toLowerCase().includes('admin');
-
-    const gajiPokok = isMgr ? settings.umk_manager : settings.umk_staf;
-    const pwVal = (isMgr || isAdmin) ? pwMgrAdminEach : pwStaffEach;
-    const bpjsVal = gajiPokok * (settings.bpjs_percent / 100);
-    const thpVal = gajiPokok + pwVal - bpjsVal;
-
-    totalGajiPokokAll += gajiPokok;
-    totalPwAll += pwVal;
-    totalBpjsAll += bpjsVal;
-    totalThpAll += thpVal;
-
-    const ttdLeft = (idx % 2 === 0) ? `${idx + 1}` : '';
-    const ttdRight = (idx % 2 === 1) ? `${idx + 1}` : '';
-
-    return `<tr>
-      <td style="text-align:center;">${idx + 1}</td>
-      <td><strong>${esc(u.name)}</strong></td>
-      <td style="text-align:center;">${esc(pos.toUpperCase())}</td>
-      <td style="text-align:right;">${fmt(gajiPokok)}</td>
-      <td style="text-align:right;">${fmt(pwVal)}</td>
-      <td style="text-align:right;">${fmt(bpjsVal)}</td>
-      <td style="text-align:right; font-weight:bold;">${fmt(thpVal)}</td>
-      <td style="width:40px; font-size:9px; vertical-align:top; border-right:none;">${ttdLeft}</td>
-      <td style="width:40px; font-size:9px; vertical-align:bottom; text-align:right; border-left:none;">${ttdRight}</td>
-    </tr>`;
-  }).join('');
-
   const win = window.open('', '_blank');
   win.document.write(`<!DOCTYPE html>
   <html>
   <head>
     <meta charset="utf-8">
     <title>Dokumen Resmi Audit Pertamina - SPBU Gontor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+      function downloadPDF() {
+        const btnBar = document.querySelector('.no-print');
+        if (btnBar) btnBar.style.display = 'none';
+        if (window.html2pdf) {
+          const opt = { margin:[5,5,5,5], filename:'Dokumen_Audit_Pertamina_${month}.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} };
+          html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
+        } else { if (btnBar) btnBar.style.display = 'flex'; window.print(); }
+      }
+    </script>
     <style>
       @page { size: A4 portrait; margin: 10mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
@@ -5626,15 +5615,14 @@ window._printAuditDocuments = () => {
       table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10.5px; }
       th, td { border: 1px solid #000; padding: 4px 6px; }
       th { background: #d1d5db !important; font-weight: bold; text-align: center; text-transform: uppercase; }
-      .page-break { page-break-after: always; }
       @media print { .no-print { display: none !important; } }
     </style>
   </head>
   <body>
-    <div class="no-print" style="padding:8px; background:#f1f5f9; text-align:right; border-bottom:1px solid #cbd5e1; margin-bottom:10px;">
-      <button onclick="window.print()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Pilih Save as PDF)</button>
-      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">🖨️ Cetak Dokumen Audit (3 Halaman)</button>
-      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">✕ Tutup</button>
+    <div class="no-print" style="padding:8px 12px; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-bottom:10px; display:flex; justify-content:flex-end; gap:8px; align-items:center;">
+      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE PDF DIRECT</button>
+      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Dokumen Audit (3 Halaman)</button>
+      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">✕ Tutup</button>
     </div>
 
     <!-- HALAMAN 1: PERHITUNGAN PERTAMINA WAY -->
@@ -5656,17 +5644,17 @@ window._printAuditDocuments = () => {
           </tr>
         </thead>
         <tbody>
-          <tr><td>PERTALITE</td><td style="text-align:right;">${fmt(bbm.pertalite)}</td><td></td><td style="text-align:right;">Rp 4</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">Rp ${fmt(pwAudit.pwPertalite)}</td></tr>
-          <tr><td>SOLAR (BIOSOLAR)</td><td style="text-align:right;">${fmt(bbm.solar)}</td><td></td><td style="text-align:right;">Rp 4</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">Rp ${fmt(pwAudit.pwSolar)}</td></tr>
-          <tr><td>PERTAMAX TURBO</td><td style="text-align:right;">${fmt(bbm.turbo)}</td><td></td><td style="text-align:right;">Rp 30</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">Rp ${fmt(pwAudit.pwTurbo)}</td></tr>
-          <tr><td>PERTAMAX 92</td><td style="text-align:right;">${fmt(bbm.px92)}</td><td></td><td style="text-align:right;">Rp 30</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">Rp ${fmt(pwAudit.pwPx92)}</td></tr>
-          <tr><td>PERTAMINA DEX</td><td style="text-align:right;">${fmt(bbm.dex)}</td><td></td><td style="text-align:right;">Rp 30</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">Rp ${fmt(pwAudit.pwDex)}</td></tr>
+          <tr><td>PERTALITE</td><td style="text-align:right;">${fmtNum(bbm.pertalite)}</td><td></td><td style="text-align:right;">Rp 4</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">${fmt(pwAudit.pwPertalite)}</td></tr>
+          <tr><td>SOLAR (BIOSOLAR)</td><td style="text-align:right;">${fmtNum(bbm.solar)}</td><td></td><td style="text-align:right;">Rp 4</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">${fmt(pwAudit.pwSolar)}</td></tr>
+          <tr><td>PERTAMAX TURBO</td><td style="text-align:right;">${fmtNum(bbm.turbo)}</td><td></td><td style="text-align:right;">Rp 30</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">${fmt(pwAudit.pwTurbo)}</td></tr>
+          <tr><td>PERTAMAX 92</td><td style="text-align:right;">${fmtNum(bbm.px92)}</td><td></td><td style="text-align:right;">Rp 30</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">${fmt(pwAudit.pwPx92)}</td></tr>
+          <tr><td>PERTAMINA DEX</td><td style="text-align:right;">${fmtNum(bbm.dex)}</td><td></td><td style="text-align:right;">Rp 30</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">${fmt(pwAudit.pwDex)}</td></tr>
         </tbody>
         <tfoot>
           <tr style="font-weight:bold; background:#e5e7eb;">
             <td colspan="4" style="text-align:right;">TOTAL</td>
             <td style="text-align:right;">Rp -</td>
-            <td style="text-align:right;">Rp ${fmt(pwAudit.total)}</td>
+            <td style="text-align:right;">${fmt(pwAudit.total)}</td>
           </tr>
         </tfoot>
       </table>
@@ -5674,8 +5662,8 @@ window._printAuditDocuments = () => {
       <div style="font-weight:bold; margin-bottom:4px;">TOTAL PENERIMAAN PERTAMINA WAY</div>
       <table style="width:280px;">
         <tr><td>PW PERUSAHAAN</td><td style="text-align:right;">Rp -</td></tr>
-        <tr><td>PW KARYAWAN</td><td style="text-align:right;">Rp ${fmt(pwAudit.total)}</td></tr>
-        <tr style="font-weight:bold; background:#e5e7eb;"><td>TOTAL</td><td style="text-align:right;">Rp ${fmt(pwAudit.total)}</td></tr>
+        <tr><td>PW KARYAWAN</td><td style="text-align:right;">${fmt(pwAudit.total)}</td></tr>
+        <tr style="font-weight:bold; background:#e5e7eb;"><td>TOTAL</td><td style="text-align:right;">${fmt(pwAudit.total)}</td></tr>
       </table>
 
       <div style="font-weight:bold; margin-top:10px; margin-bottom:4px; text-decoration:underline;">PERTAMINA WAY YANG DIBAGIKAN KE KARYAWAN</div>
@@ -5689,34 +5677,46 @@ window._printAuditDocuments = () => {
           </tr>
         </thead>
         <tbody>
-          <tr><td>MANAGER & ADMIN</td><td style="text-align:center;">20%</td><td style="text-align:right;">Rp ${fmt(pwAudit.total * 0.2)}</td><td style="text-align:right;">Rp ${fmt(pwMgrAdminEach)}</td></tr>
-          <tr><td>PENGAWAS + OPERATOR + CS</td><td style="text-align:center;">80%</td><td style="text-align:right;">Rp ${fmt(pwAudit.total * 0.8)}</td><td style="text-align:right;">Rp ${fmt(pwStaffEach)}</td></tr>
+          <tr><td>MANAGER & ADMIN</td><td style="text-align:center;">20%</td><td style="text-align:right;">${fmt(pwAudit.total * 0.2)}</td><td style="text-align:right;">${fmt(pwMgrAdminEach)}</td></tr>
+          <tr><td>PENGAWAS + OPERATOR + CS</td><td style="text-align:center;">80%</td><td style="text-align:right;">${fmt(pwAudit.total * 0.8)}</td><td style="text-align:right;">${fmt(pwStaffEach)}</td></tr>
         </tbody>
         <tfoot>
           <tr style="font-weight:bold; background:#e5e7eb;">
             <td>TOTAL</td>
             <td style="text-align:center;">100%</td>
-            <td style="text-align:right;">Rp ${fmt(pwAudit.total)}</td>
+            <td style="text-align:right;">${fmt(pwAudit.total)}</td>
             <td></td>
           </tr>
         </tfoot>
       </table>
+
+      <div style="display:flex; justify-content:space-between; margin-top:15px;">
+        <div>
+          Mengetahui,<br>
+          <strong>SPBU 54.634.25 MLARAK</strong><br>
+          <div style="height:35px;"></div>
+          <strong style="text-decoration:underline;">${esc(settings.name_audit_manager)}</strong><br>
+          <span>Manager</span>
+        </div>
+        <div style="text-align:right;">
+          Ponorogo, ${formattedPrintDate}<br>
+          <div style="height:35px;"></div>
+          <strong style="text-decoration:underline;">${esc(settings.name_audit_supervisor)}</strong><br>
+          <span>Supervisor</span>
+        </div>
+      </div>
     </div>
 
-    <div class="page-break"></div>
-
-    <!-- HALAMAN 2: RINCIAN INSENTIF PROGRESIF -->
-    <div>
-      <div class="title-head">PERHITUNGAN PERTAMINA WAY BULAN ${monthNameUpper}</div>
-      <div class="subtitle-head">SPBU GONTOR 54.634.25</div>
-
-      <div style="margin-bottom:8px; font-weight:bold;">Rincian Insentif Karyawan Progresif</div>
+    <!-- HALAMAN 2: DAFTAR PENERIMAAN PW -->
+    <div style="page-break-before:always; margin-top:15px;">
+      <div class="title-head">DAFTAR PENERIMAAN PERTAMINA WAY</div>
+      <div class="subtitle-head">KARYAWAN SPBU GONTOR 54.634.25 MLARAK BULAN ${monthNameUpper}</div>
       <table>
         <thead>
           <tr>
-            <th style="width:30px;">No.</th>
-            <th>Nama</th>
-            <th>Jabatan</th>
+            <th style="width:25px;">NO</th>
+            <th>NAMA KARYAWAN</th>
+            <th>JABATAN</th>
             <th style="text-align:right; width:140px;">Insentif</th>
           </tr>
         </thead>
@@ -5725,13 +5725,13 @@ window._printAuditDocuments = () => {
             <td style="text-align:center;">${idx + 1}</td>
             <td>${esc(u.name)}</td>
             <td>${esc(u.position || '-')}</td>
-            <td style="text-align:right;">Rp ${fmt((u.position || '').toLowerCase().includes('manager') || (u.position || '').toLowerCase().includes('admin') ? pwMgrAdminEach : pwStaffEach)}</td>
+            <td style="text-align:right;">${fmt((u.position || '').toLowerCase().includes('manager') || (u.position || '').toLowerCase().includes('admin') ? pwMgrAdminEach : pwStaffEach)}</td>
           </tr>`).join('')}
         </tbody>
         <tfoot>
           <tr style="font-weight:bold; background:#e5e7eb;">
             <td colspan="3" style="text-align:right;">TOTAL</td>
-            <td style="text-align:right;">Rp ${fmt(pwAudit.total)}</td>
+            <td style="text-align:right;">${fmt(pwAudit.total)}</td>
           </tr>
         </tfoot>
       </table>
@@ -5744,19 +5744,15 @@ window._printAuditDocuments = () => {
       </div>
     </div>
 
-    <div class="page-break"></div>
-
-    <!-- HALAMAN 3: TANDA TERIMA GAJI DAN PERTAMINA WAY -->
-    <div>
-      <div class="title-head">TANDA TERIMA GAJI dan PERTAMINA WAY</div>
-      <div class="subtitle-head">KARYAWAN SPBU 5463425 GONTOR</div>
-      <div style="font-weight:bold; margin-bottom:6px;">BULAN : ${monthNameUpper}</div>
-
+    <!-- HALAMAN 3: PENERIMAAN GAJI AUDIT -->
+    <div style="page-break-before:always; margin-top:15px;">
+      <div class="title-head">PENERIMAAN GAJI</div>
+      <div class="subtitle-head">KARYAWAN SPBU GONTOR 54.634.25 MLARAK BULAN ${monthNameUpper}</div>
       <table>
         <thead>
           <tr>
             <th rowspan="2" style="width:25px;">NO</th>
-            <th rowspan="2">NAMA</th>
+            <th rowspan="2">NAMA KARYAWAN</th>
             <th rowspan="2">JABATAN</th>
             <th rowspan="2">GAJI POKOK</th>
             <th>PERTAMINA WAY</th>
@@ -5769,14 +5765,45 @@ window._printAuditDocuments = () => {
             <th>KESEHATAN 1 %</th>
           </tr>
         </thead>
-        <tbody>${rowsHTML}</tbody>
+        <tbody>
+          ${auditUsers.map((u, idx) => {
+            const pos = u.position || '-';
+            const isMgr = pos.toLowerCase() === 'manager' || u.emp_id === managerObj.emp_id;
+            const isAdmin = pos.toLowerCase().includes('admin');
+
+            const gajiPokok = isMgr ? settings.umk_manager : settings.umk_staf;
+            const pwVal = (isMgr || isAdmin) ? pwMgrAdminEach : pwStaffEach;
+            const bpjsVal = gajiPokok * (settings.bpjs_percent / 100);
+            const thpVal = gajiPokok + pwVal - bpjsVal;
+
+            totalGajiPokokAll += gajiPokok;
+            totalPwAll += pwVal;
+            totalBpjsAll += bpjsVal;
+            totalThpAll += thpVal;
+
+            const ttdLeft = (idx % 2 === 0) ? `${idx + 1}` : '';
+            const ttdRight = (idx % 2 === 1) ? `${idx + 1}` : '';
+
+            return `<tr>
+              <td style="text-align:center;">${idx + 1}</td>
+              <td><strong>${esc(u.name)}</strong></td>
+              <td style="text-align:center;">${esc(pos.toUpperCase())}</td>
+              <td style="text-align:right;">${fmt(gajiPokok)}</td>
+              <td style="text-align:right;">${fmt(pwVal)}</td>
+              <td style="text-align:right;">${fmt(bpjsVal)}</td>
+              <td style="text-align:right; font-weight:bold;">${fmt(thpVal)}</td>
+              <td style="width:40px; font-size:9px; vertical-align:top; border-right:none;">${ttdLeft}</td>
+              <td style="width:40px; font-size:9px; vertical-align:bottom; text-align:right; border-left:none;">${ttdRight}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
         <tfoot>
           <tr style="font-weight:bold; background:#e5e7eb;">
             <td colspan="3" style="text-align:right;">Total</td>
-            <td style="text-align:right;">Rp ${fmt(totalGajiPokokAll)}</td>
-            <td style="text-align:right;">Rp ${fmt(totalPwAll)}</td>
-            <td style="text-align:right;">Rp ${fmt(totalBpjsAll)}</td>
-            <td style="text-align:right;">Rp ${fmt(totalThpAll)}</td>
+            <td style="text-align:right;">${fmt(totalGajiPokokAll)}</td>
+            <td style="text-align:right;">${fmt(totalPwAll)}</td>
+            <td style="text-align:right;">${fmt(totalBpjsAll)}</td>
+            <td style="text-align:right;">${fmt(totalThpAll)}</td>
             <td colspan="2"></td>
           </tr>
         </tfoot>
@@ -5862,14 +5889,14 @@ window._printInternalPayrollSummary = () => {
       <td><strong>${esc(u.name)}</strong></td>
       <td style="text-align:center;">UMK 100%</td>
       <td style="text-align:center;">${tenureMonths} Bulan</td>
-      <td style="text-align:right;">Rp ${fmt(gajiPokok)}</td>
-      <td style="text-align:right;">Rp ${fmt(jAmt)}</td>
-      <td style="text-align:right;">Rp ${fmt(kAmt)}</td>
-      <td style="text-align:right;">Rp ${fmt(mkAmt)}</td>
-      <td style="text-align:right;">Rp ${fmt(pwVal)}</td>
-      <td style="text-align:right;">Rp ${fmt(otAmt)}</td>
-      <td style="text-align:right;">Rp ${fmt(tabunganAmt)}</td>
-      <td style="text-align:right; font-weight:bold;">Rp ${fmt(gajiBersih)}</td>
+      <td style="text-align:right;">${fmt(gajiPokok)}</td>
+      <td style="text-align:right;">${fmt(jAmt)}</td>
+      <td style="text-align:right;">${fmt(kAmt)}</td>
+      <td style="text-align:right;">${fmt(mkAmt)}</td>
+      <td style="text-align:right;">${fmt(pwVal)}</td>
+      <td style="text-align:right;">${fmt(otAmt)}</td>
+      <td style="text-align:right;">${fmt(tabunganAmt)}</td>
+      <td style="text-align:right; font-weight:bold;">${fmt(gajiBersih)}</td>
     </tr>`;
   }).join('');
 
@@ -5879,6 +5906,17 @@ window._printInternalPayrollSummary = () => {
   <head>
     <meta charset="utf-8">
     <title>Penerimaan Gaji Karyawan Internal - SPBU Gontor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+      function downloadPDF() {
+        const btnBar = document.querySelector('.no-print');
+        if (btnBar) btnBar.style.display = 'none';
+        if (window.html2pdf) {
+          const opt = { margin:[4,4,4,4], filename:'Rekap_Gaji_Internal_${month}.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true}, jsPDF:{unit:'mm',format:'a4',orientation:'landscape'} };
+          html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
+        } else { if (btnBar) btnBar.style.display = 'flex'; window.print(); }
+      }
+    </script>
     <style>
       @page { size: A4 landscape; margin: 8mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
@@ -5892,10 +5930,10 @@ window._printInternalPayrollSummary = () => {
     </style>
   </head>
   <body>
-    <div class="no-print" style="padding:8px; background:#f1f5f9; text-align:right; border-bottom:1px solid #cbd5e1; margin-bottom:10px;">
-      <button onclick="window.print()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Pilih Save as PDF)</button>
-      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">🖨️ Cetak Rekapitulasi Gaji Internal</button>
-      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">✕ Tutup</button>
+    <div class="no-print" style="padding:8px 12px; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-bottom:10px; display:flex; justify-content:flex-end; gap:8px; align-items:center;">
+      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE PDF DIRECT</button>
+      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Rekapitulasi Gaji Internal</button>
+      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">✕ Tutup</button>
     </div>
 
     <div class="title-head">PENERIMAAN GAJI</div>
@@ -5923,14 +5961,14 @@ window._printInternalPayrollSummary = () => {
       <tfoot>
         <tr style="font-weight:bold; background:#e5e7eb;">
           <td colspan="4" style="text-align:right;">TOTAL</td>
-          <td style="text-align:right;">Rp ${fmt(totalGajiPokok)}</td>
-          <td style="text-align:right;">Rp ${fmt(totalTunjJabatan)}</td>
-          <td style="text-align:right;">Rp ${fmt(totalTunjKinerja)}</td>
-          <td style="text-align:right;">Rp ${fmt(totalTunjMasaKerja)}</td>
-          <td style="text-align:right;">Rp ${fmt(totalPw)}</td>
-          <td style="text-align:right;">Rp ${fmt(totalLembur)}</td>
-          <td style="text-align:right;">Rp ${fmt(totalTabungan)}</td>
-          <td style="text-align:right;">Rp ${fmt(totalBersih)}</td>
+          <td style="text-align:right;">${fmt(totalGajiPokok)}</td>
+          <td style="text-align:right;">${fmt(totalTunjJabatan)}</td>
+          <td style="text-align:right;">${fmt(totalTunjKinerja)}</td>
+          <td style="text-align:right;">${fmt(totalTunjMasaKerja)}</td>
+          <td style="text-align:right;">${fmt(totalPw)}</td>
+          <td style="text-align:right;">${fmt(totalLembur)}</td>
+          <td style="text-align:right;">${fmt(totalTabungan)}</td>
+          <td style="text-align:right;">${fmt(totalBersih)}</td>
         </tr>
       </tfoot>
     </table>
@@ -5939,7 +5977,7 @@ window._printInternalPayrollSummary = () => {
       <div>
         <strong>TOTAL PENGELUARAN GAJI UNTUK KARYAWAN:</strong>
         <span style="font-size:12px; font-weight:bold; background:#facc15; padding:3px 8px; border:1px solid #000; margin-left:10px;">
-          Rp ${fmt(totalBersih + totalTabungan)}
+          ${fmt(totalBersih + totalTabungan)}
         </span>
       </div>
       <div style="text-align:right;">
@@ -5968,7 +6006,7 @@ window._printSavingsSummary = () => {
       const tenureMonths = getTenureMonths(u.join_date || u.created_at);
       const amt = Number(mData.savings_deduction !== undefined ? mData.savings_deduction : (tenureMonths >= 6 ? 50000 : 0));
       if (amt > 0) empTotal += amt;
-      return `<td style="text-align:right;">${amt > 0 ? 'Rp ' + fmt(amt) : 'Rp -'}</td>`;
+      return `<td style="text-align:right;">${amt > 0 ? fmt(amt) : 'Rp -'}</td>`;
     }).join('');
 
     totalAllSavings += empTotal;
@@ -5977,7 +6015,7 @@ window._printSavingsSummary = () => {
       <td style="text-align:center;">${idx + 1}</td>
       <td><strong>${esc(u.name)}</strong></td>
       ${monthCells}
-      <td style="text-align:right; font-weight:bold;">Rp ${fmt(empTotal)}</td>
+      <td style="text-align:right; font-weight:bold;">${fmt(empTotal)}</td>
     </tr>`;
   }).join('');
 
@@ -5987,6 +6025,17 @@ window._printSavingsSummary = () => {
   <head>
     <meta charset="utf-8">
     <title>Rekapitulasi Tabungan Karyawan - SPBU Gontor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+      function downloadPDF() {
+        const btnBar = document.querySelector('.no-print');
+        if (btnBar) btnBar.style.display = 'none';
+        if (window.html2pdf) {
+          const opt = { margin:[4,4,4,4], filename:'Rekap_Tabungan_Karyawan_${currentYear}.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true}, jsPDF:{unit:'mm',format:'a4',orientation:'landscape'} };
+          html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
+        } else { if (btnBar) btnBar.style.display = 'flex'; window.print(); }
+      }
+    </script>
     <style>
       @page { size: A4 landscape; margin: 8mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
@@ -5999,10 +6048,10 @@ window._printSavingsSummary = () => {
     </style>
   </head>
   <body>
-    <div class="no-print" style="padding:8px; background:#f1f5f9; text-align:right; border-bottom:1px solid #cbd5e1; margin-bottom:10px;">
-      <button onclick="window.print()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Pilih Save as PDF)</button>
-      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">🖨️ Cetak Rekap Tabungan</button>
-      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">✕ Tutup</button>
+    <div class="no-print" style="padding:8px 12px; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-bottom:10px; display:flex; justify-content:flex-end; gap:8px; align-items:center;">
+      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE PDF DIRECT</button>
+      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Rekap Tabungan (Printer)</button>
+      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">✕ Tutup</button>
     </div>
 
     <div class="title-head">TABUNGAN KARYAWAN (${currentYear})</div>
@@ -6019,7 +6068,7 @@ window._printSavingsSummary = () => {
       <tfoot>
         <tr style="font-weight:bold; background:#e5e7eb;">
           <td colspan="14" style="text-align:right;">Total</td>
-          <td style="text-align:right; background:#facc15;">Rp ${fmt(totalAllSavings)}</td>
+          <td style="text-align:right; background:#facc15;">${fmt(totalAllSavings)}</td>
         </tr>
       </tfoot>
     </table>
@@ -6050,7 +6099,7 @@ window._printOvertimeSummary = () => {
       <td style="text-align:center;">${esc((u.position || '-').toUpperCase())}</td>
       <td style="text-align:right;">50,000</td>
       <td style="text-align:center;">${shifts} Shift</td>
-      <td style="text-align:right; font-weight:bold;">${otAmt > 0 ? 'Rp ' + fmt(otAmt) : 'Rp -'}</td>
+      <td style="text-align:right; font-weight:bold;">${otAmt > 0 ? fmt(otAmt) : 'Rp -'}</td>
     </tr>`;
   }).join('');
 
@@ -6060,6 +6109,17 @@ window._printOvertimeSummary = () => {
   <head>
     <meta charset="utf-8">
     <title>Rekapitulasi Lemburan Karyawan - SPBU Gontor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+      function downloadPDF() {
+        const btnBar = document.querySelector('.no-print');
+        if (btnBar) btnBar.style.display = 'none';
+        if (window.html2pdf) {
+          const opt = { margin:[5,5,5,5], filename:'Rekap_Lembur_Karyawan_${month}.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} };
+          html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
+        } else { if (btnBar) btnBar.style.display = 'flex'; window.print(); }
+      }
+    </script>
     <style>
       @page { size: A4 portrait; margin: 10mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
@@ -6073,10 +6133,10 @@ window._printOvertimeSummary = () => {
     </style>
   </head>
   <body>
-    <div class="no-print" style="padding:8px; background:#f1f5f9; text-align:right; border-bottom:1px solid #cbd5e1; margin-bottom:10px;">
-      <button onclick="window.print()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Pilih Save as PDF)</button>
-      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">🖨️ Cetak Rekap Lemburan</button>
-      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">✕ Tutup</button>
+    <div class="no-print" style="padding:8px 12px; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-bottom:10px; display:flex; justify-content:flex-end; gap:8px; align-items:center;">
+      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE PDF DIRECT</button>
+      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Rekap Lemburan (Printer)</button>
+      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">✕ Tutup</button>
     </div>
 
     <div class="title-head">LEMBURAN</div>
