@@ -633,10 +633,6 @@ function setupNavigation() {
       menu = menu.filter(m => m.id !== 'leaderboard');
     }
   }
-    } else {
-      menu = menu.filter(m => m.id !== 'leaderboard');
-    }
-  }
 
   // Check unread/pending leaves & internal chats for badges
   let empHasUnreadLeave = false;
