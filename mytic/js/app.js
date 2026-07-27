@@ -3165,18 +3165,17 @@ window._generateRatingPDFHtml = (key) => {
     function downloadRatingPdfDirect() {
       const btn = document.getElementById('btn-dl-rating-pdf');
       const noPrintBar = document.querySelector('.no-print-bar');
-      const parent = noPrintBar ? noPrintBar.parentNode : null;
-      const nextSib = noPrintBar ? noPrintBar.nextSibling : null;
-      const oldText = btn.innerHTML;
+      const oldText = btn ? btn.innerHTML : '';
+      if (btn) { btn.innerHTML = '⏳ Mengunduh...'; btn.disabled = true; }
 
-      btn.innerHTML = '⏳ Mengunduh...';
-      btn.disabled = true;
-
-      // Temporary remove top control bar from DOM so html2pdf never captures it
-      if (noPrintBar) noPrintBar.remove();
+      const paperSize = document.getElementById('paper-size-select') ? document.getElementById('paper-size-select').value : 'A4';
+      
+      // Hide top control bar completely before rendering
+      if (noPrintBar) {
+        noPrintBar.style.setProperty('display', 'none', 'important');
+      }
 
       const element = document.querySelector('.rapor-container');
-      const paperSize = document.getElementById('paper-size-select') ? document.getElementById('paper-size-select').value : 'A4';
       const safeName = '${esc(empName).replace(/[^a-zA-Z0-9]/g, '_')}';
 
       const opt = {
@@ -3187,22 +3186,18 @@ window._generateRatingPDFHtml = (key) => {
           scale: 2.5,
           useCORS: true,
           logging: false,
-          scrollX: 0,
-          scrollY: 0,
           ignoreElements: (node) => node.classList && (node.classList.contains('no-print') || node.classList.contains('no-print-bar'))
         },
         jsPDF: { unit: 'mm', format: paperSize === 'F4' ? [215, 330] : 'a4', orientation: 'portrait' }
       };
 
       html2pdf().set(opt).from(element).save().then(() => {
-        if (noPrintBar && parent) parent.insertBefore(noPrintBar, nextSib);
-        btn.innerHTML = oldText;
-        btn.disabled = false;
+        if (noPrintBar) noPrintBar.style.setProperty('display', 'flex');
+        if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
       }).catch(err => {
         console.error(err);
-        if (noPrintBar && parent) parent.insertBefore(noPrintBar, nextSib);
-        btn.innerHTML = oldText;
-        btn.disabled = false;
+        if (noPrintBar) noPrintBar.style.setProperty('display', 'flex');
+        if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
         alert('Tanda peringatan: Jika unduh otomatis terhalang, silakan gunakan tombol Cetak / Print lalu pilih Tujuan: Simpan sebagai PDF.');
       });
     }
@@ -4160,18 +4155,17 @@ window._printEmployeeKpiPDF = (empId) => {
     function downloadPdfDirect() {
       const btn = document.getElementById('btn-dl-pdf');
       const noPrintBar = document.querySelector('.no-print-bar');
-      const parent = noPrintBar ? noPrintBar.parentNode : null;
-      const nextSib = noPrintBar ? noPrintBar.nextSibling : null;
-      const oldText = btn.innerHTML;
+      const oldText = btn ? btn.innerHTML : '';
+      if (btn) { btn.innerHTML = '⏳ Mengunduh...'; btn.disabled = true; }
 
-      btn.innerHTML = '⏳ Mengunduh...';
-      btn.disabled = true;
-
-      // Temporary remove top control bar from DOM so html2pdf never captures it
-      if (noPrintBar) noPrintBar.remove();
+      const paperSize = document.getElementById('paper-size-select') ? document.getElementById('paper-size-select').value : 'A4';
+      
+      // Hide top control bar completely before rendering
+      if (noPrintBar) {
+        noPrintBar.style.setProperty('display', 'none', 'important');
+      }
 
       const element = document.querySelector('.rapor-container');
-      const paperSize = document.getElementById('paper-size-select') ? document.getElementById('paper-size-select').value : 'A4';
       const safeName = '${esc(u.name).replace(/[^a-zA-Z0-9]/g, '_')}';
       const safePeriod = '${periodTitle.replace(/[^a-zA-Z0-9]/g, '_')}';
 
@@ -4183,22 +4177,18 @@ window._printEmployeeKpiPDF = (empId) => {
           scale: 2.5,
           useCORS: true,
           logging: false,
-          scrollX: 0,
-          scrollY: 0,
           ignoreElements: (node) => node.classList && (node.classList.contains('no-print') || node.classList.contains('no-print-bar'))
         },
         jsPDF: { unit: 'mm', format: paperSize === 'F4' ? [215, 330] : 'a4', orientation: 'portrait' }
       };
 
       html2pdf().set(opt).from(element).save().then(() => {
-        if (noPrintBar && parent) parent.insertBefore(noPrintBar, nextSib);
-        btn.innerHTML = oldText;
-        btn.disabled = false;
+        if (noPrintBar) noPrintBar.style.setProperty('display', 'flex');
+        if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
       }).catch(err => {
         console.error(err);
-        if (noPrintBar && parent) parent.insertBefore(noPrintBar, nextSib);
-        btn.innerHTML = oldText;
-        btn.disabled = false;
+        if (noPrintBar) noPrintBar.style.setProperty('display', 'flex');
+        if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
         alert('Tanda peringatan: Jika unduh otomatis terhalang, silakan gunakan tombol Cetak / Print lalu pilih Tujuan: Simpan sebagai PDF.');
       });
     }
