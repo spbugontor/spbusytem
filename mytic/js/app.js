@@ -2797,18 +2797,30 @@ window._updateRatingCriteria = () => {
     return;
   }
 
+  const ratingMeta = {
+    1: { label: '★ 1 - Sangat Kurang', class: 'rating-badge-1' },
+    2: { label: '★ 2 - Kurang', class: 'rating-badge-2' },
+    3: { label: '★ 3 - Cukup', class: 'rating-badge-3' },
+    4: { label: '★ 4 - Baik', class: 'rating-badge-4' },
+    5: { label: '★ 5 - Sangat Baik', class: 'rating-badge-5' }
+  };
+
   let html = '<p class="form-label mt-2">Skor Kriteria (1-5)</p>';
   Object.keys(grouped).forEach(ind => {
-    html += `<div style="margin-top:0.5rem;background:var(--surface);color:var(--text-main);padding:0.75rem;border-radius:var(--radius-md);border:1px solid var(--border)">
-      <h5 style="font-size:0.85rem;font-weight:700;color:var(--primary);margin-bottom:0.5rem;text-transform:uppercase">${esc(ind)}</h5>`;
+    html += `<div style="margin-top:0.75rem;background:var(--surface);color:var(--text-main);padding:0.85rem;border-radius:var(--radius-md);border:1px solid var(--border)">
+      <h5 style="font-size:0.85rem;font-weight:700;color:var(--primary);margin-bottom:0.75rem;text-transform:uppercase">${esc(ind)}</h5>`;
 
     grouped[ind].forEach(c => {
-      // the data-key attribute is used in _saveRating to avoid invalid characters in Firebase keys
-      html += `<div style="display:flex;flex-direction:column;gap:0.5rem;padding:0.5rem 0;border-bottom:1px solid var(--border)">
-        <span class="text-sm font-semibold" style="flex:1;color:var(--text-main);">${esc(c.name)}</span>
-        <input type="hidden" class="rf-score" data-key="${c._key}" id="score-${c._key}" value="3">
-        <div style="display:flex;gap:0.5rem;justify-content:flex-end;" id="rating-group-${c._key}">
-          ${[1, 2, 3, 4, 5].map(n => `<button type="button" class="rating-btn ${n === 3 ? 'active' : ''}" onclick="_setRating('${c._key}', ${n})">${n}</button>`).join('')}
+      const defaultVal = 3;
+      const meta = ratingMeta[defaultVal];
+      html += `<div style="display:flex;flex-direction:column;gap:0.6rem;padding:0.6rem 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.4rem">
+          <span class="text-sm font-semibold" style="flex:1;color:var(--text-main);min-width:180px;">${esc(c.name)}</span>
+          <span class="rating-badge ${meta.class}" id="rating-badge-${c._key}">${meta.label}</span>
+        </div>
+        <input type="hidden" class="rf-score" data-key="${c._key}" id="score-${c._key}" value="${defaultVal}">
+        <div style="display:flex;gap:0.6rem;justify-content:flex-end;margin-top:0.2rem;" id="rating-group-${c._key}">
+          ${[1, 2, 3, 4, 5].map(n => `<button type="button" class="rating-btn rating-btn-${n} ${n === defaultVal ? 'active' : ''}" onclick="_setRating('${c._key}', ${n})">${n}</button>`).join('')}
         </div>
       </div>`;
     });
@@ -2822,10 +2834,26 @@ window._updateRatingCriteria = () => {
 window._setRating = (key, val) => {
   const input = $('score-' + key);
   if (input) input.value = val;
+
+  const ratingMeta = {
+    1: { label: '★ 1 - Sangat Kurang', class: 'rating-badge-1' },
+    2: { label: '★ 2 - Kurang', class: 'rating-badge-2' },
+    3: { label: '★ 3 - Cukup', class: 'rating-badge-3' },
+    4: { label: '★ 4 - Baik', class: 'rating-badge-4' },
+    5: { label: '★ 5 - Sangat Baik', class: 'rating-badge-5' }
+  };
+
+  const badge = $('rating-badge-' + key);
+  if (badge && ratingMeta[val]) {
+    badge.className = 'rating-badge ' + ratingMeta[val].class;
+    badge.textContent = ratingMeta[val].label;
+  }
+
   const group = $('rating-group-' + key);
   if (group) {
     group.querySelectorAll('.rating-btn').forEach(btn => {
-      if (parseInt(btn.textContent) === val) {
+      const btnVal = parseInt(btn.textContent);
+      if (btnVal === val) {
         btn.classList.add('active');
       } else {
         btn.classList.remove('active');
