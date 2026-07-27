@@ -3715,27 +3715,46 @@ function isRecordForUser(item, user) {
 function calculateEmployeeKpi(emp, period) {
   const now = new Date();
   let startDate = new Date();
+  let endDate = new Date();
 
-  if (period === 'month') {
-    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-  } else if (period === 'last_month') {
+  if (period === 'last_month') {
     startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
   } else if (period === 'quarter') {
     startDate = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
   } else if (period === 'year') {
     startDate = new Date(now.getFullYear(), 0, 1);
+    endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+  } else if (typeof period === 'string' && /^\d{4}-\d{2}$/.test(period)) {
+    const [y, m] = period.split('-').map(Number);
+    startDate = new Date(y, m - 1, 1);
+    endDate = new Date(y, m, 0, 23, 59, 59);
   } else {
     startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
   }
 
-  const startStr = startDate.toISOString().split('T')[0];
-  const endStr = now.toISOString().split('T')[0];
+  const startStr = startDate.toISOString().slice(0, 10);
+  const endStr = endDate.toISOString().slice(0, 10);
+  const startMonthStr = startStr.slice(0, 7);
+  const endMonthStr = endStr.slice(0, 7);
+
+  const isRecordInPeriod = (dateVal) => {
+    if (!dateVal) return true;
+    const dStr = dateVal.toString().trim();
+    if (/^\d{4}-\d{2}$/.test(dStr)) {
+      return dStr >= startMonthStr && dStr <= endMonthStr;
+    }
+    const dMonth = dStr.slice(0, 7);
+    return (dStr >= startStr && dStr <= endStr) || (dMonth >= startMonthStr && dMonth <= endMonthStr);
+  };
 
   const isOperator = (emp.position || '').toString().toLowerCase() === 'operator';
 
   // 1. Attendance Punctuality Score (0 - 100)
   const absensiRecords = Object.values(allData.absensi_records || {}).filter(r => {
-    return isRecordForUser(r, emp) && (!r.date || (r.date >= startStr && r.date <= endStr));
+    return isRecordForUser(r, emp) && isRecordInPeriod(r.date || r.tanggal);
   });
 
   let onTimeCount = 0;
@@ -3781,7 +3800,7 @@ function calculateEmployeeKpi(emp, period) {
   let sopRate = null;
   if (isOperator) {
     const sopRecords = Object.values(allData.sop_checklists || allData.ceklis_sop || {}).filter(s => {
-      return isRecordForUser(s, emp) && (!s.date || (s.date >= startStr && s.date <= endStr));
+      return isRecordForUser(s, emp) && isRecordInPeriod(s.date || s.tanggal || s.created_at);
     });
 
     let completedSop = 0;
@@ -3790,27 +3809,45 @@ function calculateEmployeeKpi(emp, period) {
       if (s.status === 'Selesai' || s.completed || s.is_completed) completedSop++;
     });
 
-    sopRate = totalSop > 0 ? Math.round((completedSop / totalSop) * 100) : 95;
+    sopRate = totalSop > 0 ? Math.round((completedSop / totalSop) * 100) : 0;
   }
 
   // 3. Performance Appraisal Rating (0 - 100)
   const ratingRecords = Object.values(allData.ratings || allData.penilaian_kinerja || {}).filter(rt => {
-    return isRecordForUser(rt, emp);
+    return isRecordForUser(rt, emp) && isRecordInPeriod(rt.date || rt.tanggal || rt.created_at);
   });
 
   let sumRating = 0;
-  let countRating = ratingRecords.length;
+  let countRating = 0;
   ratingRecords.forEach(rt => {
-    const score = Number(rt.rating || rt.skor || rt.score || 5);
-    sumRating += score;
+    let scoresObj = rt.scores;
+    if (!scoresObj && rt.rating_scores) {
+      try {
+        scoresObj = typeof rt.rating_scores === 'string' ? JSON.parse(rt.rating_scores) : rt.rating_scores;
+      } catch (e) {}
+    }
+    if (scoresObj && typeof scoresObj === 'object') {
+      const values = Object.values(scoresObj).map(Number).filter(v => !isNaN(v) && v > 0);
+      if (values.length > 0) {
+        const itemAvg = values.reduce((a, b) => a + b, 0) / values.length;
+        sumRating += itemAvg;
+        countRating++;
+        return;
+      }
+    }
+    const singleVal = Number(rt.rating || rt.skor || rt.score);
+    if (!isNaN(singleVal) && singleVal > 0) {
+      sumRating += singleVal;
+      countRating++;
+    }
   });
 
-  const avgRatingNum = countRating > 0 ? (sumRating / countRating) : 4.5;
-  const ratingScore = Math.round(avgRatingNum * 20); // 5.0 -> 100
+  const avgRatingNum = countRating > 0 ? (sumRating / countRating) : 0;
+  const ratingScore = Math.round(avgRatingNum * 20); // 5.0 -> 100, 0.0 -> 0
 
   // 4. Violation Penalty / Track Record (0 - 100)
   const violationRecords = Object.values(allData.violations || allData.pelanggaran || {}).filter(v => {
-    return isRecordForUser(v, emp) && v.status !== 'Dibatalkan';
+    return isRecordForUser(v, emp) && v.status !== 'Dibatalkan' && isRecordInPeriod(v.date || v.tanggal || v.start_date || v.created_at);
   });
 
   let penalty = 0;
@@ -3827,7 +3864,7 @@ function calculateEmployeeKpi(emp, period) {
 
   // 5. Debit / Tunggakan Akuntabilitas Keuangan (0 - 100)
   const totalDebitAmt = Math.max(0, calcBalance(emp.emp_id));
-  const debitTxns = getTxns(emp.emp_id).filter(t => t.type === 'debit');
+  const debitTxns = getTxns(emp.emp_id).filter(t => t.type === 'debit' && isRecordInPeriod(t.date || t.tanggal || t.timestamp));
   const debitTxCount = debitTxns.length;
 
   const nominalPenalty = Math.floor(totalDebitAmt / 50000) * 5;
@@ -3841,7 +3878,7 @@ function calculateEmployeeKpi(emp, period) {
   if (isOperator) {
     compositeScore = Math.round(
       (attendanceRate * 0.30) +
-      ((sopRate || 95) * 0.20) +
+      ((sopRate || 0) * 0.20) +
       (ratingScore * 0.25) +
       (debitScore * 0.15) +
       (trackRecordScore * 0.10)
