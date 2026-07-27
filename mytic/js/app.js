@@ -3138,38 +3138,10 @@ window._generateRatingPDFHtml = (key) => {
       </tbody>
     </table>
     
-    <div style="border:1px solid #cbd5e1; border-radius:6px; padding:8px 12px; background:#f8fafc; margin-bottom:14px;">
-      <div style="font-weight:bold; font-size:10.5px; color:#334155; margin-bottom:3px; text-transform:uppercase;">💬 CATATAN EVALUASI ATASAN:</div>
+    <div style="border:1px solid #cbd5e1; border-radius:6px; padding:10px 14px; background:#f8fafc; margin-bottom:20px;">
+      <div style="font-weight:bold; font-size:10.5px; color:#334155; margin-bottom:4px; text-transform:uppercase;">💬 CATATAN EVALUASI ATASAN:</div>
       <div style="font-size:11px; color:#1e293b; font-style:italic;">${esc(rating.note || 'Tidak ada catatan khusus.')}</div>
     </div>
-
-    <h4 style="margin:12px 0 6px 0; color:#1e40af; font-size:12px; border-bottom:1.5px solid #cbd5e1; padding-bottom:3px;">B. REKAPITULASI IZIN / CUTI (PERIODE BERJALAN)</h4>
-    <table class="info-table" style="margin-bottom:8px;">
-      <tr>
-        <td class="label">Izin Disetujui (Bulan Ini)</td>
-        <td><strong>${totalIzinBulanIni} Kali</strong></td>
-      </tr>
-    </table>
-    ${leaveQuotaRows ? `
-    <table class="metric-table">
-      <thead>
-        <tr>
-          <th style="border:1px solid #cbd5e1;padding:5px 8px;text-align:left;background:#334155;color:#fff;">Jenis Cuti</th>
-          <th style="border:1px solid #cbd5e1;padding:5px 8px;text-align:center;background:#334155;color:#fff;width:80px;">Jatah</th>
-          <th style="border:1px solid #cbd5e1;padding:5px 8px;text-align:center;background:#334155;color:#fff;width:80px;">Terpakai</th>
-          <th style="border:1px solid #cbd5e1;padding:5px 8px;text-align:center;background:#334155;color:#fff;width:80px;">Sisa</th>
-        </tr>
-      </thead>
-      <tbody>${leaveQuotaRows}</tbody>
-    </table>` : '<p style="color:#64748b;font-style:italic;font-size:11px;margin-bottom:10px;">Tidak ada jenis cuti terdaftar.</p>'}
-
-    <h4 style="margin:12px 0 6px 0; color:#1e40af; font-size:12px; border-bottom:1.5px solid #cbd5e1; padding-bottom:3px;">C. REKAPITULASI TUNGGAKAN / MINUS KASIR</h4>
-    <table class="info-table">
-      <tr>
-        <td class="label">Total Balance Tunggakan</td>
-        <td><strong style="color:${balance > 0 ? '#dc2626' : '#166534'};">Rp ${fmt(balance)} ${balance === 0 ? '(Clean)' : ''}</strong></td>
-      </tr>
-    </table>
 
     <div class="signature-area">
       <div class="sig-box">
@@ -3892,6 +3864,33 @@ window._printEmployeeKpiPDF = (empId) => {
   const latestRating = ratings.length > 0 ? ratings[0] : null;
   const empNote = latestRating ? latestRating.note : '';
 
+  // --- Hitung data Izin/Cuti ---
+  const currentYear = new Date().getFullYear();
+  const empLeaves = getLeaves(empId);
+  const periodMonth = period === 'bulan_ini' ? new Date().toISOString().slice(0, 7) : period;
+  const approvedLeavesBulanIni = empLeaves.filter(l => l.status === 'Disetujui' && l.start_date.startsWith(periodMonth));
+  const totalIzinBulanIni = approvedLeavesBulanIni.length;
+
+  const empGender = u.gender || 'Semua';
+  const leaveTypes = getLeaveTypes().filter(t => !t.gender || t.gender === 'Semua' || t.gender === empGender);
+  let leaveQuotaRows = '';
+  leaveTypes.forEach(t => {
+    if (t.quota > 0) {
+      let taken = 0;
+      empLeaves.filter(l => l.leave_type === t.name && l.status !== 'Ditolak' && new Date(l.start_date).getFullYear() === currentYear).forEach(l => {
+        const s = new Date(l.start_date); const e = new Date(l.end_date);
+        taken += Math.max(1, Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1);
+      });
+      const remaining = t.quota - taken;
+      leaveQuotaRows += `<tr>
+        <td style="border:1px solid #cbd5e1;padding:5px 8px;">${esc(t.name)}</td>
+        <td style="border:1px solid #cbd5e1;padding:5px 8px;text-align:center;">${t.quota} hari</td>
+        <td style="border:1px solid #cbd5e1;padding:5px 8px;text-align:center;">${taken} hari</td>
+        <td style="border:1px solid #cbd5e1;padding:5px 8px;text-align:center;font-weight:bold;color:${remaining <= 0 ? '#dc2626' : '#166534'}">${remaining} hari</td>
+      </tr>`;
+    }
+  });
+
   const pdfHtml = `<!DOCTYPE html>
 <html>
 <head>
@@ -4062,6 +4061,34 @@ window._printEmployeeKpiPDF = (empId) => {
         <td style="text-align:center; font-weight:bold; color:#1d4ed8;">${kpi.trackRecordScore} / 100</td>
       </tr>
     </tbody>
+  </table>
+
+  <h4 style="margin:14px 0 6px 0; color:#1e40af; font-size:12px; border-bottom:1.5px solid #cbd5e1; padding-bottom:3px;">📋 REKAPITULASI IZIN & HAK CUTI KARYAWAN</h4>
+  <table class="info-table" style="margin-bottom:8px;">
+    <tr>
+      <td class="label">Izin Disetujui (Bulan Ini)</td>
+      <td><strong>${totalIzinBulanIni} Kali</strong></td>
+    </tr>
+  </table>
+  ${leaveQuotaRows ? `
+  <table class="metric-table" style="margin-bottom:14px;">
+    <thead>
+      <tr>
+        <th style="border:1px solid #cbd5e1;padding:5px 8px;text-align:left;background:#334155;color:#fff;">Jenis Hak Cuti</th>
+        <th style="border:1px solid #cbd5e1;padding:5px 8px;text-align:center;background:#334155;color:#fff;width:80px;">Jatah (Tahun ${currentYear})</th>
+        <th style="border:1px solid #cbd5e1;padding:5px 8px;text-align:center;background:#334155;color:#fff;width:80px;">Terpakai</th>
+        <th style="border:1px solid #cbd5e1;padding:5px 8px;text-align:center;background:#334155;color:#fff;width:80px;">Sisa Cuti</th>
+      </tr>
+    </thead>
+    <tbody>${leaveQuotaRows}</tbody>
+  </table>` : '<p style="color:#64748b;font-style:italic;font-size:11px;margin-bottom:10px;">Tidak ada jenis cuti terdaftar.</p>'}
+
+  <h4 style="margin:14px 0 6px 0; color:#1e40af; font-size:12px; border-bottom:1.5px solid #cbd5e1; padding-bottom:3px;">💳 REKAPITULASI AKUNTABILITAS KEUANGAN / MINUS KASIR</h4>
+  <table class="info-table" style="margin-bottom:14px;">
+    <tr>
+      <td class="label">Total Balance Tunggakan</td>
+      <td><strong style="color:${kpi.totalDebitAmt > 0 ? '#dc2626' : '#166534'};">Rp ${fmt(kpi.totalDebitAmt)} ${kpi.totalDebitAmt === 0 ? '(Bersih / Clean ✨)' : `(${kpi.debitTxCount} Catatan Transaksi)`}</strong></td>
+    </tr>
   </table>
   <div style="border:1px solid #cbd5e1; border-radius:6px; padding:10px 14px; background:#f8fafc; margin-bottom:20px;">
     <div style="font-weight:bold; font-size:10.5px; color:#334155; margin-bottom:4px; text-transform:uppercase;">💬 CATATAN & EVALUASI DARI MANAJEMEN:</div>
