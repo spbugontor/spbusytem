@@ -114,7 +114,7 @@ function getLeaves(empId) { return Object.entries(allData.leaves).filter(([, v])
 function getSavings(empId) { return Object.entries(allData.savings).filter(([, v]) => empId ? v.emp_id === empId : true).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (b.date || '').localeCompare(a.date || '') || b._key.localeCompare(a._key)); }
 function getViolations(empId) { return Object.entries(allData.violations).filter(([, v]) => empId ? v.emp_id === empId : true).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (b.date || '').localeCompare(a.date || '') || b._key.localeCompare(a._key)); }
 function getRatings(empId) { return Object.entries(allData.ratings).filter(([, v]) => empId ? v.emp_id === empId : true).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (b.date || '').localeCompare(a.date || '') || b._key.localeCompare(a._key)); }
-function getCriteria(pos) { return Object.entries(allData.criteria).filter(([, v]) => pos ? (v.position === pos || v.position === 'Semua') : true).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (a.name || '').localeCompare(b.name || '')); }
+function getCriteria(pos) { return Object.entries(allData.criteria || {}).filter(([, v]) => { if (!pos) return true; const p = v.position; if (!p) return true; if (Array.isArray(p)) return p.includes('Semua') || p.includes(pos); const pStr = String(p); if (pStr === 'Semua' || pStr === pos) return true; return pStr.split(',').map(s => s.trim()).includes(pos); }).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (a.name || '').localeCompare(b.name || '')); }
 function getLeaveTypes() { return Object.entries(allData.leave_types).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (a.name || '').localeCompare(b.name || '')); }
 function getPinHistory(empId) { return Object.entries(allData.pin_history || {}).filter(([, v]) => empId ? v.emp_id === empId : true).map(([k, v]) => ({ ...v, _key: k })).sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || '')); }
 
@@ -1389,13 +1389,16 @@ function renderCriteriaPage() {
             </button>
           </div>
         </div>
-        ${grouped[ind].map(c => `<div class="card" style="margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center">
-          <div><strong>${esc(c.name)}</strong><br><span class="text-xs text-muted">Berlaku: ${esc(c.position || 'Semua')}</span></div>
+        ${grouped[ind].map(c => {
+          const posStr = Array.isArray(c.position) ? (c.position.includes('Semua') ? 'Semua Jabatan' : c.position.join(', ')) : (c.position || 'Semua Jabatan');
+          return `<div class="card" style="margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center">
+          <div><strong>${esc(c.name)}</strong><br><span class="text-xs text-muted">Berlaku: ${esc(posStr)}</span></div>
           <div style="display:flex;gap:0.5rem">
             <button class="btn btn-secondary" style="padding:0.4rem 0.6rem;font-size:0.7rem" onclick="window._showCriteriaForm('${c._key}')">Edit Sub</button>
             <button class="btn btn-outline-danger" style="padding:0.4rem 0.6rem;font-size:0.7rem" onclick="window._deleteCriteria('${c._key}')">Hapus Sub</button>
           </div>
-        </div>`).join('')}
+        </div>`;
+        }).join('')}
       </div>
     `).join('')}
   </div>`;
@@ -3111,6 +3114,19 @@ window._showCriteriaForm = (key) => {
   if (!uniqueIndicators.includes(currentInd)) uniqueIndicators.push(currentInd);
   if (uniqueIndicators.length === 0) uniqueIndicators.push('Umum');
 
+  const rawPos = c?.position;
+  let selectedPositions = [];
+  if (Array.isArray(rawPos)) {
+    selectedPositions = rawPos;
+  } else if (typeof rawPos === 'string') {
+    selectedPositions = rawPos.split(',').map(s => s.trim());
+  } else {
+    selectedPositions = ['Semua'];
+  }
+  const isSemua = selectedPositions.includes('Semua') || selectedPositions.length === 0;
+
+  const availablePositions = ['Manager', 'Admin', 'Supervisor', 'Operator', 'Cleaning Service'];
+
   area.innerHTML = `<div class="card mb-4 fade-in" style="border:2px solid var(--primary)">
     <h3 class="card-title mb-4">${c ? 'Edit' : 'Tambah'} Kriteria</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
@@ -3123,14 +3139,21 @@ window._showCriteriaForm = (key) => {
         <input id="cf-indicator" class="form-input" value="" placeholder="Ketik nama indikator baru..." style="display:none;">
       </div>
       <div class="form-group"><label class="form-label">Sub-Indikator</label><input id="cf-name" class="form-input" value="${esc(c?.name || '')}" placeholder="Misal: Tepat Waktu"></div>
-      <div class="form-group" style="grid-column: 1 / -1"><label class="form-label">Berlaku Untuk</label><select id="cf-pos" class="form-input form-select">
-        <option value="Semua" ${c?.position === 'Semua' ? 'selected' : ''}>Semua Jabatan</option>
-        <option value="Manager" ${c?.position === 'Manager' ? 'selected' : ''}>Manager</option>
-        <option value="Admin" ${c?.position === 'Admin' ? 'selected' : ''}>Admin</option>
-        <option value="Supervisor" ${c?.position === 'Supervisor' ? 'selected' : ''}>Supervisor</option>
-        <option value="Operator" ${c?.position === 'Operator' ? 'selected' : ''}>Operator</option>
-        <option value="Cleaning Service" ${c?.position === 'Cleaning Service' ? 'selected' : ''}>Cleaning Service</option>
-      </select></div>
+      <div class="form-group" style="grid-column: 1 / -1">
+        <label class="form-label mb-2">Berlaku Untuk Jabatan (Pilih satu atau lebih)</label>
+        <div style="display:flex;flex-wrap:wrap;gap:0.75rem 1.25rem;background:var(--surface);padding:0.85rem;border-radius:var(--radius-md);border:1px solid var(--border);">
+          <label style="display:inline-flex;align-items:center;gap:0.4rem;cursor:pointer;font-weight:600;font-size:0.85rem;color:var(--text-main);">
+            <input type="checkbox" class="cf-pos-cb" value="Semua" ${isSemua ? 'checked' : ''} onchange="window._onCriteriaPosCheck(this)">
+            <span>Semua Jabatan</span>
+          </label>
+          ${availablePositions.map(p => `
+            <label style="display:inline-flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.85rem;color:var(--text-main);">
+              <input type="checkbox" class="cf-pos-cb" value="${esc(p)}" ${(!isSemua && selectedPositions.includes(p)) ? 'checked' : ''} onchange="window._onCriteriaPosCheck(this)">
+              <span>${esc(p)}</span>
+            </label>
+          `).join('')}
+        </div>
+      </div>
     </div>
     <div style="display:flex;gap:0.75rem;margin-top:0.5rem">
       <button class="btn btn-primary" onclick="window._saveCriteria('${key || ''}')">${c ? 'Perbarui' : 'Simpan'}</button>
@@ -3138,13 +3161,37 @@ window._showCriteriaForm = (key) => {
     </div>
   </div>`;
 };
+
+window._onCriteriaPosCheck = (el) => {
+  const cbs = document.querySelectorAll('.cf-pos-cb');
+  if (el.value === 'Semua' && el.checked) {
+    cbs.forEach(cb => {
+      if (cb.value !== 'Semua') cb.checked = false;
+    });
+  } else if (el.value !== 'Semua' && el.checked) {
+    cbs.forEach(cb => {
+      if (cb.value === 'Semua') cb.checked = false;
+    });
+  }
+  
+  const anyChecked = Array.from(cbs).some(cb => cb.checked);
+  if (!anyChecked) {
+    const semuaCb = Array.from(cbs).find(cb => cb.value === 'Semua');
+    if (semuaCb) semuaCb.checked = true;
+  }
+};
+
 window._saveCriteria = async (key) => {
   const selVal = $('cf-indicator-select').value;
   let indicator = (selVal === '__NEW__' ? $('cf-indicator').value.trim() : selVal) || 'Umum';
 
   const name = $('cf-name').value.trim();
   if (!name) { showToast('Sub-indikator wajib diisi!', 'error'); return; }
-  const data = { indicator, name, position: $('cf-pos').value };
+
+  const checkedCbs = Array.from(document.querySelectorAll('.cf-pos-cb:checked')).map(cb => cb.value);
+  const position = (checkedCbs.length === 0 || checkedCbs.includes('Semua')) ? ['Semua'] : checkedCbs;
+
+  const data = { indicator, name, position };
   if (key) await update(ref(db, 'criteria/' + key), data);
   else await set(push(ref(db, 'criteria')), data);
   showToast('Kriteria disimpan!', 'success');
