@@ -604,6 +604,13 @@ const EMP_MENU = [
   { id: 'emp-profile', label: 'Profil', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
 ];
 
+function isManagerUser() {
+  if (!currentUser) return false;
+  const r = (currentUser.role || '').toLowerCase();
+  const p = (currentUser.position || '').toLowerCase();
+  return r === 'admin' || r === 'manager' || p === 'manager';
+}
+
 function setupNavigation() {
   const isAdmin = currentUser.role === 'admin';
   let menu = isAdmin ? [...ADMIN_MENU] : [...EMP_MENU];
@@ -612,6 +619,18 @@ function setupNavigation() {
     const hasChatMenu = menu.some(m => m.id === 'internal-chat');
     if (!hasChatMenu) {
       menu.splice(4, 0, { id: 'internal-chat', label: 'Diskusi Internal', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z' });
+    }
+  }
+
+  // Ensure Leaderboard menu is strictly for Panel Manajemen (Manager)
+  if (!isAdmin) {
+    if (isManagerUser()) {
+      const hasLeaderboard = menu.some(m => m.id === 'leaderboard');
+      if (!hasLeaderboard) {
+        menu.push({ id: 'leaderboard', label: '🏆 Peringkat & KPI', icon: 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z' });
+      }
+    } else {
+      menu = menu.filter(m => m.id !== 'leaderboard');
     }
   }
 
@@ -827,7 +846,7 @@ function renderCurrentSection() {
       case 'savings': html = renderSavings(); break;
       case 'ratings': html = renderRatings(); break;
       case 'criteria': html = renderCriteriaPage(); break;
-      case 'leaderboard': html = renderLeaderboard(); break;
+      case 'leaderboard': html = isManagerUser() ? renderLeaderboardPage() : '<div class="card p-6 text-center text-muted">Akses Khusus Manager / Panel Manajemen.</div>'; break;
       case 'settings': html = renderSettings(); break;
       default: html = renderAdminDashboard();
     }
@@ -842,6 +861,7 @@ function renderCurrentSection() {
       case 'emp-savings': html = renderEmpSavings(); break;
       case 'emp-ratings': html = renderEmpRatings(); break;
       case 'emp-profile': html = renderEmpProfile(); break;
+      case 'leaderboard': html = isManagerUser() ? renderLeaderboardPage() : '<div class="card p-6 text-center text-muted">Akses Khusus Manager / Panel Manajemen.</div>'; break;
       default: html = renderEmpDashboard();
     }
   }
@@ -3453,11 +3473,279 @@ window._triggerPwaInstall = () => {
     if (choiceResult.outcome === 'accepted') {
       showToast('Aplikasi MyTIC berhasil dipasang!', 'success');
     }
-    deferredPrompt = null;
-    const banner = document.getElementById('pwa-install-banner');
-    if (banner) banner.remove();
-  });
+// ==========================================
+// LEADERBOARD & KPI ENGINE (EXCLUSIVELY FOR MANAGER)
+// ==========================================
+window._leaderboardPeriod = 'month';
+window._leaderboardMetric = 'composite';
+window._leaderboardPos = 'Semua';
+
+window._onLeaderboardFilterChange = () => {
+  const pEl = document.getElementById('lb-filter-period');
+  const mEl = document.getElementById('lb-filter-metric');
+  const posEl = document.getElementById('lb-filter-pos');
+  if (pEl) window._leaderboardPeriod = pEl.value;
+  if (mEl) window._leaderboardMetric = mEl.value;
+  if (posEl) window._leaderboardPos = posEl.value;
+  renderCurrentSection();
 };
+
+function calculateEmployeeKpi(emp, period) {
+  const now = new Date();
+  let startDate = new Date();
+
+  if (period === 'month') {
+    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+  } else if (period === 'last_month') {
+    startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  } else if (period === 'quarter') {
+    startDate = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+  } else if (period === 'year') {
+    startDate = new Date(now.getFullYear(), 0, 1);
+  } else {
+    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+
+  const startStr = startDate.toISOString().split('T')[0];
+  const endStr = now.toISOString().split('T')[0];
+
+  // 1. Attendance Punctuality Score (0 - 100)
+  const absensiRecords = Object.values(allData.absensi_records || {}).filter(r => {
+    return isRecordForUser(r, emp) && (!r.date || (r.date >= startStr && r.date <= endStr));
+  });
+
+  let onTimeCount = 0;
+  let totalWorkDays = absensiRecords.length;
+
+  absensiRecords.forEach(r => {
+    const st = (r.status || r.type || '').toString().toLowerCase();
+    if (r.clock_in && r.clock_in !== '-' && !['sakit', 'izin', 'cuti', 'libur', 'off'].includes(st)) {
+      if ((r.late_minutes || 0) <= 0 && st !== 'terlambat') {
+        onTimeCount++;
+      }
+    }
+  });
+
+  const attendanceRate = totalWorkDays > 0 ? Math.round((onTimeCount / totalWorkDays) * 100) : 100;
+
+  // 2. SOP Checklist Compliance Score (0 - 100)
+  const sopRecords = Object.values(allData.sop_checklists || allData.ceklis_sop || {}).filter(s => {
+    return isRecordForUser(s, emp) && (!s.date || (s.date >= startStr && s.date <= endStr));
+  });
+
+  let completedSop = 0;
+  let totalSop = sopRecords.length;
+  sopRecords.forEach(s => {
+    if (s.status === 'Selesai' || s.completed || s.is_completed) completedSop++;
+  });
+
+  const sopRate = totalSop > 0 ? Math.round((completedSop / totalSop) * 100) : 95;
+
+  // 3. Performance Appraisal Rating (0 - 100)
+  const ratingRecords = Object.values(allData.ratings || allData.penilaian_kinerja || {}).filter(rt => {
+    return isRecordForUser(rt, emp);
+  });
+
+  let sumRating = 0;
+  let countRating = ratingRecords.length;
+  ratingRecords.forEach(rt => {
+    const score = Number(rt.rating || rt.skor || rt.score || 5);
+    sumRating += score;
+  });
+
+  const avgRatingNum = countRating > 0 ? (sumRating / countRating) : 4.5;
+  const ratingScore = Math.round(avgRatingNum * 20); // 5.0 -> 100
+
+  // 4. Violation Penalty / Track Record (0 - 100)
+  const violationRecords = Object.values(allData.violations || allData.pelanggaran || {}).filter(v => {
+    return isRecordForUser(v, emp) && v.status !== 'Dibatalkan';
+  });
+
+  let penalty = 0;
+  violationRecords.forEach(v => {
+    const type = (v.type || v.jenis || '').toString().toLowerCase();
+    if (type.includes('sp3')) penalty += 50;
+    else if (type.includes('sp2')) penalty += 30;
+    else if (type.includes('sp1')) penalty += 20;
+    else if (type.includes('teguran')) penalty += 10;
+    else penalty += 15;
+  });
+
+  const trackRecordScore = Math.max(0, 100 - penalty);
+
+  // 5. Composite KPI Score (35% Attendance + 25% SOP + 25% Rating + 15% Track Record)
+  const compositeScore = Math.round(
+    (attendanceRate * 0.35) +
+    (sopRate * 0.25) +
+    (ratingScore * 0.25) +
+    (trackRecordScore * 0.15)
+  );
+
+  return {
+    attendanceRate,
+    sopRate,
+    avgRating: avgRatingNum.toFixed(1),
+    ratingScore,
+    trackRecordScore,
+    violationCount: violationRecords.length,
+    compositeScore
+  };
+}
+
+function renderLeaderboardPage() {
+  const users = getUsers();
+  const period = window._leaderboardPeriod || 'month';
+  const selectedMetric = window._leaderboardMetric || 'composite';
+  const selectedPos = window._leaderboardPos || 'Semua';
+
+  // Filter users by position
+  let filteredUsers = users;
+  if (selectedPos !== 'Semua') {
+    filteredUsers = users.filter(u => u.position === selectedPos);
+  }
+
+  // Compute KPI scores for each employee
+  const rankedUsers = filteredUsers.map(u => {
+    const kpi = calculateEmployeeKpi(u, period);
+    let targetValue = kpi.compositeScore;
+    if (selectedMetric === 'attendance') targetValue = kpi.attendanceRate;
+    else if (selectedMetric === 'sop') targetValue = kpi.sopRate;
+    else if (selectedMetric === 'rating') targetValue = kpi.ratingScore;
+
+    return {
+      user: u,
+      kpi,
+      targetValue
+    };
+  });
+
+  // Sort descending by targetValue
+  rankedUsers.sort((a, b) => b.targetValue - a.targetValue);
+
+  return `<div class="fade-in">
+    <!-- FILTER BAR -->
+    <div class="card mb-6" style="padding:1.25rem; background:var(--surface);">
+      <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:1rem;">
+        <div>
+          <h2 style="font-size:1.25rem; font-weight:800; color:var(--text-main);">🏆 Peringkat & KPI Karyawan</h2>
+          <p class="text-xs text-muted" style="margin-top:0.2rem;">Evaluasi kinerja & kedisiplinan seluruh karyawan secara otomatis (Panel Manajemen)</p>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:center;">
+          <div>
+            <label class="form-label" style="margin-bottom:0.25rem;">Periode</label>
+            <select id="lb-filter-period" class="form-input form-select" onchange="window._onLeaderboardFilterChange()" style="padding:0.45rem 0.8rem; font-size:0.8rem;">
+              <option value="month" ${period === 'month' ? 'selected' : ''}>Bulan Ini</option>
+              <option value="last_month" ${period === 'last_month' ? 'selected' : ''}>Bulan Lalu</option>
+              <option value="quarter" ${period === 'quarter' ? 'selected' : ''}>Triwulan (3 Bulan)</option>
+              <option value="year" ${period === 'year' ? 'selected' : ''}>Tahun Ini</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" style="margin-bottom:0.25rem;">Metrik Utama</label>
+            <select id="lb-filter-metric" class="form-input form-select" onchange="window._onLeaderboardFilterChange()" style="padding:0.45rem 0.8rem; font-size:0.8rem;">
+              <option value="composite" ${selectedMetric === 'composite' ? 'selected' : ''}>Kinerja Keseluruhan (KPI Composite)</option>
+              <option value="attendance" ${selectedMetric === 'attendance' ? 'selected' : ''}>Kedisiplinan Kehadiran</option>
+              <option value="sop" ${selectedMetric === 'sop' ? 'selected' : ''}>Kepatuhan Ceklis SOP</option>
+              <option value="rating" ${selectedMetric === 'rating' ? 'selected' : ''}>Rating Evaluasi Kinerja</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" style="margin-bottom:0.25rem;">Jabatan</label>
+            <select id="lb-filter-pos" class="form-input form-select" onchange="window._onLeaderboardFilterChange()" style="padding:0.45rem 0.8rem; font-size:0.8rem;">
+              <option value="Semua" ${selectedPos === 'Semua' ? 'selected' : ''}>Semua Jabatan</option>
+              <option value="Manager" ${selectedPos === 'Manager' ? 'selected' : ''}>Manager</option>
+              <option value="Admin" ${selectedPos === 'Admin' ? 'selected' : ''}>Admin</option>
+              <option value="Supervisor" ${selectedPos === 'Supervisor' ? 'selected' : ''}>Supervisor</option>
+              <option value="Operator" ${selectedPos === 'Operator' ? 'selected' : ''}>Operator</option>
+              <option value="Cleaning Service" ${selectedPos === 'Cleaning Service' ? 'selected' : ''}>Cleaning Service</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FULL LEADERBOARD TABLE -->
+    <div class="card" style="padding:1.5rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+        <h3 class="card-title" style="font-size:1.1rem; display:flex; align-items:center; gap:0.5rem;">
+          📊 Daftar Peringkat Seluruh Karyawan <span class="text-xs text-muted">(${rankedUsers.length} Karyawan)</span>
+        </h3>
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:70px; text-align:center;">Peringkat</th>
+              <th>Nama Karyawan</th>
+              <th>Jabatan</th>
+              <th style="min-width:200px;">Rincian Indikator KPI</th>
+              <th style="text-align:right; width:130px;">Skor KPI</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rankedUsers.length === 0 ? `
+              <tr><td colspan="5" style="text-align:center; padding:2rem;" class="text-muted">Belum ada data karyawan untuk kriteria ini.</td></tr>
+            ` : rankedUsers.map((item, idx) => {
+              const rank = idx + 1;
+              const u = item.user;
+              const kpi = item.kpi;
+              const score = item.targetValue;
+
+              let rankBadgeClass = 'rank-badge-other';
+              let rankLabel = `#${rank}`;
+              if (rank === 1) { rankBadgeClass = 'rank-badge-1'; rankLabel = '🥇'; }
+              else if (rank === 2) { rankBadgeClass = 'rank-badge-2'; rankLabel = '🥈'; }
+              else if (rank === 3) { rankBadgeClass = 'rank-badge-3'; rankLabel = '🥉'; }
+
+              let scoreClass = 'kpi-score-high';
+              let barColor = '#10B981';
+              if (score < 60) { scoreClass = 'kpi-score-low'; barColor = '#EF4444'; }
+              else if (score < 75) { scoreClass = 'kpi-score-warning'; barColor = '#F59E0B'; }
+              else if (score < 90) { scoreClass = 'kpi-score-mid'; barColor = '#3B82F6'; }
+
+              const avatarSrc = u.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || u.emp_id)}&background=random`;
+
+              return `
+                <tr style="${rank <= 3 ? 'background:var(--surface-hover);' : ''}">
+                  <td style="text-align:center;">
+                    <span class="rank-badge ${rankBadgeClass}">${rankLabel}</span>
+                  </td>
+                  <td>
+                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                      <img src="${avatarSrc}" alt="${esc(u.name)}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid var(--border);" onclick="window._previewImage('${avatarSrc}', '${esc(u.name)}')">
+                      <div>
+                        <strong style="font-size:0.9rem; color:var(--text-main);">${esc(u.name)}</strong>
+                        <br><span class="text-xs text-muted">ID: ${esc(u.emp_id)}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge" style="background:var(--bg-color); color:var(--text-main); border:1px solid var(--border); font-size:0.75rem;">${esc(u.position)}</span>
+                  </td>
+                  <td>
+                    <div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:0.25rem;">
+                      <span class="kpi-pill" title="Kedisiplinan Kehadiran Tepat Waktu">⏱️ ${kpi.attendanceRate}% Hadir</span>
+                      <span class="kpi-pill" title="Kepatuhan Ceklis SOP">📋 ${kpi.sopRate}% SOP</span>
+                      <span class="kpi-pill" title="Rating Penilaian Kinerja">⭐ ${kpi.avgRating} / 5</span>
+                      ${kpi.violationCount > 0 ? `<span class="kpi-pill" style="color:var(--danger); border-color:var(--danger-bg);" title="Jumlah Pelanggaran Active">⚠️ ${kpi.violationCount} SP</span>` : `<span class="kpi-pill" style="color:var(--success);" title="Bebas Pelanggaran">🛡️ Clean</span>`}
+                    </div>
+                    <div class="kpi-bar-bg">
+                      <div class="kpi-bar-fill" style="width:${Math.min(100, Math.max(5, score))}%; background:${barColor};"></div>
+                    </div>
+                  </td>
+                  <td style="text-align:right;">
+                    <span class="kpi-score-badge ${scoreClass}">${score}</span>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
 
 // ==========================================
 // START

@@ -1190,3 +1190,105 @@ html.dark-mode .login-screen {
   animation: slideUp 0.3s ease-out;
 }
 
+/* -------------------------------------
+   LEADERBOARD & KPI STYLES
+------------------------------------- */
+.rank-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.rank-badge-1 {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #744210;
+  box-shadow: 0 4px 14px rgba(255, 215, 0, 0.6);
+  border: 2px solid #FFF8DC;
+}
+
+.rank-badge-2 {
+  background: linear-gradient(135deg, #E0E0E0, #9E9E9E);
+  color: #212121;
+  box-shadow: 0 4px 14px rgba(158, 158, 158, 0.5);
+  border: 2px solid #FFFFFF;
+}
+
+.rank-badge-3 {
+  background: linear-gradient(135deg, #CD7F32, #8B4513);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(205, 127, 50, 0.5);
+  border: 2px solid #FFE4C4;
+}
+
+.rank-badge-other {
+  background: var(--surface-hover);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.kpi-score-badge {
+  font-size: 1.25rem;
+  font-weight: 800;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-lg);
+  letter-spacing: -0.02em;
+}
+
+.kpi-score-high {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.kpi-score-mid {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3B82F6;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.kpi-score-warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #F59E0B;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.kpi-score-low {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.kpi-bar-bg {
+  width: 100%;
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 0.35rem;
+}
+
+.kpi-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.kpi-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 20px;
+  background: var(--bg-color);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+}
+
