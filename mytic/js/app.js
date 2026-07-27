@@ -6171,12 +6171,7 @@ window._printSavingsSummary = () => {
   const rows = users.map((u, idx) => {
     let empTotal = 0;
     const monthCells = monthsList.map((m, mIdx) => {
-      const monthKey = `${currentYear}-${(mIdx + 1).toString().padStart(2, '0')}`;
-      const mData = (allData.payroll && allData.payroll[monthKey] && allData.payroll[monthKey].internal_data && allData.payroll[monthKey].internal_data[u.emp_id]) || {};
-
-      const menuSavings = getEmployeeSavingsForSpecificMonth(u.emp_id, mIdx, currentYear);
-      const payrollSavings = Number(mData.savings_deduction || 0);
-      const amt = menuSavings > 0 ? menuSavings : payrollSavings;
+      const amt = getEmployeeSavingsForSpecificMonth(u.emp_id, mIdx, currentYear);
 
       if (amt > 0) empTotal += amt;
       return `<td style="text-align:right;">${amt > 0 ? fmt(amt) : 'Rp -'}</td>`;
