@@ -3549,6 +3549,8 @@ function calculateEmployeeKpi(emp, period) {
   const startStr = startDate.toISOString().split('T')[0];
   const endStr = now.toISOString().split('T')[0];
 
+  const isOperator = (emp.position || '').toString().toLowerCase() === 'operator';
+
   // 1. Attendance Punctuality Score (0 - 100)
   const absensiRecords = Object.values(allData.absensi_records || {}).filter(r => {
     return isRecordForUser(r, emp) && (!r.date || (r.date >= startStr && r.date <= endStr));
@@ -3568,18 +3570,21 @@ function calculateEmployeeKpi(emp, period) {
 
   const attendanceRate = totalWorkDays > 0 ? Math.round((onTimeCount / totalWorkDays) * 100) : 100;
 
-  // 2. SOP Checklist Compliance Score (0 - 100)
-  const sopRecords = Object.values(allData.sop_checklists || allData.ceklis_sop || {}).filter(s => {
-    return isRecordForUser(s, emp) && (!s.date || (s.date >= startStr && s.date <= endStr));
-  });
+  // 2. SOP Checklist Compliance Score (0 - 100) - ONLY FOR OPERATOR
+  let sopRate = null;
+  if (isOperator) {
+    const sopRecords = Object.values(allData.sop_checklists || allData.ceklis_sop || {}).filter(s => {
+      return isRecordForUser(s, emp) && (!s.date || (s.date >= startStr && s.date <= endStr));
+    });
 
-  let completedSop = 0;
-  let totalSop = sopRecords.length;
-  sopRecords.forEach(s => {
-    if (s.status === 'Selesai' || s.completed || s.is_completed) completedSop++;
-  });
+    let completedSop = 0;
+    let totalSop = sopRecords.length;
+    sopRecords.forEach(s => {
+      if (s.status === 'Selesai' || s.completed || s.is_completed) completedSop++;
+    });
 
-  const sopRate = totalSop > 0 ? Math.round((completedSop / totalSop) * 100) : 95;
+    sopRate = totalSop > 0 ? Math.round((completedSop / totalSop) * 100) : 95;
+  }
 
   // 3. Performance Appraisal Rating (0 - 100)
   const ratingRecords = Object.values(allData.ratings || allData.penilaian_kinerja || {}).filter(rt => {
@@ -3613,15 +3618,27 @@ function calculateEmployeeKpi(emp, period) {
 
   const trackRecordScore = Math.max(0, 100 - penalty);
 
-  // 5. Composite KPI Score (35% Attendance + 25% SOP + 25% Rating + 15% Track Record)
-  const compositeScore = Math.round(
-    (attendanceRate * 0.35) +
-    (sopRate * 0.25) +
-    (ratingScore * 0.25) +
-    (trackRecordScore * 0.15)
-  );
+  // 5. FAIR Composite KPI Score Calculation:
+  // For Operator: 35% Attendance + 25% SOP + 25% Rating + 15% Track Record = 100%
+  // For Non-Operator (Admin, Supervisor, Manager, CS): 50% Attendance + 35% Rating + 15% Track Record = 100%
+  let compositeScore = 0;
+  if (isOperator) {
+    compositeScore = Math.round(
+      (attendanceRate * 0.35) +
+      ((sopRate || 95) * 0.25) +
+      (ratingScore * 0.25) +
+      (trackRecordScore * 0.15)
+    );
+  } else {
+    compositeScore = Math.round(
+      (attendanceRate * 0.50) +
+      (ratingScore * 0.35) +
+      (trackRecordScore * 0.15)
+    );
+  }
 
   return {
+    isOperator,
     attendanceRate,
     sopRate,
     avgRating: avgRatingNum.toFixed(1),
@@ -3649,7 +3666,7 @@ function renderLeaderboardPage() {
     const kpi = calculateEmployeeKpi(u, period);
     let targetValue = kpi.compositeScore;
     if (selectedMetric === 'attendance') targetValue = kpi.attendanceRate;
-    else if (selectedMetric === 'sop') targetValue = kpi.sopRate;
+    else if (selectedMetric === 'sop') targetValue = kpi.isOperator ? (kpi.sopRate || 0) : kpi.compositeScore;
     else if (selectedMetric === 'rating') targetValue = kpi.ratingScore;
 
     return {
@@ -3668,7 +3685,7 @@ function renderLeaderboardPage() {
       <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:1rem;">
         <div>
           <h2 style="font-size:1.25rem; font-weight:800; color:var(--text-main);">🏆 Peringkat & KPI Karyawan</h2>
-          <p class="text-xs text-muted" style="margin-top:0.2rem;">Evaluasi kinerja & kedisiplinan seluruh karyawan secara otomatis (Panel Manajemen)</p>
+          <p class="text-xs text-muted" style="margin-top:0.2rem;">Evaluasi kinerja & kedisiplinan seluruh karyawan secara objektif & adil (Panel Manajemen)</p>
         </div>
         <div style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:center;">
           <div>
@@ -3685,7 +3702,7 @@ function renderLeaderboardPage() {
             <select id="lb-filter-metric" class="form-input form-select" onchange="window._onLeaderboardFilterChange()" style="padding:0.45rem 0.8rem; font-size:0.8rem;">
               <option value="composite" ${selectedMetric === 'composite' ? 'selected' : ''}>Kinerja Keseluruhan (KPI Composite)</option>
               <option value="attendance" ${selectedMetric === 'attendance' ? 'selected' : ''}>Kedisiplinan Kehadiran</option>
-              <option value="sop" ${selectedMetric === 'sop' ? 'selected' : ''}>Kepatuhan Ceklis SOP</option>
+              <option value="sop" ${selectedMetric === 'sop' ? 'selected' : ''}>Kepatuhan Ceklis SOP (Khusus Operator)</option>
               <option value="rating" ${selectedMetric === 'rating' ? 'selected' : ''}>Rating Evaluasi Kinerja</option>
             </select>
           </div>
@@ -3719,7 +3736,7 @@ function renderLeaderboardPage() {
               <th style="width:70px; text-align:center;">Peringkat</th>
               <th>Nama Karyawan</th>
               <th>Jabatan</th>
-              <th style="min-width:200px;">Rincian Indikator KPI</th>
+              <th style="min-width:220px;">Rincian Indikator KPI</th>
               <th style="text-align:right; width:130px;">Skor KPI</th>
             </tr>
           </thead>
@@ -3766,7 +3783,7 @@ function renderLeaderboardPage() {
                   <td>
                     <div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:0.25rem;">
                       <span class="kpi-pill" title="Kedisiplinan Kehadiran Tepat Waktu">⏱️ ${kpi.attendanceRate}% Hadir</span>
-                      <span class="kpi-pill" title="Kepatuhan Ceklis SOP">📋 ${kpi.sopRate}% SOP</span>
+                      ${kpi.isOperator ? `<span class="kpi-pill" title="Kepatuhan Ceklis SOP">📋 ${kpi.sopRate}% SOP</span>` : `<span class="kpi-pill" style="opacity:0.6;" title="Ceklis SOP Hanya Khusus Jabatan Operator">📋 SOP (N/A)</span>`}
                       <span class="kpi-pill" title="Rating Penilaian Kinerja">⭐ ${kpi.avgRating} / 5</span>
                       ${kpi.violationCount > 0 ? `<span class="kpi-pill" style="color:var(--danger); border-color:var(--danger-bg);" title="Jumlah Pelanggaran Active">⚠️ ${kpi.violationCount} SP</span>` : `<span class="kpi-pill" style="color:var(--success);" title="Bebas Pelanggaran">🛡️ Clean</span>`}
                     </div>

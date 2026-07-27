@@ -680,7 +680,9 @@ async function downloadAndResetOldData() {
 // === INIT FIREBASE LISTENER ===
 onValue(ref(db, 'users'), (snapshot) => {
     const data = snapshot.val() || {};
-    centralUsers = Object.entries(data).map(([key, val]) => ({ ...val, _key: key, type: 'karyawan' }));
+    centralUsers = Object.entries(data)
+      .map(([key, val]) => ({ ...val, _key: key, type: 'karyawan' }))
+      .filter(u => (u.position || '').toString().toLowerCase() === 'operator');
     
     const activePage = ['ceklis', 'karyawan', 'sop', 'rekap'].find(p => !document.getElementById('page-' + p).classList.contains('hidden'));
     if (activePage === 'karyawan') renderKaryawan();
