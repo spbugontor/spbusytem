@@ -38,6 +38,8 @@
     "violations": { ".read": true, ".write": true },
     "ratings": { ".read": true, ".write": true },
     "pin_history": { ".read": true, ".write": true },
+    "payroll": { ".read": true, ".write": true },
+    "payroll_settings": { ".read": true, ".write": true },
 
     // ==========================================
     // RULES UNTUK SISTEM ABSENSI KARYAWAN

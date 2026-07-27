@@ -5,7 +5,7 @@ import { db, auth, ref, onValue, set, push, remove, update, get, child, signInWi
 // ==========================================
 let currentUser = null;
 let currentSection = 'dashboard';
-let allData = { users: {}, transactions: {}, leaves: {}, savings: {}, violations: {}, ratings: {}, criteria: {}, leave_types: {}, settings: {}, pin_history: {} };
+let allData = { users: {}, transactions: {}, leaves: {}, savings: {}, violations: {}, ratings: {}, criteria: {}, leave_types: {}, settings: {}, pin_history: {}, payroll: {}, payroll_settings: {} };
 
 // ==========================================
 // THEME
@@ -192,7 +192,7 @@ function init() {
   });
 
   // Global real-time listeners per node
-  const nodes = ['users', 'transactions', 'leaves', 'savings', 'violations', 'ratings', 'criteria', 'leave_types', 'settings', 'pin_history', 'internal_chats'];
+  const nodes = ['users', 'transactions', 'leaves', 'savings', 'violations', 'ratings', 'criteria', 'leave_types', 'settings', 'pin_history', 'internal_chats', 'payroll', 'payroll_settings'];
   nodes.forEach(node => {
     onValue(ref(db, node), snap => {
       allData[node] = snap.exists() ? snap.val() : {};
@@ -581,6 +581,7 @@ function doLogout(msg = true) {
 const ADMIN_MENU = [
   { id: 'dashboard', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1' },
   { id: 'leaderboard', label: 'Peringkat & KPI', icon: 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z' },
+  { id: 'payroll', label: 'Gaji & Payroll', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 8v2m0-6c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
   { id: 'employees', label: 'Karyawan', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197' },
   { id: 'debits', label: 'Tunggakan', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' },
   { id: 'leaves', label: 'Izin/Cuti', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
@@ -849,6 +850,7 @@ function renderCurrentSection() {
       case 'ratings': html = renderRatings(); break;
       case 'criteria': html = renderCriteriaPage(); break;
       case 'leaderboard': html = isManagerUser() ? renderLeaderboardPage() : '<div class="card p-6 text-center text-muted">Akses Khusus Manager / Panel Manajemen.</div>'; break;
+      case 'payroll': html = (isAdmin || isManagerUser()) ? renderPayrollPage() : '<div class="card p-6 text-center text-muted">Akses Khusus Panel Manajemen.</div>'; break;
       case 'settings': html = renderSettings(); break;
       default: html = renderAdminDashboard();
     }
@@ -864,6 +866,7 @@ function renderCurrentSection() {
       case 'emp-ratings': html = renderEmpRatings(); break;
       case 'emp-profile': html = renderEmpProfile(); break;
       case 'leaderboard': html = isManagerUser() ? renderLeaderboardPage() : '<div class="card p-6 text-center text-muted">Akses Khusus Manager / Panel Manajemen.</div>'; break;
+      case 'payroll': html = isManagerUser() ? renderPayrollPage() : '<div class="card p-6 text-center text-muted">Akses Khusus Panel Manajemen.</div>'; break;
       default: html = renderEmpDashboard();
     }
   }
@@ -4469,6 +4472,1239 @@ function renderLeaderboardPage() {
     </div>
   </div>`;
 }
+
+// ==========================================
+// GAJI & PAYROLL MODULE (MANAGEMENT PANEL ONLY)
+// ==========================================
+window._payrollActiveTab = window._payrollActiveTab || 'internal';
+window._payrollMonth = window._payrollMonth || today().substring(0, 7);
+window._payrollPrintDate = window._payrollPrintDate || today();
+
+window._setPayrollTab = (tab) => {
+  window._payrollActiveTab = tab;
+  switchSection('payroll');
+};
+
+window._setPayrollMonth = (monthVal) => {
+  if (monthVal) window._payrollMonth = monthVal;
+  switchSection('payroll');
+};
+
+window._setPayrollPrintDate = (dateVal) => {
+  if (dateVal) window._payrollPrintDate = dateVal;
+};
+
+function getPayrollSettings() {
+  const s = allData.payroll_settings || {};
+  return {
+    umk_staf: Number(s.umk_staf || 2549876),
+    umk_manager: Number(s.umk_manager || 3059851),
+    bpjs_percent: Number(s.bpjs_percent || 1),
+    name_finance_manager: s.name_finance_manager || 'Hazel Hudaya Bisri',
+    name_audit_supervisor: s.name_audit_supervisor || 'Gilang Wahyu Ramadhan',
+    name_audit_manager: s.name_audit_manager || 'Pedri Fauzi',
+    custom_allowances: s.custom_allowances || [
+      { id: 'tunj_jabatan', name: 'Tunjangan Jabatan' },
+      { id: 'tunj_kinerja', name: 'Tunjangan Kinerja' },
+      { id: 'tunj_masa_kerja', name: 'Tunjangan Masa Kerja' }
+    ]
+  };
+}
+
+function getBbmSalesData(month) {
+  const p = allData.payroll || {};
+  const m = p[month] || {};
+  const b = m.bbm_sales || {};
+  return {
+    pertalite: Number(b.pertalite !== undefined ? b.pertalite : 337244.21),
+    solar: Number(b.solar !== undefined ? b.solar : 0),
+    turbo: Number(b.turbo !== undefined ? b.turbo : 4286.60),
+    px92: Number(b.px92 !== undefined ? b.px92 : 92039.21),
+    dex: Number(b.dex !== undefined ? b.dex : 3945.54)
+  };
+}
+
+function computePwInternal(bbm) {
+  const pwPertalite = bbm.pertalite * 2;
+  const pwSolar = bbm.solar * 2;
+  const pwTurbo = bbm.turbo * 12;
+  const pwPx92 = bbm.px92 * 12;
+  const pwDex = bbm.dex * 12;
+  const total = pwPertalite + pwSolar + pwTurbo + pwPx92 + pwDex;
+  return { pwPertalite, pwSolar, pwTurbo, pwPx92, pwDex, total };
+}
+
+function computePwAudit(bbm) {
+  const pwPertalite = bbm.pertalite * 4;
+  const pwSolar = bbm.solar * 4;
+  const pwTurbo = bbm.turbo * 30;
+  const pwPx92 = bbm.px92 * 30;
+  const pwDex = bbm.dex * 30;
+  const total = pwPertalite + pwSolar + pwTurbo + pwPx92 + pwDex;
+  return { pwPertalite, pwSolar, pwTurbo, pwPx92, pwDex, total };
+}
+
+function getTenureMonths(joinDateStr) {
+  if (!joinDateStr) return 12;
+  const join = new Date(joinDateStr);
+  const now = new Date();
+  if (isNaN(join.getTime())) return 12;
+  return Math.max(1, (now.getFullYear() - join.getFullYear()) * 12 + (now.getMonth() - join.getMonth()));
+}
+
+function getDefaultTenureAllowance(months) {
+  if (months >= 50) return 150000;
+  if (months >= 25) return 100000;
+  if (months >= 12) return 50000;
+  return 0;
+}
+
+function getDefaultPositionAllowance(position) {
+  const p = (position || '').toString().toLowerCase();
+  if (p.includes('admin')) return 500000;
+  if (p.includes('supervisor') || p.includes('spv')) return 400000;
+  if (p.includes('operator') || p.includes('opr')) return 250000;
+  return 0;
+}
+
+window._saveBbmSales = async () => {
+  const month = window._payrollMonth || today().substring(0, 7);
+  const bbm = {
+    pertalite: Number($('bbm-pertalite').value || 0),
+    solar: Number($('bbm-solar').value || 0),
+    turbo: Number($('bbm-turbo').value || 0),
+    px92: Number($('bbm-px92').value || 0),
+    dex: Number($('bbm-dex').value || 0),
+    updated_at: Date.now()
+  };
+
+  await set(ref(db, `payroll/${month}/bbm_sales`), bbm);
+  showToast('Data Penjualan Liter BBM berhasil disimpan!', 'success');
+  switchSection('payroll');
+};
+
+window._savePayrollSettings = async () => {
+  const settings = {
+    umk_staf: Number($('set-umk-staf').value || 2549876),
+    umk_manager: Number($('set-umk-manager').value || 3059851),
+    bpjs_percent: Number($('set-bpjs-percent').value || 1),
+    name_finance_manager: $('set-name-finance').value.trim() || 'Hazel Hudaya Bisri',
+    name_audit_supervisor: $('set-name-spv').value.trim() || 'Gilang Wahyu Ramadhan',
+    name_audit_manager: $('set-name-manager').value.trim() || 'Pedri Fauzi',
+    custom_allowances: getPayrollSettings().custom_allowances,
+    updated_at: Date.now()
+  };
+
+  await set(ref(db, 'payroll_settings'), settings);
+  showToast('Pengaturan Master Gaji berhasil disimpan!', 'success');
+  switchSection('payroll');
+};
+
+window._addCustomAllowance = async () => {
+  const nameInput = $('new-tunj-name');
+  if (!nameInput || !nameInput.value.trim()) {
+    showToast('Nama tunjangan tidak boleh kosong!', 'error');
+    return;
+  }
+  const name = nameInput.value.trim();
+  const id = 'tunj_' + Date.now();
+  const currentSettings = getPayrollSettings();
+  const list = [...currentSettings.custom_allowances, { id, name }];
+  
+  await set(ref(db, 'payroll_settings'), {
+    ...currentSettings,
+    custom_allowances: list,
+    updated_at: Date.now()
+  });
+
+  showToast(`Tunjangan "${name}" berhasil ditambahkan!`, 'success');
+  nameInput.value = '';
+  switchSection('payroll');
+};
+
+window._deleteCustomAllowance = async (id) => {
+  if (!confirm('Hapus jenis tunjangan ini?')) return;
+  const currentSettings = getPayrollSettings();
+  const list = currentSettings.custom_allowances.filter(a => a.id !== id);
+
+  await set(ref(db, 'payroll_settings'), {
+    ...currentSettings,
+    custom_allowances: list,
+    updated_at: Date.now()
+  });
+
+  showToast('Tunjangan dihapus!', 'success');
+  switchSection('payroll');
+};
+
+window._saveInternalPayrollItem = async (empId, field, value) => {
+  const month = window._payrollMonth || today().substring(0, 7);
+  const path = `payroll/${month}/internal_data/${empId}/${field}`;
+  await set(ref(db, path), value);
+  showToast('Data diperbarui', 'info');
+};
+
+window._toggleEmpAllowance = async (empId, tunjId, isChecked) => {
+  const month = window._payrollMonth || today().substring(0, 7);
+  const path = `payroll/${month}/internal_data/${empId}/tunjangan/${tunjId}/enabled`;
+  await set(ref(db, path), isChecked);
+};
+
+window._updateEmpAllowanceAmt = async (empId, tunjId, amt) => {
+  const month = window._payrollMonth || today().substring(0, 7);
+  const path = `payroll/${month}/internal_data/${empId}/tunjangan/${tunjId}/amount`;
+  await set(ref(db, path), Number(amt || 0));
+};
+
+function renderInternalPayrollTab() {
+  const month = window._payrollMonth || today().substring(0, 7);
+  const printDate = window._payrollPrintDate || today();
+  const settings = getPayrollSettings();
+  const bbm = getBbmSalesData(month);
+  const pwInt = computePwInternal(bbm);
+  const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
+  const monthData = (allData.payroll && allData.payroll[month] && allData.payroll[month].internal_data) || {};
+
+  // Count non-manager employees for PW distribution
+  const spvAdminCount = users.filter(u => {
+    const p = (u.position || '').toLowerCase();
+    return p.includes('admin') || p.includes('supervisor') || p.includes('spv');
+  }).length || 3;
+
+  const oprCsCount = users.length - spvAdminCount || 11;
+
+  const rawPwSpvAdmin = Math.round((pwInt.total * 0.20) / Math.max(1, spvAdminCount));
+  const rawPwOprCs = Math.round((pwInt.total * 0.80) / Math.max(1, oprCsCount));
+
+  let totalGajiKotorAll = 0;
+  let totalTabunganAll = 0;
+  let totalGajiBersihAll = 0;
+  let totalLemburAll = 0;
+
+  const empRows = users.map((u, idx) => {
+    const empId = u.emp_id;
+    const empData = monthData[empId] || {};
+    const pos = u.position || '-';
+    const isSpvAdmin = pos.toLowerCase().includes('admin') || pos.toLowerCase().includes('supervisor') || pos.toLowerCase().includes('spv');
+    const defaultPwRound = isSpvAdmin ? 150000 : 100000;
+    
+    const pwEnabled = empData.pw_enabled !== undefined ? empData.pw_enabled : true;
+    const pwAmount = Number(empData.pw_amount !== undefined ? empData.pw_amount : defaultPwRound);
+
+    const tenureMonths = getTenureMonths(u.join_date || u.created_at);
+
+    // Allowances
+    const tunjData = empData.tunjangan || {};
+
+    const tunjJabatanEnabled = tunjData['tunj_jabatan'] ? tunjData['tunj_jabatan'].enabled : (pos.toLowerCase() !== 'cleaning service' && !pos.toLowerCase().includes('cs'));
+    const tunjJabatanAmt = Number((tunjData['tunj_jabatan'] && tunjData['tunj_jabatan'].amount !== undefined) ? tunjData['tunj_jabatan'].amount : getDefaultPositionAllowance(pos));
+
+    const tunjKinerjaEnabled = tunjData['tunj_kinerja'] ? tunjData['tunj_kinerja'].enabled : (tenureMonths >= 6);
+    const tunjKinerjaAmt = Number((tunjData['tunj_kinerja'] && tunjData['tunj_kinerja'].amount !== undefined) ? tunjData['tunj_kinerja'].amount : (tenureMonths >= 6 ? 400000 : 200000));
+
+    const tunjMasaKerjaEnabled = tunjData['tunj_masa_kerja'] ? tunjData['tunj_masa_kerja'].enabled : (tenureMonths >= 12);
+    const tunjMasaKerjaAmt = Number((tunjData['tunj_masa_kerja'] && tunjData['tunj_masa_kerja'].amount !== undefined) ? tunjData['tunj_masa_kerja'].amount : getDefaultTenureAllowance(tenureMonths));
+
+    let customTunjSum = 0;
+    const customTunjHTML = settings.custom_allowances.map(ca => {
+      if (['tunj_jabatan', 'tunj_kinerja', 'tunj_masa_kerja'].includes(ca.id)) return '';
+      const cItem = tunjData[ca.id] || {};
+      const cEn = cItem.enabled !== undefined ? cItem.enabled : false;
+      const cAmt = Number(cItem.amount || 0);
+      if (cEn) customTunjSum += cAmt;
+      return `<div style="display:flex; align-items:center; gap:0.4rem; font-size:0.75rem; margin-top:0.2rem;">
+        <input type="checkbox" ${cEn ? 'checked' : ''} onchange="window._toggleEmpAllowance('${empId}', '${ca.id}', this.checked)">
+        <span>${esc(ca.name)}:</span>
+        <input type="number" value="${cAmt}" style="width:90px; padding:0.2rem 0.4rem; font-size:0.75rem;" onchange="window._updateEmpAllowanceAmt('${empId}', '${ca.id}', this.value)">
+      </div>`;
+    }).join('');
+
+    const otShifts = Number(empData.overtime_shifts || 0);
+    const otAmt = otShifts * 50000;
+    totalLemburAll += otAmt;
+
+    const gajiPokok = 1000000;
+    const totalTambahan = (tunjJabatanEnabled ? tunjJabatanAmt : 0) +
+                          (tunjKinerjaEnabled ? tunjKinerjaAmt : 0) +
+                          (tunjMasaKerjaEnabled ? tunjMasaKerjaAmt : 0) +
+                          (pwEnabled ? pwAmount : 0) +
+                          otAmt + customTunjSum;
+
+    const gajiKotor = gajiPokok + totalTambahan;
+    const tabunganAmt = Number(empData.savings_deduction !== undefined ? empData.savings_deduction : (tenureMonths >= 6 ? 50000 : 0));
+    const gajiBersih = gajiKotor - tabunganAmt;
+
+    totalGajiKotorAll += gajiKotor;
+    totalTabunganAll += tabunganAmt;
+    totalGajiBersihAll += gajiBersih;
+
+    return `<tr>
+      <td style="text-align:center; font-weight:bold;">${idx + 1}</td>
+      <td><strong>${esc(u.name)}</strong><br><span class="text-xs text-muted">ID: ${esc(u.emp_id)} | Masa Kerja: ${tenureMonths} Bln</span></td>
+      <td><span class="badge" style="background:var(--bg-color); color:var(--text-main); font-size:0.75rem;">${esc(pos)}</span></td>
+      <td style="font-size:0.8rem;">
+        <div style="display:flex; align-items:center; gap:0.4rem;">
+          <input type="checkbox" ${tunjJabatanEnabled ? 'checked' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_jabatan', this.checked)">
+          <span style="width:75px;">Jabatan:</span>
+          <input type="number" value="${tunjJabatanAmt}" style="width:90px; padding:0.2rem 0.4rem; font-size:0.75rem;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_jabatan', this.value)">
+        </div>
+        <div style="display:flex; align-items:center; gap:0.4rem; margin-top:0.25rem;">
+          <input type="checkbox" ${tunjKinerjaEnabled ? 'checked' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_kinerja', this.checked)">
+          <span style="width:75px;">Kinerja:</span>
+          <input type="number" value="${tunjKinerjaAmt}" style="width:90px; padding:0.2rem 0.4rem; font-size:0.75rem;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_kinerja', this.value)">
+        </div>
+        <div style="display:flex; align-items:center; gap:0.4rem; margin-top:0.25rem;">
+          <input type="checkbox" ${tunjMasaKerjaEnabled ? 'checked' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_masa_kerja', this.checked)">
+          <span style="width:75px;">Masa Kerja:</span>
+          <input type="number" value="${tunjMasaKerjaAmt}" style="width:90px; padding:0.2rem 0.4rem; font-size:0.75rem;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_masa_kerja', this.value)">
+        </div>
+        ${customTunjHTML}
+      </td>
+      <td style="font-size:0.8rem;">
+        <div style="display:flex; align-items:center; gap:0.4rem;">
+          <input type="checkbox" ${pwEnabled ? 'checked' : ''} onchange="window._saveInternalPayrollItem('${empId}', 'pw_enabled', this.checked)">
+          <span>PW Bulatan:</span>
+          <input type="number" value="${pwAmount}" style="width:95px; padding:0.2rem 0.4rem; font-size:0.75rem;" onchange="window._saveInternalPayrollItem('${empId}', 'pw_amount', Number(this.value))">
+        </div>
+        <div class="text-xs text-muted" style="margin-top:0.25rem;">Est. Hitung: Rp ${fmt(isSpvAdmin ? rawPwSpvAdmin : rawPwOprCs)}</div>
+      </td>
+      <td style="font-size:0.8rem;">
+        <div style="display:flex; align-items:center; gap:0.4rem;">
+          <input type="number" value="${otShifts}" style="width:55px; padding:0.2rem 0.4rem; font-size:0.75rem;" min="0" onchange="window._saveInternalPayrollItem('${empId}', 'overtime_shifts', Number(this.value))">
+          <span>Shift</span>
+        </div>
+        <strong style="color:var(--primary); font-size:0.8rem;">Rp ${fmt(otAmt)}</strong>
+      </td>
+      <td style="font-size:0.8rem;">
+        <input type="number" value="${tabunganAmt}" style="width:85px; padding:0.2rem 0.4rem; font-size:0.75rem;" onchange="window._saveInternalPayrollItem('${empId}', 'savings_deduction', Number(this.value))">
+      </td>
+      <td style="text-align:right;">
+        <div style="font-size:0.75rem; color:var(--text-muted);">Kotor: Rp ${fmt(gajiKotor)}</div>
+        <strong style="font-size:0.95rem; color:#16a34a;">Rp ${fmt(gajiBersih)}</strong>
+      </td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="fade-in">
+    <!-- INPUT PENJUALAN LITER BBM -->
+    <div class="card" style="margin-bottom:1.25rem; background:var(--surface); border:1px solid var(--border);">
+      <h4 style="font-size:0.95rem; font-weight:800; color:var(--primary); margin-bottom:0.75rem;">⛽ Input Penjualan Liter BBM (Periode: ${month})</h4>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:0.75rem;">
+        <div><label class="form-label" style="font-size:0.75rem;">Pertalite (L)</label><input id="bbm-pertalite" type="number" step="0.01" value="${bbm.pertalite}" class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
+        <div><label class="form-label" style="font-size:0.75rem;">Solar / Biosolar (L)</label><input id="bbm-solar" type="number" step="0.01" value="${bbm.solar}" class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
+        <div><label class="form-label" style="font-size:0.75rem;">Pertamax Turbo (L)</label><input id="bbm-turbo" type="number" step="0.01" value="${bbm.turbo}" class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
+        <div><label class="form-label" style="font-size:0.75rem;">Pertamax 92 (L)</label><input id="bbm-px92" type="number" step="0.01" value="${bbm.px92}" class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
+        <div><label class="form-label" style="font-size:0.75rem;">Pertamina Dex (L)</label><input id="bbm-dex" type="number" step="0.01" value="${bbm.dex}" class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.85rem; flex-wrap:wrap; gap:0.5rem;">
+        <div style="font-size:0.8rem; font-weight:700; color:var(--text-main);">
+          Total PW Internal: <span style="color:var(--primary); font-size:0.95rem;">Rp ${fmt(pwInt.total)}</span> (SPV+Admin 20%: Rp ${fmt(pwInt.total * 0.2)} | OPR+CS 80%: Rp ${fmt(pwInt.total * 0.8)})
+        </div>
+        <button class="btn btn-primary" style="padding:0.4rem 0.9rem; font-size:0.8rem;" onclick="window._saveBbmSales()">Simpan Penjualan BBM</button>
+      </div>
+    </div>
+
+    <!-- MAIN PAYROLL TABLE -->
+    <div class="card" style="margin-bottom:1.25rem; overflow-x:auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+        <h4 style="font-size:1rem; font-weight:800; color:var(--text-main); margin:0;">📋 Daftar Gaji Internal Karyawan (${users.length} Karyawan)</h4>
+        <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+          <label style="font-size:0.75rem; font-weight:700;">Tgl Cetak:</label>
+          <input type="date" value="${printDate}" class="form-input" style="padding:0.3rem 0.5rem; font-size:0.75rem; width:135px;" onchange="window._setPayrollPrintDate(this.value)">
+          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printInternalPayrollSummary()">🖨️ Rekap Gaji (1 Hal)</button>
+          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printOvertimeSummary()">⏰ Rekap Lemburan</button>
+          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printSavingsSummary()">🏦 Rekap Tabungan</button>
+          <button class="btn btn-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._printEnvelopeSlips('A4', 4)">✂️ Cetak 4 Slip / A4</button>
+          <button class="btn btn-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._printEnvelopeSlips('F4', 6)">✂️ Cetak 6 Slip / F4</button>
+        </div>
+      </div>
+
+      <table class="metric-table" style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="width:30px; text-align:center;">#</th>
+            <th>Nama & Masa Kerja</th>
+            <th>Jabatan</th>
+            <th style="min-width:240px;">Ceklis Tunjangan & Nominal</th>
+            <th style="width:180px;">PW Internal</th>
+            <th style="width:120px;">Lembur (Shift)</th>
+            <th style="width:100px;">Tabungan</th>
+            <th style="width:130px; text-align:right;">Gaji Bersih (THP)</th>
+          </tr>
+        </thead>
+        <tbody>${empRows}</tbody>
+      </table>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem; padding-top:0.75rem; border-top:2px solid var(--border); font-weight:bold; font-size:0.9rem;">
+        <div>Total Pengeluaran Gaji Internal: <span style="color:#16a34a; font-size:1.1rem;">Rp ${fmt(totalGajiBersihAll)}</span></div>
+        <div style="font-size:0.8rem; color:var(--text-muted);">Total Tabungan: Rp ${fmt(totalTabunganAll)} | Total Lembur: Rp ${fmt(totalLemburAll)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderAuditPayrollTab() {
+  const month = window._payrollMonth || today().substring(0, 7);
+  const printDate = window._payrollPrintDate || today();
+  const settings = getPayrollSettings();
+  const bbm = getBbmSalesData(month);
+  const pwAudit = computePwAudit(bbm);
+
+  // Audit includes 15 employees (Manager Pedri Fauzi + 14 staff)
+  const users = getUsers();
+  let managerObj = users.find(u => (u.position || '').toLowerCase() === 'manager' || (u.name || '').toLowerCase().includes('pedri'));
+  if (!managerObj) {
+    managerObj = { emp_id: 'M1', name: settings.name_audit_manager, position: 'Manager' };
+  }
+
+  const staffUsers = users.filter(u => u.emp_id !== managerObj.emp_id);
+  const auditUsers = [managerObj, ...staffUsers];
+
+  const pwMgrAdminEach = Math.round((pwAudit.total * 0.20) / 2);
+  const pwStaffEach = Math.round((pwAudit.total * 0.80) / 13);
+
+  let totalGajiPokokAll = 0;
+  let totalPwAll = 0;
+  let totalBpjsAll = 0;
+  let totalThpAll = 0;
+
+  const rowsHTML = auditUsers.map((u, idx) => {
+    const pos = u.position || '-';
+    const isMgr = pos.toLowerCase() === 'manager' || u.emp_id === managerObj.emp_id;
+    const isAdmin = pos.toLowerCase().includes('admin');
+
+    const gajiPokok = isMgr ? settings.umk_manager : settings.umk_staf;
+    const pwVal = (isMgr || isAdmin) ? pwMgrAdminEach : pwStaffEach;
+    const bpjsVal = Math.round(gajiPokok * (settings.bpjs_percent / 100));
+    const thpVal = gajiPokok + pwVal - bpjsVal;
+
+    totalGajiPokokAll += gajiPokok;
+    totalPwAll += pwVal;
+    totalBpjsAll += bpjsVal;
+    totalThpAll += thpVal;
+
+    return `<tr>
+      <td style="text-align:center; font-weight:bold;">${idx + 1}</td>
+      <td><strong>${esc(u.name)}</strong></td>
+      <td><span class="badge" style="background:var(--bg-color); color:var(--text-main); font-size:0.75rem;">${esc(pos)}</span></td>
+      <td style="text-align:right;">Rp ${fmt(gajiPokok)}</td>
+      <td style="text-align:right; color:var(--primary); font-weight:bold;">Rp ${fmt(pwVal)}</td>
+      <td style="text-align:right; color:var(--danger);">Rp ${fmt(bpjsVal)}</td>
+      <td style="text-align:right; font-weight:bold; color:#16a34a;">Rp ${fmt(thpVal)}</td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="fade-in">
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+        <div>
+          <h4 style="font-size:1rem; font-weight:800; color:var(--text-main); margin:0;">📋 Lembar Penggajian & Pertamina Way Mode Audit (${auditUsers.length} Karyawan)</h4>
+          <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Berisi 15 Karyawan (Termasuk Manager ${esc(settings.name_audit_manager)}) | UMK Staf: Rp ${fmt(settings.umk_staf)} | UMK Manager: Rp ${fmt(settings.umk_manager)}</p>
+        </div>
+        <button class="btn btn-primary" style="font-weight:bold;" onclick="window._printAuditDocuments()">🖨️ Cetak Paket Dokumen Audit (3 Hal)</button>
+      </div>
+
+      <div style="background:var(--surface); border:1px solid var(--border); padding:0.75rem; border-radius:var(--radius-md); margin-bottom:1rem; font-size:0.8rem;">
+        <strong>Omset Penjualan Liter BBM (Audit):</strong> Total PW Audit = <strong style="color:var(--primary);">Rp ${fmt(pwAudit.total)}</strong><br>
+        • Manager & Admin (20%): Rp ${fmt(pwAudit.total * 0.2)} (Per @ Rp ${fmt(pwMgrAdminEach)})<br>
+        • SPV, Operator, & CS (80%): Rp ${fmt(pwAudit.total * 0.8)} (Per @ Rp ${fmt(pwStaffEach)})
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="metric-table" style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th style="width:30px; text-align:center;">NO</th>
+              <th>NAMA KARYAWAN</th>
+              <th>JABATAN</th>
+              <th style="text-align:right;">GAJI POKOK UMK</th>
+              <th style="text-align:right;">PERTAMINA WAY</th>
+              <th style="text-align:right;">BPJS KESEHATAN (${settings.bpjs_percent}%)</th>
+              <th style="text-align:right;">JUMLAH (THP AUDIT)</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHTML}</tbody>
+          <tfoot>
+            <tr style="font-weight:bold; background:var(--surface);">
+              <td colspan="3" style="text-align:right;">TOTAL:</td>
+              <td style="text-align:right;">Rp ${fmt(totalGajiPokokAll)}</td>
+              <td style="text-align:right; color:var(--primary);">Rp ${fmt(totalPwAll)}</td>
+              <td style="text-align:right; color:var(--danger);">Rp ${fmt(totalBpjsAll)}</td>
+              <td style="text-align:right; color:#16a34a; font-size:0.95rem;">Rp ${fmt(totalThpAll)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderPayrollSettingsTab() {
+  const s = getPayrollSettings();
+  const customListHTML = s.custom_allowances.map(ca => {
+    return `<div style="display:flex; justify-content:space-between; align-items:center; background:var(--surface); border:1px solid var(--border); padding:0.5rem 0.75rem; border-radius:var(--radius-sm); margin-bottom:0.4rem;">
+      <span style="font-size:0.85rem; font-weight:600; color:var(--text-main);">${esc(ca.name)}</span>
+      ${['tunj_jabatan', 'tunj_kinerja', 'tunj_masa_kerja'].includes(ca.id) ? '<span class="text-xs text-muted">Standar Sistem</span>' : `<button class="btn btn-outline-danger" style="padding:0.2rem 0.5rem; font-size:0.65rem;" onclick="window._deleteCustomAllowance('${ca.id}')">Hapus</button>`}
+    </div>`;
+  }).join('');
+
+  return `<div class="fade-in">
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.25rem;">
+      <div class="card">
+        <h4 style="font-size:1rem; font-weight:800; color:var(--primary); margin-bottom:1rem;">💰 Pengaturan UMK & BPJS (Mode Audit)</h4>
+        <div class="form-group">
+          <label class="form-label">Gaji Pokok UMK Staf (Rp)</label>
+          <input id="set-umk-staf" type="number" value="${s.umk_staf}" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Gaji Pokok UMK Manajer (Rp)</label>
+          <input id="set-umk-manager" type="number" value="${s.umk_manager}" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Potongan BPJS Kesehatan (%)</label>
+          <input id="set-bpjs-percent" type="number" step="0.1" value="${s.bpjs_percent}" class="form-input">
+        </div>
+        <button class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="window._savePayrollSettings()">Simpan Pengaturan UMK</button>
+      </div>
+
+      <div class="card">
+        <h4 style="font-size:1rem; font-weight:800; color:var(--primary); margin-bottom:1rem;">✍️ Penandatangan Dokumen & Manajer</h4>
+        <div class="form-group">
+          <label class="form-label">Nama Manajer Keuangan (Penandatangan Slip Amplop)</label>
+          <input id="set-name-finance" type="text" value="${esc(s.name_finance_manager)}" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nama Supervisor Penandatangan Audit</label>
+          <input id="set-name-spv" type="text" value="${esc(s.name_audit_supervisor)}" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nama Manajer (Karyawan ke-15 Audit)</label>
+          <input id="set-name-manager" type="text" value="${esc(s.name_audit_manager)}" class="form-input">
+        </div>
+        <button class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="window._savePayrollSettings()">Simpan Nama Penandatangan</button>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1;">
+        <h4 style="font-size:1rem; font-weight:800; color:var(--primary); margin-bottom:1rem;">🎁 Manajemen Jenis Tunjangan (Internal)</h4>
+        <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
+          <input id="new-tunj-name" type="text" class="form-input" placeholder="Nama Tunjangan Baru (misal: Tunjangan Shift Malam)" style="flex:1;">
+          <button class="btn btn-success" onclick="window._addCustomAllowance()">+ Tambah Tunjangan</button>
+        </div>
+        <div>${customListHTML}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ==========================================
+// PRINT ROUTINES FOR PAYROLL MODULE
+// ==========================================
+
+window._printEnvelopeSlips = (paperSize = 'A4', perPage = 4) => {
+  const month = window._payrollMonth || today().substring(0, 7);
+  const printDate = window._payrollPrintDate || today();
+  const settings = getPayrollSettings();
+  const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
+  const monthData = (allData.payroll && allData.payroll[month] && allData.payroll[month].internal_data) || {};
+  const bbm = getBbmSalesData(month);
+  const pwInt = computePwInternal(bbm);
+
+  const monthName = new Date(month + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+  const formattedPrintDate = new Date(printDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const spvAdminCount = users.filter(u => {
+    const p = (u.position || '').toLowerCase();
+    return p.includes('admin') || p.includes('supervisor') || p.includes('spv');
+  }).length || 3;
+  const oprCsCount = users.length - spvAdminCount || 11;
+
+  let slipsHTML = '';
+  let currentPageSlips = [];
+
+  users.forEach((u, idx) => {
+    const empId = u.emp_id;
+    const empData = monthData[empId] || {};
+    const pos = u.position || '-';
+    const isSpvAdmin = pos.toLowerCase().includes('admin') || pos.toLowerCase().includes('supervisor') || pos.toLowerCase().includes('spv');
+    const defaultPwRound = isSpvAdmin ? 150000 : 100000;
+    
+    const pwEnabled = empData.pw_enabled !== undefined ? empData.pw_enabled : true;
+    const pwAmount = Number(empData.pw_amount !== undefined ? empData.pw_amount : defaultPwRound);
+    const tenureMonths = getTenureMonths(u.join_date || u.created_at);
+
+    const tunjData = empData.tunjangan || {};
+    const tunjJabatanEnabled = tunjData['tunj_jabatan'] ? tunjData['tunj_jabatan'].enabled : (pos.toLowerCase() !== 'cleaning service' && !pos.toLowerCase().includes('cs'));
+    const tunjJabatanAmt = Number((tunjData['tunj_jabatan'] && tunjData['tunj_jabatan'].amount !== undefined) ? tunjData['tunj_jabatan'].amount : getDefaultPositionAllowance(pos));
+
+    const tunjKinerjaEnabled = tunjData['tunj_kinerja'] ? tunjData['tunj_kinerja'].enabled : (tenureMonths >= 6);
+    const tunjKinerjaAmt = Number((tunjData['tunj_kinerja'] && tunjData['tunj_kinerja'].amount !== undefined) ? tunjData['tunj_kinerja'].amount : (tenureMonths >= 6 ? 400000 : 200000));
+
+    const tunjMasaKerjaEnabled = tunjData['tunj_masa_kerja'] ? tunjData['tunj_masa_kerja'].enabled : (tenureMonths >= 12);
+    const tunjMasaKerjaAmt = Number((tunjData['tunj_masa_kerja'] && tunjData['tunj_masa_kerja'].amount !== undefined) ? tunjData['tunj_masa_kerja'].amount : getDefaultTenureAllowance(tenureMonths));
+
+    let tambahanRows = '';
+    let itemIdx = 1;
+
+    if (tunjJabatanEnabled && tunjJabatanAmt > 0) {
+      tambahanRows += `<tr><td>:${itemIdx++} Tunjangan Jabatan</td><td style="text-align:right;">Rp ${fmt(tunjJabatanAmt)}</td></tr>`;
+    }
+    if (tunjKinerjaEnabled && tunjKinerjaAmt > 0) {
+      tambahanRows += `<tr><td>:${itemIdx++} Tunjangan Kinerja</td><td style="text-align:right;">Rp ${fmt(tunjKinerjaAmt)}</td></tr>`;
+    }
+    if (tunjMasaKerjaEnabled && tunjMasaKerjaAmt > 0) {
+      tambahanRows += `<tr><td>:${itemIdx++} Tunjangan Masa Kerja</td><td style="text-align:right;">Rp ${fmt(tunjMasaKerjaAmt)}</td></tr>`;
+    }
+    if (pwEnabled && pwAmount > 0) {
+      tambahanRows += `<tr><td>:${itemIdx++} Pertamina Way</td><td style="text-align:right;">Rp ${fmt(pwAmount)}</td></tr>`;
+    }
+
+    const otShifts = Number(empData.overtime_shifts || 0);
+    const otAmt = otShifts * 50000;
+    if (otAmt > 0) {
+      tambahanRows += `<tr><td>:${itemIdx++} Lembur Kerja</td><td style="text-align:right;">Rp ${fmt(otAmt)}</td></tr>`;
+    }
+
+    settings.custom_allowances.forEach(ca => {
+      if (['tunj_jabatan', 'tunj_kinerja', 'tunj_masa_kerja'].includes(ca.id)) return;
+      const cItem = tunjData[ca.id] || {};
+      if (cItem.enabled && Number(cItem.amount || 0) > 0) {
+        tambahanRows += `<tr><td>:${itemIdx++} ${esc(ca.name)}</td><td style="text-align:right;">Rp ${fmt(Number(cItem.amount))}</td></tr>`;
+      }
+    });
+
+    const gajiPokok = 1000000;
+    const totalTambahan = (tunjJabatanEnabled ? tunjJabatanAmt : 0) +
+                          (tunjKinerjaEnabled ? tunjKinerjaAmt : 0) +
+                          (tunjMasaKerjaEnabled ? tunjMasaKerjaAmt : 0) +
+                          (pwEnabled ? pwAmount : 0) +
+                          otAmt;
+
+    const gajiKotor = gajiPokok + totalTambahan;
+    const tabunganAmt = Number(empData.savings_deduction !== undefined ? empData.savings_deduction : (tenureMonths >= 6 ? 50000 : 0));
+    const gajiBersih = gajiKotor - tabunganAmt;
+
+    const slipHTML = `<div class="slip-box">
+      <div>
+        <div class="slip-header">
+          <div style="font-size:14px; font-weight:900;">SPBU GONTOR</div>
+          <div style="font-size:11px; font-style:italic;">54.634.25</div>
+        </div>
+        <div style="font-weight:bold; font-size:12px; margin-bottom:2px;">PERHITUNGAN GAJI</div>
+        <div style="font-size:10px; margin-bottom:8px;">Unit: SPBU GONTOR</div>
+
+        <table style="width:100%; border-collapse:collapse; font-size:10px; margin-bottom:6px;">
+          <tr><td style="width:65px;">Nama</td><td style="width:10px;">:</td><td><strong>${esc(u.name)}</strong></td></tr>
+          <tr><td>Periode</td><td>:</td><td>${monthName}</td></tr>
+          <tr><td>Gaji Pokok</td><td>:</td><td style="text-align:right;">Rp ${fmt(gajiPokok)}</td></tr>
+          <tr><td colspan="2" style="vertical-align:top;">Tambahan</td><td><table style="width:100%; border-collapse:collapse; font-size:9.5px;">${tambahanRows}</table></td></tr>
+          <tr><td colspan="2"></td><td style="text-align:right; font-weight:bold; border-top:1px solid #000; padding-top:2px;">Rp ${fmt(gajiKotor)}</td></tr>
+          <tr><td colspan="2" style="padding-top:4px;">Tabungan</td><td style="text-align:right; font-weight:bold; padding-top:4px;">Rp ${fmt(tabunganAmt)}</td></tr>
+        </table>
+      </div>
+
+      <div>
+        <div class="yellow-bar">
+          <span>GAJI BERSIH</span>
+          <span>Rp ${fmt(gajiBersih)}</span>
+        </div>
+        <div style="text-align:right; font-size:9.5px; margin-top:6px;">
+          Ponorogo, ${formattedPrintDate}<br>
+          <div style="margin-top:2px; font-weight:600;">Manajer Keuangan</div>
+          <div style="height:25px;"></div>
+          <strong style="text-decoration:underline;">${esc(settings.name_finance_manager)}</strong>
+        </div>
+      </div>
+    </div>`;
+
+    currentPageSlips.push(slipHTML);
+
+    if (currentPageSlips.length === perPage || idx === users.length - 1) {
+      slipsHTML += `<div class="page-grid per-page-${perPage}">${currentPageSlips.join('')}</div>`;
+      currentPageSlips = [];
+    }
+  });
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <title>Slip Gaji Amplop - SPBU Gontor</title>
+    <style>
+      @page { size: ${paperSize === 'F4' ? '215mm 330mm' : 'A4'} portrait; margin: 6mm; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
+      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 0; background: #fff; }
+      .page-grid { display: grid; grid-template-columns: 1fr 1fr; grid-gap: 8px; page-break-after: always; width: 100%; height: 100%; min-height: 95vh; }
+      .per-page-4 { grid-template-rows: 1fr 1fr; }
+      .per-page-6 { grid-template-rows: 1fr 1fr 1fr; }
+      .slip-box { border: 1.5px dashed #000; padding: 8px 10px; display: flex; flex-direction: column; justify-content: space-between; background: #fff; }
+      .slip-header { background: #d1d5db !important; border: 1px solid #000; text-align: center; padding: 3px; font-weight: bold; }
+      .yellow-bar { background: #facc15 !important; border: 1px solid #000; padding: 4px 8px; font-weight: 900; font-size: 11.5px; display: flex; justify-content: space-between; align-items: center; }
+      @media print {
+        .no-print { display: none !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="no-print" style="padding:10px; background:#f1f5f9; text-align:right; border-bottom:1px solid #cbd5e1;">
+      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Slip Gaji (${paperSize})</button>
+      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">✕ Tutup</button>
+    </div>
+    ${slipsHTML}
+  </body>
+  </html>`);
+  win.document.close();
+};
+
+window._printAuditDocuments = () => {
+  const month = window._payrollMonth || today().substring(0, 7);
+  const printDate = window._payrollPrintDate || today();
+  const settings = getPayrollSettings();
+  const bbm = getBbmSalesData(month);
+  const pwAudit = computePwAudit(bbm);
+
+  const monthNameUpper = new Date(month + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }).toUpperCase();
+  const formattedPrintDate = new Date(printDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const users = getUsers();
+  let managerObj = users.find(u => (u.position || '').toLowerCase() === 'manager' || (u.name || '').toLowerCase().includes('pedri'));
+  if (!managerObj) {
+    managerObj = { emp_id: 'M1', name: settings.name_audit_manager, position: 'Manager' };
+  }
+
+  const staffUsers = users.filter(u => u.emp_id !== managerObj.emp_id);
+  const auditUsers = [managerObj, ...staffUsers];
+
+  const pwMgrAdminEach = Math.round((pwAudit.total * 0.20) / 2);
+  const pwStaffEach = Math.round((pwAudit.total * 0.80) / 13);
+
+  let totalGajiPokokAll = 0;
+  let totalPwAll = 0;
+  let totalBpjsAll = 0;
+  let totalThpAll = 0;
+
+  const rowsHTML = auditUsers.map((u, idx) => {
+    const pos = u.position || '-';
+    const isMgr = pos.toLowerCase() === 'manager' || u.emp_id === managerObj.emp_id;
+    const isAdmin = pos.toLowerCase().includes('admin');
+
+    const gajiPokok = isMgr ? settings.umk_manager : settings.umk_staf;
+    const pwVal = (isMgr || isAdmin) ? pwMgrAdminEach : pwStaffEach;
+    const bpjsVal = Math.round(gajiPokok * (settings.bpjs_percent / 100));
+    const thpVal = gajiPokok + pwVal - bpjsVal;
+
+    totalGajiPokokAll += gajiPokok;
+    totalPwAll += pwVal;
+    totalBpjsAll += bpjsVal;
+    totalThpAll += thpVal;
+
+    const ttdLeft = (idx % 2 === 0) ? `${idx + 1}` : '';
+    const ttdRight = (idx % 2 === 1) ? `${idx + 1}` : '';
+
+    return `<tr>
+      <td style="text-align:center;">${idx + 1}</td>
+      <td><strong>${esc(u.name)}</strong></td>
+      <td style="text-align:center;">${esc(pos.toUpperCase())}</td>
+      <td style="text-align:right;">Rp ${fmt(gajiPokok)}</td>
+      <td style="text-align:right;">Rp ${fmt(pwVal)}</td>
+      <td style="text-align:right;">Rp ${fmt(bpjsVal)}</td>
+      <td style="text-align:right; font-weight:bold;">Rp ${fmt(thpVal)}</td>
+      <td style="width:40px; font-size:9px; vertical-align:top; border-right:none;">${ttdLeft}</td>
+      <td style="width:40px; font-size:9px; vertical-align:bottom; text-align:right; border-left:none;">${ttdRight}</td>
+    </tr>`;
+  }).join('');
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <title>Dokumen Resmi Audit Pertamina - SPBU Gontor</title>
+    <style>
+      @page { size: A4 portrait; margin: 10mm; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
+      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 10px; background: #fff; font-size: 11px; }
+      .title-head { text-align: center; font-weight: 900; font-size: 15px; text-decoration: underline; text-transform: uppercase; margin-bottom: 2px; }
+      .subtitle-head { text-align: center; font-weight: 800; font-size: 13px; margin-bottom: 12px; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10.5px; }
+      th, td { border: 1px solid #000; padding: 4px 6px; }
+      th { background: #d1d5db !important; font-weight: bold; text-align: center; text-transform: uppercase; }
+      .page-break { page-break-after: always; }
+      @media print { .no-print { display: none !important; } }
+    </style>
+  </head>
+  <body>
+    <div class="no-print" style="padding:8px; background:#f1f5f9; text-align:right; border-bottom:1px solid #cbd5e1; margin-bottom:10px;">
+      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Dokumen Audit (3 Halaman)</button>
+      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">✕ Tutup</button>
+    </div>
+
+    <!-- HALAMAN 1: PERHITUNGAN PERTAMINA WAY -->
+    <div>
+      <div class="title-head">PERHITUNGAN PERTAMINA WAY BULAN ${monthNameUpper}</div>
+      <br>
+      <table>
+        <thead>
+          <tr>
+            <th rowspan="2">PRODUK</th>
+            <th rowspan="2">PENJUALAN ( LITER )<br>DALAM 1 BULAN</th>
+            <th colspan="2">MARGIN</th>
+            <th rowspan="2">PW PERUSAHAAN</th>
+            <th rowspan="2">PW KARYAWAN</th>
+          </tr>
+          <tr>
+            <th>PERUSAHAAN</th>
+            <th>KARYAWAN</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>PERTALITE</td><td style="text-align:right;">${fmt(bbm.pertalite)}</td><td></td><td style="text-align:right;">Rp 4</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">Rp ${fmt(pwAudit.pwPertalite)}</td></tr>
+          <tr><td>SOLAR (BIOSOLAR)</td><td style="text-align:right;">${fmt(bbm.solar)}</td><td></td><td style="text-align:right;">Rp 4</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">Rp ${fmt(pwAudit.pwSolar)}</td></tr>
+          <tr><td>PERTAMAX TURBO</td><td style="text-align:right;">${fmt(bbm.turbo)}</td><td></td><td style="text-align:right;">Rp 30</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">Rp ${fmt(pwAudit.pwTurbo)}</td></tr>
+          <tr><td>PERTAMAX 92</td><td style="text-align:right;">${fmt(bbm.px92)}</td><td></td><td style="text-align:right;">Rp 30</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">Rp ${fmt(pwAudit.pwPx92)}</td></tr>
+          <tr><td>PERTAMINA DEX</td><td style="text-align:right;">${fmt(bbm.dex)}</td><td></td><td style="text-align:right;">Rp 30</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">Rp ${fmt(pwAudit.pwDex)}</td></tr>
+        </tbody>
+        <tfoot>
+          <tr style="font-weight:bold; background:#e5e7eb;">
+            <td colspan="4" style="text-align:right;">TOTAL</td>
+            <td style="text-align:right;">Rp -</td>
+            <td style="text-align:right;">Rp ${fmt(pwAudit.total)}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div style="font-weight:bold; margin-bottom:4px;">TOTAL PENERIMAAN PERTAMINA WAY</div>
+      <table style="width:280px;">
+        <tr><td>PW PERUSAHAAN</td><td style="text-align:right;">Rp -</td></tr>
+        <tr><td>PW KARYAWAN</td><td style="text-align:right;">Rp ${fmt(pwAudit.total)}</td></tr>
+        <tr style="font-weight:bold; background:#e5e7eb;"><td>TOTAL</td><td style="text-align:right;">Rp ${fmt(pwAudit.total)}</td></tr>
+      </table>
+
+      <div style="font-weight:bold; margin-top:10px; margin-bottom:4px; text-decoration:underline;">PERTAMINA WAY YANG DIBAGIKAN KE KARYAWAN</div>
+      <table>
+        <thead>
+          <tr>
+            <th>RINCIAN PEMBAGIAN</th>
+            <th>PRESENTASE (%)</th>
+            <th>JUMLAH</th>
+            <th>PW PER @</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>MANAGER & ADMIN</td><td style="text-align:center;">20%</td><td style="text-align:right;">Rp ${fmt(pwAudit.total * 0.2)}</td><td style="text-align:right;">Rp ${fmt(pwMgrAdminEach)}</td></tr>
+          <tr><td>PENGAWAS + OPERATOR + CS</td><td style="text-align:center;">80%</td><td style="text-align:right;">Rp ${fmt(pwAudit.total * 0.8)}</td><td style="text-align:right;">Rp ${fmt(pwStaffEach)}</td></tr>
+        </tbody>
+        <tfoot>
+          <tr style="font-weight:bold; background:#e5e7eb;">
+            <td>TOTAL</td>
+            <td style="text-align:center;">100%</td>
+            <td style="text-align:right;">Rp ${fmt(pwAudit.total)}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- HALAMAN 2: RINCIAN INSENTIF PROGRESIF -->
+    <div>
+      <div class="title-head">PERHITUNGAN PERTAMINA WAY BULAN ${monthNameUpper}</div>
+      <div class="subtitle-head">SPBU GONTOR 54.634.25</div>
+
+      <div style="margin-bottom:8px; font-weight:bold;">Rincian Insentif Karyawan Progresif</div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px;">No.</th>
+            <th>Nama</th>
+            <th>Jabatan</th>
+            <th style="text-align:right; width:140px;">Insentif</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${auditUsers.map((u, idx) => `<tr>
+            <td style="text-align:center;">${idx + 1}</td>
+            <td>${esc(u.name)}</td>
+            <td>${esc(u.position || '-')}</td>
+            <td style="text-align:right;">Rp ${fmt((u.position || '').toLowerCase().includes('manager') || (u.position || '').toLowerCase().includes('admin') ? pwMgrAdminEach : pwStaffEach)}</td>
+          </tr>`).join('')}
+        </tbody>
+        <tfoot>
+          <tr style="font-weight:bold; background:#e5e7eb;">
+            <td colspan="3" style="text-align:right;">TOTAL</td>
+            <td style="text-align:right;">Rp ${fmt(pwAudit.total)}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div style="text-align:right; margin-top:20px;">
+        Ponorogo, ${formattedPrintDate}<br>
+        <div style="height:35px;"></div>
+        <strong style="text-decoration:underline;">${esc(settings.name_audit_supervisor)}</strong><br>
+        <span>Supervisor</span>
+      </div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- HALAMAN 3: TANDA TERIMA GAJI DAN PERTAMINA WAY -->
+    <div>
+      <div class="title-head">TANDA TERIMA GAJI dan PERTAMINA WAY</div>
+      <div class="subtitle-head">KARYAWAN SPBU 5463425 GONTOR</div>
+      <div style="font-weight:bold; margin-bottom:6px;">BULAN : ${monthNameUpper}</div>
+
+      <table>
+        <thead>
+          <tr>
+            <th rowspan="2" style="width:25px;">NO</th>
+            <th rowspan="2">NAMA</th>
+            <th rowspan="2">JABATAN</th>
+            <th rowspan="2">GAJI POKOK</th>
+            <th>PERTAMINA WAY</th>
+            <th>BPJS</th>
+            <th rowspan="2">JUMLAH</th>
+            <th rowspan="2" colspan="2" style="width:90px;">TANDA TANGAN</th>
+          </tr>
+          <tr>
+            <th>PX/PL/PXT/PTD</th>
+            <th>KESEHATAN 1 %</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHTML}</tbody>
+        <tfoot>
+          <tr style="font-weight:bold; background:#e5e7eb;">
+            <td colspan="3" style="text-align:right;">Total</td>
+            <td style="text-align:right;">Rp ${fmt(totalGajiPokokAll)}</td>
+            <td style="text-align:right;">Rp ${fmt(totalPwAll)}</td>
+            <td style="text-align:right;">Rp ${fmt(totalBpjsAll)}</td>
+            <td style="text-align:right;">Rp ${fmt(totalThpAll)}</td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div style="text-align:right; margin-top:15px;">
+        Ponorogo, ${formattedPrintDate}<br>
+        <div style="height:35px;"></div>
+        <strong style="text-decoration:underline;">${esc(settings.name_audit_supervisor)}</strong><br>
+        <span>Supervisor</span>
+      </div>
+    </div>
+  </body>
+  </html>`);
+  win.document.close();
+};
+
+window._printInternalPayrollSummary = () => {
+  const month = window._payrollMonth || today().substring(0, 7);
+  const printDate = window._payrollPrintDate || today();
+  const settings = getPayrollSettings();
+  const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
+  const monthData = (allData.payroll && allData.payroll[month] && allData.payroll[month].internal_data) || {};
+  const bbm = getBbmSalesData(month);
+  const pwInt = computePwInternal(bbm);
+
+  const monthNameUpper = new Date(month + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }).toUpperCase();
+  const formattedPrintDate = new Date(printDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const spvAdminCount = users.filter(u => {
+    const p = (u.position || '').toLowerCase();
+    return p.includes('admin') || p.includes('supervisor') || p.includes('spv');
+  }).length || 3;
+  const oprCsCount = users.length - spvAdminCount || 11;
+
+  let totalGajiPokok = 0, totalTunjJabatan = 0, totalTunjKinerja = 0, totalTunjMasaKerja = 0, totalPw = 0, totalLembur = 0, totalTabungan = 0, totalBersih = 0;
+
+  const rows = users.map((u, idx) => {
+    const empId = u.emp_id;
+    const empData = monthData[empId] || {};
+    const pos = u.position || '-';
+    const isSpvAdmin = pos.toLowerCase().includes('admin') || pos.toLowerCase().includes('supervisor') || pos.toLowerCase().includes('spv');
+    const defaultPwRound = isSpvAdmin ? 150000 : 100000;
+    
+    const pwEnabled = empData.pw_enabled !== undefined ? empData.pw_enabled : true;
+    const pwAmount = Number(empData.pw_amount !== undefined ? empData.pw_amount : defaultPwRound);
+    const tenureMonths = getTenureMonths(u.join_date || u.created_at);
+
+    const tunjData = empData.tunjangan || {};
+    const tunjJabatanEnabled = tunjData['tunj_jabatan'] ? tunjData['tunj_jabatan'].enabled : (pos.toLowerCase() !== 'cleaning service' && !pos.toLowerCase().includes('cs'));
+    const tunjJabatanAmt = Number((tunjData['tunj_jabatan'] && tunjData['tunj_jabatan'].amount !== undefined) ? tunjData['tunj_jabatan'].amount : getDefaultPositionAllowance(pos));
+
+    const tunjKinerjaEnabled = tunjData['tunj_kinerja'] ? tunjData['tunj_kinerja'].enabled : (tenureMonths >= 6);
+    const tunjKinerjaAmt = Number((tunjData['tunj_kinerja'] && tunjData['tunj_kinerja'].amount !== undefined) ? tunjData['tunj_kinerja'].amount : (tenureMonths >= 6 ? 400000 : 200000));
+
+    const tunjMasaKerjaEnabled = tunjData['tunj_masa_kerja'] ? tunjData['tunj_masa_kerja'].enabled : (tenureMonths >= 12);
+    const tunjMasaKerjaAmt = Number((tunjData['tunj_masa_kerja'] && tunjData['tunj_masa_kerja'].amount !== undefined) ? tunjData['tunj_masa_kerja'].amount : getDefaultTenureAllowance(tenureMonths));
+
+    const otShifts = Number(empData.overtime_shifts || 0);
+    const otAmt = otShifts * 50000;
+    const gajiPokok = 1000000;
+
+    const jAmt = tunjJabatanEnabled ? tunjJabatanAmt : 0;
+    const kAmt = tunjKinerjaEnabled ? tunjKinerjaAmt : 0;
+    const mkAmt = tunjMasaKerjaEnabled ? tunjMasaKerjaAmt : 0;
+    const pwVal = pwEnabled ? pwAmount : 0;
+
+    const tabunganAmt = Number(empData.savings_deduction !== undefined ? empData.savings_deduction : (tenureMonths >= 6 ? 50000 : 0));
+    const gajiKotor = gajiPokok + jAmt + kAmt + mkAmt + pwVal + otAmt;
+    const gajiBersih = gajiKotor - tabunganAmt;
+
+    totalGajiPokok += gajiPokok;
+    totalTunjJabatan += jAmt;
+    totalTunjKinerja += kAmt;
+    totalTunjMasaKerja += mkAmt;
+    totalPw += pwVal;
+    totalLembur += otAmt;
+    totalTabungan += tabunganAmt;
+    totalBersih += gajiBersih;
+
+    return `<tr>
+      <td style="text-align:center;">${idx + 1}</td>
+      <td><strong>${esc(u.name)}</strong></td>
+      <td style="text-align:center;">UMK 100%</td>
+      <td style="text-align:center;">${tenureMonths} Bulan</td>
+      <td style="text-align:right;">Rp ${fmt(gajiPokok)}</td>
+      <td style="text-align:right;">Rp ${fmt(jAmt)}</td>
+      <td style="text-align:right;">Rp ${fmt(kAmt)}</td>
+      <td style="text-align:right;">Rp ${fmt(mkAmt)}</td>
+      <td style="text-align:right;">Rp ${fmt(pwVal)}</td>
+      <td style="text-align:right;">Rp ${fmt(otAmt)}</td>
+      <td style="text-align:right;">Rp ${fmt(tabunganAmt)}</td>
+      <td style="text-align:right; font-weight:bold;">Rp ${fmt(gajiBersih)}</td>
+    </tr>`;
+  }).join('');
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <title>Penerimaan Gaji Karyawan Internal - SPBU Gontor</title>
+    <style>
+      @page { size: A4 landscape; margin: 8mm; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
+      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 10px; background: #fff; font-size: 10px; }
+      .title-head { text-align: center; font-weight: 900; font-size: 15px; text-decoration: underline; text-transform: uppercase; margin-bottom: 2px; }
+      .subtitle-head { text-align: center; font-weight: 800; font-size: 12px; margin-bottom: 12px; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5px; }
+      th, td { border: 1px solid #000; padding: 4px; }
+      th { background: #d1d5db !important; font-weight: bold; text-align: center; text-transform: uppercase; }
+      @media print { .no-print { display: none !important; } }
+    </style>
+  </head>
+  <body>
+    <div class="no-print" style="padding:8px; background:#f1f5f9; text-align:right; border-bottom:1px solid #cbd5e1; margin-bottom:10px;">
+      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Rekapitulasi Gaji Internal</button>
+      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">✕ Tutup</button>
+    </div>
+
+    <div class="title-head">PENERIMAAN GAJI</div>
+    <div class="subtitle-head">KARYAWAN SPBU GONTOR 54.634.25 MLARAK</div>
+    <div style="font-weight:bold; margin-bottom:6px;">BULAN : ${monthNameUpper}</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:25px;">No</th>
+          <th>Nama</th>
+          <th>Keterangan</th>
+          <th>Masa Kerja</th>
+          <th>Gaji Pokok</th>
+          <th>Tunjangan Jabatan</th>
+          <th>Tunjangan Kinerja</th>
+          <th>Tunjangan Masa Kerja</th>
+          <th>Pertamina Way</th>
+          <th>Lembur Kerja</th>
+          <th>Tabungan</th>
+          <th>Penerimaan Gaji Bersih Karyawan</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+      <tfoot>
+        <tr style="font-weight:bold; background:#e5e7eb;">
+          <td colspan="4" style="text-align:right;">TOTAL</td>
+          <td style="text-align:right;">Rp ${fmt(totalGajiPokok)}</td>
+          <td style="text-align:right;">Rp ${fmt(totalTunjJabatan)}</td>
+          <td style="text-align:right;">Rp ${fmt(totalTunjKinerja)}</td>
+          <td style="text-align:right;">Rp ${fmt(totalTunjMasaKerja)}</td>
+          <td style="text-align:right;">Rp ${fmt(totalPw)}</td>
+          <td style="text-align:right;">Rp ${fmt(totalLembur)}</td>
+          <td style="text-align:right;">Rp ${fmt(totalTabungan)}</td>
+          <td style="text-align:right;">Rp ${fmt(totalBersih)}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div style="display:flex; justify-content:space-between; margin-top:20px; font-size:10px;">
+      <div>
+        <strong>TOTAL PENGELUARAN GAJI UNTUK KARYAWAN:</strong>
+        <span style="font-size:12px; font-weight:bold; background:#facc15; padding:3px 8px; border:1px solid #000; margin-left:10px;">
+          Rp ${fmt(totalBersih + totalTabungan)}
+        </span>
+      </div>
+      <div style="text-align:right;">
+        Ponorogo, ${formattedPrintDate}<br>
+        <div style="height:35px;"></div>
+        <strong style="text-decoration:underline;">${esc(settings.name_finance_manager)}</strong><br>
+        <span>Manajer Keuangan</span>
+      </div>
+    </div>
+  </body>
+  </html>`);
+  win.document.close();
+};
+
+window._printSavingsSummary = () => {
+  const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
+  const currentYear = new Date().getFullYear();
+  const monthsList = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  
+  let totalAllSavings = 0;
+  const rows = users.map((u, idx) => {
+    let empTotal = 0;
+    const monthCells = monthsList.map((m, mIdx) => {
+      const monthKey = `${currentYear}-${(mIdx + 1).toString().padStart(2, '0')}`;
+      const mData = (allData.payroll && allData.payroll[monthKey] && allData.payroll[monthKey].internal_data && allData.payroll[monthKey].internal_data[u.emp_id]) || {};
+      const tenureMonths = getTenureMonths(u.join_date || u.created_at);
+      const amt = Number(mData.savings_deduction !== undefined ? mData.savings_deduction : (tenureMonths >= 6 ? 50000 : 0));
+      if (amt > 0) empTotal += amt;
+      return `<td style="text-align:right;">${amt > 0 ? 'Rp ' + fmt(amt) : 'Rp -'}</td>`;
+    }).join('');
+
+    totalAllSavings += empTotal;
+
+    return `<tr>
+      <td style="text-align:center;">${idx + 1}</td>
+      <td><strong>${esc(u.name)}</strong></td>
+      ${monthCells}
+      <td style="text-align:right; font-weight:bold;">Rp ${fmt(empTotal)}</td>
+    </tr>`;
+  }).join('');
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <title>Rekapitulasi Tabungan Karyawan - SPBU Gontor</title>
+    <style>
+      @page { size: A4 landscape; margin: 8mm; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
+      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 10px; background: #fff; font-size: 9.5px; }
+      .title-head { font-weight: 900; font-size: 14px; text-transform: uppercase; margin-bottom: 8px; text-decoration: underline; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9px; }
+      th, td { border: 1px solid #000; padding: 4px; }
+      th { background: #d1d5db !important; font-weight: bold; text-align: center; }
+      @media print { .no-print { display: none !important; } }
+    </style>
+  </head>
+  <body>
+    <div class="no-print" style="padding:8px; background:#f1f5f9; text-align:right; border-bottom:1px solid #cbd5e1; margin-bottom:10px;">
+      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Rekap Tabungan</button>
+      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">✕ Tutup</button>
+    </div>
+
+    <div class="title-head">TABUNGAN KARYAWAN (${currentYear})</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:25px;">NO</th>
+          <th>Nama</th>
+          ${monthsList.map(m => `<th>${m}-${currentYear.toString().slice(-2)}</th>`).join('')}
+          <th>Total Tabungan/Individu</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+      <tfoot>
+        <tr style="font-weight:bold; background:#e5e7eb;">
+          <td colspan="14" style="text-align:right;">Total</td>
+          <td style="text-align:right; background:#facc15;">Rp ${fmt(totalAllSavings)}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </body>
+  </html>`);
+  win.document.close();
+};
+
+window._printOvertimeSummary = () => {
+  const month = window._payrollMonth || today().substring(0, 7);
+  const printDate = window._payrollPrintDate || today();
+  const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
+  const monthData = (allData.payroll && allData.payroll[month] && allData.payroll[month].internal_data) || {};
+  
+  const monthNameUpper = new Date(month + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }).toUpperCase();
+
+  let totalOtAmtAll = 0;
+  const rows = users.map((u, idx) => {
+    const empId = u.emp_id;
+    const empData = monthData[empId] || {};
+    const shifts = Number(empData.overtime_shifts || 0);
+    const otAmt = shifts * 50000;
+    totalOtAmtAll += otAmt;
+
+    return `<tr>
+      <td style="text-align:center;">${idx + 1}</td>
+      <td><strong>${esc(u.name)}</strong></td>
+      <td style="text-align:center;">${esc((u.position || '-').toUpperCase())}</td>
+      <td style="text-align:right;">50,000</td>
+      <td style="text-align:center;">${shifts} Shift</td>
+      <td style="text-align:right; font-weight:bold;">${otAmt > 0 ? 'Rp ' + fmt(otAmt) : 'Rp -'}</td>
+    </tr>`;
+  }).join('');
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <title>Rekapitulasi Lemburan Karyawan - SPBU Gontor</title>
+    <style>
+      @page { size: A4 portrait; margin: 10mm; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
+      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 10px; background: #fff; font-size: 11px; }
+      .title-head { text-align: center; font-weight: 900; font-size: 15px; text-decoration: underline; text-transform: uppercase; margin-bottom: 2px; }
+      .subtitle-head { text-align: center; font-weight: 800; font-size: 13px; margin-bottom: 12px; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10.5px; }
+      th, td { border: 1px solid #000; padding: 4px 6px; }
+      th { background: #d1d5db !important; font-weight: bold; text-align: center; text-transform: uppercase; }
+      @media print { .no-print { display: none !important; } }
+    </style>
+  </head>
+  <body>
+    <div class="no-print" style="padding:8px; background:#f1f5f9; text-align:right; border-bottom:1px solid #cbd5e1; margin-bottom:10px;">
+      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Rekap Lemburan</button>
+      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer; margin-left:8px;">✕ Tutup</button>
+    </div>
+
+    <div class="title-head">LEMBURAN</div>
+    <div class="subtitle-head">KARYAWAN SPBU 54.634.25 MLARAK</div>
+    <div style="font-weight:bold; margin-bottom:6px;">BULAN : ${monthNameUpper}</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:30px;">NO</th>
+          <th>NAMA</th>
+          <th>JABATAN</th>
+          <th>NOMINAL LEMBUR / SHIFT</th>
+          <th>JUMLAH LEMBUR 1 BULAN</th>
+          <th style="text-align:right;">JUMLAH</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+      <tfoot>
+        <tr style="font-weight:bold; background:#e5e7eb;">
+          <td colspan="5" style="text-align:right;">TOTAL</td>
+          <td style="text-align:right;">Rp ${fmt(totalOtAmtAll)}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </body>
+  </html>`);
+  win.document.close();
+};
 
 // ==========================================
 // START
