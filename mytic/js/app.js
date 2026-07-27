@@ -5848,30 +5848,30 @@ window._printInternalPayrollSummary = () => {
     const isSpvAdmin = pos.toLowerCase().includes('admin') || pos.toLowerCase().includes('supervisor') || pos.toLowerCase().includes('spv');
     const defaultPwRound = isSpvAdmin ? 150000 : 100000;
     
-    const pwEnabled = empData.pw_enabled !== undefined ? empData.pw_enabled : true;
-    const pwAmount = Number(empData.pw_amount !== undefined ? empData.pw_amount : defaultPwRound);
+    const pwEnabled = empData.pw_enabled !== undefined ? empData.pw_enabled : false;
+    const pwAmount = Number(empData.pw_amount !== undefined ? empData.pw_amount : 0);
     const tenureMonths = getTenureMonths(u.join_date || u.created_at);
 
     const tunjData = empData.tunjangan || {};
-    const tunjJabatanEnabled = tunjData['tunj_jabatan'] ? tunjData['tunj_jabatan'].enabled : (pos.toLowerCase() !== 'cleaning service' && !pos.toLowerCase().includes('cs'));
-    const tunjJabatanAmt = Number((tunjData['tunj_jabatan'] && tunjData['tunj_jabatan'].amount !== undefined) ? tunjData['tunj_jabatan'].amount : getDefaultPositionAllowance(pos));
+    const tunjJabatanEnabled = tunjData['tunj_jabatan'] ? tunjData['tunj_jabatan'].enabled : false;
+    const tunjJabatanAmt = Number((tunjData['tunj_jabatan'] && tunjData['tunj_jabatan'].amount !== undefined) ? tunjData['tunj_jabatan'].amount : 0);
 
-    const tunjKinerjaEnabled = tunjData['tunj_kinerja'] ? tunjData['tunj_kinerja'].enabled : (tenureMonths >= 6);
-    const tunjKinerjaAmt = Number((tunjData['tunj_kinerja'] && tunjData['tunj_kinerja'].amount !== undefined) ? tunjData['tunj_kinerja'].amount : (tenureMonths >= 6 ? 400000 : 200000));
+    const tunjKinerjaEnabled = tunjData['tunj_kinerja'] ? tunjData['tunj_kinerja'].enabled : false;
+    const tunjKinerjaAmt = Number((tunjData['tunj_kinerja'] && tunjData['tunj_kinerja'].amount !== undefined) ? tunjData['tunj_kinerja'].amount : 0);
 
-    const tunjMasaKerjaEnabled = tunjData['tunj_masa_kerja'] ? tunjData['tunj_masa_kerja'].enabled : (tenureMonths >= 12);
-    const tunjMasaKerjaAmt = Number((tunjData['tunj_masa_kerja'] && tunjData['tunj_masa_kerja'].amount !== undefined) ? tunjData['tunj_masa_kerja'].amount : getDefaultTenureAllowance(tenureMonths));
+    const tunjMasaKerjaEnabled = tunjData['tunj_masa_kerja'] ? tunjData['tunj_masa_kerja'].enabled : false;
+    const tunjMasaKerjaAmt = Number((tunjData['tunj_masa_kerja'] && tunjData['tunj_masa_kerja'].amount !== undefined) ? tunjData['tunj_masa_kerja'].amount : 0);
 
     const otShifts = Number(empData.overtime_shifts || 0);
     const otAmt = otShifts * 50000;
-    const gajiPokok = Number(empData.gaji_pokok !== undefined ? empData.gaji_pokok : settings.gaji_pokok_internal_staf);
+    const gajiPokok = Number(empData.gaji_pokok !== undefined ? empData.gaji_pokok : 0);
 
     const jAmt = tunjJabatanEnabled ? tunjJabatanAmt : 0;
     const kAmt = tunjKinerjaEnabled ? tunjKinerjaAmt : 0;
     const mkAmt = tunjMasaKerjaEnabled ? tunjMasaKerjaAmt : 0;
     const pwVal = pwEnabled ? pwAmount : 0;
 
-    const tabunganAmt = Number(empData.savings_deduction !== undefined ? empData.savings_deduction : (tenureMonths >= 6 ? 50000 : 0));
+    const tabunganAmt = Number(empData.savings_deduction !== undefined ? empData.savings_deduction : 0);
     const gajiKotor = gajiPokok + jAmt + kAmt + mkAmt + pwVal + otAmt;
     const gajiBersih = gajiKotor - tabunganAmt;
 
@@ -5931,7 +5931,7 @@ window._printInternalPayrollSummary = () => {
   </head>
   <body>
     <div class="no-print" style="padding:8px 12px; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-bottom:10px; display:flex; justify-content:flex-end; gap:8px; align-items:center;">
-      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE PDF DIRECT</button>
+      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Pilih Save as PDF)</button>
       <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Rekapitulasi Gaji Internal</button>
       <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">✕ Tutup</button>
     </div>
@@ -6004,7 +6004,7 @@ window._printSavingsSummary = () => {
       const monthKey = `${currentYear}-${(mIdx + 1).toString().padStart(2, '0')}`;
       const mData = (allData.payroll && allData.payroll[monthKey] && allData.payroll[monthKey].internal_data && allData.payroll[monthKey].internal_data[u.emp_id]) || {};
       const tenureMonths = getTenureMonths(u.join_date || u.created_at);
-      const amt = Number(mData.savings_deduction !== undefined ? mData.savings_deduction : (tenureMonths >= 6 ? 50000 : 0));
+      const amt = Number(mData.savings_deduction !== undefined ? mData.savings_deduction : 0);
       if (amt > 0) empTotal += amt;
       return `<td style="text-align:right;">${amt > 0 ? fmt(amt) : 'Rp -'}</td>`;
     }).join('');
