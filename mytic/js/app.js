@@ -3950,30 +3950,30 @@ function _generateEmployeeKpiPDFHtml(empId) {
     @page { size: A4 portrait; margin: 6mm 10mm; }
   </style>
   <style>
-    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #0f172a !important; margin: 0; padding: 10px; background: #e2e8f0 !important; font-size: 10.5px; line-height: 1.25; }
     .rapor-container { background: #ffffff !important; color: #0f172a !important; max-width: 210mm; margin: 0 auto; padding: 12px 18px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; page-break-inside: avoid; page-break-after: avoid; }
     .no-print-bar { display: flex; justify-content: space-between; align-items: center; background: #ffffff !important; padding: 6px 14px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 210mm; margin-left: auto; margin-right: auto; }
     .no-print-bar button { padding: 5px 12px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 11px; }
     .btn-print { background: #1d4ed8; color: #fff; }
     .btn-close { background: #64748b; color: #fff; margin-left: 8px; }
-    .kop-header { text-align: center; border-bottom: 2.5px double #1d4ed8; padding-bottom: 4px; margin-bottom: 6px; width: 100%; }
+    .kop-header { text-align: center; border-bottom: 2.5px double #1d4ed8 !important; padding-bottom: 4px; margin-bottom: 6px; width: 100%; }
     .kop-title { font-family: 'Times New Roman', Times, serif; font-weight: 900; font-size: 26px; color: #1e40af !important; letter-spacing: 1.2px; line-height: 1.05; margin-bottom: 1px; }
     .kop-subtitle { font-family: 'Times New Roman', Times, serif; font-weight: 800; font-size: 15px; color: #1d4ed8 !important; margin-top: 1px; letter-spacing: 0.5px; line-height: 1.05; margin-bottom: 2px; }
     .kop-address { font-size: 9.5px; color: #1e3a8a !important; margin-top: 1px; line-height: 1.2; }
     .doc-title-box { text-align: center; margin-bottom: 6px; }
-    .doc-title { font-size: 13px; font-weight: 800; text-transform: uppercase; color: #0f172a !important; border-bottom: 1.5px solid #0f172a; display: inline-block; padding-bottom: 1px; }
-    .doc-subtitle { font-size: 9px; color: #64748b !important; margin-top: 2px; font-weight: 600; }
-    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; background: #f8fafc !important; border: 1px solid #cbd5e1; border-radius: 4px; }
-    .info-table td { padding: 4px 8px; font-size: 10px; vertical-align: middle; border-bottom: 1px solid #e2e8f0; color: #0f172a !important; }
-    .info-table td.label { font-weight: 700; color: #475569 !important; width: 115px; background: #f1f5f9 !important; }
-    .score-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px; }
-    .score-card { background: #eff6ff !important; border: 1.5px solid #3b82f6; border-radius: 5px; padding: 4px 8px; text-align: center; }
-    .score-card.rank-card { background: #f0fdf4 !important; border-color: #22c55e; }
+    .doc-title { font-size: 13px; font-weight: 800; text-transform: uppercase; color: #0f172a !important; border-bottom: 1.5px solid #0f172a !important; display: inline-block; padding-bottom: 1px; }
+    .doc-subtitle { font-size: 9px; color: #475569 !important; margin-top: 2px; font-weight: 600; }
+    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; background: #f8fafc !important; border: 1px solid #cbd5e1 !important; border-radius: 4px; }
+    .info-table td { padding: 4px 8px; font-size: 10px; vertical-align: middle; border-bottom: 1px solid #e2e8f0 !important; color: #0f172a !important; }
+    .info-table td.label { font-weight: 700; color: #334155 !important; width: 115px; background: #f1f5f9 !important; }
+    .score-summary-grid { display: flex; gap: 8px; margin-bottom: 6px; width: 100%; }
+    .score-card { flex: 1; background: #eff6ff !important; border: 1.5px solid #3b82f6 !important; border-radius: 5px; padding: 6px 10px; text-align: center; }
+    .score-card.rank-card { background: #f0fdf4 !important; border-color: #22c55e !important; }
     .score-value { font-size: 18px; font-weight: 900; color: #1e40af !important; margin: 1px 0; }
     .rank-card .score-value { color: #15803d !important; }
     .metric-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
-    .metric-table th, .metric-table td { border: 1px solid #cbd5e1; padding: 4px 6px; font-size: 9.5px; color: #0f172a !important; }
+    .metric-table th, .metric-table td { border: 1px solid #cbd5e1 !important; padding: 4px 6px; font-size: 9.5px; color: #0f172a !important; }
     .metric-table th { background: #1e40af !important; color: #ffffff !important; font-weight: 700; text-align: left; }
     tr { page-break-inside: avoid !important; page-break-after: auto !important; }
     .signature-area { margin-top: 8px; display: flex; justify-content: space-between; page-break-inside: avoid; }
@@ -4006,37 +4006,37 @@ function _generateEmployeeKpiPDFHtml(empId) {
       </select>
     </div>
     <div>
-      <button id="btn-dl-pdf" style="background:#16a34a; color:#fff; font-weight:bold; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; font-size:11px;" onclick="window._downloadEmployeeKpiDirectPDF('${empId}')">📥 Simpan File PDF</button>
+      <button id="btn-dl-pdf" style="background:#16a34a; color:#fff; font-weight:bold; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; font-size:11px;" onclick="downloadPdfDirect(false)">📥 Simpan File PDF</button>
       <button class="btn-print" onclick="window.print()">🖨️ Cetak / Print</button>
       <button class="btn-close" onclick="window.close()">✕ Tutup</button>
     </div>
   </div>
 
   <div class="rapor-container">
-    <div class="kop-header">
-      <div class="kop-title">PT. ESTAFET DWI MASA</div>
-      <div class="kop-subtitle">SPBU 54.634.25 GONTOR MLARAK</div>
-      <div class="kop-address">
+    <div class="kop-header" style="text-align:center; border-bottom:2.5px double #1d4ed8 !important; padding-bottom:4px; margin-bottom:6px;">
+      <div class="kop-title" style="font-family:'Times New Roman', Times, serif; font-weight:900; font-size:26px; color:#1e40af !important; letter-spacing:1.2px; line-height:1.05; margin-bottom:1px;">PT. ESTAFET DWI MASA</div>
+      <div class="kop-subtitle" style="font-family:'Times New Roman', Times, serif; font-weight:800; font-size:15px; color:#1d4ed8 !important; margin-top:1px; letter-spacing:0.5px; line-height:1.05; margin-bottom:2px;">SPBU 54.634.25 GONTOR MLARAK</div>
+      <div class="kop-address" style="font-size:9.5px; color:#1e3a8a !important; margin-top:1px; line-height:1.2;">
         Kantor Pusat : Ds. Gontor, Kec. Mlarak, Kab. Ponorogo - Jawa Timur 63472<br>
         Kantor Cabang : Jalan Mayjend Bambang Sugeng Km. 01 Sidojoyo Wonosobo<br>
         Email: estafetdwimasa@gmail.com
       </div>
     </div>
   <div class="doc-title-box">
-    <div class="doc-title">RAPOR EVALUASI KINERJA INDIVIDUAL KARYAWAN</div>
-    <div class="doc-subtitle">PERIODE EVALUASI: ${esc(periodTitle).toUpperCase()} | TANGGAL CETAK: ${formattedDate.toUpperCase()}</div>
+    <div class="doc-title" style="font-size:13px; font-weight:800; text-transform:uppercase; color:#0f172a !important; border-bottom:1.5px solid #0f172a !important; display:inline-block; padding-bottom:1px;">RAPOR EVALUASI KINERJA INDIVIDUAL KARYAWAN</div>
+    <div class="doc-subtitle" style="font-size:9px; color:#475569 !important; margin-top:2px; font-weight:600;">PERIODE EVALUASI: ${esc(periodTitle).toUpperCase()} | TANGGAL CETAK: ${formattedDate.toUpperCase()}</div>
   </div>
   <table class="info-table">
     <tr>
-      <td class="label">Nama Karyawan</td>
+      <td class="label" style="font-weight:700; color:#334155 !important; width:115px; background:#f1f5f9 !important;">Nama Karyawan</td>
       <td><strong style="color:#0f172a !important;">${esc(u.name)}</strong></td>
-      <td class="label">ID Karyawan</td>
+      <td class="label" style="font-weight:700; color:#334155 !important; width:115px; background:#f1f5f9 !important;">ID Karyawan</td>
       <td><strong style="color:#0f172a !important;">${esc(u.emp_id)}</strong></td>
     </tr>
     <tr>
-      <td class="label">Jabatan / Posisi</td>
-      <td style="color:#0f172a !important;">${esc(u.position)}</td>
-      <td class="label">Status Evaluasi</td>
+      <td class="label" style="font-weight:700; color:#334155 !important; width:115px; background:#f1f5f9 !important;">Jabatan / Posisi</td>
+      <td><strong style="color:#0f172a !important;">${esc(u.position)}</strong></td>
+      <td class="label" style="font-weight:700; color:#334155 !important; width:115px; background:#f1f5f9 !important;">Status Evaluasi</td>
       <td><span style="color:#16a34a !important; font-weight:bold;">Selesai (Aktif)</span></td>
     </tr>
   </table>
@@ -4119,7 +4119,7 @@ function _generateEmployeeKpiPDFHtml(empId) {
   <h4 style="margin:6px 0 3px 0; color:#1e40af !important; font-size:10.5px; border-bottom:1px solid #cbd5e1; padding-bottom:2px;">📋 REKAPITULASI IZIN & HAK CUTI KARYAWAN</h4>
   <table class="info-table" style="margin-bottom:5px;">
     <tr>
-      <td class="label" style="width:130px;">Izin Disetujui (Bulan Ini)</td>
+      <td class="label" style="width:130px; font-weight:700; color:#334155 !important; background:#f1f5f9 !important;">Izin Disetujui (Bulan Ini)</td>
       <td><strong style="color:#0f172a !important;">${totalIzinBulanIni} Kali</strong></td>
     </tr>
   </table>
@@ -4144,13 +4144,13 @@ function _generateEmployeeKpiPDFHtml(empId) {
   </div>
   <div class="signature-area">
     <div class="sig-box">
-      <div>Penerima Rapor (Karyawan),</div>
+      <div style="color:#0f172a !important;">Penerima Rapor (Karyawan),</div>
       <div class="sig-space"></div>
       <div><strong style="color:#0f172a !important;">( ${esc(u.name)} )</strong></div>
       <div style="font-size:8.5px; color:#64748b !important;">ID: ${esc(u.emp_id)}</div>
     </div>
     <div class="sig-box">
-      <div>Gontor, ${formattedDate}<br><strong style="color:#0f172a !important;">Manager SPBU Gontor Mlarak</strong>,</div>
+      <div style="color:#0f172a !important;">Gontor, ${formattedDate}<br><strong style="color:#0f172a !important;">Manager SPBU Gontor Mlarak</strong>,</div>
       <div class="sig-space"></div>
       <div><strong style="color:#0f172a !important;">( ______________________ )</strong></div>
       <div style="font-size:8.5px; color:#64748b !important;">PT. ESTAFET DWI MASA</div>
@@ -4159,6 +4159,47 @@ function _generateEmployeeKpiPDFHtml(empId) {
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    function downloadPdfDirect(autoClose = false) {
+      const btn = document.getElementById('btn-dl-pdf');
+      const noPrintBar = document.querySelector('.no-print-bar');
+      const oldText = btn ? btn.innerHTML : '';
+      if (btn) { btn.innerHTML = '⏳ Mengunduh...'; btn.disabled = true; }
+
+      const paperSize = document.getElementById('paper-size-select') ? document.getElementById('paper-size-select').value : 'A4';
+      
+      if (noPrintBar) {
+        noPrintBar.style.setProperty('display', 'none', 'important');
+      }
+
+      const element = document.querySelector('.rapor-container');
+      const safeName = '${esc(u.name).replace(/[^a-zA-Z0-9]/g, '_')}';
+      const safePeriod = '${periodTitle.replace(/[^a-zA-Z0-9]/g, '_')}';
+
+      const opt = {
+        margin: [4, 6, 4, 6],
+        filename: 'Rapor_Kinerja_' + safeName + '_' + safePeriod + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2.5,
+          useCORS: true,
+          logging: false,
+          ignoreElements: (node) => node.classList && (node.classList.contains('no-print') || node.classList.contains('no-print-bar'))
+        },
+        jsPDF: { unit: 'mm', format: paperSize === 'F4' ? [215, 330] : 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save().then(() => {
+        if (noPrintBar) noPrintBar.style.setProperty('display', 'flex');
+        if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
+        if (autoClose) { window.close(); }
+      }).catch(err => {
+        console.error(err);
+        if (noPrintBar) noPrintBar.style.setProperty('display', 'flex');
+        if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
+      });
+    }
+  </script>
 </body>
 </html>`;
 }
@@ -4177,64 +4218,24 @@ window._printEmployeeKpiPDF = (empId) => {
 };
 
 window._downloadEmployeeKpiDirectPDF = (empId) => {
-  if (typeof html2pdf === 'undefined') {
-    showToast('Library PDF sedang dimuat, coba sebentar lagi', 'warning');
-    return;
-  }
-
-  const users = getUsers();
-  const u = users.find(x => x.emp_id === empId);
-  if (!u) { showToast('Karyawan tidak ditemukan', 'error'); return; }
-
   const pdfHtml = _generateEmployeeKpiPDFHtml(empId);
-  if (!pdfHtml) return;
+  if (!pdfHtml) { showToast('Karyawan tidak ditemukan', 'error'); return; }
 
-  const period = window._leaderboardPeriod || 'month';
-  const periodTitles = {
-    'month': 'Bulan_Ini',
-    'last_month': 'Bulan_Lalu',
-    'quarter': 'Triwulan',
-    'year': 'Tahun_' + new Date().getFullYear()
-  };
-  const safeName = esc(u.name).replace(/[^a-zA-Z0-9]/g, '_');
-  const safePeriod = periodTitles[period] || 'Bulan_Ini';
-  const filename = `Rapor_Kinerja_${safeName}_${safePeriod}.pdf`;
-
-  const iframe = document.createElement('iframe');
-  iframe.style.position = 'fixed';
-  iframe.style.left = '-9999px';
-  iframe.style.top = '0';
-  iframe.style.width = '210mm';
-  iframe.style.height = '297mm';
-  iframe.style.border = 'none';
-  document.body.appendChild(iframe);
-
-  iframe.contentDocument.open();
-  iframe.contentDocument.write(pdfHtml);
-  iframe.contentDocument.close();
-
-  const noPrintBar = iframe.contentDocument.querySelector('.no-print-bar');
-  if (noPrintBar) noPrintBar.remove();
-
-  const element = iframe.contentDocument.querySelector('.rapor-container');
-
-  const opt = {
-    margin: [4, 6, 4, 6],
-    filename: filename,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2.5, useCORS: true, logging: false },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-
-  showToast('Menyiapkan file Rapor PDF...', 'info');
-  html2pdf().set(opt).from(element).save().then(() => {
-    showToast('Rapor KPI berhasil diunduh!', 'success');
-    iframe.remove();
-  }).catch(e => {
-    console.error(e);
-    showToast('Gagal mengunduh Rapor KPI PDF', 'error');
-    iframe.remove();
-  });
+  const win = window.open('', '_blank');
+  if (win) {
+    win.document.write(pdfHtml);
+    win.document.close();
+    showToast('Menyiapkan file unduhan Rapor...', 'info');
+    win.onload = () => {
+      setTimeout(() => {
+        if (win.downloadPdfDirect) {
+          win.downloadPdfDirect(true);
+        }
+      }, 250);
+    };
+  } else {
+    showToast('Izinkan pop-up di browser untuk mengunduh PDF Rapor.', 'error');
+  }
 };
 
 function renderLeaderboardPage() {
