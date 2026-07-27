@@ -4745,15 +4745,6 @@ window._updateEmpAllowanceAmt = async (empId, tunjId, amt) => {
 
   const path = `payroll/${month}/internal_data/${empId}/tunjangan/${tunjId}/amount`;
   await set(ref(db, path), numAmt);
-};t month = window._payrollMonth || getTodayStr().substring(0, 7);
-  const path = `payroll/${month}/internal_data/${empId}/tunjangan/${tunjId}/enabled`;
-  await set(ref(db, path), isChecked);
-};
-
-window._updateEmpAllowanceAmt = async (empId, tunjId, amt) => {
-  const month = window._payrollMonth || getTodayStr().substring(0, 7);
-  const path = `payroll/${month}/internal_data/${empId}/tunjangan/${tunjId}/amount`;
-  await set(ref(db, path), Number(amt || 0));
 };
 
 function renderInternalPayrollTab() {
