@@ -5062,52 +5062,52 @@ function renderInternalPayrollTab() {
     totalGajiBersihAll += gajiBersih;
 
     return `<tr>
-      <td style="text-align:center; font-weight:bold;">${idx + 1}</td>
-      <td><strong>${esc(u.name)}</strong><br><span class="text-xs text-muted">ID: ${esc(u.emp_id)} | Masa Kerja: ${tenureMonths} Bln</span></td>
-      <td><span class="badge" style="background:var(--bg-color); color:var(--text-main); font-size:0.75rem;">${esc(pos)}</span></td>
-      <td style="font-size:0.8rem;">
-        <input type="number" value="${gajiPokok}" style="width:105px; padding:0.2rem 0.4rem; font-size:0.75rem;" onchange="window._saveInternalPayrollItem('${empId}', 'gaji_pokok', Number(this.value))">
-        <div class="text-xs text-muted" style="margin-top:0.2rem;">${fmt(gajiPokok)}</div>
+      <td style="text-align:center; font-weight:bold; padding:4px 6px;">${idx + 1}</td>
+      <td style="padding:4px 6px;"><strong>${esc(u.name)}</strong><br><span class="text-xs text-muted">ID: ${esc(u.emp_id)} | Masa: ${tenureMonths} Bln</span></td>
+      <td style="padding:4px 6px;"><span class="badge" style="background:var(--bg-color); color:var(--text-main); font-size:0.7rem; padding:2px 5px;">${esc(pos)}</span></td>
+      <td style="font-size:0.75rem; padding:4px 6px;">
+        <input type="number" value="${gajiPokok}" style="width:85px; padding:0.15rem 0.3rem; font-size:0.7rem;" onchange="window._saveInternalPayrollItem('${empId}', 'gaji_pokok', Number(this.value))">
+        <div class="text-xs text-muted" style="margin-top:0.1rem; font-size:0.65rem;">${fmt(gajiPokok)}</div>
       </td>
-      <td style="font-size:0.8rem;">
-        <div style="display:flex; align-items:center; gap:0.4rem;">
+      <td style="font-size:0.75rem; padding:4px 6px;">
+        <div style="display:flex; align-items:center; gap:0.25rem;">
           <input type="checkbox" ${tunjJabatanEnabled ? 'checked' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_jabatan', this.checked)">
-          <span style="width:75px;">Jabatan:</span>
-          <input type="number" value="${tunjJabatanAmt}" style="width:90px; padding:0.2rem 0.4rem; font-size:0.75rem;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_jabatan', this.value)">
+          <span style="font-size:0.7rem;">Jabatan:</span>
+          <input type="number" value="${tunjJabatanAmt}" style="width:75px; padding:0.15rem 0.3rem; font-size:0.7rem;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_jabatan', this.value)">
         </div>
-        <div style="display:flex; align-items:center; gap:0.4rem; margin-top:0.25rem;">
+        <div style="display:flex; align-items:center; gap:0.25rem; margin-top:0.2rem;">
           <input type="checkbox" ${tunjKinerjaEnabled ? 'checked' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_kinerja', this.checked)">
-          <span style="width:75px;">Kinerja:</span>
-          <input type="number" value="${tunjKinerjaAmt}" style="width:90px; padding:0.2rem 0.4rem; font-size:0.75rem;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_kinerja', this.value)">
+          <span style="font-size:0.7rem;">Kinerja:</span>
+          <input type="number" value="${tunjKinerjaAmt}" style="width:75px; padding:0.15rem 0.3rem; font-size:0.7rem;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_kinerja', this.value)">
         </div>
-        <div style="display:flex; align-items:center; gap:0.4rem; margin-top:0.25rem;">
+        <div style="display:flex; align-items:center; gap:0.25rem; margin-top:0.2rem;">
           <input type="checkbox" ${tunjMasaKerjaEnabled ? 'checked' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_masa_kerja', this.checked)">
-          <span style="width:75px;">Masa Kerja:</span>
-          <input type="number" value="${tunjMasaKerjaAmt}" style="width:90px; padding:0.2rem 0.4rem; font-size:0.75rem;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_masa_kerja', this.value)">
+          <span style="font-size:0.7rem;">Masa Kerja:</span>
+          <input type="number" value="${tunjMasaKerjaAmt}" style="width:75px; padding:0.15rem 0.3rem; font-size:0.7rem;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_masa_kerja', this.value)">
         </div>
         ${customTunjHTML}
       </td>
-      <td style="font-size:0.8rem;">
-        <div style="display:flex; align-items:center; gap:0.4rem;">
+      <td style="font-size:0.75rem; padding:4px 6px;">
+        <div style="display:flex; align-items:center; gap:0.25rem;">
           <input type="checkbox" ${pwEnabled ? 'checked' : ''} onchange="window._saveInternalPayrollItem('${empId}', 'pw_enabled', this.checked)">
-          <span>PW Bulatan:</span>
-          <input type="number" value="${pwAmount}" style="width:95px; padding:0.2rem 0.4rem; font-size:0.75rem;" onchange="window._saveInternalPayrollItem('${empId}', 'pw_amount', Number(this.value))">
+          <span style="font-size:0.7rem;">PW:</span>
+          <input type="number" value="${pwAmount}" style="width:75px; padding:0.15rem 0.3rem; font-size:0.7rem;" onchange="window._saveInternalPayrollItem('${empId}', 'pw_amount', Number(this.value))">
         </div>
-        <div class="text-xs text-muted" style="margin-top:0.25rem;">Est. Hitung: ${fmt(isSpvAdmin ? rawPwSpvAdmin : rawPwOprCs)}</div>
+        <div class="text-xs text-muted" style="margin-top:0.15rem; font-size:0.65rem;">Est: ${fmt(isSpvAdmin ? rawPwSpvAdmin : rawPwOprCs)}</div>
       </td>
-      <td style="font-size:0.8rem;">
-        <div style="display:flex; align-items:center; gap:0.4rem;">
-          <input type="number" value="${otShifts}" style="width:55px; padding:0.2rem 0.4rem; font-size:0.75rem;" min="0" onchange="window._saveInternalPayrollItem('${empId}', 'overtime_shifts', Number(this.value))">
-          <span>Shift</span>
+      <td style="font-size:0.75rem; padding:4px 6px;">
+        <div style="display:flex; align-items:center; gap:0.2rem;">
+          <input type="number" value="${otShifts}" style="width:45px; padding:0.15rem 0.3rem; font-size:0.7rem;" min="0" onchange="window._saveInternalPayrollItem('${empId}', 'overtime_shifts', Number(this.value))">
+          <span style="font-size:0.7rem;">Shf</span>
         </div>
-        <strong style="color:var(--primary); font-size:0.8rem;">${fmt(otAmt)}</strong>
+        <strong style="color:var(--primary); font-size:0.75rem;">${fmt(otAmt)}</strong>
       </td>
-      <td style="font-size:0.8rem;">
-        <input type="number" value="${tabunganAmt}" style="width:85px; padding:0.2rem 0.4rem; font-size:0.75rem;" onchange="window._saveInternalPayrollItem('${empId}', 'savings_deduction', Number(this.value))">
+      <td style="font-size:0.75rem; padding:4px 6px;">
+        <input type="number" value="${tabunganAmt}" style="width:70px; padding:0.15rem 0.3rem; font-size:0.7rem;" onchange="window._saveInternalPayrollItem('${empId}', 'savings_deduction', Number(this.value))">
       </td>
-      <td style="text-align:right;">
-        <div style="font-size:0.75rem; color:var(--text-muted);">Kotor: ${fmt(gajiKotor)}</div>
-        <strong style="font-size:0.95rem; color:#16a34a;">${fmt(gajiBersih)}</strong>
+      <td style="text-align:right; padding:4px 6px;">
+        <div style="font-size:0.68rem; color:var(--text-muted);">Kotor: ${fmt(gajiKotor)}</div>
+        <strong style="font-size:0.85rem; color:#16a34a;">${fmt(gajiBersih)}</strong>
       </td>
     </tr>`;
   }).join('');
@@ -5151,18 +5151,18 @@ function renderInternalPayrollTab() {
         </div>
       </div>
 
-      <table class="metric-table" style="width:100%; border-collapse:collapse;">
+      <table class="metric-table" style="width:100%; border-collapse:collapse; font-size:0.75rem;">
         <thead>
           <tr>
-            <th style="width:30px; text-align:center;">#</th>
-            <th>Nama & Masa Kerja</th>
-            <th>Jabatan</th>
-            <th style="width:130px; text-align:right;">Gaji Pokok UMK</th>
-            <th style="min-width:240px;">Ceklis Tunjangan & Nominal</th>
-            <th style="width:180px;">PW Internal</th>
-            <th style="width:120px;">Lembur (Shift)</th>
-            <th style="width:100px;">Tabungan</th>
-            <th style="width:130px; text-align:right;">Gaji Bersih (THP)</th>
+            <th style="width:25px; text-align:center; padding:4px 6px;">#</th>
+            <th style="padding:4px 6px;">Nama & Masa Kerja</th>
+            <th style="padding:4px 6px;">Jabatan</th>
+            <th style="width:95px; text-align:right; padding:4px 6px;">Gaji Pokok</th>
+            <th style="min-width:175px; padding:4px 6px;">Tunjangan & Nominal</th>
+            <th style="width:115px; padding:4px 6px;">PW Internal</th>
+            <th style="width:75px; padding:4px 6px;">Lembur</th>
+            <th style="width:80px; padding:4px 6px;">Tabungan</th>
+            <th style="width:110px; text-align:right; padding:4px 6px;">Gaji Bersih (THP)</th>
           </tr>
         </thead>
         <tbody>${empRows}</tbody>
