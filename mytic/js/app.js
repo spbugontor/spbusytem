@@ -3183,9 +3183,11 @@ window._generateRatingPDFHtml = (key) => {
       const opt = {
         margin: [6, 8, 6, 8],
         filename: 'Evaluasi_Penilaian_' + safeName + '.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
+        image: { type: 'png', quality: 1.0 },
         html2canvas: {
-          scale: 2.5,
+          scale: 4,
+          dpi: 300,
+          letterRendering: true,
           useCORS: true,
           logging: false,
           ignoreElements: (node) => node.classList && (node.classList.contains('no-print') || node.classList.contains('no-print-bar'))
@@ -3242,8 +3244,8 @@ window._downloadSingleRatingPDF = (key) => {
   const opt = {
     margin: [6, 8, 6, 8],
     filename: filename,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2.5, useCORS: true, logging: false },
+    image: { type: 'png', quality: 1.0 },
+    html2canvas: { scale: 4, dpi: 300, letterRendering: true, useCORS: true, logging: false },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
 
@@ -4184,9 +4186,11 @@ function _generateEmployeeKpiPDFHtml(empId) {
       const opt = {
         margin: [4, 6, 4, 6],
         filename: 'Rapor_Kinerja_' + safeName + '_' + safePeriod + '.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
+        image: { type: 'png', quality: 1.0 },
         html2canvas: {
-          scale: 2.5,
+          scale: 4,
+          dpi: 300,
+          letterRendering: true,
           useCORS: true,
           logging: false,
           ignoreElements: (node) => node.classList && (node.classList.contains('no-print') || node.classList.contains('no-print-bar'))
