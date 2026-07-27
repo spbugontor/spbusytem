@@ -3512,6 +3512,24 @@ window._onLeaderboardFilterChange = () => {
   renderCurrentSection();
 };
 
+function isRecordForUser(item, user) {
+  if (!item || !user) return false;
+  const target = (item.emp_id || item.empId || item.username || item.emp_name || item.empName || item.user_id || '').toString().toLowerCase().trim();
+  if (!target) return false;
+
+  const uId = (user.id || '').toString().toLowerCase().trim();
+  const uKey = (user._key || '').toString().toLowerCase().trim();
+  const uEmpId = (user.emp_id || '').toString().toLowerCase().trim();
+  const uUsername = (user.username || '').toString().toLowerCase().trim();
+  const uName = (user.name || '').toString().toLowerCase().trim();
+
+  return (uId && target === uId) ||
+         (uKey && target === uKey) ||
+         (uEmpId && target === uEmpId) ||
+         (uUsername && target === uUsername) ||
+         (uName && target === uName);
+}
+
 function calculateEmployeeKpi(emp, period) {
   const now = new Date();
   let startDate = new Date();
