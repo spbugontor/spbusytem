@@ -3292,10 +3292,43 @@ window._saveCriteria = async (key) => {
   const position = (checkedCbs.length === 0 || checkedCbs.includes('Semua')) ? ['Semua'] : checkedCbs;
 
   const data = { indicator, name, position };
-  if (key) await update(ref(db, 'criteria/' + key), data);
-  else await set(push(ref(db, 'criteria')), data);
-  showToast('Kriteria disimpan!', 'success');
-  $('crit-form-area').innerHTML = '';
+  if (key) {
+    await update(ref(db, 'criteria/' + key), data);
+    showToast('Kriteria diperbarui!', 'success');
+    $('crit-form-area').innerHTML = '';
+  } else {
+    await set(push(ref(db, 'criteria')), data);
+    showToast(`Sub-kriteria "${name}" tersimpan! Form tetap terbuka untuk entri berikutnya.`, 'success');
+
+    // Retain selected indicator and keep form open for fast continuous input
+    const savedInd = indicator;
+    const mainWrapper = document.querySelector('.content-wrapper');
+    if (mainWrapper && typeof renderCriteria === 'function') {
+      mainWrapper.innerHTML = renderCriteria();
+      window._showCriteriaForm();
+      setTimeout(() => {
+        const sel = $('cf-indicator-select');
+        if (sel) {
+          const opt = Array.from(sel.options).find(o => o.value === savedInd);
+          if (opt) {
+            sel.value = savedInd;
+            sel.dispatchEvent(new Event('change'));
+          }
+        }
+        const nameInp = $('cf-name');
+        if (nameInp) {
+          nameInp.value = '';
+          nameInp.focus();
+        }
+      }, 50);
+    } else {
+      const nameInp = $('cf-name');
+      if (nameInp) {
+        nameInp.value = '';
+        nameInp.focus();
+      }
+    }
+  }
 };
 window._deleteCriteria = async (key) => { if (confirm('Hapus kriteria?')) { await remove(ref(db, 'criteria/' + key)); showToast('Dihapus!', 'success'); } };
 
