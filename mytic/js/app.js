@@ -5424,51 +5424,51 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 4) => {
     const isSpvAdmin = pos.toLowerCase().includes('admin') || pos.toLowerCase().includes('supervisor') || pos.toLowerCase().includes('spv');
     const defaultPwRound = isSpvAdmin ? 150000 : 100000;
     
-    const pwEnabled = empData.pw_enabled !== undefined ? empData.pw_enabled : true;
-    const pwAmount = Number(empData.pw_amount !== undefined ? empData.pw_amount : defaultPwRound);
+    const pwEnabled = empData.pw_enabled !== undefined ? empData.pw_enabled : false;
+    const pwAmount = Number(empData.pw_amount !== undefined ? empData.pw_amount : 0);
     const tenureMonths = getTenureMonths(u.join_date || u.created_at);
 
     const tunjData = empData.tunjangan || {};
-    const tunjJabatanEnabled = tunjData['tunj_jabatan'] ? tunjData['tunj_jabatan'].enabled : (pos.toLowerCase() !== 'cleaning service' && !pos.toLowerCase().includes('cs'));
-    const tunjJabatanAmt = Number((tunjData['tunj_jabatan'] && tunjData['tunj_jabatan'].amount !== undefined) ? tunjData['tunj_jabatan'].amount : getDefaultPositionAllowance(pos));
+    const tunjJabatanEnabled = tunjData['tunj_jabatan'] ? tunjData['tunj_jabatan'].enabled : false;
+    const tunjJabatanAmt = Number((tunjData['tunj_jabatan'] && tunjData['tunj_jabatan'].amount !== undefined) ? tunjData['tunj_jabatan'].amount : 0);
 
-    const tunjKinerjaEnabled = tunjData['tunj_kinerja'] ? tunjData['tunj_kinerja'].enabled : (tenureMonths >= 6);
-    const tunjKinerjaAmt = Number((tunjData['tunj_kinerja'] && tunjData['tunj_kinerja'].amount !== undefined) ? tunjData['tunj_kinerja'].amount : (tenureMonths >= 6 ? 400000 : 200000));
+    const tunjKinerjaEnabled = tunjData['tunj_kinerja'] ? tunjData['tunj_kinerja'].enabled : false;
+    const tunjKinerjaAmt = Number((tunjData['tunj_kinerja'] && tunjData['tunj_kinerja'].amount !== undefined) ? tunjData['tunj_kinerja'].amount : 0);
 
-    const tunjMasaKerjaEnabled = tunjData['tunj_masa_kerja'] ? tunjData['tunj_masa_kerja'].enabled : (tenureMonths >= 12);
-    const tunjMasaKerjaAmt = Number((tunjData['tunj_masa_kerja'] && tunjData['tunj_masa_kerja'].amount !== undefined) ? tunjData['tunj_masa_kerja'].amount : getDefaultTenureAllowance(tenureMonths));
+    const tunjMasaKerjaEnabled = tunjData['tunj_masa_kerja'] ? tunjData['tunj_masa_kerja'].enabled : false;
+    const tunjMasaKerjaAmt = Number((tunjData['tunj_masa_kerja'] && tunjData['tunj_masa_kerja'].amount !== undefined) ? tunjData['tunj_masa_kerja'].amount : 0);
 
     let tambahanRows = '';
     let itemIdx = 1;
 
     if (tunjJabatanEnabled && tunjJabatanAmt > 0) {
-      tambahanRows += `<tr><td>:${itemIdx++} Tunjangan Jabatan</td><td style="text-align:right;">Rp ${fmt(tunjJabatanAmt)}</td></tr>`;
+      tambahanRows += `<tr><td>:${itemIdx++} Tunjangan Jabatan</td><td style="text-align:right;">${fmt(tunjJabatanAmt)}</td></tr>`;
     }
     if (tunjKinerjaEnabled && tunjKinerjaAmt > 0) {
-      tambahanRows += `<tr><td>:${itemIdx++} Tunjangan Kinerja</td><td style="text-align:right;">Rp ${fmt(tunjKinerjaAmt)}</td></tr>`;
+      tambahanRows += `<tr><td>:${itemIdx++} Tunjangan Kinerja</td><td style="text-align:right;">${fmt(tunjKinerjaAmt)}</td></tr>`;
     }
     if (tunjMasaKerjaEnabled && tunjMasaKerjaAmt > 0) {
-      tambahanRows += `<tr><td>:${itemIdx++} Tunjangan Masa Kerja</td><td style="text-align:right;">Rp ${fmt(tunjMasaKerjaAmt)}</td></tr>`;
+      tambahanRows += `<tr><td>:${itemIdx++} Tunjangan Masa Kerja</td><td style="text-align:right;">${fmt(tunjMasaKerjaAmt)}</td></tr>`;
     }
     if (pwEnabled && pwAmount > 0) {
-      tambahanRows += `<tr><td>:${itemIdx++} Pertamina Way</td><td style="text-align:right;">Rp ${fmt(pwAmount)}</td></tr>`;
+      tambahanRows += `<tr><td>:${itemIdx++} Pertamina Way</td><td style="text-align:right;">${fmt(pwAmount)}</td></tr>`;
     }
 
     const otShifts = Number(empData.overtime_shifts || 0);
     const otAmt = otShifts * 50000;
     if (otAmt > 0) {
-      tambahanRows += `<tr><td>:${itemIdx++} Lembur Kerja</td><td style="text-align:right;">Rp ${fmt(otAmt)}</td></tr>`;
+      tambahanRows += `<tr><td>:${itemIdx++} Lembur Kerja</td><td style="text-align:right;">${fmt(otAmt)}</td></tr>`;
     }
 
     settings.custom_allowances.forEach(ca => {
       if (['tunj_jabatan', 'tunj_kinerja', 'tunj_masa_kerja'].includes(ca.id)) return;
       const cItem = tunjData[ca.id] || {};
       if (cItem.enabled && Number(cItem.amount || 0) > 0) {
-        tambahanRows += `<tr><td>:${itemIdx++} ${esc(ca.name)}</td><td style="text-align:right;">Rp ${fmt(Number(cItem.amount))}</td></tr>`;
+        tambahanRows += `<tr><td>:${itemIdx++} ${esc(ca.name)}</td><td style="text-align:right;">${fmt(Number(cItem.amount))}</td></tr>`;
       }
     });
 
-    const gajiPokok = Number(empData.gaji_pokok !== undefined ? empData.gaji_pokok : settings.gaji_pokok_internal_staf);
+    const gajiPokok = Number(empData.gaji_pokok !== undefined ? empData.gaji_pokok : 0);
     const totalTambahan = (tunjJabatanEnabled ? tunjJabatanAmt : 0) +
                           (tunjKinerjaEnabled ? tunjKinerjaAmt : 0) +
                           (tunjMasaKerjaEnabled ? tunjMasaKerjaAmt : 0) +
@@ -5476,7 +5476,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 4) => {
                           otAmt;
 
     const gajiKotor = gajiPokok + totalTambahan;
-    const tabunganAmt = Number(empData.savings_deduction !== undefined ? empData.savings_deduction : (tenureMonths >= 6 ? 50000 : 0));
+    const tabunganAmt = Number(empData.savings_deduction !== undefined ? empData.savings_deduction : 0);
     const gajiBersih = gajiKotor - tabunganAmt;
 
     const slipHTML = `<div class="slip-box">
@@ -5491,10 +5491,10 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 4) => {
         <table style="width:100%; border-collapse:collapse; font-size:10px; margin-bottom:6px;">
           <tr><td style="width:65px;">Nama</td><td style="width:10px;">:</td><td><strong>${esc(u.name)}</strong></td></tr>
           <tr><td>Periode</td><td>:</td><td>${monthName}</td></tr>
-          <tr><td>Gaji Pokok</td><td>:</td><td style="text-align:right;">Rp ${fmt(gajiPokok)}</td></tr>
+          <tr><td>Gaji Pokok</td><td>:</td><td style="text-align:right;">${fmt(gajiPokok)}</td></tr>
           <tr><td colspan="2" style="vertical-align:top;">Tambahan</td><td><table style="width:100%; border-collapse:collapse; font-size:9.5px;">${tambahanRows}</table></td></tr>
-          <tr><td colspan="2"></td><td style="text-align:right; font-weight:bold; border-top:1px solid #000; padding-top:2px;">Rp ${fmt(gajiKotor)}</td></tr>
-          <tr><td colspan="2" style="padding-top:4px;">Tabungan</td><td style="text-align:right; font-weight:bold; padding-top:4px;">Rp ${fmt(tabunganAmt)}</td></tr>
+          <tr><td colspan="2"></td><td style="text-align:right; font-weight:bold; border-top:1px solid #000; padding-top:2px;">${fmt(gajiKotor)}</td></tr>
+          <tr><td colspan="2" style="padding-top:4px;">Tabungan</td><td style="text-align:right; font-weight:bold; padding-top:4px;">${fmt(tabunganAmt)}</td></tr>
         </table>
       </div>
 
