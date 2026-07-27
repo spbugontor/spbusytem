@@ -141,7 +141,7 @@ function showToast(msg, type = 'info') {
   setTimeout(() => { el.classList.add('toast-hide'); setTimeout(() => el.remove(), 300); }, 3000);
 }
 
-function showModal(html) {
+function showModal(html, sizeClass = '') {
   let overlay = $('global-modal');
   if (!overlay) {
     overlay = document.createElement('div');
@@ -151,7 +151,9 @@ function showModal(html) {
     overlay.addEventListener('click', e => { if (e.target === overlay) hideModal(); });
     document.body.appendChild(overlay);
   }
-  overlay.querySelector('.modal-content').innerHTML = html;
+  const contentEl = overlay.querySelector('.modal-content');
+  contentEl.className = 'modal-content ' + (sizeClass || '');
+  contentEl.innerHTML = html;
   requestAnimationFrame(() => overlay.classList.add('show'));
 }
 function hideModal() { const m = $('global-modal'); if (m) m.classList.remove('show'); }
@@ -2853,7 +2855,7 @@ window._showRatingForm = () => {
       <div id="rf-criteria-container"></div>
       <div class="form-group mt-4"><label class="form-label">Catatan</label><textarea id="rf-note" class="form-input" rows="2" placeholder="Catatan tambahan..."></textarea></div>
     </div>
-    <div class="modal-footer"><button class="btn btn-primary" onclick="window._saveRating()">Simpan Penilaian</button><button class="btn btn-secondary" onclick="window._hideModal()">Batal</button></div>`);
+    <div class="modal-footer"><button class="btn btn-primary" onclick="window._saveRating()">Simpan Penilaian</button><button class="btn btn-secondary" onclick="window._hideModal()">Batal</button></div>`, 'modal-lg');
 
   // Initialize criteria list for the first selected employee
   window._updateRatingCriteria();

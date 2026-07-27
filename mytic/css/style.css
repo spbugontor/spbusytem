@@ -729,8 +729,8 @@ tr:hover td { background: var(--surface-hover); }
 }
 .modal-content {
   background: var(--surface);
-  width: 100%;
-  max-width: 500px;
+  width: 95vw;
+  max-width: 620px;
   border-radius: var(--radius-xl);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   transform: scale(0.95);
@@ -738,6 +738,12 @@ tr:hover td { background: var(--surface-hover); }
   max-height: 90vh;
   display: flex;
   flex-direction: column;
+}
+.modal-content.modal-lg {
+  max-width: 820px;
+}
+.modal-content.modal-wide {
+  max-width: 960px;
 }
 .modal-overlay.show .modal-content {
   transform: scale(1);
