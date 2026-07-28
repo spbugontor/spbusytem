@@ -5779,16 +5779,27 @@ window._printAllPayrollBundle = () => {
         const origText = btn ? btn.innerHTML : '📥 UNDUH FILE PDF DIRECT';
         if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
         
-        function restoreUI() {
-          if (btn) { btn.innerHTML = origText; btn.disabled = false; }
+        function restoreUI(msg) {
+          if (btn) {
+            btn.innerHTML = msg || origText;
+            setTimeout(function() { btn.innerHTML = origText; btn.disabled = false; }, 2500);
+          }
         }
 
-        const safetyTimer = setTimeout(function() {
-          restoreUI();
-          window.print();
-        }, 3000);
+        if (window.opener && typeof window.opener._downloadPdfFromMainWindow === 'function') {
+          window.opener._downloadPdfFromMainWindow('bundle', 'A4', '${month}', function(success) {
+            if (success) {
+              restoreUI('✅ PDF Terunduh!');
+            } else {
+              runLocalGen();
+            }
+          });
+          return;
+        }
 
-        function runGen() {
+        runLocalGen();
+
+        function runLocalGen() {
           const opt = {
             margin: [3, 3, 3, 3],
             filename: 'Laporan_Penggajian_Lengkap_SPBU_Gontor_${month}.pdf',
@@ -5800,22 +5811,17 @@ window._printAllPayrollBundle = () => {
 
           if (typeof html2pdf !== 'undefined') {
             html2pdf().set(opt).from(document.body).save().then(function() {
-              clearTimeout(safetyTimer);
-              restoreUI();
+              restoreUI('✅ PDF Terunduh!');
             }).catch(function(err) {
               console.error(err);
-              clearTimeout(safetyTimer);
               restoreUI();
-              window.print();
+              alert('Penyimpanan otomatis diblokir browser. Gunakan tombol CETAK / PRINT.');
             });
           } else {
-            clearTimeout(safetyTimer);
             restoreUI();
-            window.print();
+            alert('Pustaka PDF belum siap.');
           }
         }
-
-        setTimeout(runGen, 100);
       }
     </script>
     <style>
@@ -6209,16 +6215,27 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
         const origText = btn ? btn.innerHTML : '📥 UNDUH FILE PDF DIRECT';
         if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
         
-        function restoreUI() {
-          if (btn) { btn.innerHTML = origText; btn.disabled = false; }
+        function restoreUI(msg) {
+          if (btn) {
+            btn.innerHTML = msg || origText;
+            setTimeout(function() { btn.innerHTML = origText; btn.disabled = false; }, 2500);
+          }
         }
 
-        const safetyTimer = setTimeout(function() {
-          restoreUI();
-          window.print();
-        }, 3000);
+        if (window.opener && typeof window.opener._downloadPdfFromMainWindow === 'function') {
+          window.opener._downloadPdfFromMainWindow('slips', '${paperSize}', '${month}', function(success) {
+            if (success) {
+              restoreUI('✅ PDF Terunduh!');
+            } else {
+              runLocalGen();
+            }
+          });
+          return;
+        }
 
-        function runGen() {
+        runLocalGen();
+
+        function runLocalGen() {
           const opt = {
             margin: [2, 2, 2, 2],
             filename: 'Slip_Gaji_Amplop_${month}.pdf',
@@ -6230,22 +6247,17 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
 
           if (typeof html2pdf !== 'undefined') {
             html2pdf().set(opt).from(document.body).save().then(function() {
-              clearTimeout(safetyTimer);
-              restoreUI();
+              restoreUI('✅ PDF Terunduh!');
             }).catch(function(err) {
               console.error(err);
-              clearTimeout(safetyTimer);
               restoreUI();
-              window.print();
+              alert('Penyimpanan otomatis diblokir browser. Gunakan tombol CETAK / PRINT.');
             });
           } else {
-            clearTimeout(safetyTimer);
             restoreUI();
-            window.print();
+            alert('Pustaka PDF belum siap.');
           }
         }
-
-        setTimeout(runGen, 100);
       }
     </script>
     <style>
@@ -6526,16 +6538,27 @@ window._printAuditDocuments = () => {
         const origText = btn ? btn.innerHTML : '📥 UNDUH FILE PDF DIRECT';
         if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
         
-        function restoreUI() {
-          if (btn) { btn.innerHTML = origText; btn.disabled = false; }
+        function restoreUI(msg) {
+          if (btn) {
+            btn.innerHTML = msg || origText;
+            setTimeout(function() { btn.innerHTML = origText; btn.disabled = false; }, 2500);
+          }
         }
 
-        const safetyTimer = setTimeout(function() {
-          restoreUI();
-          window.print();
-        }, 3000);
+        if (window.opener && typeof window.opener._downloadPdfFromMainWindow === 'function') {
+          window.opener._downloadPdfFromMainWindow('audit', 'A4', '${month}', function(success) {
+            if (success) {
+              restoreUI('✅ PDF Terunduh!');
+            } else {
+              runLocalGen();
+            }
+          });
+          return;
+        }
 
-        function runGen() {
+        runLocalGen();
+
+        function runLocalGen() {
           const opt = {
             margin: [3, 3, 3, 3],
             filename: 'Dokumen_Audit_Pertamina_${month}.pdf',
@@ -6547,22 +6570,17 @@ window._printAuditDocuments = () => {
 
           if (typeof html2pdf !== 'undefined') {
             html2pdf().set(opt).from(document.body).save().then(function() {
-              clearTimeout(safetyTimer);
-              restoreUI();
+              restoreUI('✅ PDF Terunduh!');
             }).catch(function(err) {
               console.error(err);
-              clearTimeout(safetyTimer);
               restoreUI();
-              window.print();
+              alert('Penyimpanan otomatis diblokir browser. Gunakan tombol CETAK / PRINT.');
             });
           } else {
-            clearTimeout(safetyTimer);
             restoreUI();
-            window.print();
+            alert('Pustaka PDF belum siap.');
           }
         }
-
-        setTimeout(runGen, 100);
       }
     </script>
     <style>
@@ -6941,16 +6959,27 @@ window._printInternalPayrollSummary = () => {
         const origText = btn ? btn.innerHTML : '📥 UNDUH FILE PDF DIRECT';
         if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
         
-        function restoreUI() {
-          if (btn) { btn.innerHTML = origText; btn.disabled = false; }
+        function restoreUI(msg) {
+          if (btn) {
+            btn.innerHTML = msg || origText;
+            setTimeout(function() { btn.innerHTML = origText; btn.disabled = false; }, 2500);
+          }
         }
 
-        const safetyTimer = setTimeout(function() {
-          restoreUI();
-          window.print();
-        }, 3000);
+        if (window.opener && typeof window.opener._downloadPdfFromMainWindow === 'function') {
+          window.opener._downloadPdfFromMainWindow('internal', 'A4', '${month}', function(success) {
+            if (success) {
+              restoreUI('✅ PDF Terunduh!');
+            } else {
+              runLocalGen();
+            }
+          });
+          return;
+        }
 
-        function runGen() {
+        runLocalGen();
+
+        function runLocalGen() {
           const opt = {
             margin: [3, 3, 3, 3],
             filename: 'Rekap_Gaji_Internal_${month}.pdf',
@@ -6962,22 +6991,17 @@ window._printInternalPayrollSummary = () => {
 
           if (typeof html2pdf !== 'undefined') {
             html2pdf().set(opt).from(document.body).save().then(function() {
-              clearTimeout(safetyTimer);
-              restoreUI();
+              restoreUI('✅ PDF Terunduh!');
             }).catch(function(err) {
               console.error(err);
-              clearTimeout(safetyTimer);
               restoreUI();
-              window.print();
+              alert('Penyimpanan otomatis diblokir browser. Gunakan tombol CETAK / PRINT.');
             });
           } else {
-            clearTimeout(safetyTimer);
             restoreUI();
-            window.print();
+            alert('Pustaka PDF belum siap.');
           }
         }
-
-        setTimeout(runGen, 100);
       }
     </script>
     <style>
