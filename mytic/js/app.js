@@ -1458,7 +1458,7 @@ function renderRatings() {
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:0.5rem">
       <h3 class="text-xl font-bold">Penilaian Kinerja</h3>
       <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-        ${ratings.length > 0 ? `<button class="btn btn-outline-primary" onclick="window._downloadAllRatingsPDF()">Unduh Semua PDF</button>` : ''}
+        ${ratings.length > 0 ? `<button class="btn btn-primary" style="font-weight:bold; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; border:none; box-shadow:0 2px 8px rgba(99,102,241,0.3);" onclick="window._downloadAllRatingsPDF()">👁️ Pratinjau & Cetak Semua Penilaian (PDF)</button>` : ''}
         <button class="btn btn-primary" onclick="window._showRatingForm()">+ Tambah Penilaian</button>
       </div>
     </div>
@@ -1472,8 +1472,7 @@ function renderRatings() {
           <div><strong>${esc(emp ? emp.name : r.emp_id)}</strong><br><span class="text-xs text-muted">Periode: ${fmtMonthYear(r.date)}</span></div>
           <div style="text-align:right"><span style="font-size:1.5rem;font-weight:800;color:${color}">${avg}</span><span class="text-xs text-muted">/5</span><br>
           <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.25rem;flex-wrap:wrap;">
-            <button class="btn btn-outline-primary" style="padding:0.2rem 0.5rem;font-size:0.65rem;" onclick="window._downloadSingleRatingPDF('${r._key}')">Unduh PDF</button>
-            <button class="btn btn-outline-primary" style="padding:0.2rem 0.5rem;font-size:0.65rem;" onclick="window._exportSingleRatingPDF('${r._key}')">Cetak</button>
+            <button class="btn btn-outline-primary" style="padding:0.2rem 0.5rem;font-size:0.65rem;" onclick="window._exportSingleRatingPDF('${r._key}')">🖨️ Cetak / Pratinjau PDF</button>
             <button class="btn btn-outline-danger" style="padding:0.2rem 0.5rem;font-size:0.65rem;" onclick="window._deleteRating('${r._key}')">Hapus</button>
           </div>
           </div>
@@ -3184,8 +3183,7 @@ window._generateRatingPDFHtml = (key) => {
       </select>
     </div>
     <div>
-      <button id="btn-dl-rating-pdf" style="background:#16a34a; color:#fff; font-weight:bold; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; font-size:11px;" onclick="downloadRatingPdfDirect()">📥 Simpan File PDF</button>
-      <button class="btn-print" onclick="window.print()">🖨️ Cetak / Print</button>
+      <button class="btn-print" onclick="window.print()">🖨️ Cetak PDF / Print</button>
       <button class="btn-close" onclick="window.close()">✕ Tutup</button>
     </div>
   </div>
@@ -3318,91 +3316,201 @@ window._exportSingleRatingPDF = (key) => {
 };
 
 window._downloadSingleRatingPDF = (key) => {
-  if (typeof html2pdf === 'undefined') {
-    showToast('Library PDF sedang dimuat, coba sebentar lagi', 'warning');
-    return;
-  }
-
-  const html = _generateRatingPDFHtml(key);
-  if (!html) return;
-
-  const rating = allData.ratings[key];
-  const emp = getUserByEmpId(rating.emp_id);
-  const empName = emp ? emp.name : rating.emp_id;
-  const filename = `Evaluasi_${empName.replace(/\s+/g, '_')}_${rating.date}.pdf`;
-
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  // Strip out control bar so downloaded PDF starts directly with Kop Surat
-  div.querySelectorAll('.no-print-bar, .no-print').forEach(el => el.remove());
-
-  const opt = {
-    margin: [6, 8, 6, 8],
-    filename: filename,
-    image: { type: 'jpeg', quality: 0.95 },
-    html2canvas: { scale: 2.2, useCORS: true, logging: false },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-
-  showToast('Menyiapkan file unduhan...', 'info');
-  html2pdf().set(opt).from(div).save().then(() => {
-    showToast('PDF berhasil diunduh!', 'success');
-  }).catch(e => {
-    console.error(e);
-    showToast('Gagal mengunduh PDF', 'error');
-  });
+  window._exportSingleRatingPDF(key);
 };
 
 window._downloadAllRatingsPDF = () => {
-  if (typeof html2pdf === 'undefined') {
-    showToast('Library PDF sedang dimuat, coba sebentar lagi', 'warning');
-    return;
-  }
-
   const ratings = getRatings();
   if (ratings.length === 0) {
     showToast('Belum ada data penilaian', 'warning');
     return;
   }
 
-  // Build combined HTML with page breaks between employees
-  let combinedHtml = '';
+  const formattedDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  let combinedContainers = '';
   ratings.forEach((r, idx) => {
-    const pageHtml = _generateRatingPDFHtml(r._key);
-    if (pageHtml) {
-      if (idx > 0) {
-        combinedHtml += '<div style="page-break-before:always;"></div>';
-      }
-      combinedHtml += pageHtml;
+    const emp = getUserByEmpId(r.emp_id);
+    const empName = emp ? emp.name : r.emp_id;
+    const empPos = emp ? emp.position : '-';
+    const avg = r.scores ? (Object.values(r.scores).reduce((s, v) => s + v, 0) / Object.values(r.scores).length).toFixed(1) : '0';
+
+    let criteriaRows = '';
+    if (r.scores) {
+      const allCrits = getCriteria();
+      const groupedScores = {};
+      Object.entries(r.scores).forEach(([critKey, score]) => {
+        const cDef = allCrits.find(c => c._key === critKey || c.name === critKey);
+        const actualName = cDef ? cDef.name : critKey;
+        const ind = cDef && cDef.indicator ? cDef.indicator : 'Umum';
+        if (!groupedScores[ind]) groupedScores[ind] = [];
+        groupedScores[ind].push({ name: actualName, score });
+      });
+
+      Object.keys(groupedScores).forEach(ind => {
+        criteriaRows += `<tr><td colspan="2" style="border:1px solid #cbd5e1;padding:6px 10px;background:#e2e8f0;font-weight:bold;text-transform:uppercase;font-size:11px;color:#0f172a !important;">${esc(ind)}</td></tr>`;
+        groupedScores[ind].forEach(item => {
+          criteriaRows += `
+            <tr>
+              <td style="border:1px solid #cbd5e1;padding:6px 10px;padding-left:16px;font-size:11px;color:#0f172a !important;font-weight:600;">${esc(item.name)}</td>
+              <td style="border:1px solid #cbd5e1;padding:6px 10px;text-align:center;font-weight:bold;font-size:11px;color:#1e40af !important;">${item.score} / 5</td>
+            </tr>
+          `;
+        });
+      });
     }
+
+    if (idx > 0) {
+      combinedContainers += `<div style="page-break-before:always; height:1px;"></div>`;
+    }
+
+    combinedContainers += `
+    <div class="rapor-container" style="margin-bottom:20px;">
+      <div class="kop-header">
+        <div class="kop-title">PT. ESTAFET DWI MASA</div>
+        <div class="kop-subtitle">SPBU 54.634.25 GONTOR MLARAK</div>
+        <div class="kop-address">
+          Kantor Pusat : Ds. Gontor, Kec. Mlarak, Kab. Ponorogo - Jawa Timur 63472<br>
+          Kantor Cabang : Jalan Mayjend Bambang Sugeng Km. 01 Sidojoyo Wonosobo<br>
+          Email: estafetdwimasa@gmail.com
+        </div>
+      </div>
+      
+      <div class="doc-title-box">
+        <div class="doc-title">LEMBAR EVALUASI PENILAIAN ATASAN</div>
+        <div class="doc-subtitle">PERIODE EVALUASI: ${fmtMonthYear(r.date).toUpperCase()} | TANGGAL CETAK: ${formattedDate.toUpperCase()}</div>
+      </div>
+
+      <table class="info-table">
+        <tr>
+          <td class="label">Nama Karyawan</td>
+          <td><strong>${esc(empName)}</strong></td>
+          <td class="label">ID Karyawan</td>
+          <td><strong>${esc(r.emp_id)}</strong></td>
+        </tr>
+        <tr>
+          <td class="label">Jabatan / Posisi</td>
+          <td>${esc(empPos)}</td>
+          <td class="label">Rata-Rata Rating</td>
+          <td><strong style="color:#1d4ed8; font-size:12px;">⭐ ${avg} / 5.0</strong></td>
+        </tr>
+      </table>
+
+      <h4 style="margin:6px 0 4px 0; color:#1e40af; font-size:10.5px; border-bottom:1px solid #cbd5e1; padding-bottom:2px;">A. PENILAIAN KRITERIA INDIKATOR</h4>
+      <table class="metric-table">
+        <thead>
+          <tr>
+            <th style="border:1px solid #cbd5e1;padding:4px 8px;text-align:left;background:#1e40af;color:#fff !important;">Indikator / Sub-Indikator Kriteria</th>
+            <th style="border:1px solid #cbd5e1;padding:4px 8px;text-align:center;width:90px;background:#1e40af;color:#fff !important;">Skor (1-5)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${criteriaRows}
+          <tr>
+            <td style="border:1px solid #cbd5e1;padding:4px 8px;text-align:right;color:#0f172a !important;"><strong>Rata-Rata Skor Kriteria:</strong></td>
+            <td style="border:1px solid #cbd5e1;padding:4px 8px;text-align:center;font-size:11px;font-weight:bold;color:#1d4ed8 !important;">⭐ ${avg} / 5.0</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div style="border:1px solid #cbd5e1; border-radius:4px; padding:6px 10px; background:#f8fafc !important; color:#0f172a !important; margin-bottom:8px;">
+        <div style="font-weight:bold; font-size:9.5px; color:#1e40af !important; margin-bottom:2px; text-transform:uppercase;">💬 CATATAN EVALUASI ATASAN:</div>
+        <div style="font-size:10px; color:#0f172a !important; font-style:italic; line-height:1.2;">${esc(r.note || 'Tidak ada catatan khusus.')}</div>
+      </div>
+
+      <div class="signature-area">
+        <div class="sig-box">
+          <div>Penerima Evaluasi (Karyawan),</div>
+          <div class="sig-space"></div>
+          <div><strong>( ${esc(empName)} )</strong></div>
+          <div style="font-size:8.5px; color:#64748b;">ID: ${esc(r.emp_id)}</div>
+        </div>
+        <div class="sig-box">
+          <div>Gontor, ${formattedDate}<br><strong>Manager SPBU Gontor Mlarak</strong>,</div>
+          <div class="sig-space"></div>
+          <div><strong>( ______________________ )</strong></div>
+          <div style="font-size:8.5px; color:#64748b;">PT. ESTAFET DWI MASA</div>
+        </div>
+      </div>
+    </div>`;
   });
 
-  if (!combinedHtml) {
-    showToast('Tidak ada data yang bisa di-export', 'error');
-    return;
+  const fullHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Laporan Bundel Evaluasi Penilaian Semua Karyawan - SPBU Gontor</title>
+  <style id="page-style">
+    @page { size: A4 portrait; margin: 6mm 10mm; }
+  </style>
+  <style>
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; margin: 0; padding: 10px; background: #e2e8f0; font-size: 10.5px; line-height: 1.25; }
+    .rapor-container { background: #fff; max-width: 210mm; margin: 0 auto; padding: 12px 18px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; page-break-inside: avoid; }
+    .no-print-bar { display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 6px 14px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 210mm; margin-left: auto; margin-right: auto; }
+    .no-print-bar button { padding: 5px 12px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 11px; }
+    .btn-print { background: #1d4ed8; color: #fff; }
+    .btn-close { background: #64748b; color: #fff; margin-left: 8px; }
+    .kop-header { text-align: center; border-bottom: 2.5px double #1d4ed8; padding-bottom: 4px; margin-bottom: 6px; width: 100%; }
+    .kop-title { font-family: 'Times New Roman', Times, serif; font-weight: 900; font-size: 26px; color: #1e40af; letter-spacing: 1.2px; line-height: 1.05; margin-bottom: 1px; }
+    .kop-subtitle { font-family: 'Times New Roman', Times, serif; font-weight: 800; font-size: 15px; color: #1d4ed8; margin-top: 1px; letter-spacing: 0.5px; line-height: 1.05; margin-bottom: 2px; }
+    .kop-address { font-size: 9.5px; color: #1e3a8a; margin-top: 1px; line-height: 1.2; }
+    .doc-title-box { text-align: center; margin-bottom: 6px; }
+    .doc-title { font-size: 13px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 1.5px solid #0f172a; display: inline-block; padding-bottom: 1px; }
+    .doc-subtitle { font-size: 9px; color: #64748b; margin-top: 2px; font-weight: 600; }
+    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; }
+    .info-table td { padding: 4px 8px; font-size: 10px; vertical-align: top; border-bottom: 1px solid #e2e8f0; color: #0f172a !important; }
+    .info-table td.label { font-weight: 700; color: #475569 !important; width: 120px; background: #f1f5f9; }
+    .metric-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+    .metric-table th, .metric-table td { border: 1px solid #cbd5e1; padding: 4px 8px; font-size: 9.5px; }
+    .metric-table th { background: #1e40af; color: #ffffff !important; font-weight: 700; text-align: left; }
+    tr { page-break-inside: avoid !important; }
+    .signature-area { margin-top: 10px; display: flex; justify-content: space-between; page-break-inside: avoid; }
+    .sig-box { width: 200px; text-align: center; font-size: 9.5px; color: #0f172a !important; }
+    .sig-space { height: 35px; }
+    @media print {
+      html, body { background: #fff; padding: 0; }
+      .rapor-container { box-shadow: none; padding: 0; max-width: 100% !important; border-radius: 0; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print no-print-bar">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <label style="font-weight:bold; font-size:11.5px; color:#334155;">📐 Ukuran Kertas:</label>
+      <select id="paper-size-select" style="padding:4px 8px; font-size:11px; border-radius:4px; border:1px solid #94a3b8; font-weight:600; cursor:pointer;" onchange="
+        const styleEl = document.getElementById('page-style');
+        const containers = document.querySelectorAll('.rapor-container, .no-print-bar');
+        if (this.value === 'F4') {
+          styleEl.innerHTML = '@page { size: 215mm 330mm portrait; margin: 6mm 10mm; }';
+          containers.forEach(c => c.style.maxWidth = '215mm');
+        } else {
+          styleEl.innerHTML = '@page { size: A4 portrait; margin: 6mm 10mm; }';
+          containers.forEach(c => c.style.maxWidth = '210mm');
+        }
+      ">
+        <option value="A4" selected>A4 (210 x 297 mm)</option>
+        <option value="F4">F4 / Folio (215 x 330 mm)</option>
+      </select>
+    </div>
+    <div>
+      <button class="btn-print" onclick="window.print()">🖨️ Cetak PDF / Print</button>
+      <button class="btn-close" onclick="window.close()">✕ Tutup</button>
+    </div>
+  </div>
+
+  ${combinedContainers}
+</body>
+</html>`;
+
+  const win = window.open('', '_blank');
+  if (win) {
+    win.document.write(fullHtml);
+    win.document.close();
+  } else {
+    showToast('Izinkan pop-up di browser untuk mencetak PDF Evaluasi.', 'error');
   }
-
-  const div = document.createElement('div');
-  div.innerHTML = combinedHtml;
-  // Strip out control bar so downloaded PDF starts directly with Kop Surat
-  div.querySelectorAll('.no-print-bar, .no-print').forEach(el => el.remove());
-
-  const opt = {
-    margin: [6, 8, 6, 8],
-    filename: `Evaluasi_Semua_Karyawan_${today()}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2.5, useCORS: true, logging: false },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['css'] }
-  };
-
-  showToast('Menyiapkan file unduhan massal...', 'info');
-  html2pdf().set(opt).from(div).save().then(() => {
-    showToast('PDF massal berhasil diunduh!', 'success');
-  }).catch(e => {
-    console.error(e);
-    showToast('Gagal mengunduh PDF massal', 'error');
-  });
 };
 
 // --- CRITERIA CRUD ---
