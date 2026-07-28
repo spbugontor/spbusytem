@@ -5417,9 +5417,12 @@ function getDefaultPositionAllowance(position) {
 }
 window._saveBbmSales = async () => {
   const month = window._payrollMonth || getTodayStr().substring(0, 7);
-    dex: Number($('bbm-dex').value || 0),
-    updated_at: Date.now()
-  };
+  const products = getBbmProducts();
+  const bbm = { updated_at: Date.now() };
+  products.forEach(p => {
+    const el = $(`bbm-${p.id}`);
+    bbm[p.id] = Number(el ? el.value : 0);
+  });
 
   allData.payroll = allData.payroll || {};
   allData.payroll[month] = allData.payroll[month] || {};
