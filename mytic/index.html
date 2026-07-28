@@ -46,19 +46,21 @@
          LOGIN SCREEN
          ========================================== -->
     <div id="screen-login" class="login-screen fade-in">
-      
+
       <!-- BRANDING HEADER (Outside Card) -->
       <div style="text-align: center; color: white; margin-bottom: 1.5rem; z-index: 10;">
-        <div style="background: rgba(255,255,255,0.2); width: 64px; height: 64px; border-radius: 1rem; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+        <div
+          style="background: rgba(255,255,255,0.2); width: 64px; height: 64px; border-radius: 1rem; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
           <!-- Shield Icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-            stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
           </svg>
         </div>
         <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.025em; line-height: 1.2;">MyTIC</h1>
         <p style="font-size: 1.1rem; font-weight: 600; opacity: 0.95;">SPBU GONTOR</p>
-        <p style="font-size: 0.9rem; opacity: 0.85; font-style: italic; margin-top: 0.25rem;">"Let's Do The Best, Allahu Akbar!"</p>
+        <p style="font-size: 0.9rem; opacity: 0.85; font-style: italic; margin-top: 0.25rem;">"Let's Do The Best, Allahu
+          Akbar!"</p>
       </div>
 
       <div class="login-card">
@@ -80,7 +82,8 @@
             <div class="form-group">
               <label class="form-label" for="inp-emp-pin">PIN (6 Digit)</label>
               <div class="password-wrapper">
-                <input id="inp-emp-pin" type="password" inputmode="numeric" maxlength="6" class="form-input" placeholder="••••••" style="letter-spacing: 0.2em;">
+                <input id="inp-emp-pin" type="password" inputmode="numeric" maxlength="6" class="form-input"
+                  placeholder="••••••" style="letter-spacing: 0.2em;">
                 <button type="button" class="password-toggle" onclick="window._togglePassword(this)">👁️</button>
               </div>
             </div>
@@ -147,15 +150,36 @@
           <p id="display-mobile-name" style="font-size: 0.65rem; opacity: 0.9;">Nama User</p>
         </div>
         <div style="display:flex;align-items:center;gap:0.5rem;">
-          <button id="btn-nav-chat-bell" onclick="window.switchSection && window.switchSection('internal-chat')" title="Diskusi Internal"
+          <button id="btn-nav-chat-bell" onclick="window.switchSection && window.switchSection('internal-chat')"
+            title="Diskusi Internal"
             style="background: rgba(255,255,255,0.15); border: none; padding: 0.5rem; border-radius: 50%; color: white; cursor:pointer; position:relative; display:none;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-            <span id="badge-bell-count" class="hidden" style="position:absolute;top:-3px;right:-3px;background:var(--danger);color:#fff;font-size:0.55rem;font-weight:800;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 6px var(--danger);">1</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span id="badge-bell-count" class="hidden"
+              style="position:absolute;top:-3px;right:-3px;background:var(--danger);color:#fff;font-size:0.55rem;font-weight:800;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 6px var(--danger);">1</span>
           </button>
           <button id="btn-dark-mode-mobile" onclick="window.toggleDarkMode()"
             style="background: rgba(255,255,255,0.15); border: none; padding: 0.5rem; border-radius: 50%; color: white; cursor:pointer;">
-            <svg id="icon-moon-mobile" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-            <svg id="icon-sun-mobile" class="hidden" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <svg id="icon-moon-mobile" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <svg id="icon-sun-mobile" class="hidden" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
           </button>
           <button id="btn-logout-mobile"
             style="background: rgba(255,0,0,0.2); border: none; padding: 0.5rem; border-radius: 50%; color: white;">
@@ -173,8 +197,11 @@
       <div class="main-area">
         <header class="topbar" style="display: flex; justify-content: space-between; align-items: center;">
           <div style="display:flex; align-items:center; gap:0.75rem;">
-            <button id="btn-toggle-sidebar" onclick="window._toggleDesktopSidebar()" style="background:none; border:none; color:var(--text-main); cursor:pointer; padding:0.4rem; display:flex; align-items:center; justify-content:center; border-radius:var(--radius-md);" title="Sembunyikan/Tampilkan Sidebar">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button id="btn-toggle-sidebar" onclick="window._toggleDesktopSidebar()"
+              style="background:none; border:none; color:var(--text-main); cursor:pointer; padding:0.4rem; display:flex; align-items:center; justify-content:center; border-radius:var(--radius-md);"
+              title="Sembunyikan/Tampilkan Sidebar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="3" y1="12" x2="21" y2="12"></line>
                 <line x1="3" y1="6" x2="21" y2="6"></line>
                 <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -182,11 +209,28 @@
             </button>
             <h2 id="topbar-title" class="page-title">Dashboard</h2>
           </div>
-          <button id="btn-dark-mode" style="background:none; border:none; color:var(--text-muted); cursor:pointer; padding:0.5rem;" onclick="window.toggleDarkMode()">
+          <button id="btn-dark-mode"
+            style="background:none; border:none; color:var(--text-muted); cursor:pointer; padding:0.5rem;"
+            onclick="window.toggleDarkMode()">
             <!-- Moon Icon by default -->
-            <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
             <!-- Sun Icon -->
-            <svg id="icon-sun" class="hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <svg id="icon-sun" class="hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
           </button>
         </header>
 
@@ -206,7 +250,7 @@
 
   <!-- MODULES (Firebase + App Logic) -->
   <script type="module" src="js/firebase-config.js?v=20260720a"></script>
-  <script type="module" src="js/app.js?v=20260728_payroll_v71"></script>
+  <script type="module" src="js/app.js?v=20260728_payroll_v72"></script>
 
   <!-- Service Worker Registration -->
   <script>

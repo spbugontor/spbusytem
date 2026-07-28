@@ -5357,7 +5357,7 @@ function renderInternalPayrollTab() {
           <button class="btn btn-warning" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._openMassAllowanceModal()">⚡ Input Massal Gaji & Tunjangan</button>
           <label style="font-size:0.75rem; font-weight:700;">Tgl Cetak:</label>
           <input type="date" value="${printDate}" class="form-input" style="padding:0.3rem 0.5rem; font-size:0.75rem; width:135px;" onchange="window._setPayrollPrintDate(this.value)">
-          <button class="btn btn-primary" style="padding:0.4rem 0.9rem; font-size:0.78rem; font-weight:900; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; border:none; box-shadow:0 2px 8px rgba(99,102,241,0.3);" onclick="window._printAllPayrollBundle()">📦 UNDUH SEMUA FILE GAJI (1 PDF BUNDEL LENGKAP)</button>
+          <button class="btn btn-primary" style="padding:0.4rem 0.9rem; font-size:0.78rem; font-weight:900; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; border:none; box-shadow:0 2px 8px rgba(99,102,241,0.3);" onclick="window._printAllPayrollBundle()">👁️ Pratinjau & Cetak Bundel Gaji (PDF)</button>
           <button class="btn btn-outline-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._exportToExcel('internal')">📊 Export Excel</button>
           <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printInternalPayrollSummary()">🖨️ Rekap Gaji (1 Hal)</button>
           <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printOvertimeSummary()">⏰ Rekap Lemburan</button>
@@ -5451,9 +5451,9 @@ function renderAuditPayrollTab() {
           <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Berisi 15 Karyawan (Termasuk Manager ${esc(settings.name_audit_manager)}) | UMK Staf: ${fmt(settings.umk_staf)} | UMK Manager: ${fmt(settings.umk_manager)}</p>
         </div>
         <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-          <button class="btn btn-primary" style="padding:0.45rem 1rem; font-size:0.8rem; font-weight:900; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; border:none; box-shadow:0 2px 8px rgba(99,102,241,0.3);" onclick="window._printAllPayrollBundle()">📦 UNDUH SEMUA FILE GAJI (1 PDF BUNDEL LENGKAP)</button>
+          <button class="btn btn-primary" style="padding:0.45rem 1rem; font-size:0.8rem; font-weight:900; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; border:none; box-shadow:0 2px 8px rgba(99,102,241,0.3);" onclick="window._printAllPayrollBundle()">👁️ Pratinjau & Cetak Bundel Gaji (PDF)</button>
           <button class="btn btn-outline-success" style="font-weight:bold; padding:0.45rem 1rem;" onclick="window._exportToExcel('audit')">📊 Export Excel (Audit)</button>
-          <button class="btn btn-primary" style="font-weight:bold; padding:0.45rem 1rem;" onclick="window._printAuditDocuments()">📥 UNDUH FILE AUDIT PERTAMINA (PDF)</button>
+          <button class="btn btn-primary" style="font-weight:bold; padding:0.45rem 1rem;" onclick="window._printAuditDocuments()">👁️ Pratinjau & Cetak Audit Pertamina (PDF)</button>
         </div>
       </div>
 
@@ -5882,8 +5882,7 @@ window._printAllPayrollBundle = () => {
   </head>
   <body>
     <div class="no-print" style="padding:10px 16px; background:#0f172a; border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
-      <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
-      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
+      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK PDF / PRINT</button>
       <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
 
@@ -6502,9 +6501,8 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
     </style>
   </head>
   <body>
-    <div class="no-print" style="padding:10px 16px; background:#0f172a; border-bottom:3px solid #6366f1; display:flex; justify-content:flex-end; gap:10px; align-items:center;">
-      <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
-      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
+    <div class="no-print" style="padding:10px 16px; background:#0f172a; border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
+      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK PDF / PRINT</button>
       <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
 
@@ -6627,8 +6625,7 @@ window._printAuditDocuments = () => {
   </head>
   <body>
     <div class="no-print" style="padding:10px 16px; background:#0f172a; border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
-      <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
-      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
+      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK PDF / PRINT</button>
       <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
 
@@ -7047,8 +7044,7 @@ window._printInternalPayrollSummary = () => {
   </head>
   <body>
     <div class="no-print" style="padding:10px 16px; background:#0f172a; border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
-      <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
-      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
+      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK PDF / PRINT</button>
       <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
 
@@ -7225,8 +7221,7 @@ window._printSavingsSummary = () => {
   </head>
   <body>
     <div class="no-print" style="padding:10px 16px; background:#0f172a; border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
-      <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
-      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
+      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK PDF / PRINT</button>
       <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
 
@@ -7379,8 +7374,7 @@ window._printOvertimeSummary = () => {
   </head>
   <body>
     <div class="no-print" style="padding:10px 16px; background:#0f172a; border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
-      <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
-      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
+      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK PDF / PRINT</button>
       <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
 
