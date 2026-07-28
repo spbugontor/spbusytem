@@ -3236,8 +3236,8 @@ window._generateRatingPDFHtml = (key) => {
     .sig-box { width: 200px; text-align: center; font-size: 9.5px; color: #0f172a !important; }
     .sig-space { height: 65px; }
     @media print {
-      html, body { height: 100%; overflow: hidden; background: #fff; padding: 0; }
-      .rapor-container { box-shadow: none; padding: 0; max-width: 100% !important; border-radius: 0; page-break-inside: avoid; page-break-after: avoid; }
+      html, body { background: #fff; padding: 0; margin: 0; }
+      .rapor-container { box-shadow: none; padding: 0; max-width: 100% !important; border-radius: 0; }
       .no-print { display: none !important; }
     }
   </style>
@@ -3560,7 +3560,7 @@ window._downloadAllRatingsPDF = () => {
     .sig-box { width: 200px; text-align: center; font-size: 9.5px; color: #0f172a !important; }
     .sig-space { height: 65px; }
     @media print {
-      html, body { background: #fff; padding: 0; }
+      html, body { background: #fff; padding: 0; margin: 0; }
       .rapor-container { box-shadow: none; padding: 0; max-width: 100% !important; border-radius: 0; }
       .no-print { display: none !important; }
     }
