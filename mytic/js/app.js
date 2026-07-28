@@ -5791,8 +5791,15 @@ window._printAllPayrollBundle = () => {
           const pdfLib = window.html2pdf || (window.opener && window.opener.html2pdf);
           if (typeof pdfLib !== 'undefined') {
             const clone = document.createElement('div');
+            clone.style.position = 'absolute';
+            clone.style.left = '0';
+            clone.style.top = '0';
+            clone.style.width = '100%';
+            clone.style.background = '#f8fafc';
+            clone.style.zIndex = '-9999';
             clone.innerHTML = document.body.innerHTML;
             clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
+            document.body.appendChild(clone);
 
             const opt = {
               margin: 3,
@@ -5804,9 +5811,11 @@ window._printAllPayrollBundle = () => {
             };
 
             pdfLib().set(opt).from(clone).save().then(function() {
+              if (clone.parentNode) clone.parentNode.removeChild(clone);
               restoreUI('✅ PDF Terunduh!');
             }).catch(function(err) {
               console.error(err);
+              if (clone.parentNode) clone.parentNode.removeChild(clone);
               restoreUI();
               window.print();
             });
@@ -6224,8 +6233,15 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
           const pdfLib = window.html2pdf || (window.opener && window.opener.html2pdf);
           if (typeof pdfLib !== 'undefined') {
             const clone = document.createElement('div');
+            clone.style.position = 'absolute';
+            clone.style.left = '0';
+            clone.style.top = '0';
+            clone.style.width = '100%';
+            clone.style.background = '#f8fafc';
+            clone.style.zIndex = '-9999';
             clone.innerHTML = document.body.innerHTML;
             clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
+            document.body.appendChild(clone);
 
             const opt = {
               margin: 2,
@@ -6237,9 +6253,11 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
             };
 
             pdfLib().set(opt).from(clone).save().then(function() {
+              if (clone.parentNode) clone.parentNode.removeChild(clone);
               restoreUI('✅ PDF Terunduh!');
             }).catch(function(err) {
               console.error(err);
+              if (clone.parentNode) clone.parentNode.removeChild(clone);
               restoreUI();
               window.print();
             });
@@ -6544,8 +6562,15 @@ window._printAuditDocuments = () => {
           const pdfLib = window.html2pdf || (window.opener && window.opener.html2pdf);
           if (typeof pdfLib !== 'undefined') {
             const clone = document.createElement('div');
+            clone.style.position = 'absolute';
+            clone.style.left = '0';
+            clone.style.top = '0';
+            clone.style.width = '100%';
+            clone.style.background = '#f8fafc';
+            clone.style.zIndex = '-9999';
             clone.innerHTML = document.body.innerHTML;
             clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
+            document.body.appendChild(clone);
 
             const opt = {
               margin: 3,
@@ -6557,9 +6582,11 @@ window._printAuditDocuments = () => {
             };
 
             pdfLib().set(opt).from(clone).save().then(function() {
+              if (clone.parentNode) clone.parentNode.removeChild(clone);
               restoreUI('✅ PDF Terunduh!');
             }).catch(function(err) {
               console.error(err);
+              if (clone.parentNode) clone.parentNode.removeChild(clone);
               restoreUI();
               window.print();
             });
@@ -6962,8 +6989,15 @@ window._printInternalPayrollSummary = () => {
           const pdfLib = window.html2pdf || (window.opener && window.opener.html2pdf);
           if (typeof pdfLib !== 'undefined') {
             const clone = document.createElement('div');
+            clone.style.position = 'absolute';
+            clone.style.left = '0';
+            clone.style.top = '0';
+            clone.style.width = '100%';
+            clone.style.background = '#f8fafc';
+            clone.style.zIndex = '-9999';
             clone.innerHTML = document.body.innerHTML;
             clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
+            document.body.appendChild(clone);
 
             const opt = {
               margin: 3,
@@ -6975,9 +7009,11 @@ window._printInternalPayrollSummary = () => {
             };
 
             pdfLib().set(opt).from(clone).save().then(function() {
+              if (clone.parentNode) clone.parentNode.removeChild(clone);
               restoreUI('✅ PDF Terunduh!');
             }).catch(function(err) {
               console.error(err);
+              if (clone.parentNode) clone.parentNode.removeChild(clone);
               restoreUI();
               window.print();
             });
@@ -7143,8 +7179,15 @@ window._printSavingsSummary = () => {
 
         if (typeof pdfLib !== 'undefined') {
           const clone = document.createElement('div');
+          clone.style.position = 'absolute';
+          clone.style.left = '0';
+          clone.style.top = '0';
+          clone.style.width = '100%';
+          clone.style.background = '#f8fafc';
+          clone.style.zIndex = '-9999';
           clone.innerHTML = document.body.innerHTML;
           clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
+          document.body.appendChild(clone);
 
           const opt = {
             margin: 3,
@@ -7156,9 +7199,11 @@ window._printSavingsSummary = () => {
           };
 
           pdfLib().set(opt).from(clone).save().then(function() {
+            if (clone.parentNode) clone.parentNode.removeChild(clone);
             restoreUI('✅ PDF Terunduh!');
           }).catch(function(err) {
             console.error(err);
+            if (clone.parentNode) clone.parentNode.removeChild(clone);
             restoreUI();
             window.print();
           });
@@ -7295,8 +7340,15 @@ window._printOvertimeSummary = () => {
 
         if (typeof pdfLib !== 'undefined') {
           const clone = document.createElement('div');
+          clone.style.position = 'absolute';
+          clone.style.left = '0';
+          clone.style.top = '0';
+          clone.style.width = '100%';
+          clone.style.background = '#f8fafc';
+          clone.style.zIndex = '-9999';
           clone.innerHTML = document.body.innerHTML;
           clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
+          document.body.appendChild(clone);
 
           const opt = {
             margin: 3,
@@ -7308,9 +7360,11 @@ window._printOvertimeSummary = () => {
           };
 
           pdfLib().set(opt).from(clone).save().then(function() {
+            if (clone.parentNode) clone.parentNode.removeChild(clone);
             restoreUI('✅ PDF Terunduh!');
           }).catch(function(err) {
             console.error(err);
+            if (clone.parentNode) clone.parentNode.removeChild(clone);
             restoreUI();
             window.print();
           });
