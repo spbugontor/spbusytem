@@ -3232,7 +3232,7 @@ window._generateRatingPDFHtml = (key) => {
     .metric-table th, .metric-table td { border: 1px solid #cbd5e1; padding: 4px 8px; font-size: 9.5px; }
     .metric-table th { background: #1e40af; color: #ffffff !important; font-weight: 700; text-align: left; }
     tr { page-break-inside: avoid !important; page-break-after: auto !important; }
-    .signature-area { margin-top: 10px; display: flex; justify-content: space-between; page-break-inside: avoid; }
+    .signature-area { margin-top: 10px; display: flex; justify-content: space-between; align-items: flex-end; page-break-inside: avoid; }
     .sig-box { width: 200px; text-align: center; font-size: 9.5px; color: #0f172a !important; }
     .sig-space { height: 65px; }
     @media print {
@@ -3322,7 +3322,7 @@ window._generateRatingPDFHtml = (key) => {
 
     <div class="signature-area">
       <div class="sig-box">
-        <div>Penerima Evaluasi (Karyawan),</div>
+        <div>Penerima Evaluasi (Karyawan),<br>&nbsp;</div>
         <div class="sig-space"></div>
         <div><strong>( ${esc(empName)} )</strong></div>
         <div style="font-size:8.5px; color:#64748b;">ID: ${esc(rating.emp_id)}</div>
@@ -3511,7 +3511,7 @@ window._downloadAllRatingsPDF = () => {
 
       <div class="signature-area">
         <div class="sig-box">
-          <div>Penerima Evaluasi (Karyawan),</div>
+          <div>Penerima Evaluasi (Karyawan),<br>&nbsp;</div>
           <div class="sig-space"></div>
           <div><strong>( ${esc(empName)} )</strong></div>
           <div style="font-size:8.5px; color:#64748b;">ID: ${esc(r.emp_id)}</div>
@@ -3556,7 +3556,7 @@ window._downloadAllRatingsPDF = () => {
     .metric-table th, .metric-table td { border: 1px solid #cbd5e1; padding: 4px 8px; font-size: 9.5px; }
     .metric-table th { background: #1e40af; color: #ffffff !important; font-weight: 700; text-align: left; }
     tr { page-break-inside: avoid !important; }
-    .signature-area { margin-top: 10px; display: flex; justify-content: space-between; page-break-inside: avoid; }
+    .signature-area { margin-top: 10px; display: flex; justify-content: space-between; align-items: flex-end; page-break-inside: avoid; }
     .sig-box { width: 200px; text-align: center; font-size: 9.5px; color: #0f172a !important; }
     .sig-space { height: 65px; }
     @media print {
@@ -6201,9 +6201,9 @@ window._printAllPayrollBundle = () => {
       </tbody>
       <tfoot><tr><td>TOTAL</td><td style="text-align:center;">100%</td><td style="text-align:right; color:#059669; font-size:11px;">${fmt(pwAudit.total)}</td><td></td></tr></tfoot>
     </table>
-    <div style="display:flex; justify-content:space-between; margin-top:15px; font-size:9.5px; color:#475569;">
+    <div style="display:flex; justify-content:space-between; margin-top:15px; font-size:9.5px; color:#475569; align-items:flex-end;">
       <div>Mengetahui,<br><strong style="color:#0f172a;">SPBU 54.634.25 MLARAK</strong><br><div style="height:75px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_manager)}</strong><br><span>Manager</span></div>
-      <div style="text-align:right;">Ponorogo, ${formattedPrintDate}<br><div style="height:75px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_supervisor)}</strong><br><span>Supervisor</span></div>
+      <div style="text-align:right;">Ponorogo, ${formattedPrintDate}<br>&nbsp;<br><div style="height:75px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_supervisor)}</strong><br><span>Supervisor</span></div>
     </div>
 
     <!-- SEKSI 6: DOKUMEN AUDIT PERTAMINA HALAMAN 2 -->
@@ -6909,7 +6909,7 @@ window._printAuditDocuments = () => {
         </tfoot>
       </table>
 
-      <div style="display:flex; justify-content:space-between; margin-top:20px; font-size:9.5px; color:#475569;">
+      <div style="display:flex; justify-content:space-between; margin-top:20px; font-size:9.5px; color:#475569; align-items:flex-end;">
         <div>
           Mengetahui,<br>
           <strong style="color:#0f172a;">SPBU 54.634.25 MLARAK</strong><br>
@@ -6919,6 +6919,7 @@ window._printAuditDocuments = () => {
         </div>
         <div style="text-align:right;">
           Ponorogo, ${formattedPrintDate}<br>
+          &nbsp;<br>
           <div style="height:75px;"></div>
           <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_supervisor)}</strong><br>
           <span>Supervisor</span>
