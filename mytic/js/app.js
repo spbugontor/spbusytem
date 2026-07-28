@@ -5783,7 +5783,7 @@ window._printAllPayrollBundle = () => {
             filename: 'Laporan_Penggajian_Lengkap_SPBU_Gontor_${month}.pdf',
             image: { type: 'jpeg', quality: 1.0 },
             html2canvas: { scale: 3.5, useCORS: true, logging: false, letterRendering: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
             pagebreak: { mode: ['css', 'legacy'] }
           };
           html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
@@ -5791,7 +5791,7 @@ window._printAllPayrollBundle = () => {
       }
     </script>
     <style>
-      @page { size: A4 portrait; margin: 5mm; }
+      @page { size: A4 landscape; margin: 4mm 6mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; padding: 6px; font-size: 10px; -webkit-font-smoothing: antialiased; }
 
@@ -6185,14 +6185,14 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
             filename: 'Slip_Gaji_Amplop_${month}.pdf',
             image: { type: 'jpeg', quality: 1.0 },
             html2canvas: { scale: 4, useCORS: true, logging: false, letterRendering: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true }
+            jsPDF: { unit: 'mm', format: paperSize === 'F4' ? [330, 215] : 'a4', orientation: 'landscape', compress: true }
           };
           html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
         } else { if (btnBar) btnBar.style.display = 'flex'; window.print(); }
       }
     </script>
     <style>
-      @page { size: ${paperSize === 'F4' ? '215mm 330mm' : 'A4'} portrait; margin: 4mm; }
+      @page { size: ${paperSize === 'F4' ? '330mm 215mm' : 'A4'} landscape; margin: 4mm 6mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
       
@@ -6473,14 +6473,14 @@ window._printAuditDocuments = () => {
             filename: 'Dokumen_Audit_Pertamina_${month}.pdf',
             image: { type: 'jpeg', quality: 1.0 },
             html2canvas: { scale: 4, useCORS: true, logging: false, letterRendering: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true }
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }
           };
           html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
         } else { if (btnBar) btnBar.style.display = 'flex'; window.print(); }
       }
     </script>
     <style>
-      @page { size: A4 portrait; margin: 6mm; }
+      @page { size: A4 landscape; margin: 4mm 6mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; padding: 6px; font-size: 10.5px; -webkit-font-smoothing: antialiased; }
       
@@ -7134,14 +7134,14 @@ window._printOvertimeSummary = () => {
             filename: 'Rekap_Lembur_Karyawan_${month}.pdf',
             image: { type: 'jpeg', quality: 1.0 },
             html2canvas: { scale: 4, useCORS: true, logging: false, letterRendering: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true }
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }
           };
           html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
         } else { if (btnBar) btnBar.style.display = 'flex'; window.print(); }
       }
     </script>
     <style>
-      @page { size: A4 portrait; margin: 6mm; }
+      @page { size: A4 landscape; margin: 4mm 6mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; padding: 6px; font-size: 10.5px; -webkit-font-smoothing: antialiased; }
       
