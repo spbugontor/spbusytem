@@ -1668,10 +1668,9 @@ function renderLeaderboard() {
           <option value="this_year" ${period === 'this_year' ? 'selected' : ''}>📆 Tahun Ini</option>
           <option value="all" ${period === 'all' ? 'selected' : ''}>🌐 Semua Periode</option>
         </select>
-        ${scores.length > 0 ? `
         <button class="btn btn-primary" style="font-weight:bold; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; border:none; box-shadow:0 2px 8px rgba(99,102,241,0.3);" onclick="window._printAllKpiRapors()">
-          👁️ Pratinjau & Cetak semua rapor KPI (${scores.filter(s => s.evalCount > 0).length} PDF)
-        </button>` : ''}
+          👁️ Pratinjau & Cetak semua rapor KPI (PDF)
+        </button>
       </div>
     </div>
     ${scores.length === 0 ? '<div class="card"><p class="text-muted">Belum ada data penilaian pada periode ini.</p></div>' :
