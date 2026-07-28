@@ -6461,6 +6461,14 @@ window._printAllPayrollBundle = () => {
   const formattedPrintDate = new Date(printDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
   const currentYear = new Date().getFullYear();
 
+  const spvAdminCount = users.filter(u => {
+    const p = (u.position || '').toLowerCase();
+    return p.includes('admin') || p.includes('supervisor') || p.includes('spv');
+  }).length || 3;
+  const oprCsCount = users.length - spvAdminCount || 11;
+  const rawPwSpvAdmin = (pwInt.total * 0.20) / Math.max(1, spvAdminCount);
+  const rawPwOprCs = (pwInt.total * 0.80) / Math.max(1, oprCsCount);
+
   // --- 1. SLIP GAJI AMPLOP (6 SLIP / PAGE) ---
   let slipsHTML = '';
   let currentPageSlips = [];
@@ -6846,6 +6854,44 @@ window._printAllPayrollBundle = () => {
       </thead>
       <tbody>${tabunganRows}</tbody>
       <tfoot><tr><td colspan="14" style="text-align:right;">Total</td><td style="text-align:right; background:#facc15; font-weight:800; color:#0f172a;">${fmt(totalAllSavings)}</td></tr></tfoot>
+    </table>
+    <div style="text-align:right; margin-top:20px; font-size:9.5px; color:#475569;">
+      Ponorogo, ${formattedPrintDate}<br><div style="height:75px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_finance_manager)}</strong><br><span>Manajer Keuangan</span>
+    </div>
+
+    <!-- SEKSI 4B: DOKUMEN PERHITUNGAN PERTAMINA WAY INTERNAL -->
+    <div class="page-break"></div>
+    <div class="top-accent-bar"></div>
+    <div class="header-card">
+      <div class="brand-box"><div><div class="brand-title">SPBU GONTOR 54.634.25 MLARAK</div><div class="brand-sub">Dokumen Perhitungan Pertamina Way Internal</div></div></div>
+      <div class="period-badge">BULAN ${monthNameUpper}</div>
+    </div>
+    <div class="doc-title-bar">
+      <div style="font-size:13.5px; font-weight:900; letter-spacing:0.5px;">PERHITUNGAN INSENTIF PERTAMINA WAY INTERNAL BULAN ${monthNameUpper}</div>
+      <div style="font-size:10.5px; font-weight:700; color:#475569; margin-top:2px; letter-spacing:0.3px;">KARYAWAN SPBU 5463425 GONTOR MLARAK</div>
+    </div>
+    <table>
+      <thead>
+        <tr><th rowspan="2">PRODUK BBM</th><th rowspan="2">PENJUALAN ( LITER )<br>DALAM 1 BULAN</th><th colspan="2">INSENTIF PW PER LITER</th><th rowspan="2">TOTAL PW INTERNAL</th></tr>
+        <tr><th>PENGALI INTERNAL</th><th>NOMINAL / LITER</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>PERTALITE</td><td style="text-align:right;">${fmtNum(bbm.pertalite)}</td><td style="text-align:center;">Rp 2</td><td style="text-align:right;">Rp 2</td><td style="text-align:right; font-weight:600;">${fmt(pwInt.pwPertalite)}</td></tr>
+        <tr><td>SOLAR (BIOSOLAR)</td><td style="text-align:right;">${fmtNum(bbm.solar)}</td><td style="text-align:center;">Rp 2</td><td style="text-align:right;">Rp 2</td><td style="text-align:right; font-weight:600;">${fmt(pwInt.pwSolar)}</td></tr>
+        <tr><td>PERTAMAX TURBO</td><td style="text-align:right;">${fmtNum(bbm.turbo)}</td><td style="text-align:center;">Rp 12</td><td style="text-align:right;">Rp 12</td><td style="text-align:right; font-weight:600;">${fmt(pwInt.pwTurbo)}</td></tr>
+        <tr><td>PERTAMAX 92</td><td style="text-align:right;">${fmtNum(bbm.px92)}</td><td style="text-align:center;">Rp 12</td><td style="text-align:right;">Rp 12</td><td style="text-align:right; font-weight:600;">${fmt(pwInt.pwPx92)}</td></tr>
+        <tr><td>PERTAMINA DEX</td><td style="text-align:right;">${fmtNum(bbm.dex)}</td><td style="text-align:center;">Rp 12</td><td style="text-align:right;">Rp 12</td><td style="text-align:right; font-weight:600;">${fmt(pwInt.pwDex)}</td></tr>
+      </tbody>
+      <tfoot><tr><td colspan="4" style="text-align:right;">TOTAL PW INTERNAL</td><td style="text-align:right; color:#059669; font-size:11px; font-weight:800;">${fmt(pwInt.total)}</td></tr></tfoot>
+    </table>
+    <div style="font-weight:700; color:#0f172a; margin-top:10px; margin-bottom:4px; font-size:11px;">ALOKASI PEMBAGIAN INSENTIF PERTAMINA WAY INTERNAL</div>
+    <table>
+      <thead><tr><th>RINCIAN KELOMPOK PEMBAGIAN</th><th>ALOKASI (%)</th><th>TOTAL ALOKASI</th><th>ESTIMASI PER INDIVIDU (@)</th></tr></thead>
+      <tbody>
+        <tr><td>SUPERVISOR & ADMIN (${spvAdminCount} Orang)</td><td style="text-align:center;">20%</td><td style="text-align:right;">${fmt(pwInt.total * 0.2)}</td><td style="text-align:right; font-weight:600;">${fmt(rawPwSpvAdmin)}</td></tr>
+        <tr><td>OPERATOR & CLEANING SERVICE (${oprCsCount} Orang)</td><td style="text-align:center;">80%</td><td style="text-align:right;">${fmt(pwInt.total * 0.8)}</td><td style="text-align:right; font-weight:600;">${fmt(rawPwOprCs)}</td></tr>
+      </tbody>
+      <tfoot><tr><td>TOTAL</td><td style="text-align:center;">100%</td><td style="text-align:right; color:#059669; font-size:11px;">${fmt(pwInt.total)}</td><td></td></tr></tfoot>
     </table>
     <div style="text-align:right; margin-top:20px; font-size:9.5px; color:#475569;">
       Ponorogo, ${formattedPrintDate}<br><div style="height:75px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_finance_manager)}</strong><br><span>Manajer Keuangan</span>
