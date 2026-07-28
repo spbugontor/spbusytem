@@ -144,7 +144,7 @@ function showToast(msg, type = 'info') {
   const c = $('toast-container'); if (!c) return;
   const el = document.createElement('div');
   el.className = `toast toast-${type}`;
-  const icons = { success: '✓', error: '✕', info: 'ℹ', warning: '⚠️' };
+  const icons = { success: 'âœ“', error: 'âœ•', info: 'â„¹', warning: 'âš ï¸' };
   el.innerHTML = `<span>${icons[type] || ''}</span><span>${esc(msg)}</span>`;
   c.appendChild(el);
   setTimeout(() => { el.classList.add('toast-hide'); setTimeout(() => el.remove(), 300); }, 3000);
@@ -293,8 +293,8 @@ function checkAndNotifyNode(node, rawSnap) {
     if (node === 'internal_chats') {
       const isMe = (currentUser.role === 'employee' && item.sender_id === currentUser.id) || (currentUser.role === 'admin' && item.sender_role === 'Manajemen');
       if (!isMe && currentSection !== 'internal-chat') {
-        showToast(`💬 Pesan Diskusi dari ${item.sender_name}: "${item.message}"`, 'info');
-        triggerSystemNotification(`💬 Pesan Diskusi - ${item.sender_name}`, {
+        showToast(`ðŸ’¬ Pesan Diskusi dari ${item.sender_name}: "${item.message}"`, 'info');
+        triggerSystemNotification(`ðŸ’¬ Pesan Diskusi - ${item.sender_name}`, {
           body: item.message,
           tag: 'mytic-chat-' + itemTs
         });
@@ -305,15 +305,15 @@ function checkAndNotifyNode(node, rawSnap) {
     else if (node === 'leaves') {
       if (currentUser.role === 'admin' && item.status === 'Menunggu') {
         const empName = item.emp_name || 'Karyawan';
-        showToast(`🏖️ Pengajuan Izin Baru: ${empName}`, 'info');
-        triggerSystemNotification(`🏖️ Pengajuan Izin Baru - ${empName}`, {
+        showToast(`ðŸ–ï¸ Pengajuan Izin Baru: ${empName}`, 'info');
+        triggerSystemNotification(`ðŸ–ï¸ Pengajuan Izin Baru - ${empName}`, {
           body: `Alasan: ${item.reason || '-'} (${item.start_date} s/d ${item.end_date})`,
           tag: 'mytic-leave-' + itemTs
         });
       } else if (currentUser.role === 'employee' && isRecordForUser(item, currentUser)) {
         if (item.status === 'Disetujui' || item.status === 'Ditolak') {
-          showToast(`🏖️ Status Izin Anda: ${item.status}`, 'info');
-          triggerSystemNotification(`🏖️ Status Izin: ${item.status}`, {
+          showToast(`ðŸ–ï¸ Status Izin Anda: ${item.status}`, 'info');
+          triggerSystemNotification(`ðŸ–ï¸ Status Izin: ${item.status}`, {
             body: `Pengajuan izin Anda tanggal ${item.start_date} telah ${item.status.toLowerCase()} oleh Manajemen.`,
             tag: 'mytic-leave-status-' + itemTs
           });
@@ -326,8 +326,8 @@ function checkAndNotifyNode(node, rawSnap) {
       if (currentUser.role === 'employee' && isRecordForUser(item, currentUser)) {
         const vType = item.violation_type || item.type || 'Pelanggaran';
         const pts = item.level || item.points || 'Peringatan';
-        showToast(`⚠️ Pelanggaran Baru: ${vType}`, 'warning');
-        triggerSystemNotification(`⚠️ Catatan Pelanggaran Baru`, {
+        showToast(`âš ï¸ Pelanggaran Baru: ${vType}`, 'warning');
+        triggerSystemNotification(`âš ï¸ Catatan Pelanggaran Baru`, {
           body: `Jenis: ${vType} (${pts}). Catatan: ${item.description || item.note || '-'}`,
           tag: 'mytic-violation-' + itemTs
         });
@@ -337,7 +337,7 @@ function checkAndNotifyNode(node, rawSnap) {
     // 4. TRANSAKSI (DEBIT / KREDIT)
     else if (node === 'transactions') {
       if (currentUser.role === 'employee' && isRecordForUser(item, currentUser)) {
-        const title = item.type === 'credit' ? '💳 Pembayaran Tunggakan (Kredit)' : '💳 Catatan Tunggakan Baru (Debit)';
+        const title = item.type === 'credit' ? 'ðŸ’³ Pembayaran Tunggakan (Kredit)' : 'ðŸ’³ Catatan Tunggakan Baru (Debit)';
         const formattedAmt = `Rp ${Number(item.amount || 0).toLocaleString('id-ID')}`;
         showToast(`${title}: ${formattedAmt}`, 'info');
         triggerSystemNotification(title, {
@@ -351,8 +351,8 @@ function checkAndNotifyNode(node, rawSnap) {
     else if (node === 'ratings') {
       if (currentUser.role === 'employee' && isRecordForUser(item, currentUser)) {
         const avgScore = item.scores ? (Object.values(item.scores).reduce((s, v) => s + v, 0) / Object.values(item.scores).length).toFixed(1) : (item.score || '5.0');
-        showToast(`⭐ Penilaian Kinerja Baru (Skor: ${avgScore})`, 'info');
-        triggerSystemNotification('⭐ Penilaian Kinerja Karyawan Baru', {
+        showToast(`â­ Penilaian Kinerja Baru (Skor: ${avgScore})`, 'info');
+        triggerSystemNotification('â­ Penilaian Kinerja Karyawan Baru', {
           body: `Bulan: ${item.date || '-'}. Skor Rata-rata: ${avgScore} / 5`,
           tag: 'mytic-rating-' + itemTs
         });
@@ -363,8 +363,8 @@ function checkAndNotifyNode(node, rawSnap) {
     else if (node === 'savings') {
       if (currentUser.role === 'employee' && isRecordForUser(item, currentUser)) {
         const formattedAmt = `Rp ${Number(item.amount || 0).toLocaleString('id-ID')}`;
-        showToast(`💰 Tabungan Karyawan: ${formattedAmt}`, 'info');
-        triggerSystemNotification('💰 Transaksi Tabungan Karyawan', {
+        showToast(`ðŸ’° Tabungan Karyawan: ${formattedAmt}`, 'info');
+        triggerSystemNotification('ðŸ’° Transaksi Tabungan Karyawan', {
           body: `Bulan: ${item.month || '-'}. Nominal: ${formattedAmt}`,
           tag: 'mytic-savings-' + itemTs
         });
@@ -408,8 +408,8 @@ window.requestNotificationPermission = async () => {
   }
   const currentPerm = Notification.permission;
   if (currentPerm === 'granted') {
-    showToast('Notifikasi HP sudah AKTIF! 🔔', 'success');
-    triggerSystemNotification('🔔 Notifikasi HP SPBU Gontor', {
+    showToast('Notifikasi HP sudah AKTIF! ðŸ””', 'success');
+    triggerSystemNotification('ðŸ”” Notifikasi HP SPBU Gontor', {
       body: 'Notifikasi HP Anda 100% aktif dan siap menerima data real-time.',
       tag: 'mytic-test-' + Date.now()
     });
@@ -421,8 +421,8 @@ window.requestNotificationPermission = async () => {
   }
   const result = await Notification.requestPermission();
   if (result === 'granted') {
-    showToast('Berhasil! Notifikasi HP diaktifkan 🔔', 'success');
-    triggerSystemNotification('🔔 Notifikasi HP Aktif! - MyTIC', {
+    showToast('Berhasil! Notifikasi HP diaktifkan ðŸ””', 'success');
+    triggerSystemNotification('ðŸ”” Notifikasi HP Aktif! - MyTIC', {
       body: 'Hebat! Notifikasi HP berhasil diaktifkan.',
       tag: 'mytic-welcome'
     });
@@ -764,7 +764,7 @@ function setupNavigation() {
       <div class="more-menu-panel">
         <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem;border-bottom:1px solid var(--border)">
           <strong style="font-size:0.95rem">Menu Lainnya</strong>
-          <button onclick="window._toggleMoreMenu()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted)">✕</button>
+          <button onclick="window._toggleMoreMenu()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted)">âœ•</button>
         </div>
         <div style="padding:0.75rem">${mobileMore.map(m => {
       const isLeaveMenu = (m.id === 'leaves' && adminHasPendingLeave) || (m.id === 'emp-leaves' && empHasUnreadLeave);
@@ -811,7 +811,7 @@ window._previewImage = (imgSrc, title = '') => {
   showModal(`
     <div class="modal-header" style="border-bottom:1px solid var(--border)">
       <h3 class="modal-title">${esc(title || 'Foto Profil')}</h3>
-      <button class="modal-close" onclick="window._hideModal()">✕</button>
+      <button class="modal-close" onclick="window._hideModal()">âœ•</button>
     </div>
     <div class="modal-body" style="text-align:center;padding:1rem;">
       <img src="${imgSrc}" alt="Preview" style="max-width:100%;max-height:70vh;border-radius:var(--radius-lg);object-fit:contain;box-shadow:var(--shadow-lg);">
@@ -933,7 +933,7 @@ function renderAdminDashboard() {
     <div class="card mb-6" style="padding:1.25rem; background:var(--surface); border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; cursor:pointer;" onclick="window._nav('leaderboard')">
       <div style="display:flex; align-items:center; gap:1rem;">
         <div style="width:46px; height:46px; border-radius:12px; background:linear-gradient(135deg, #FFD700, #FFA500); display:flex; align-items:center; justify-content:center; font-size:1.4rem; box-shadow:0 4px 12px rgba(255,215,0,0.4);">
-          🏆
+          ðŸ†
         </div>
         <div>
           <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-main);">Modul Peringkat & KPI Karyawan</h3>
@@ -941,7 +941,7 @@ function renderAdminDashboard() {
         </div>
       </div>
       <button class="btn btn-primary" style="padding:0.5rem 1.25rem; font-size:0.85rem;" onclick="event.stopPropagation(); window._nav('leaderboard')">
-        Buka Peringkat Karyawan ➔
+        Buka Peringkat Karyawan âž”
       </button>
     </div>
 
@@ -949,7 +949,7 @@ function renderAdminDashboard() {
     <div class="graphics-grid">
       <div class="card chart-card-wide" style="padding:1.25rem;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-          <h3 class="card-title" style="font-size:1rem;">📈 Tren Kehadiran & Ketepatan Waktu</h3>
+          <h3 class="card-title" style="font-size:1rem;">ðŸ“ˆ Tren Kehadiran & Ketepatan Waktu</h3>
         </div>
         <div style="position:relative;height:260px;">
           <canvas id="chart-admin-attendance"></canvas>
@@ -958,7 +958,7 @@ function renderAdminDashboard() {
 
       <div class="card chart-card-compact" style="padding:1.25rem;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-          <h3 class="card-title" style="font-size:1rem;">🍩 Distribusi Pengajuan Cuti & Izin</h3>
+          <h3 class="card-title" style="font-size:1rem;">ðŸ© Distribusi Pengajuan Cuti & Izin</h3>
         </div>
         <div style="position:relative;height:260px;">
           <canvas id="chart-admin-leaves"></canvas>
@@ -967,7 +967,7 @@ function renderAdminDashboard() {
 
       <div class="card chart-card-wide" style="padding:1.25rem;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-          <h3 class="card-title" style="font-size:1rem;">📊 Performa Ceklis SOP per Kategori</h3>
+          <h3 class="card-title" style="font-size:1rem;">ðŸ“Š Performa Ceklis SOP per Kategori</h3>
         </div>
         <div style="position:relative;height:260px;">
           <canvas id="chart-admin-sop"></canvas>
@@ -976,7 +976,7 @@ function renderAdminDashboard() {
 
       <div class="card chart-card-compact" style="padding:1.25rem;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-          <h3 class="card-title" style="font-size:1rem;">⚠️ Ringkasan Pelanggaran & Teguran SP</h3>
+          <h3 class="card-title" style="font-size:1rem;">âš ï¸ Ringkasan Pelanggaran & Teguran SP</h3>
         </div>
         <div style="position:relative;height:260px;">
           <canvas id="chart-admin-violations"></canvas>
@@ -990,7 +990,7 @@ function renderAdminDashboard() {
         const emp = getUserByEmpId(l.emp_id);
         const sc = l.status === 'Disetujui' ? 'badge-success' : l.status === 'Ditolak' ? 'badge-danger' : 'badge-warning';
         return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 0;border-bottom:1px solid var(--border)">
-          <div><strong class="text-sm">${esc(emp ? emp.name : l.emp_id)}</strong><br><span class="text-xs text-muted">${esc(l.leave_type)} • ${fmtDate(l.start_date)}</span></div>
+          <div><strong class="text-sm">${esc(emp ? emp.name : l.emp_id)}</strong><br><span class="text-xs text-muted">${esc(l.leave_type)} â€¢ ${fmtDate(l.start_date)}</span></div>
           <span class="badge ${sc}">${esc(l.status)}</span></div>`;
       }).join('')}
     </div>
@@ -1215,7 +1215,7 @@ function renderEmployees() {
         return `<div class="card" style="margin-bottom:0.75rem">
       <div style="display:flex;align-items:center;gap:1rem">
         ${avatarHtml}
-        <div style="flex:1;min-width:0"><strong>${esc(e.name)}</strong><br><span class="text-xs text-muted">${esc(e.position)} • ${esc(e.emp_id)} • ${esc(e.username)}</span></div>
+        <div style="flex:1;min-width:0"><strong>${esc(e.name)}</strong><br><span class="text-xs text-muted">${esc(e.position)} â€¢ ${esc(e.emp_id)} â€¢ ${esc(e.username)}</span></div>
         <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
           <button class="btn btn-secondary" style="padding:0.5rem 0.75rem;font-size:0.75rem" onclick="window._showEmpDetail('${e._key}')">Detail</button>
           <button class="btn btn-secondary" style="padding:0.5rem 0.75rem;font-size:0.75rem" onclick="window._showEmpForm('${e._key}')">Edit</button>
@@ -1283,11 +1283,11 @@ function renderDebits() {
               <div>
                 <strong style="color:${t.type === 'debit' ? 'var(--danger)' : 'var(--success)'}">${t.type === 'debit' ? '+' : '-'}${fmt(t.amount)}</strong> 
                 <span class="text-muted">${esc(t.note || '')}</span>
-                <span class="text-xs text-muted" style="display:block;margin-top:3px;font-size:0.72rem;">✍️ Ditambahkan oleh: <strong style="color:var(--text-main)">${esc(adder)}</strong></span>
+                <span class="text-xs text-muted" style="display:block;margin-top:3px;font-size:0.72rem;">âœï¸ Ditambahkan oleh: <strong style="color:var(--text-main)">${esc(adder)}</strong></span>
               </div>
               <div style="display:flex;align-items:center;gap:0.5rem">
                 <span class="text-muted" style="font-size:0.75rem">${fmtDate(t.date)}</span>
-                ${currentUser.role === 'admin' ? `<button style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:0.7rem" onclick="window._deleteTxn('${t._key}')">✕</button>` : ''}
+                ${currentUser.role === 'admin' ? `<button style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:0.7rem" onclick="window._deleteTxn('${t._key}')">âœ•</button>` : ''}
               </div>
             </div>`;
             }).join('')}
@@ -1303,7 +1303,7 @@ function renderDebits() {
 function renderLeaveChatButton(l, role) {
   const chats = l.chats ? Object.values(l.chats) : [];
   if (chats.length === 0) {
-    return `<button class="btn btn-primary" style="padding:0.3rem 0.6rem;font-size:0.7rem;display:inline-flex;align-items:center;gap:0.3rem" onclick="window._showLeaveChat('${l._key}', '${role}')">💬 Diskusi</button>`;
+    return `<button class="btn btn-primary" style="padding:0.3rem 0.6rem;font-size:0.7rem;display:inline-flex;align-items:center;gap:0.3rem" onclick="window._showLeaveChat('${l._key}', '${role}')">ðŸ’¬ Diskusi</button>`;
   }
 
   chats.sort((a, b) => a.timestamp - b.timestamp);
@@ -1312,12 +1312,12 @@ function renderLeaveChatButton(l, role) {
 
   if (unreadCount > 0) {
     return `<button class="btn btn-primary" style="padding:0.3rem 0.6rem;font-size:0.7rem;display:inline-flex;align-items:center;gap:0.3rem;border:1.5px solid var(--danger);box-shadow: 0 0 8px rgba(239, 68, 68, 0.4)" onclick="window._showLeaveChat('${l._key}', '${role}')">
-      💬 Diskusi (${chats.length}) 
+      ðŸ’¬ Diskusi (${chats.length}) 
       <span style="background:var(--danger);color:#fff;font-size:0.6rem;padding:1px 5px;border-radius:8px;font-weight:700">${unreadCount} Baru!</span>
     </button>`;
   }
 
-  return `<button class="btn btn-primary" style="padding:0.3rem 0.6rem;font-size:0.7rem;display:inline-flex;align-items:center;gap:0.3rem" onclick="window._showLeaveChat('${l._key}', '${role}')">💬 Diskusi (${chats.length})</button>`;
+  return `<button class="btn btn-primary" style="padding:0.3rem 0.6rem;font-size:0.7rem;display:inline-flex;align-items:center;gap:0.3rem" onclick="window._showLeaveChat('${l._key}', '${role}')">ðŸ’¬ Diskusi (${chats.length})</button>`;
 }
 
 function renderMgmtLeaves() {
@@ -1332,7 +1332,7 @@ function renderMgmtLeaves() {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap">
           <div style="flex:1;min-width:200px">
             <strong>${esc(emp ? emp.name : l.emp_id)}</strong><br>
-            <span class="text-xs text-muted">${esc(l.leave_type)} • ${fmtDate(l.start_date)} - ${fmtDate(l.end_date)}</span><br>
+            <span class="text-xs text-muted">${esc(l.leave_type)} â€¢ ${fmtDate(l.start_date)} - ${fmtDate(l.end_date)}</span><br>
             <span class="text-xs text-muted">${esc(l.reason || '-')}</span>
             ${l.feedback ? `<br><span class="text-xs mt-1" style="display:inline-block;padding:0.25rem 0.5rem;background:var(--bg-color);border-radius:var(--radius-sm);color:var(--primary);font-weight:600">Catatan: ${esc(l.feedback)}</span>` : ''}
           </div>
@@ -1366,7 +1366,7 @@ function renderLeaveTypes() {
     <div id="lt-form-area"></div>
     ${types.length === 0 ? '<div class="card"><p class="text-muted">Belum ada jenis cuti.</p></div>' :
       types.map(t => `<div class="card" style="margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center">
-      <div><strong>${esc(t.name)}</strong><br><span class="text-xs text-muted">Jatah: ${t.quota || '-'} hari/tahun • Berlaku: ${esc(t.gender || 'Semua')}</span></div>
+      <div><strong>${esc(t.name)}</strong><br><span class="text-xs text-muted">Jatah: ${t.quota || '-'} hari/tahun â€¢ Berlaku: ${esc(t.gender || 'Semua')}</span></div>
       <div style="display:flex;gap:0.5rem">
         <button class="btn btn-secondary" style="padding:0.4rem 0.6rem;font-size:0.7rem" onclick="window._showLeaveTypeForm('${t._key}')">Edit</button>
         <button class="btn btn-outline-danger" style="padding:0.4rem 0.6rem;font-size:0.7rem" onclick="window._deleteLeaveType('${t._key}')">Hapus</button>
@@ -1396,11 +1396,11 @@ function renderViolations() {
         <div id="vio-${e.emp_id}" class="hidden" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1rem">
           <button class="btn btn-danger" style="width:100%;margin-bottom:1rem;padding:0.5rem;font-size:0.75rem" onclick="window._showVioForm('${e.emp_id}')">+ Tambah Pelanggaran</button>
           <div id="vio-form-${e.emp_id}"></div>
-          ${vios.length === 0 ? '<p class="text-xs text-muted" style="text-align:center">Bersih 👍</p>' :
+          ${vios.length === 0 ? '<p class="text-xs text-muted" style="text-align:center">Bersih ðŸ‘</p>' :
             vios.map(v => {
               const lc = v.level === 'SP3' ? 'var(--danger)' : v.level === 'SP2' ? 'var(--warning)' : v.level === 'SP1' ? '#EAB308' : 'var(--info)';
               return `<div style="border-left:4px solid ${lc};padding:0.75rem;background:var(--bg-color);border-radius:var(--radius-md);margin-bottom:0.5rem">
-              <div style="display:flex;justify-content:space-between"><strong class="text-xs" style="color:${lc}">${esc(v.level)}</strong><button style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:0.7rem" onclick="window._deleteVio('${v._key}')">✕</button></div>
+              <div style="display:flex;justify-content:space-between"><strong class="text-xs" style="color:${lc}">${esc(v.level)}</strong><button style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:0.7rem" onclick="window._deleteVio('${v._key}')">âœ•</button></div>
               <p class="text-xs">${esc(v.violation_type)}: ${esc(v.description)}</p>
               <span class="text-xs text-muted">${fmtDate(v.date)}</span>
             </div>`;
@@ -1440,7 +1440,7 @@ function renderSavings() {
           ${svs.length === 0 ? '<p class="text-xs text-muted" style="text-align:center">Belum ada tabungan.</p>' :
             svs.map(s => `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0.75rem;background:var(--bg-color);border-radius:var(--radius-md);margin-bottom:0.25rem;font-size:0.8rem">
             <div><strong style="color:var(--success)">${fmt(s.amount)}</strong> <span class="text-muted">${esc(s.month || '')}</span></div>
-            <div style="display:flex;align-items:center;gap:0.5rem"><span class="text-muted">${fmtDate(s.date)}</span><button style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:0.7rem" onclick="window._deleteSaving('${s._key}')">✕</button></div>
+            <div style="display:flex;align-items:center;gap:0.5rem"><span class="text-muted">${fmtDate(s.date)}</span><button style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:0.7rem" onclick="window._deleteSaving('${s._key}')">âœ•</button></div>
           </div>`).join('')}
         </div>
       </div>`;
@@ -1511,10 +1511,10 @@ function renderCriteriaPage() {
           <h4 style="font-weight:700;margin:0;font-size:1.05rem;color:var(--text-color)">Indikator: <span style="color:var(--primary)">${esc(ind)}</span></h4>
           <div style="display:flex;gap:0.4rem;">
             <button class="btn btn-outline-primary" style="padding:0.25rem 0.6rem;font-size:0.7rem;display:inline-flex;align-items:center;gap:0.3rem;" onclick="window._editIndicatorName('${esc(ind)}')">
-              ✏️ Edit Nama Indikator
+              âœï¸ Edit Nama Indikator
             </button>
             <button class="btn btn-outline-danger" style="padding:0.25rem 0.6rem;font-size:0.7rem;display:inline-flex;align-items:center;gap:0.3rem;" onclick="window._deleteIndicatorGroup('${esc(ind)}')">
-              🗑️ Hapus Indikator
+              ðŸ—‘ï¸ Hapus Indikator
             </button>
           </div>
         </div>
@@ -1573,11 +1573,11 @@ function renderLeaderboard() {
     ${scores.length === 0 ? '<div class="card"><p class="text-muted">Belum ada data penilaian pada periode ini.</p></div>' :
       scores.map((s, idx) => {
         const color = s.avg >= 4.5 ? 'var(--success)' : s.avg >= 3.5 ? 'var(--info)' : s.avg >= 2.5 ? 'var(--warning)' : 'var(--danger)';
-        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : (idx + 1) + '.';
+        const medal = idx === 0 ? 'ðŸ¥‡' : idx === 1 ? 'ðŸ¥ˆ' : idx === 2 ? 'ðŸ¥‰' : (idx + 1) + '.';
         return `<div class="card" style="margin-bottom:0.75rem;display:flex;align-items:center;justify-content:space-between">
         <div style="display:flex;align-items:center;gap:1rem">
           <div style="font-size:1.5rem;font-weight:800;width:40px;text-align:center">${medal}</div>
-          <div><strong style="font-size:1.1rem">${esc(s.name)}</strong><br><span class="text-xs text-muted">${esc(s.position)} • ${s.evalCount} evaluasi</span></div>
+          <div><strong style="font-size:1.1rem">${esc(s.name)}</strong><br><span class="text-xs text-muted">${esc(s.position)} â€¢ ${s.evalCount} evaluasi</span></div>
         </div>
         <div style="text-align:right">
           <span style="font-size:1.8rem;font-weight:800;color:${color}">${s.avg}</span><span class="text-xs text-muted">/5</span>
@@ -1604,10 +1604,10 @@ function renderSettings() {
     </div>
 
     <div class="card mb-4">
-      <h3 class="card-title mb-2">🔔 Uji Coba & Status Notifikasi HP</h3>
+      <h3 class="card-title mb-2">ðŸ”” Uji Coba & Status Notifikasi HP</h3>
       <p class="text-sm text-muted mb-3">Klik tombol di bawah untuk meminta izin atau menguji apakah notifikasi sistem HP Anda berfungsi dengan baik.</p>
       <button class="btn btn-primary" onclick="window.testHpNotification()" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.65rem 1.25rem;">
-        <span>🔔 Tes Notifikasi HP Sekarang</span>
+        <span>ðŸ”” Tes Notifikasi HP Sekarang</span>
       </button>
     </div>
     
@@ -1743,8 +1743,8 @@ function renderEmpDashboard() {
     <!-- LEAVE QUOTA BREAKDOWN WIDGET -->
     <div class="card mb-4">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-        <h3 class="card-title" style="font-size:1rem;">🌴 Rincian Sisa Jatah Cuti (${currentYear})</h3>
-        <button class="btn btn-secondary" style="padding:0.25rem 0.6rem;font-size:0.75rem" onclick="window._nav('emp-leaves')">Ajukan Cuti ➔</button>
+        <h3 class="card-title" style="font-size:1rem;">ðŸŒ´ Rincian Sisa Jatah Cuti (${currentYear})</h3>
+        <button class="btn btn-secondary" style="padding:0.25rem 0.6rem;font-size:0.75rem" onclick="window._nav('emp-leaves')">Ajukan Cuti âž”</button>
       </div>
       ${leaveQuotaBreakdownHtml ? `<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:0.75rem">${leaveQuotaBreakdownHtml}</div>` : '<p class="text-xs text-muted">Belum ada jatah cuti khusus yang dikonfigurasi.</p>'}
     </div>
@@ -1752,14 +1752,14 @@ function renderEmpDashboard() {
     <!-- EMPLOYEE GRAPHICS GRID -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:1.5rem;margin-bottom:1.5rem;">
       <div class="card" style="padding:1.25rem;">
-        <h3 class="card-title mb-2" style="font-size:1rem;">🎯 Kedisiplinan Kehadiran Bulan Ini</h3>
+        <h3 class="card-title mb-2" style="font-size:1rem;">ðŸŽ¯ Kedisiplinan Kehadiran Bulan Ini</h3>
         <div style="position:relative;height:220px;">
           <canvas id="chart-emp-attendance-gauge"></canvas>
         </div>
       </div>
 
       <div class="card" style="padding:1.25rem;">
-        <h3 class="card-title mb-2" style="font-size:1rem;">📈 Riwayat Evaluasi / Rating Diri</h3>
+        <h3 class="card-title mb-2" style="font-size:1rem;">ðŸ“ˆ Riwayat Evaluasi / Rating Diri</h3>
         <div style="position:relative;height:220px;">
           <canvas id="chart-emp-rating-trend"></canvas>
         </div>
@@ -1882,7 +1882,7 @@ function renderEmpHistory() {
       title: 'Absensi Masuk',
       subtitle: r.shift,
       status: r.status,
-      isWarning: r.status && r.status !== 'On Time ✓' && !r.status.toLowerCase().includes('izin')
+      isWarning: r.status && r.status !== 'On Time âœ“' && !r.status.toLowerCase().includes('izin')
     });
   });
 
@@ -1938,7 +1938,7 @@ function renderEmpHistory() {
           <div style="background:var(--bg);padding:0.75rem;border-radius:50%;">${icon}</div>
           <div style="flex:1;">
             <div style="font-weight:700;">${h.title}</div>
-            <div class="text-xs text-muted">${fmtDate(h.dateStr)} • Jam ${h.timeStr} • Shift ${h.subtitle}</div>
+            <div class="text-xs text-muted">${fmtDate(h.dateStr)} â€¢ Jam ${h.timeStr} â€¢ Shift ${h.subtitle}</div>
           </div>
           <div style="text-align:right;">
             <div style="font-weight:700; ${statusColor}">${h.status}</div>
@@ -1971,7 +1971,7 @@ function renderEmpDebits() {
         <div>
           <strong style="color:${t.type === 'debit' ? 'var(--danger)' : 'var(--success)'}">${t.type === 'debit' ? '+' : '-'}${fmt(t.amount)}</strong> 
           <span class="text-muted">${esc(t.note || '')}</span>
-          <span class="text-xs text-muted" style="display:block;margin-top:3px;font-size:0.75rem;">✍️ Ditambahkan oleh: <strong style="color:var(--text-main)">${esc(adder)}</strong></span>
+          <span class="text-xs text-muted" style="display:block;margin-top:3px;font-size:0.75rem;">âœï¸ Ditambahkan oleh: <strong style="color:var(--text-main)">${esc(adder)}</strong></span>
         </div>
         <span class="text-muted">${fmtDate(t.date)}</span></div>`;
       }).join('')}
@@ -2019,7 +2019,7 @@ function renderEmpViolations() {
   const vios = getViolations(emp.emp_id);
   return `<div class="fade-in">
     <h3 class="text-xl font-bold mb-4">Pelanggaran Saya</h3>
-    ${vios.length === 0 ? '<div class="card" style="text-align:center;padding:2rem"><p class="text-muted">Bersih! Tidak ada pelanggaran 👍</p></div>' :
+    ${vios.length === 0 ? '<div class="card" style="text-align:center;padding:2rem"><p class="text-muted">Bersih! Tidak ada pelanggaran ðŸ‘</p></div>' :
       vios.map(v => {
         const lc = v.level === 'SP3' ? 'var(--danger)' : v.level === 'SP2' ? 'var(--warning)' : v.level === 'SP1' ? '#EAB308' : 'var(--info)';
         return `<div class="card" style="margin-bottom:0.5rem;border-left:4px solid ${lc}">
@@ -2083,7 +2083,7 @@ function renderEmpProfile() {
     <div class="card" style="text-align:center;padding:2rem;margin-bottom:1rem;position:relative;">
       ${avatarHtml}
       <h2 class="text-xl font-bold">${esc(emp.name)}</h2>
-      <p class="text-muted">${esc(emp.position)} • ${esc(emp.emp_id)}</p>
+      <p class="text-muted">${esc(emp.position)} â€¢ ${esc(emp.emp_id)}</p>
       ${ep.photo ? `
       <div style="margin-top:1rem;display:flex;gap:0.5rem;justify-content:center;">
         <label for="pe-photo" class="btn btn-secondary" style="cursor:pointer;padding:0.4rem 0.8rem;font-size:0.8rem;">Ubah Foto</label>
@@ -2136,9 +2136,9 @@ function renderEmpProfile() {
     </div>
 
     <div class="card mt-4"><h3 class="card-title mb-4">Ubah PIN</h3>
-      <div class="form-group"><label class="form-label">PIN Lama</label><div class="password-wrapper"><input id="cp-old" type="password" inputmode="numeric" maxlength="6" class="form-input" placeholder="••••••"><button type="button" class="password-toggle" onclick="window._togglePassword(this)">👁️</button></div></div>
-      <div class="form-group"><label class="form-label">PIN Baru</label><div class="password-wrapper"><input id="cp-new" type="password" inputmode="numeric" maxlength="6" class="form-input" placeholder="••••••"><button type="button" class="password-toggle" onclick="window._togglePassword(this)">👁️</button></div></div>
-      <div class="form-group"><label class="form-label">Konfirmasi PIN Baru</label><div class="password-wrapper"><input id="cp-confirm" type="password" inputmode="numeric" maxlength="6" class="form-input" placeholder="••••••"><button type="button" class="password-toggle" onclick="window._togglePassword(this)">👁️</button></div></div>
+      <div class="form-group"><label class="form-label">PIN Lama</label><div class="password-wrapper"><input id="cp-old" type="password" inputmode="numeric" maxlength="6" class="form-input" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢"><button type="button" class="password-toggle" onclick="window._togglePassword(this)">ðŸ‘ï¸</button></div></div>
+      <div class="form-group"><label class="form-label">PIN Baru</label><div class="password-wrapper"><input id="cp-new" type="password" inputmode="numeric" maxlength="6" class="form-input" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢"><button type="button" class="password-toggle" onclick="window._togglePassword(this)">ðŸ‘ï¸</button></div></div>
+      <div class="form-group"><label class="form-label">Konfirmasi PIN Baru</label><div class="password-wrapper"><input id="cp-confirm" type="password" inputmode="numeric" maxlength="6" class="form-input" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢"><button type="button" class="password-toggle" onclick="window._togglePassword(this)">ðŸ‘ï¸</button></div></div>
       <button class="btn btn-primary" onclick="window._changePin()">Ubah PIN</button>
     </div>
   </div>`;
@@ -2155,10 +2155,10 @@ window._togglePassword = (btn) => {
   const inp = btn.previousElementSibling;
   if (inp.type === 'password') {
     inp.type = 'text';
-    btn.innerHTML = '👁️‍🗨️';
+    btn.innerHTML = 'ðŸ‘ï¸â€ðŸ—¨ï¸';
   } else {
     inp.type = 'password';
-    btn.innerHTML = '👁️';
+    btn.innerHTML = 'ðŸ‘ï¸';
   }
 };
 
@@ -2173,7 +2173,7 @@ window._showEmpForm = (key) => {
       <div class="form-group"><label class="form-label">Nama Lengkap</label><input id="ef-name" class="form-input" value="${esc(emp?.name || '')}"></div>
       <div class="form-group"><label class="form-label">Jenis Kelamin</label><select id="ef-gender" class="form-input form-select"><option value="Laki-Laki" ${emp?.gender === 'Laki-Laki' ? 'selected' : ''}>Laki-Laki</option><option value="Perempuan" ${emp?.gender === 'Perempuan' ? 'selected' : ''}>Perempuan</option></select></div>
       <div class="form-group"><label class="form-label">Jabatan</label><select id="ef-pos" class="form-input form-select">${positions.map(p => `<option ${emp?.position === p ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
-      <div class="form-group"><label class="form-label">PIN (6 digit)</label><div class="password-wrapper"><input id="ef-pin" type="password" inputmode="numeric" maxlength="6" class="form-input" value="${esc(emp?.pin || '')}" placeholder="••••••"><button type="button" class="password-toggle" onclick="window._togglePassword(this)">👁️</button></div></div>
+      <div class="form-group"><label class="form-label">PIN (6 digit)</label><div class="password-wrapper"><input id="ef-pin" type="password" inputmode="numeric" maxlength="6" class="form-input" value="${esc(emp?.pin || '')}" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢"><button type="button" class="password-toggle" onclick="window._togglePassword(this)">ðŸ‘ï¸</button></div></div>
       <div class="form-group"><label class="form-label">Jenis Kontrak</label><select id="ef-ctype" class="form-input form-select"><option value="Training" ${emp?.contract_type === 'Training' ? 'selected' : ''}>Training (3 Bulan)</option><option value="Tetap" ${emp?.contract_type === 'Tetap' ? 'selected' : ''}>Tetap (1 Tahun)</option></select></div>
       <div class="form-group"><label class="form-label">Mulai Kontrak</label><input id="ef-cstart" type="date" class="form-input" value="${emp?.contract_start || ''}"></div>
       <div class="form-group"><label class="form-label">Telepon</label><input id="ef-phone" class="form-input" value="${esc(emp?.phone || '')}"></div>
@@ -2222,7 +2222,7 @@ window._showEmpDetail = (key) => {
     `<div style="max-height:150px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-md);padding:0.5rem">
        ${pinHist.map(h => `<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:0.25rem 0;font-size:0.75rem">
          <span>${new Date(h.timestamp).toLocaleString('id-ID')}</span>
-         <span><span style="text-decoration:line-through;color:var(--danger)">${esc(h.old_pin)}</span> ➔ <strong style="color:var(--success)">${esc(h.new_pin)}</strong></span>
+         <span><span style="text-decoration:line-through;color:var(--danger)">${esc(h.old_pin)}</span> âž” <strong style="color:var(--success)">${esc(h.new_pin)}</strong></span>
        </div>`).join('')}
      </div>`;
 
@@ -2260,7 +2260,7 @@ window._showEmpDetail = (key) => {
        </div>`
     : '';
 
-  showModal(`<div class="modal-header"><h3 class="modal-title">${esc(emp.name)}</h3><button class="modal-close" onclick="window._hideModal()">✕</button></div>
+  showModal(`<div class="modal-header"><h3 class="modal-title">${esc(emp.name)}</h3><button class="modal-close" onclick="window._hideModal()">âœ•</button></div>
     <div class="modal-body">
       ${avatarHeaderHtml}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
@@ -2280,7 +2280,7 @@ window._showEmpDetail = (key) => {
       </div>
     </div>
     <div class="modal-footer" style="display:flex;gap:0.5rem;justify-content:flex-end">
-      ${leaveQuotaHtml ? `<button class="btn btn-warning" style="margin-right:auto" onclick="window._resetLeaveQuota('${emp.emp_id}','${esc(emp.name)}')">⟲ Perbarui Cuti</button>` : ''}
+      ${leaveQuotaHtml ? `<button class="btn btn-warning" style="margin-right:auto" onclick="window._resetLeaveQuota('${emp.emp_id}','${esc(emp.name)}')">âŸ² Perbarui Cuti</button>` : ''}
       <button class="btn btn-secondary" onclick="window._hideModal()">Tutup</button>
     </div>`);
 };
@@ -2472,7 +2472,7 @@ function renderInternalChat() {
         <h3 class="text-xl font-bold">Diskusi Internal Privat</h3>
         <p class="text-xs text-muted">Ruang koordinasi khusus Manajemen, Admin, dan Supervisor SPBU Gontor</p>
       </div>
-      <span class="badge badge-warning" style="display:flex;align-items:center;gap:0.3rem">🔒 Rahasia / Internal Only</span>
+      <span class="badge badge-warning" style="display:flex;align-items:center;gap:0.3rem">ðŸ”’ Rahasia / Internal Only</span>
     </div>
 
     <div class="card" style="padding:1rem;display:flex;flex-direction:column;height:calc(100vh - 220px);min-height:450px;">
@@ -2491,7 +2491,7 @@ function renderInternalChat() {
                 <strong style="color:var(--text-main)">${esc(c.sender_name)}</strong>
                 <span class="badge badge-info" style="font-size:0.6rem;padding:0.1rem 0.35rem">${esc(c.sender_role)}</span>
                 <span>${fmtDate(c.timestamp || Date.now())}</span>
-                ${canDelete ? `<button style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:0.7rem;margin-left:0.2rem;padding:0 0.2rem;" onclick="window._deleteInternalChat('${c._key}')" title="Hapus Pesan">✕</button>` : ''}
+                ${canDelete ? `<button style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:0.7rem;margin-left:0.2rem;padding:0 0.2rem;" onclick="window._deleteInternalChat('${c._key}')" title="Hapus Pesan">âœ•</button>` : ''}
               </div>
               <div style="background:${bubbleBg};color:${textColor};padding:0.65rem 0.9rem;border-radius:${borderRadius};font-size:0.85rem;line-height:1.4;box-shadow:0 2px 5px rgba(0,0,0,0.05);word-break:break-word;">
                 ${esc(c.message)}
@@ -2571,14 +2571,14 @@ window._showLeaveChat = (key, role) => {
     chats.map(c => {
       const isMe = c.role === role;
       return `<div style="display:flex; flex-direction:column; align-items:${isMe ? 'flex-end' : 'flex-start'}; margin-bottom: 0.75rem;">
-        <span class="text-xs text-muted" style="margin-bottom:0.25rem">${esc(c.senderName)} • ${new Date(c.timestamp).toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}</span>
+        <span class="text-xs text-muted" style="margin-bottom:0.25rem">${esc(c.senderName)} â€¢ ${new Date(c.timestamp).toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}</span>
         <div style="background:${isMe ? 'var(--primary)' : 'var(--bg-color)'}; color:${isMe ? '#fff' : 'var(--text)'}; padding:0.5rem 0.75rem; border-radius: var(--radius-md); max-width:85%; font-size:0.85rem; border: 1px solid ${isMe ? 'var(--primary)' : 'var(--border)'};">
           ${esc(c.message)}
         </div>
       </div>`;
     }).join('');
 
-  showModal(`<div class="modal-header" style="border-bottom:1px solid var(--border);"><h3 class="modal-title">💬 Diskusi Pengajuan</h3><button class="modal-close" onclick="window._hideModal()">✕</button></div>
+  showModal(`<div class="modal-header" style="border-bottom:1px solid var(--border);"><h3 class="modal-title">ðŸ’¬ Diskusi Pengajuan</h3><button class="modal-close" onclick="window._hideModal()">âœ•</button></div>
     <div class="modal-body" style="padding:0; display:flex; flex-direction:column;">
       <div id="leave-chat-box" style="height: 350px; overflow-y: auto; padding: 1rem; background: var(--surface);">
         ${chatHTML}
@@ -2826,7 +2826,7 @@ window._showSavingForm = (empId) => {
   });
 
   area.innerHTML = `<div style="padding:0.85rem;background:var(--success-bg);border-radius:var(--radius-lg);margin-bottom:1rem;border:1px solid var(--success)">
-    <p class="text-xs font-bold mb-3" style="color:#065F46;font-size:0.85rem;">💳 Tambah Transaksi Tabungan</p>
+    <p class="text-xs font-bold mb-3" style="color:#065F46;font-size:0.85rem;">ðŸ’³ Tambah Transaksi Tabungan</p>
     
     <div style="margin-bottom:0.65rem;">
       <label class="form-label" style="font-size:0.72rem;font-weight:700;color:#065F46;margin-bottom:0.2rem;display:block;">1. Jumlah Nominal (Rp)</label>
@@ -2961,7 +2961,7 @@ window._showRatingForm = () => {
   if (users.length === 0) { showToast('Tambahkan karyawan dulu!', 'warning'); return; }
   if (criteria.length === 0) { showToast('Buat kriteria penilaian dulu!', 'warning'); return; }
 
-  showModal(`<div class="modal-header"><h3 class="modal-title">Tambah Penilaian</h3><button class="modal-close" onclick="window._hideModal()">✕</button></div>
+  showModal(`<div class="modal-header"><h3 class="modal-title">Tambah Penilaian</h3><button class="modal-close" onclick="window._hideModal()">âœ•</button></div>
     <div class="modal-body">
       <div class="form-group"><label class="form-label">Pilih Karyawan</label><select id="rf-emp" class="form-input form-select" onchange="window._updateRatingCriteria()">${users.map(u => `<option value="${u.emp_id}" data-pos="${esc(u.position)}">${esc(u.name)} (${esc(u.position)})</option>`).join('')}</select></div>
       <div class="form-group"><label class="form-label">Bulan Penilaian</label><input id="rf-date" type="month" value="${today().substring(0, 7)}" class="form-input"></div>
@@ -3164,7 +3164,7 @@ window._generateRatingPDFHtml = (key) => {
 <body>
   <div class="no-print no-print-bar">
     <div style="display:flex; align-items:center; gap:8px;">
-      <label style="font-weight:bold; font-size:11.5px; color:#334155;">📐 Ukuran Kertas:</label>
+      <label style="font-weight:bold; font-size:11.5px; color:#334155;">ðŸ“ Ukuran Kertas:</label>
       <select id="paper-size-select" style="padding:4px 8px; font-size:11px; border-radius:4px; border:1px solid #94a3b8; font-weight:600; cursor:pointer;" onchange="
         const styleEl = document.getElementById('page-style');
         const containers = document.querySelectorAll('.rapor-container, .no-print-bar');
@@ -3181,9 +3181,9 @@ window._generateRatingPDFHtml = (key) => {
       </select>
     </div>
     <div>
-      <button id="btn-dl-rating-pdf" style="background:#16a34a; color:#fff; font-weight:bold; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; font-size:11px;" onclick="downloadRatingPdfDirect()">📥 Simpan File PDF</button>
-      <button class="btn-print" onclick="window.print()">🖨️ Cetak / Print</button>
-      <button class="btn-close" onclick="window.close()">✕ Tutup</button>
+      <button id="btn-dl-rating-pdf" style="background:#16a34a; color:#fff; font-weight:bold; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; font-size:11px;" onclick="downloadRatingPdfDirect()">ðŸ“¥ Simpan File PDF</button>
+      <button class="btn-print" onclick="window.print()">ðŸ–¨ï¸ Cetak / Print</button>
+      <button class="btn-close" onclick="window.close()">âœ• Tutup</button>
     </div>
   </div>
 
@@ -3214,7 +3214,7 @@ window._generateRatingPDFHtml = (key) => {
         <td class="label">Jabatan / Posisi</td>
         <td>${esc(empPos)}</td>
         <td class="label">Rata-Rata Rating</td>
-        <td><strong style="color:#1d4ed8; font-size:12px;">⭐ ${avg} / 5.0</strong></td>
+        <td><strong style="color:#1d4ed8; font-size:12px;">â­ ${avg} / 5.0</strong></td>
       </tr>
     </table>
 
@@ -3230,13 +3230,13 @@ window._generateRatingPDFHtml = (key) => {
         ${criteriaRows}
         <tr>
           <td style="border:1px solid #cbd5e1;padding:4px 8px;text-align:right;color:#0f172a !important;"><strong>Rata-Rata Skor Kriteria:</strong></td>
-          <td style="border:1px solid #cbd5e1;padding:4px 8px;text-align:center;font-size:11px;font-weight:bold;color:#1d4ed8 !important;">⭐ ${avg} / 5.0</td>
+          <td style="border:1px solid #cbd5e1;padding:4px 8px;text-align:center;font-size:11px;font-weight:bold;color:#1d4ed8 !important;">â­ ${avg} / 5.0</td>
         </tr>
       </tbody>
     </table>
     
     <div style="border:1px solid #cbd5e1; border-radius:4px; padding:6px 10px; background:#f8fafc !important; color:#0f172a !important; margin-bottom:8px;">
-      <div style="font-weight:bold; font-size:9.5px; color:#1e40af !important; margin-bottom:2px; text-transform:uppercase;">💬 CATATAN EVALUASI ATASAN:</div>
+      <div style="font-weight:bold; font-size:9.5px; color:#1e40af !important; margin-bottom:2px; text-transform:uppercase;">ðŸ’¬ CATATAN EVALUASI ATASAN:</div>
       <div style="font-size:10px; color:#0f172a !important; font-style:italic; line-height:1.2;">${esc(rating.note || 'Tidak ada catatan khusus.')}</div>
     </div>
 
@@ -3262,7 +3262,7 @@ window._generateRatingPDFHtml = (key) => {
       const btn = document.getElementById('btn-dl-rating-pdf');
       const noPrintBar = document.querySelector('.no-print-bar');
       const oldText = btn ? btn.innerHTML : '';
-      if (btn) { btn.innerHTML = '⏳ Mengunduh...'; btn.disabled = true; }
+      if (btn) { btn.innerHTML = 'â³ Mengunduh...'; btn.disabled = true; }
 
       const paperSize = document.getElementById('paper-size-select') ? document.getElementById('paper-size-select').value : 'A4';
       
@@ -3431,7 +3431,7 @@ window._showCriteriaForm = (key) => {
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
           <label class="form-label" style="margin-bottom:0;">Nama Indikator</label>
           <button id="btn-del-selected-ind" type="button" class="btn btn-outline-danger" style="padding:0.15rem 0.5rem; font-size:0.7rem; display:${currentInd !== '__NEW__' ? 'inline-flex' : 'none'}; align-items:center; gap:0.25rem;" onclick="window._deleteIndicatorGroup(document.getElementById('cf-indicator-select').value)">
-            🗑️ Hapus Indikator Ini
+            ðŸ—‘ï¸ Hapus Indikator Ini
           </button>
         </div>
         <select id="cf-indicator-select" class="form-input form-select mb-2" onchange="
@@ -3552,9 +3552,9 @@ window._deleteIndicatorGroup = (indName) => {
   showModal(`
     <div class="modal-header" style="background:var(--danger-bg); border-bottom:1px solid rgba(239,68,68,0.3);">
       <h3 class="modal-title" style="color:var(--danger); display:flex; align-items:center; gap:0.5rem;">
-        ⚠️ Konfirmasi Hapus Indikator
+        âš ï¸ Konfirmasi Hapus Indikator
       </h3>
-      <button class="modal-close" onclick="window._hideModal()">✕</button>
+      <button class="modal-close" onclick="window._hideModal()">âœ•</button>
     </div>
     <div class="modal-body" style="padding:1.5rem;">
       <p style="font-size:0.95rem; color:var(--text-main); margin-bottom:1rem; line-height:1.5;">
@@ -3562,7 +3562,7 @@ window._deleteIndicatorGroup = (indName) => {
       </p>
       ${subCount > 0 ? `
         <div style="background:rgba(239,68,68,0.1); border-left:4px solid var(--danger); padding:0.85rem; border-radius:var(--radius-md); margin-bottom:1.25rem;">
-          <strong style="color:var(--danger); font-size:0.85rem;">🔴 PERINGATAN KRUSIAL:</strong>
+          <strong style="color:var(--danger); font-size:0.85rem;">ðŸ”´ PERINGATAN KRUSIAL:</strong>
           <p style="font-size:0.82rem; color:var(--text-main); margin-top:0.25rem;">
             Menghapus indikator ini akan secara permanen menghapus <strong>${subCount} sub-kriteria</strong> yang terikat di bawahnya!
           </p>
@@ -3579,7 +3579,7 @@ window._deleteIndicatorGroup = (indName) => {
     </div>
     <div class="modal-footer" style="gap:0.75rem;">
       <button id="btn-confirm-execute-delete-ind" class="btn btn-danger" disabled onclick="window._executeDeleteIndicatorGroup('${esc(indName)}')">
-        🗑️ Ya, Saya Yakin Hapus Indikator Ini
+        ðŸ—‘ï¸ Ya, Saya Yakin Hapus Indikator Ini
       </button>
       <button class="btn btn-secondary" onclick="window._hideModal()">Batal</button>
     </div>
@@ -3747,7 +3747,7 @@ function showPwaInstallBanner() {
   banner.className = 'pwa-banner';
   banner.innerHTML = `
     <div style="display:flex;align-items:center;gap:0.75rem;">
-      <div style="width:36px;height:36px;background:var(--primary);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem">📱</div>
+      <div style="width:36px;height:36px;background:var(--primary);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem">ðŸ“±</div>
       <div>
         <strong style="font-size:0.85rem;display:block;">Install Aplikasi MyTIC</strong>
         <span style="font-size:0.75rem;color:var(--text-muted)">Pasang di layar utama HP / Laptop untuk akses cepat!</span>
@@ -3755,7 +3755,7 @@ function showPwaInstallBanner() {
     </div>
     <div style="display:flex;gap:0.5rem;align-items:center;">
       <button class="btn btn-primary" style="padding:0.35rem 0.75rem;font-size:0.75rem;" onclick="window._triggerPwaInstall()">Install</button>
-      <button style="background:none;border:none;color:var(--text-muted);font-size:1.1rem;cursor:pointer;padding:0 0.25rem;" onclick="document.getElementById('pwa-install-banner').remove()">✕</button>
+      <button style="background:none;border:none;color:var(--text-muted);font-size:1.1rem;cursor:pointer;padding:0 0.25rem;" onclick="document.getElementById('pwa-install-banner').remove()">âœ•</button>
     </div>
   `;
   document.body.appendChild(banner);
@@ -3856,10 +3856,10 @@ function calculateEmployeeKpi(emp, period) {
   let totalWorkDays = absensiRecords.length;
 
   const ABSENSI_SHIFTS = {
-    '1': { start: [4, 45], label: 'Shift 1 (04:45–12:45)' },
-    '2': { start: [12, 45], label: 'Shift 2 (12:45–21:15)' },
-    '3': { start: [21, 15], label: 'Shift 3 (21:15–04:45)' },
-    'admin': { start: [7, 0], label: 'Admin (07:00–15:00)' }
+    '1': { start: [4, 45], label: 'Shift 1 (04:45â€“12:45)' },
+    '2': { start: [12, 45], label: 'Shift 2 (12:45â€“21:15)' },
+    '3': { start: [21, 15], label: 'Shift 3 (21:15â€“04:45)' },
+    'admin': { start: [7, 0], label: 'Admin (07:00â€“15:00)' }
   };
 
   absensiRecords.forEach(r => {
@@ -4028,15 +4028,15 @@ function _generateEmployeeKpiPDFHtml(empId) {
 
   const kpi = calculateEmployeeKpi(u, period);
 
-  let rankBadgeEmoji = '🏆';
-  if (userRank === 1) rankBadgeEmoji = '🥇';
-  else if (userRank === 2) rankBadgeEmoji = '🥈';
-  else if (userRank === 3) rankBadgeEmoji = '🥉';
+  let rankBadgeEmoji = 'ðŸ†';
+  if (userRank === 1) rankBadgeEmoji = 'ðŸ¥‡';
+  else if (userRank === 2) rankBadgeEmoji = 'ðŸ¥ˆ';
+  else if (userRank === 3) rankBadgeEmoji = 'ðŸ¥‰';
 
-  let kpiCategoryStr = 'Sangat Baik (Excellent 🟢)';
-  if (kpi.compositeScore < 60) kpiCategoryStr = 'Perlu Evaluasi Khusus (Needs Improvement 🔴)';
-  else if (kpi.compositeScore < 75) kpiCategoryStr = 'Cukup (Fair 🟡)';
-  else if (kpi.compositeScore < 90) kpiCategoryStr = 'Baik (Good 🔵)';
+  let kpiCategoryStr = 'Sangat Baik (Excellent ðŸŸ¢)';
+  if (kpi.compositeScore < 60) kpiCategoryStr = 'Perlu Evaluasi Khusus (Needs Improvement ðŸ”´)';
+  else if (kpi.compositeScore < 75) kpiCategoryStr = 'Cukup (Fair ðŸŸ¡)';
+  else if (kpi.compositeScore < 90) kpiCategoryStr = 'Baik (Good ðŸ”µ)';
 
   const formattedDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -4120,7 +4120,7 @@ function _generateEmployeeKpiPDFHtml(empId) {
 <body>
   <div class="no-print no-print-bar">
     <div style="display:flex; align-items:center; gap:8px;">
-      <label style="font-weight:bold; font-size:11.5px; color:#334155;">📐 Ukuran Kertas:</label>
+      <label style="font-weight:bold; font-size:11.5px; color:#334155;">ðŸ“ Ukuran Kertas:</label>
       <select id="paper-size-select" style="padding:4px 8px; font-size:11px; border-radius:4px; border:1px solid #94a3b8; font-weight:600; cursor:pointer;" onchange="
         const styleEl = document.getElementById('page-style');
         const containers = document.querySelectorAll('.rapor-container, .no-print-bar');
@@ -4137,9 +4137,9 @@ function _generateEmployeeKpiPDFHtml(empId) {
       </select>
     </div>
     <div>
-      <button id="btn-dl-pdf" style="background:#16a34a; color:#fff; font-weight:bold; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; font-size:11px;" onclick="downloadPdfDirect(false)">📥 Simpan File PDF</button>
-      <button class="btn-print" onclick="window.print()">🖨️ Cetak / Print</button>
-      <button class="btn-close" onclick="window.close()">✕ Tutup</button>
+      <button id="btn-dl-pdf" style="background:#16a34a; color:#fff; font-weight:bold; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; font-size:11px;" onclick="downloadPdfDirect(false)">ðŸ“¥ Simpan File PDF</button>
+      <button class="btn-print" onclick="window.print()">ðŸ–¨ï¸ Cetak / Print</button>
+      <button class="btn-close" onclick="window.close()">âœ• Tutup</button>
     </div>
   </div>
 
@@ -4197,7 +4197,7 @@ function _generateEmployeeKpiPDFHtml(empId) {
       <tr>
         <td style="text-align:center; font-weight:bold; color:#0f172a !important;">1</td>
         <td style="color:#0f172a !important;">
-          <strong style="color:#0f172a !important;">⏱️ Kedisiplinan Kehadiran (Sistem Absensi)</strong><br>
+          <strong style="color:#0f172a !important;">â±ï¸ Kedisiplinan Kehadiran (Sistem Absensi)</strong><br>
           <span style="font-size:8.5px; color:#475569 !important;">Hadir tepat waktu: ${kpi.attendanceRate}% | Total Keterlambatan: ${Math.round(kpi.totalSecLate / 60)} Menit</span>
         </td>
         <td style="text-align:center; font-weight:bold; color:#0f172a !important;">${kpi.attendanceRate}%</td>
@@ -4207,7 +4207,7 @@ function _generateEmployeeKpiPDFHtml(empId) {
       <tr>
         <td style="text-align:center; font-weight:bold; color:#0f172a !important;">2</td>
         <td style="color:#0f172a !important;">
-          <strong style="color:#0f172a !important;">📋 Kepatuhan Ceklis SOP (Aplikasi Ceklis SOP)</strong><br>
+          <strong style="color:#0f172a !important;">ðŸ“‹ Kepatuhan Ceklis SOP (Aplikasi Ceklis SOP)</strong><br>
           <span style="font-size:8.5px; color:#475569 !important;">${kpi.isOperator ? `Kepatuhan pengisian SOP shift kerja: ${kpi.sopRate}%` : 'Metrik SOP khusus untuk Jabatan Operator (Non-Operator N/A)'}</span>
         </td>
         <td style="text-align:center; font-weight:bold; color:#0f172a !important;">${kpi.isOperator ? `${kpi.sopRate}%` : 'N/A'}</td>
@@ -4217,7 +4217,7 @@ function _generateEmployeeKpiPDFHtml(empId) {
       <tr>
         <td style="text-align:center; font-weight:bold; color:#0f172a !important;">3</td>
         <td style="color:#0f172a !important;">
-          <strong style="color:#0f172a !important;">⭐ Rating Evaluasi Kinerja Atasan (Per Criteria)</strong><br>
+          <strong style="color:#0f172a !important;">â­ Rating Evaluasi Kinerja Atasan (Per Criteria)</strong><br>
           <span style="font-size:8.5px; color:#475569 !important;">Rating rata-rata: ${kpi.avgRating} dari 5.0 Bintang</span>
         </td>
         <td style="text-align:center; font-weight:bold; color:#0f172a !important;">${kpi.avgRating} / 5.0</td>
@@ -4227,7 +4227,7 @@ function _generateEmployeeKpiPDFHtml(empId) {
       <tr>
         <td style="text-align:center; font-weight:bold; color:#0f172a !important;">4</td>
         <td style="color:#0f172a !important;">
-          <strong style="color:#0f172a !important;">💳 Akuntabilitas Keuangan (Tunggakan & Tabungan)</strong><br>
+          <strong style="color:#0f172a !important;">ðŸ’³ Akuntabilitas Keuangan (Tunggakan & Tabungan)</strong><br>
           <span style="font-size:8.5px; color:#475569 !important;">Total Tunggakan: ${fmt(kpi.totalDebitAmt)} (${kpi.debitTxCount} Catatan Transaksi)</span>
         </td>
         <td style="text-align:center; font-weight:bold; color:#0f172a !important;">${kpi.totalDebitAmt > 0 ? fmt(kpi.totalDebitAmt) : 'Clean (Rp 0)'}</td>
@@ -4237,7 +4237,7 @@ function _generateEmployeeKpiPDFHtml(empId) {
       <tr>
         <td style="text-align:center; font-weight:bold; color:#0f172a !important;">5</td>
         <td style="color:#0f172a !important;">
-          <strong style="color:#0f172a !important;">🛡️ Rekam Pelanggaran & Kedisiplinan (Track Record)</strong><br>
+          <strong style="color:#0f172a !important;">ðŸ›¡ï¸ Rekam Pelanggaran & Kedisiplinan (Track Record)</strong><br>
           <span style="font-size:8.5px; color:#475569 !important;">Jumlah Surat Peringatan (SP) Aktif: ${kpi.violationCount} Catatan</span>
         </td>
         <td style="text-align:center; font-weight:bold; color:#0f172a !important;">${kpi.violationCount > 0 ? `${kpi.violationCount} SP` : 'Clean'}</td>
@@ -4247,7 +4247,7 @@ function _generateEmployeeKpiPDFHtml(empId) {
     </tbody>
   </table>
 
-  <h4 style="margin:6px 0 3px 0; color:#1e40af !important; font-size:10.5px; border-bottom:1px solid #cbd5e1; padding-bottom:2px;">📋 REKAPITULASI IZIN & HAK CUTI KARYAWAN</h4>
+  <h4 style="margin:6px 0 3px 0; color:#1e40af !important; font-size:10.5px; border-bottom:1px solid #cbd5e1; padding-bottom:2px;">ðŸ“‹ REKAPITULASI IZIN & HAK CUTI KARYAWAN</h4>
   <table class="info-table" style="margin-bottom:5px;">
     <tr>
       <td class="label" style="width:130px; font-weight:700; color:#334155 !important; background:#f1f5f9 !important;">Izin Disetujui (Bulan Ini)</td>
@@ -4268,7 +4268,7 @@ function _generateEmployeeKpiPDFHtml(empId) {
   </table>` : '<p style="color:#64748b !important;font-style:italic;font-size:9.5px;margin-bottom:5px;">Tidak ada jenis cuti terdaftar.</p>'}
 
   <div style="border:1px solid #cbd5e1; border-radius:4px; padding:6px 10px; background:#f8fafc !important; color:#0f172a !important; margin-bottom:8px;">
-    <div style="font-weight:bold; font-size:9.5px; color:#1e40af !important; margin-bottom:2px; text-transform:uppercase;">💬 CATATAN & EVALUASI DARI MANAJEMEN:</div>
+    <div style="font-weight:bold; font-size:9.5px; color:#1e40af !important; margin-bottom:2px; text-transform:uppercase;">ðŸ’¬ CATATAN & EVALUASI DARI MANAJEMEN:</div>
     <div style="font-size:10px; color:#0f172a !important; font-style:italic; line-height:1.2;">
       ${empNote ? esc(empNote) : 'Terima kasih atas kontribusi dan dedikasi Anda. Tingkatkan terus kedisiplinan dan kualitas pelayanan demi kemajuan bersama SPBU 54.634.25 GONTOR MLARAK.'}
     </div>
@@ -4300,7 +4300,7 @@ function _generateEmployeeKpiPDFHtml(empId) {
       const btn = document.getElementById('btn-dl-pdf');
       const noPrintBar = document.querySelector('.no-print-bar');
       const oldText = btn ? btn.innerHTML : '';
-      if (btn) { btn.innerHTML = '⏳ Mengunduh...'; btn.disabled = true; }
+      if (btn) { btn.innerHTML = 'â³ Mengunduh...'; btn.disabled = true; }
 
       const paperSize = document.getElementById('paper-size-select') ? document.getElementById('paper-size-select').value : 'A4';
       
@@ -4428,7 +4428,7 @@ function renderLeaderboardPage() {
     <div class="card mb-6" style="padding:1.25rem; background:var(--surface);">
       <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:1rem;">
         <div>
-          <h2 style="font-size:1.25rem; font-weight:800; color:var(--text-main);">🏆 Peringkat & KPI Karyawan</h2>
+          <h2 style="font-size:1.25rem; font-weight:800; color:var(--text-main);">ðŸ† Peringkat & KPI Karyawan</h2>
           <p class="text-xs text-muted" style="margin-top:0.2rem;">Evaluasi kinerja & kedisiplinan seluruh karyawan secara objektif & adil (Panel Manajemen)</p>
         </div>
         <div style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:center;">
@@ -4470,7 +4470,7 @@ function renderLeaderboardPage() {
     <div class="card" style="padding:1.5rem;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
         <h3 class="card-title" style="font-size:1.1rem; display:flex; align-items:center; gap:0.5rem;">
-          📊 Daftar Peringkat Seluruh Karyawan <span class="text-xs text-muted">(${rankedUsers.length} Karyawan)</span>
+          ðŸ“Š Daftar Peringkat Seluruh Karyawan <span class="text-xs text-muted">(${rankedUsers.length} Karyawan)</span>
         </h3>
       </div>
 
@@ -4497,9 +4497,9 @@ function renderLeaderboardPage() {
 
               let rankBadgeClass = 'rank-badge-other';
               let rankLabel = `#${rank}`;
-              if (rank === 1) { rankBadgeClass = 'rank-badge-1'; rankLabel = '🥇'; }
-              else if (rank === 2) { rankBadgeClass = 'rank-badge-2'; rankLabel = '🥈'; }
-              else if (rank === 3) { rankBadgeClass = 'rank-badge-3'; rankLabel = '🥉'; }
+              if (rank === 1) { rankBadgeClass = 'rank-badge-1'; rankLabel = 'ðŸ¥‡'; }
+              else if (rank === 2) { rankBadgeClass = 'rank-badge-2'; rankLabel = 'ðŸ¥ˆ'; }
+              else if (rank === 3) { rankBadgeClass = 'rank-badge-3'; rankLabel = 'ðŸ¥‰'; }
 
               let scoreClass = 'kpi-score-high';
               let barColor = '#10B981';
@@ -4531,11 +4531,11 @@ function renderLeaderboardPage() {
                   </td>
                   <td>
                     <div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:0.25rem;">
-                      <span class="kpi-pill" title="Kedisiplinan Kehadiran Tepat Waktu">⏱️ ${kpi.attendanceRate}% Hadir</span>
-                      ${kpi.isOperator ? `<span class="kpi-pill" title="Kepatuhan Ceklis SOP">📋 ${kpi.sopRate}% SOP</span>` : `<span class="kpi-pill" style="opacity:0.6;" title="Ceklis SOP Hanya Khusus Jabatan Operator">📋 SOP (N/A)</span>`}
-                      <span class="kpi-pill" title="Rating Penilaian Kinerja">⭐ ${kpi.avgRating} / 5</span>
-                      ${kpi.totalDebitAmt > 0 ? `<span class="kpi-pill" style="color:var(--danger); border-color:var(--danger-bg);" title="Tunggakan Aktif Rp ${fmt(kpi.totalDebitAmt)} (${kpi.debitTxCount} Transaksi)">💳 Rp ${fmt(kpi.totalDebitAmt)}</span>` : `<span class="kpi-pill" style="color:var(--success);" title="Bebas Tunggakan / Minus">💳 Clean</span>`}
-                      ${kpi.violationCount > 0 ? `<span class="kpi-pill" style="color:var(--danger); border-color:var(--danger-bg);" title="Jumlah Pelanggaran Active">⚠️ ${kpi.violationCount} SP</span>` : `<span class="kpi-pill" style="color:var(--success);" title="Bebas Pelanggaran">🛡️ SP Clean</span>`}
+                      <span class="kpi-pill" title="Kedisiplinan Kehadiran Tepat Waktu">â±ï¸ ${kpi.attendanceRate}% Hadir</span>
+                      ${kpi.isOperator ? `<span class="kpi-pill" title="Kepatuhan Ceklis SOP">ðŸ“‹ ${kpi.sopRate}% SOP</span>` : `<span class="kpi-pill" style="opacity:0.6;" title="Ceklis SOP Hanya Khusus Jabatan Operator">ðŸ“‹ SOP (N/A)</span>`}
+                      <span class="kpi-pill" title="Rating Penilaian Kinerja">â­ ${kpi.avgRating} / 5</span>
+                      ${kpi.totalDebitAmt > 0 ? `<span class="kpi-pill" style="color:var(--danger); border-color:var(--danger-bg);" title="Tunggakan Aktif Rp ${fmt(kpi.totalDebitAmt)} (${kpi.debitTxCount} Transaksi)">ðŸ’³ Rp ${fmt(kpi.totalDebitAmt)}</span>` : `<span class="kpi-pill" style="color:var(--success);" title="Bebas Tunggakan / Minus">ðŸ’³ Clean</span>`}
+                      ${kpi.violationCount > 0 ? `<span class="kpi-pill" style="color:var(--danger); border-color:var(--danger-bg);" title="Jumlah Pelanggaran Active">âš ï¸ ${kpi.violationCount} SP</span>` : `<span class="kpi-pill" style="color:var(--success);" title="Bebas Pelanggaran">ðŸ›¡ï¸ SP Clean</span>`}
                     </div>
                     <div class="kpi-bar-bg">
                       <div class="kpi-bar-fill" style="width:${isNA ? 0 : Math.min(100, Math.max(5, score))}%; background:${isNA ? 'var(--border)' : barColor};"></div>
@@ -4547,10 +4547,10 @@ function renderLeaderboardPage() {
                   <td style="text-align:center;">
                     <div style="display:flex; justify-content:center; gap:0.35rem;">
                       <button class="btn btn-sm btn-outline-success" style="padding:0.25rem 0.45rem; font-size:0.75rem; display:inline-flex; align-items:center; gap:0.2rem;" onclick="window._downloadEmployeeKpiDirectPDF('${u.emp_id}')" title="Unduh File PDF Rapor KPI ${esc(u.name)}">
-                        📥 Unduh PDF
+                        ðŸ“¥ Unduh PDF
                       </button>
                       <button class="btn btn-sm btn-outline-primary" style="padding:0.25rem 0.45rem; font-size:0.75rem; display:inline-flex; align-items:center; gap:0.2rem;" onclick="window._printEmployeeKpiPDF('${u.emp_id}')" title="Pratinjau / Cetak Rapor KPI ${esc(u.name)}">
-                        🖨️ Cetak
+                        ðŸ–¨ï¸ Cetak
                       </button>
                     </div>
                   </td>
@@ -4604,7 +4604,7 @@ function renderPayrollPage() {
   return `<div class="fade-in">
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem;">
       <div>
-        <h3 style="font-size:1.3rem; font-weight:800; color:var(--text-main); margin:0;">💵 Sistem Gaji & Payroll SPBU Gontor</h3>
+        <h3 style="font-size:1.3rem; font-weight:800; color:var(--text-main); margin:0;">ðŸ’µ Sistem Gaji & Payroll SPBU Gontor</h3>
         <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;">Pengelolaan Penggajian Mode Internal, Mode Audit, & Pengaturan Master</p>
       </div>
       <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
@@ -4616,13 +4616,13 @@ function renderPayrollPage() {
     <!-- TABS NAV -->
     <div style="display:flex; gap:0.5rem; border-bottom:2px solid var(--border); margin-bottom:1.5rem; flex-wrap:wrap;">
       <button class="btn ${tab === 'internal' ? 'btn-primary' : 'btn-secondary'}" style="border-radius:var(--radius-md) var(--radius-md) 0 0; font-weight:700; padding:0.5rem 1.1rem;" onclick="window._setPayrollTab('internal')">
-        🏠 Gaji Internal (Asli)
+        ðŸ  Gaji Internal (Asli)
       </button>
       <button class="btn ${tab === 'audit' ? 'btn-primary' : 'btn-secondary'}" style="border-radius:var(--radius-md) var(--radius-md) 0 0; font-weight:700; padding:0.5rem 1.1rem;" onclick="window._setPayrollTab('audit')">
-        📋 Gaji Audit (Pertamina)
+        ðŸ“‹ Gaji Audit (Pertamina)
       </button>
       <button class="btn ${tab === 'settings' ? 'btn-primary' : 'btn-secondary'}" style="border-radius:var(--radius-md) var(--radius-md) 0 0; font-weight:700; padding:0.5rem 1.1rem;" onclick="window._setPayrollTab('settings')">
-        ⚙️ Pengaturan Master & TTD
+        âš™ï¸ Pengaturan Master & TTD
       </button>
     </div>
 
@@ -4917,13 +4917,13 @@ window._openMassAllowanceModal = () => {
   const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
   
   let optionsHTML = `
-    <optgroup label="💵 Gaji & Komponen Utama">
+    <optgroup label="ðŸ’µ Gaji & Komponen Utama">
       <option value="item_gaji_pokok">Gaji Pokok Internal (Rp)</option>
       <option value="item_pw_amount">Pertamina Way Bulatan (Rp)</option>
       <option value="item_overtime_shifts">Shift Lembur Kerja (Jumlah Shift)</option>
       <option value="item_savings_deduction">Potongan Tabungan (Rp)</option>
     </optgroup>
-    <optgroup label="🎁 Tunjangan Karyawan">
+    <optgroup label="ðŸŽ Tunjangan Karyawan">
   `;
   
   optionsHTML += settings.custom_allowances.map(ca => `<option value="${ca.id}">${esc(ca.name)}</option>`).join('');
@@ -4940,8 +4940,8 @@ window._openMassAllowanceModal = () => {
   showModal(`
     <div style="padding:1.25rem 1.5rem; box-sizing:border-box;">
       <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:0.75rem;">
-        <h3 class="modal-title" style="font-size:1.1rem; font-weight:800; color:var(--text-main); margin:0;">⚡ Pengaturan Gaji & Tunjangan Massal</h3>
-        <button type="button" class="btn btn-icon btn-sm btn-outline-secondary" onclick="window.hideModal()" style="border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.1rem; cursor:pointer;">✕</button>
+        <h3 class="modal-title" style="font-size:1.1rem; font-weight:800; color:var(--text-main); margin:0;">âš¡ Pengaturan Gaji & Tunjangan Massal</h3>
+        <button type="button" class="btn btn-icon btn-sm btn-outline-secondary" onclick="window.hideModal()" style="border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.1rem; cursor:pointer;">âœ•</button>
       </div>
       <div class="modal-body" style="padding:1rem 0; box-sizing:border-box; overflow:hidden;">
         <div style="margin-bottom:1rem;">
@@ -4972,7 +4972,7 @@ window._openMassAllowanceModal = () => {
       </div>
       <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:0.5rem; border-top:1px solid var(--border); padding-top:0.75rem; margin-top:0.5rem;">
         <button type="button" class="btn btn-secondary" onclick="window.hideModal()" style="padding:0.45rem 1.2rem; cursor:pointer;">Batal</button>
-        <button type="button" class="btn btn-success" style="font-weight:bold; padding:0.45rem 1.5rem; cursor:pointer;" onclick="window._applyMassAllowance()">💾 Terapkan Pengaturan Massal</button>
+        <button type="button" class="btn btn-success" style="font-weight:bold; padding:0.45rem 1.5rem; cursor:pointer;" onclick="window._applyMassAllowance()">ðŸ’¾ Terapkan Pengaturan Massal</button>
       </div>
     </div>
   `, 'modal-md');
@@ -5307,7 +5307,7 @@ function renderInternalPayrollTab() {
   return `<div class="fade-in">
     <!-- INPUT PENJUALAN LITER BBM -->
     <div class="card" style="margin-bottom:1.25rem; background:var(--surface); border:1px solid var(--border);">
-      <h4 style="font-size:0.95rem; font-weight:800; color:var(--primary); margin-bottom:0.75rem;">⛽ Input Penjualan Liter BBM (Periode: ${month})</h4>
+      <h4 style="font-size:0.95rem; font-weight:800; color:var(--primary); margin-bottom:0.75rem;">â›½ Input Penjualan Liter BBM (Periode: ${month})</h4>
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:0.75rem;">
         <div><label class="form-label" style="font-size:0.75rem;">Pertalite (L)</label><input id="bbm-pertalite" type="number" step="0.01" value="${bbm.pertalite}" class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
         <div><label class="form-label" style="font-size:0.75rem;">Solar / Biosolar (L)</label><input id="bbm-solar" type="number" step="0.01" value="${bbm.solar}" class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
@@ -5320,7 +5320,7 @@ function renderInternalPayrollTab() {
           Total PW Internal: <span style="color:var(--primary); font-size:0.95rem;">${fmt(pwInt.total)}</span> (SPV+Admin 20%: ${fmt(pwInt.total * 0.2)} | OPR+CS 80%: ${fmt(pwInt.total * 0.8)})
         </div>
         <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
-          <button class="btn btn-outline-danger" style="padding:0.4rem 0.9rem; font-size:0.8rem;" onclick="window._resetPayrollMonthData()">🗑️ Bersihkan Data Bulan Ini</button>
+          <button class="btn btn-outline-danger" style="padding:0.4rem 0.9rem; font-size:0.8rem;" onclick="window._resetPayrollMonthData()">ðŸ—‘ï¸ Bersihkan Data Bulan Ini</button>
           <button class="btn btn-primary" style="padding:0.4rem 0.9rem; font-size:0.8rem;" onclick="window._saveBbmSales()">Simpan Penjualan BBM</button>
         </div>
       </div>
@@ -5329,17 +5329,17 @@ function renderInternalPayrollTab() {
     <!-- MAIN PAYROLL TABLE -->
     <div class="card" style="margin-bottom:1.25rem; overflow-x:auto;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
-        <h4 style="font-size:1rem; font-weight:800; color:var(--text-main); margin:0;">📋 Daftar Gaji Internal Karyawan (${users.length} Karyawan)</h4>
+        <h4 style="font-size:1rem; font-weight:800; color:var(--text-main); margin:0;">ðŸ“‹ Daftar Gaji Internal Karyawan (${users.length} Karyawan)</h4>
         <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
-          <button class="btn btn-warning" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._openMassAllowanceModal()">⚡ Input Massal Gaji & Tunjangan</button>
+          <button class="btn btn-warning" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._openMassAllowanceModal()">âš¡ Input Massal Gaji & Tunjangan</button>
           <label style="font-size:0.75rem; font-weight:700;">Tgl Cetak:</label>
           <input type="date" value="${printDate}" class="form-input" style="padding:0.3rem 0.5rem; font-size:0.75rem; width:135px;" onchange="window._setPayrollPrintDate(this.value)">
-          <button class="btn btn-outline-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._exportToExcel('internal')">📊 Export Excel</button>
-          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printInternalPayrollSummary()">🖨️ Rekap Gaji (1 Hal)</button>
-          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printOvertimeSummary()">⏰ Rekap Lemburan</button>
-          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printSavingsSummary()">🏦 Rekap Tabungan</button>
-          <button class="btn btn-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._printEnvelopeSlips('A4', 4)">✂️ Cetak 4 Slip / A4</button>
-          <button class="btn btn-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._printEnvelopeSlips('F4', 6)">✂️ Cetak 6 Slip / F4</button>
+          <button class="btn btn-outline-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._exportToExcel('internal')">ðŸ“Š Export Excel</button>
+          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printInternalPayrollSummary()">ðŸ–¨ï¸ Rekap Gaji (1 Hal)</button>
+          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printOvertimeSummary()">â° Rekap Lemburan</button>
+          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printSavingsSummary()">ðŸ¦ Rekap Tabungan</button>
+          <button class="btn btn-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._printEnvelopeSlips('A4', 4)">âœ‚ï¸ Cetak 4 Slip / A4</button>
+          <button class="btn btn-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._printEnvelopeSlips('F4', 6)">âœ‚ï¸ Cetak 6 Slip / F4</button>
         </div>
       </div>
 
@@ -5423,19 +5423,19 @@ function renderAuditPayrollTab() {
     <div class="card" style="margin-bottom:1.25rem;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
         <div>
-          <h4 style="font-size:1rem; font-weight:800; color:var(--text-main); margin:0;">📋 Lembar Penggajian & Pertamina Way Mode Audit (${auditUsers.length} Karyawan)</h4>
+          <h4 style="font-size:1rem; font-weight:800; color:var(--text-main); margin:0;">ðŸ“‹ Lembar Penggajian & Pertamina Way Mode Audit (${auditUsers.length} Karyawan)</h4>
           <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Berisi 15 Karyawan (Termasuk Manager ${esc(settings.name_audit_manager)}) | UMK Staf: ${fmt(settings.umk_staf)} | UMK Manager: ${fmt(settings.umk_manager)}</p>
         </div>
         <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-          <button class="btn btn-outline-success" style="font-weight:bold; padding:0.45rem 1rem;" onclick="window._exportToExcel('audit')">📊 Export Excel (Audit)</button>
-          <button class="btn btn-primary" style="font-weight:bold; padding:0.45rem 1rem;" onclick="window._printAuditDocuments()">📥 UNDUH FILE / CETAK DOKUMEN AUDIT (PDF)</button>
+          <button class="btn btn-outline-success" style="font-weight:bold; padding:0.45rem 1rem;" onclick="window._exportToExcel('audit')">ðŸ“Š Export Excel (Audit)</button>
+          <button class="btn btn-primary" style="font-weight:bold; padding:0.45rem 1rem;" onclick="window._printAuditDocuments()">ðŸ“¥ UNDUH FILE / CETAK DOKUMEN AUDIT (PDF)</button>
         </div>
       </div>
 
       <div style="background:var(--surface); border:1px solid var(--border); padding:0.75rem; border-radius:var(--radius-md); margin-bottom:1rem; font-size:0.8rem;">
         <strong>Omset Penjualan Liter BBM (Audit):</strong> Total PW Audit = <strong style="color:var(--primary);">${fmt(pwAudit.total)}</strong><br>
-        • Manager & Admin (20%): ${fmt(pwAudit.total * 0.2)} (Per @ ${fmt(pwMgrAdminEach)})<br>
-        • SPV, Operator, & CS (80%): ${fmt(pwAudit.total * 0.8)} (Per @ ${fmt(pwStaffEach)})
+        â€¢ Manager & Admin (20%): ${fmt(pwAudit.total * 0.2)} (Per @ ${fmt(pwMgrAdminEach)})<br>
+        â€¢ SPV, Operator, & CS (80%): ${fmt(pwAudit.total * 0.8)} (Per @ ${fmt(pwStaffEach)})
       </div>
 
       <div style="overflow-x:auto;">
@@ -5479,7 +5479,7 @@ function renderPayrollSettingsTab() {
   return `<div class="fade-in">
     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.25rem;">
       <div class="card">
-        <h4 style="font-size:1rem; font-weight:800; color:var(--primary); margin-bottom:1rem;">💰 Pengaturan Gaji Pokok & UMK</h4>
+        <h4 style="font-size:1rem; font-weight:800; color:var(--primary); margin-bottom:1rem;">ðŸ’° Pengaturan Gaji Pokok & UMK</h4>
         <div class="form-group">
           <label class="form-label">Gaji Pokok Internal Staf (Rp)</label>
           <input id="set-gaji-pokok-internal" type="number" value="${s.gaji_pokok_internal_staf}" class="form-input">
@@ -5500,7 +5500,7 @@ function renderPayrollSettingsTab() {
       </div>
 
       <div class="card">
-        <h4 style="font-size:1rem; font-weight:800; color:var(--primary); margin-bottom:1rem;">✍️ Penandatangan Dokumen & Manajer</h4>
+        <h4 style="font-size:1rem; font-weight:800; color:var(--primary); margin-bottom:1rem;">âœï¸ Penandatangan Dokumen & Manajer</h4>
         <div class="form-group">
           <label class="form-label">Nama Manajer Keuangan (Penandatangan Slip Amplop)</label>
           <input id="set-name-finance" type="text" value="${esc(s.name_finance_manager)}" class="form-input">
@@ -5517,7 +5517,7 @@ function renderPayrollSettingsTab() {
       </div>
 
       <div class="card" style="grid-column: 1 / -1;">
-        <h4 style="font-size:1rem; font-weight:800; color:var(--primary); margin-bottom:1rem;">🎁 Manajemen Jenis Tunjangan (Internal)</h4>
+        <h4 style="font-size:1rem; font-weight:800; color:var(--primary); margin-bottom:1rem;">ðŸŽ Manajemen Jenis Tunjangan (Internal)</h4>
         <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
           <input id="new-tunj-name" type="text" class="form-input" placeholder="Nama Tunjangan Baru (misal: Tunjangan Shift Malam)" style="flex:1;">
           <button class="btn btn-success" onclick="window._addCustomAllowance()">+ Tambah Tunjangan</button>
@@ -5540,169 +5540,130 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 4) => {
   const monthData = (allData.payroll && allData.payroll[month] && allData.payroll[month].internal_data) || {};
   const bbm = getBbmSalesData(month);
   const pwInt = computePwInternal(bbm);
-
   const monthName = new Date(month + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
   const formattedPrintDate = new Date(printDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-
-  const spvAdminCount = users.filter(u => {
-    const p = (u.position || '').toLowerCase();
-    return p.includes('admin') || p.includes('supervisor') || p.includes('spv');
-  }).length || 3;
-  const oprCsCount = users.length - spvAdminCount || 11;
-
   let slipsHTML = '';
   let currentPageSlips = [];
-
   users.forEach((u, idx) => {
     const empId = u.emp_id;
     const empData = monthData[empId] || {};
     const pos = u.position || '-';
-    const isSpvAdmin = pos.toLowerCase().includes('admin') || pos.toLowerCase().includes('supervisor') || pos.toLowerCase().includes('spv');
-    const defaultPwRound = isSpvAdmin ? 150000 : 100000;
-    
     const pwEnabled = empData.pw_enabled !== undefined ? empData.pw_enabled : false;
     const pwAmount = Number(empData.pw_amount !== undefined ? empData.pw_amount : 0);
-    const tenureMonths = getTenureMonths(u.join_date || u.created_at);
-
     const tunjData = empData.tunjangan || {};
-    const tunjJabatanEnabled = tunjData['tunj_jabatan'] ? tunjData['tunj_jabatan'].enabled : false;
-    const tunjJabatanAmt = Number((tunjData['tunj_jabatan'] && tunjData['tunj_jabatan'].amount !== undefined) ? tunjData['tunj_jabatan'].amount : 0);
-
-    const tunjKinerjaEnabled = tunjData['tunj_kinerja'] ? tunjData['tunj_kinerja'].enabled : false;
-    const tunjKinerjaAmt = Number((tunjData['tunj_kinerja'] && tunjData['tunj_kinerja'].amount !== undefined) ? tunjData['tunj_kinerja'].amount : 0);
-
-    const tunjMasaKerjaEnabled = tunjData['tunj_masa_kerja'] ? tunjData['tunj_masa_kerja'].enabled : false;
-    const tunjMasaKerjaAmt = Number((tunjData['tunj_masa_kerja'] && tunjData['tunj_masa_kerja'].amount !== undefined) ? tunjData['tunj_masa_kerja'].amount : 0);
-
-    let tambahanRows = '';
-    let itemIdx = 1;
-
-    if (tunjJabatanEnabled && tunjJabatanAmt > 0) {
-      tambahanRows += `<tr><td>:${itemIdx++} Tunjangan Jabatan</td><td style="text-align:right;">${fmt(tunjJabatanAmt)}</td></tr>`;
-    }
-    if (tunjKinerjaEnabled && tunjKinerjaAmt > 0) {
-      tambahanRows += `<tr><td>:${itemIdx++} Tunjangan Kinerja</td><td style="text-align:right;">${fmt(tunjKinerjaAmt)}</td></tr>`;
-    }
-    if (tunjMasaKerjaEnabled && tunjMasaKerjaAmt > 0) {
-      tambahanRows += `<tr><td>:${itemIdx++} Tunjangan Masa Kerja</td><td style="text-align:right;">${fmt(tunjMasaKerjaAmt)}</td></tr>`;
-    }
-    if (pwEnabled && pwAmount > 0) {
-      tambahanRows += `<tr><td>:${itemIdx++} Pertamina Way</td><td style="text-align:right;">${fmt(pwAmount)}</td></tr>`;
-    }
-
-    const otShifts = Number(empData.overtime_shifts || 0);
-    const otAmt = otShifts * 50000;
-    if (otAmt > 0) {
-      tambahanRows += `<tr><td>:${itemIdx++} Lembur Kerja</td><td style="text-align:right;">${fmt(otAmt)}</td></tr>`;
-    }
-
+    const tJE = tunjData['tunj_jabatan'] ? tunjData['tunj_jabatan'].enabled : false;
+    const tJA = Number((tunjData['tunj_jabatan'] && tunjData['tunj_jabatan'].amount !== undefined) ? tunjData['tunj_jabatan'].amount : 0);
+    const tKE = tunjData['tunj_kinerja'] ? tunjData['tunj_kinerja'].enabled : false;
+    const tKA = Number((tunjData['tunj_kinerja'] && tunjData['tunj_kinerja'].amount !== undefined) ? tunjData['tunj_kinerja'].amount : 0);
+    const tME = tunjData['tunj_masa_kerja'] ? tunjData['tunj_masa_kerja'].enabled : false;
+    const tMA = Number((tunjData['tunj_masa_kerja'] && tunjData['tunj_masa_kerja'].amount !== undefined) ? tunjData['tunj_masa_kerja'].amount : 0);
+    let tRows = '';
+    let ii = 1;
+    if (tJE && tJA > 0) tRows += '<tr><td style="padding:1px 0 1px 6px;color:#475569;">'+ii+++'. Tunj. Jabatan</td><td style="text-align:right;padding:1px 0;color:#334155;font-weight:600;">'+fmt(tJA)+'</td></tr>';
+    if (tKE && tKA > 0) tRows += '<tr><td style="padding:1px 0 1px 6px;color:#475569;">'+ii+++'. Tunj. Kinerja</td><td style="text-align:right;padding:1px 0;color:#334155;font-weight:600;">'+fmt(tKA)+'</td></tr>';
+    if (tME && tMA > 0) tRows += '<tr><td style="padding:1px 0 1px 6px;color:#475569;">'+ii+++'. Tunj. Masa Kerja</td><td style="text-align:right;padding:1px 0;color:#334155;font-weight:600;">'+fmt(tMA)+'</td></tr>';
+    if (pwEnabled && pwAmount > 0) tRows += '<tr><td style="padding:1px 0 1px 6px;color:#475569;">'+ii+++'. Pertamina Way</td><td style="text-align:right;padding:1px 0;color:#334155;font-weight:600;">'+fmt(pwAmount)+'</td></tr>';
+    const otS = Number(empData.overtime_shifts || 0);
+    const otA = otS * 50000;
+    if (otA > 0) tRows += '<tr><td style="padding:1px 0 1px 6px;color:#475569;">'+ii+++'. Lembur Kerja</td><td style="text-align:right;padding:1px 0;color:#334155;font-weight:600;">'+fmt(otA)+'</td></tr>';
     settings.custom_allowances.forEach(ca => {
-      if (['tunj_jabatan', 'tunj_kinerja', 'tunj_masa_kerja'].includes(ca.id)) return;
-      const cItem = tunjData[ca.id] || {};
-      if (cItem.enabled && Number(cItem.amount || 0) > 0) {
-        tambahanRows += `<tr><td>:${itemIdx++} ${esc(ca.name)}</td><td style="text-align:right;">${fmt(Number(cItem.amount))}</td></tr>`;
-      }
+      if (['tunj_jabatan','tunj_kinerja','tunj_masa_kerja'].includes(ca.id)) return;
+      const ci = tunjData[ca.id] || {};
+      if (ci.enabled && Number(ci.amount||0) > 0) tRows += '<tr><td style="padding:1px 0 1px 6px;color:#475569;">'+ii+++'. '+esc(ca.name)+'</td><td style="text-align:right;padding:1px 0;color:#334155;font-weight:600;">'+fmt(Number(ci.amount))+'</td></tr>';
     });
-
-    const gajiPokok = Number(empData.gaji_pokok !== undefined ? empData.gaji_pokok : 0);
-    const totalTambahan = (tunjJabatanEnabled ? tunjJabatanAmt : 0) +
-                          (tunjKinerjaEnabled ? tunjKinerjaAmt : 0) +
-                          (tunjMasaKerjaEnabled ? tunjMasaKerjaAmt : 0) +
-                          (pwEnabled ? pwAmount : 0) +
-                          otAmt;
-
-    const gajiKotor = gajiPokok + totalTambahan;
-    const tabunganAmt = Number(empData.savings_deduction || 0);
-    const gajiBersih = gajiKotor - tabunganAmt;
-
-    const slipHTML = `<div class="slip-box">
-      <div>
-        <div class="slip-header">
-          <div style="font-size:14px; font-weight:900;">SPBU GONTOR</div>
-          <div style="font-size:11px; font-style:italic;">54.634.25</div>
-        </div>
-        <div style="font-weight:bold; font-size:12px; margin-bottom:2px;">PERHITUNGAN GAJI</div>
-        <div style="font-size:10px; margin-bottom:8px;">Unit: SPBU GONTOR</div>
-
-        <table style="width:100%; border-collapse:collapse; font-size:10px; margin-bottom:6px;">
-          <tr><td style="width:65px;">Nama</td><td style="width:10px;">:</td><td><strong>${esc(u.name)}</strong></td></tr>
-          <tr><td>Periode</td><td>:</td><td>${monthName}</td></tr>
-          <tr><td>Gaji Pokok</td><td>:</td><td style="text-align:right;">${fmt(gajiPokok)}</td></tr>
-          <tr><td colspan="2" style="vertical-align:top;">Tambahan</td><td><table style="width:100%; border-collapse:collapse; font-size:9.5px;">${tambahanRows}</table></td></tr>
-          <tr><td colspan="2"></td><td style="text-align:right; font-weight:bold; border-top:1px solid #000; padding-top:2px;">${fmt(gajiKotor)}</td></tr>
-          <tr><td colspan="2" style="padding-top:4px;">Tabungan</td><td style="text-align:right; font-weight:bold; padding-top:4px;">${fmt(tabunganAmt)}</td></tr>
-        </table>
-      </div>
-
-      <div>
-        <div class="yellow-bar">
-          <span>GAJI BERSIH</span>
-          <span>${fmt(gajiBersih)}</span>
-        </div>
-        <div style="text-align:right; font-size:9.5px; margin-top:6px;">
-          Ponorogo, ${formattedPrintDate}<br>
-          <div style="margin-top:2px; font-weight:600;">Manajer Keuangan</div>
-          <div style="height:25px;"></div>
-          <strong style="text-decoration:underline;">${esc(settings.name_finance_manager)}</strong>
-        </div>
-      </div>
-    </div>`;
-
+    const gP = Number(empData.gaji_pokok !== undefined ? empData.gaji_pokok : 0);
+    const tT = (tJE?tJA:0)+(tKE?tKA:0)+(tME?tMA:0)+(pwEnabled?pwAmount:0)+otA;
+    const gK = gP + tT;
+    const tabAmt = Number(empData.savings_deduction || 0);
+    const gB = gK - tabAmt;
+    const slipHTML = '<div class="slip-card">' +
+      '<div class="slip-top-bar"></div>' +
+      '<div class="slip-header-area">' +
+        '<div class="company-badge">' +
+          '<div class="company-icon">&#9981;</div>' +
+          '<div><div class="company-name">SPBU GONTOR</div><div class="company-id">54.634.25</div></div>' +
+        '</div>' +
+        '<div class="period-badge">' + monthName + '</div>' +
+      '</div>' +
+      '<div class="slip-body">' +
+        '<div class="emp-info-row">' +
+          '<div class="emp-name">' + esc(u.name) + '</div>' +
+          '<div class="emp-pos">' + esc(pos) + '</div>' +
+        '</div>' +
+        '<div class="detail-section">' +
+          '<div class="detail-row main-row"><span>Gaji Pokok</span><span class="amount">' + fmt(gP) + '</span></div>' +
+          (tRows ? '<div class="tambahan-label">Tambahan :</div><table class="tambahan-tbl">' + tRows + '</table>' : '') +
+          '<div class="detail-row subtotal-row"><span>Total Pendapatan</span><span class="amount">' + fmt(gK) + '</span></div>' +
+          (tabAmt > 0 ? '<div class="detail-row deduction-row"><span>Potongan Tabungan</span><span class="amount deduction">- ' + fmt(tabAmt) + '</span></div>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="slip-footer-area">' +
+        '<div class="net-pay-bar"><div class="net-label">GAJI BERSIH</div><div class="net-amount">' + fmt(gB) + '</div></div>' +
+        '<div class="sign-area">' +
+          '<div class="sign-date">Ponorogo, ' + formattedPrintDate + '</div>' +
+          '<div class="sign-title">Manajer Keuangan</div>' +
+          '<div class="sign-space"></div>' +
+          '<div class="sign-name">' + esc(settings.name_finance_manager) + '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
     currentPageSlips.push(slipHTML);
-
     if (currentPageSlips.length === perPage || idx === users.length - 1) {
-      slipsHTML += `<div class="page-grid per-page-${perPage}">${currentPageSlips.join('')}</div>`;
+      slipsHTML += '<div class="page-grid per-page-' + perPage + '">' + currentPageSlips.join('') + '</div>';
       currentPageSlips = [];
     }
   });
-
   const win = window.open('', '_blank');
-  win.document.write(`<!DOCTYPE html>
-  <html>
-  <head>
-    <meta charset="utf-8">
-    <title>Slip Gaji Amplop - SPBU Gontor</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script>
-      function downloadPDF() {
-        const btnBar = document.querySelector('.no-print');
-        if (btnBar) btnBar.style.display = 'none';
-        if (window.html2pdf) {
-          const opt = {
-            margin: [3, 3, 3, 3],
-            filename: 'Slip_Gaji_Amplop_${month}.pdf',
-            image: { type: 'jpeg', quality: 1.0 },
-            html2canvas: { scale: 4, useCORS: true, logging: false, letterRendering: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true }
-          };
-          html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
-        } else { if (btnBar) btnBar.style.display = 'flex'; window.print(); }
-      }
-    </script>
-    <style>
-      @page { size: ${paperSize === 'F4' ? '215mm 330mm' : 'A4'} portrait; margin: 5mm; }
-      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 0; background: #fff; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
-      .page-grid { display: grid; grid-template-columns: 1fr 1fr; grid-gap: 8px; page-break-after: always; width: 100%; height: 100%; min-height: 95vh; }
-      .per-page-4 { grid-template-rows: 1fr 1fr; }
-      .per-page-6 { grid-template-rows: 1fr 1fr 1fr; }
-      .slip-box { border: 1.5px dashed #000; padding: 8px 10px; display: flex; flex-direction: column; justify-content: space-between; background: #fff; }
-      .slip-header { background: #e2e8f0 !important; border: 1.2px solid #000; text-align: center; padding: 4px; font-weight: bold; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
-      .yellow-bar { background: #fef08a !important; border: 1.2px solid #000; padding: 4px 8px; font-weight: 900; font-size: 11.5px; display: flex; justify-content: space-between; align-items: center; }
-      @media print { .no-print { display: none !important; } }
-    </style>
-  </head>
-  <body>
-    <div class="no-print" style="padding:8px 12px; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-bottom:10px; display:flex; justify-content:flex-end; gap:8px; align-items:center;">
-      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Super HD)</button>
-      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Slip Amplop (Printer)</button>
-      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">✕ Tutup</button>
-    </div>
-    ${slipsHTML}
-  </body>
-  </html>`);
+  win.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Slip Gaji Amplop - SPBU Gontor</title>' +
+    '<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">' +
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>' +
+    '<script>function downloadPDF(){var b=document.querySelector(".no-print");if(b)b.style.display="none";if(window.html2pdf){html2pdf().set({margin:[2,2,2,2],filename:"Slip_Gaji_Amplop_' + month + '.pdf",image:{type:"jpeg",quality:1.0},html2canvas:{scale:4,useCORS:true,logging:false,letterRendering:true},jsPDF:{unit:"mm",format:"a4",orientation:"portrait",compress:true}}).from(document.body).save().then(function(){if(b)b.style.display="flex"}).catch(function(){if(b)b.style.display="flex";window.print()})}else{if(b)b.style.display="flex";window.print()}}<\/script>' +
+    '<style>' +
+    '@page{size:' + (paperSize === 'F4' ? '215mm 330mm' : 'A4') + ' portrait;margin:4mm;}' +
+    '*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box;margin:0;padding:0;}' +
+    'body{font-family:"Inter",sans-serif;color:#1e293b;background:#f1f5f9;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}' +
+    '.page-grid{display:grid;grid-template-columns:1fr 1fr;grid-gap:6px;page-break-after:always;width:100%;min-height:96vh;padding:3px;}' +
+    '.per-page-4{grid-template-rows:1fr 1fr;}.per-page-6{grid-template-rows:1fr 1fr 1fr;}' +
+    '.slip-card{border:none;border-radius:8px;display:flex;flex-direction:column;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);overflow:hidden;position:relative;}' +
+    '.slip-top-bar{height:4px;background:linear-gradient(90deg,#0ea5e9,#6366f1,#a855f7)!important;}' +
+    '.slip-header-area{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%)!important;padding:7px 10px;display:flex;justify-content:space-between;align-items:center;}' +
+    '.company-badge{display:flex;align-items:center;gap:6px;}' +
+    '.company-icon{width:26px;height:26px;background:linear-gradient(135deg,#f59e0b,#ef4444)!important;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;}' +
+    '.company-name{font-size:12px;font-weight:800;color:#fff!important;letter-spacing:0.5px;}' +
+    '.company-id{font-size:9px;color:#94a3b8!important;font-weight:500;}' +
+    '.period-badge{background:rgba(255,255,255,0.12)!important;color:#e2e8f0!important;padding:3px 8px;border-radius:4px;font-size:8.5px;font-weight:600;border:1px solid rgba(255,255,255,0.15);text-transform:uppercase;letter-spacing:0.3px;}' +
+    '.slip-body{padding:7px 10px 4px;flex:1;}' +
+    '.emp-info-row{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:5px;border-bottom:1.5px solid #e2e8f0;margin-bottom:5px;}' +
+    '.emp-name{font-size:11px;font-weight:800;color:#0f172a;}' +
+    '.emp-pos{font-size:8px;font-weight:600;color:#6366f1;background:#eef2ff!important;padding:2px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:0.3px;}' +
+    '.detail-section{font-size:9.5px;}' +
+    '.detail-row{display:flex;justify-content:space-between;align-items:center;padding:2px 0;}' +
+    '.detail-row .amount{font-weight:700;font-variant-numeric:tabular-nums;}' +
+    '.main-row{color:#334155;font-weight:500;}' +
+    '.tambahan-label{font-size:8.5px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin:3px 0 1px;}' +
+    '.tambahan-tbl{width:100%;border-collapse:collapse;font-size:9px;margin-bottom:2px;}' +
+    '.subtotal-row{border-top:1.5px solid #cbd5e1;margin-top:3px;padding-top:3px;font-weight:700;color:#0f172a;font-size:10px;}' +
+    '.deduction-row{color:#dc2626;font-size:9px;padding:2px 0;}.deduction-row .deduction{color:#dc2626;}' +
+    '.slip-footer-area{padding:0 10px 7px;}' +
+    '.net-pay-bar{background:linear-gradient(135deg,#059669,#10b981)!important;border-radius:5px;padding:5px 10px;display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}' +
+    '.net-label{color:rgba(255,255,255,0.85)!important;font-size:8.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}' +
+    '.net-amount{color:#fff!important;font-size:13px;font-weight:900;letter-spacing:0.3px;}' +
+    '.sign-area{text-align:right;font-size:8px;color:#64748b;line-height:1.35;}' +
+    '.sign-date{font-weight:500;}.sign-title{font-weight:600;color:#475569;margin-top:1px;}' +
+    '.sign-space{height:20px;}.sign-name{font-weight:700;color:#0f172a;text-decoration:underline;font-size:8.5px;}' +
+    '.toolbar-btn{padding:8px 18px;font-weight:700;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-family:"Inter",sans-serif;}' +
+    '@media print{.no-print{display:none!important;}}' +
+    '</style></head><body>' +
+    '<div class="no-print" style="padding:10px 16px;background:linear-gradient(135deg,#0f172a,#1e3a5f);border-bottom:3px solid #6366f1;display:flex;justify-content:flex-end;gap:10px;align-items:center;">' +
+      '<button onclick="downloadPDF()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981);color:#fff;">&#128229; UNDUH PDF (Super HD)</button>' +
+      '<button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;">&#128424; Cetak Slip Amplop</button>' +
+      '<button onclick="window.close()" class="toolbar-btn" style="background:#334155;color:#cbd5e1;">&#10005; Tutup</button>' +
+    '</div>' +
+    slipsHTML +
+  '</body></html>');
   win.document.close();
 };
+
 
 window._printAuditDocuments = () => {
   const month = window._payrollMonth || getTodayStr().substring(0, 7);
@@ -5768,9 +5729,9 @@ window._printAuditDocuments = () => {
   </head>
   <body>
     <div class="no-print" style="padding:8px 12px; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-bottom:10px; display:flex; justify-content:flex-end; gap:8px; align-items:center;">
-      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Super HD)</button>
-      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Dokumen Audit (3 Halaman)</button>
-      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">✕ Tutup</button>
+      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">ðŸ“¥ UNDUH FILE / SIMPAN PDF (Super HD)</button>
+      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">ðŸ–¨ï¸ Cetak Dokumen Audit (3 Halaman)</button>
+      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">âœ• Tutup</button>
     </div>
 
     <!-- HALAMAN 1: PERHITUNGAN PERTAMINA WAY -->
@@ -6085,9 +6046,9 @@ window._printInternalPayrollSummary = () => {
   </head>
   <body>
     <div class="no-print" style="padding:8px 12px; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-bottom:10px; display:flex; justify-content:flex-end; gap:8px; align-items:center;">
-      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Pilih Save as PDF)</button>
-      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Rekapitulasi Gaji Internal</button>
-      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">✕ Tutup</button>
+      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">ðŸ“¥ UNDUH FILE / SIMPAN PDF (Pilih Save as PDF)</button>
+      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">ðŸ–¨ï¸ Cetak Rekapitulasi Gaji Internal</button>
+      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">âœ• Tutup</button>
     </div>
 
     <div class="title-head">PENERIMAAN GAJI</div>
@@ -6207,9 +6168,9 @@ window._printSavingsSummary = () => {
   </head>
   <body>
     <div class="no-print" style="padding:8px 12px; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-bottom:10px; display:flex; justify-content:flex-end; gap:8px; align-items:center;">
-      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Super HD)</button>
-      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Rekap Tabungan (Printer)</button>
-      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">✕ Tutup</button>
+      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">ðŸ“¥ UNDUH FILE / SIMPAN PDF (Super HD)</button>
+      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">ðŸ–¨ï¸ Cetak Rekap Tabungan (Printer)</button>
+      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">âœ• Tutup</button>
     </div>
 
     <div class="title-head">TABUNGAN KARYAWAN (${currentYear})</div>
@@ -6298,9 +6259,9 @@ window._printOvertimeSummary = () => {
   </head>
   <body>
     <div class="no-print" style="padding:8px 12px; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-bottom:10px; display:flex; justify-content:flex-end; gap:8px; align-items:center;">
-      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Super HD)</button>
-      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Rekap Lemburan (Printer)</button>
-      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">✕ Tutup</button>
+      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">ðŸ“¥ UNDUH FILE / SIMPAN PDF (Super HD)</button>
+      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">ðŸ–¨ï¸ Cetak Rekap Lemburan (Printer)</button>
+      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">âœ• Tutup</button>
     </div>
 
     <div class="title-head">LEMBURAN</div>
