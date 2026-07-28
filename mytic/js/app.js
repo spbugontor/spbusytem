@@ -5821,63 +5821,63 @@ window._printAllPayrollBundle = () => {
     </script>
     <style>
       @page { size: A4 landscape; margin: 4mm 6mm; }
-      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
-      html, body { font-family: 'Inter', sans-serif; color: #0f172a !important; background-color: #ffffff !important; background: #ffffff !important; padding: 0; margin: 0; -webkit-font-smoothing: antialiased; }
-      #print-area { background-color: #ffffff !important; background: #ffffff !important; color: #0f172a !important; padding: 6px; box-sizing: border-box; width: 100%; min-height: 100vh; }
+      * { -webkit-print-color-adjust: exact ; print-color-adjust: exact ; box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { font-family: 'Inter', sans-serif; color: #0f172a ; background-color: #ffffff ; background: #ffffff ; padding: 0; margin: 0; -webkit-font-smoothing: antialiased; }
+      #print-area { background-color: #ffffff ; background: #ffffff ; color: #0f172a ; padding: 6px; box-sizing: border-box; width: 100%; min-height: 100vh; }
 
       .page-break { page-break-before: always; }
       .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
-      .header-card { background: #0f172a !important; color: #ffffff !important; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-      .header-card * { color: #ffffff !important; }
+      .header-card { background: #0f172a ; color: #ffffff ; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .header-card * { color: #ffffff ; }
       .brand-box { display: flex; align-items: center; gap: 8px; }
-      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ffffff !important; }
-      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #ffffff !important; }
-      .brand-sub { font-size: 9.5px; color: #94a3b8 !important; }
-      .period-badge { background: rgba(255,255,255,0.18) !important; color: #ffffff !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.5px; }
-      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a !important; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
+      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ffffff ; }
+      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #ffffff ; }
+      .brand-sub { font-size: 9.5px; color: #94a3b8 ; }
+      .period-badge { background: rgba(255,255,255,0.18) ; color: #ffffff ; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.5px; }
+      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a ; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
 
-      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5px; background-color: #ffffff !important; background: #ffffff !important; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-      th, td { border: 1px solid #cbd5e1; padding: 5px 6px; color: #0f172a !important; background-color: #ffffff !important; }
-      th { background-color: #0f172a !important; background: #0f172a !important; color: #ffffff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px; }
-      tfoot td { background-color: #f1f5f9 !important; background: #f1f5f9 !important; font-weight: 800; color: #0f172a !important; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5px; background-color: #ffffff ; background: #ffffff ; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+      th, td { border: 1px solid #cbd5e1; padding: 5px 6px; color: #0f172a ; background-color: #ffffff ; }
+      th { background-color: #0f172a ; background: #0f172a ; color: #ffffff ; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px; }
+      tfoot td { background-color: #f1f5f9 ; background: #f1f5f9 ; font-weight: 800; color: #0f172a ; }
 
       .page-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; grid-gap: 6px; width: 100%; min-height: 95vh; padding: 4px; box-sizing: border-box; page-break-after: always; }
       .per-page-6 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; }
-      .slip-card { border: 1px solid #e2e8f0 !important; border-radius: 8px; display: flex; flex-direction: column; background-color: #ffffff !important; background: #ffffff !important; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; position: relative; color: #0f172a !important; }
+      .slip-card { border: 1px solid #e2e8f0 ; border-radius: 8px; display: flex; flex-direction: column; background-color: #ffffff ; background: #ffffff ; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; position: relative; color: #0f172a ; }
       .slip-top-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); }
-      .slip-header-area { background-color: #0f172a !important; background: #0f172a !important; padding: 7px 10px; display: flex; justify-content: space-between; align-items: center; }
-      .slip-header-area * { color: #ffffff !important; }
+      .slip-header-area { background-color: #0f172a ; background: #0f172a ; padding: 7px 10px; display: flex; justify-content: space-between; align-items: center; }
+      .slip-header-area * { color: #ffffff ; }
       .company-badge { display: flex; align-items: center; gap: 6px; }
-      .company-icon { width: 26px; height: 26px; background: linear-gradient(135deg, #f59e0b, #ef4444) !important; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #fff !important; }
-      .company-name { font-size: 12px; font-weight: 800; color: #fff !important; letter-spacing: 0.5px; }
-      .company-id { font-size: 9px; color: #94a3b8 !important; font-weight: 500; }
-      .slip-body { padding: 7px 10px 4px; flex: 1; background-color: #ffffff !important; }
+      .company-icon { width: 26px; height: 26px; background: linear-gradient(135deg, #f59e0b, #ef4444) ; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #fff ; }
+      .company-name { font-size: 12px; font-weight: 800; color: #fff ; letter-spacing: 0.5px; }
+      .company-id { font-size: 9px; color: #94a3b8 ; font-weight: 500; }
+      .slip-body { padding: 7px 10px 4px; flex: 1; background-color: #ffffff ; }
       .emp-info-row { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 5px; border-bottom: 1.5px solid #e2e8f0; margin-bottom: 5px; }
-      .emp-name { font-size: 11px; font-weight: 800; color: #0f172a !important; }
-      .emp-pos { font-size: 8px; font-weight: 700; color: #4338ca !important; background-color: #e0e7ff !important; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; }
+      .emp-name { font-size: 11px; font-weight: 800; color: #0f172a ; }
+      .emp-pos { font-size: 8px; font-weight: 700; color: #4338ca ; background-color: #e0e7ff ; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; }
       .detail-section { font-size: 9.5px; }
       .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; }
-      .detail-row .amount { font-weight: 700; font-variant-numeric: tabular-nums; color: #0f172a !important; }
-      .main-row { color: #0f172a !important; font-weight: 600; }
-      .tambahan-label { font-size: 8.5px; font-weight: 700; color: #475569 !important; text-transform: uppercase; margin: 3px 0 1px; }
+      .detail-row .amount { font-weight: 700; font-variant-numeric: tabular-nums; color: #0f172a ; }
+      .main-row { color: #0f172a ; font-weight: 600; }
+      .tambahan-label { font-size: 8.5px; font-weight: 700; color: #475569 ; text-transform: uppercase; margin: 3px 0 1px; }
       .tambahan-tbl { width: 100%; border-collapse: collapse; font-size: 9px; margin-bottom: 2px; }
-      .tambahan-tbl td { padding: 1px 0 1px 6px; color: #0f172a !important; background-color: #ffffff !important; }
-      .subtotal-row { border-top: 1.5px solid #cbd5e1; margin-top: 3px; padding-top: 3px; font-weight: 800; color: #0f172a !important; font-size: 10px; }
-      .deduction-row { color: #dc2626 !important; font-size: 9px; padding: 2px 0; }
-      .deduction-row * { color: #dc2626 !important; }
-      .slip-footer-area { padding: 0 10px 7px; background-color: #ffffff !important; }
-      .net-pay-bar { background-color: #059669 !important; background: #059669 !important; border-radius: 5px; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-      .net-pay-bar * { color: #ffffff !important; }
-      .net-label { color: #ffffff !important; font-size: 8.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
-      .net-amount { color: #ffffff !important; font-size: 13px; font-weight: 900; }
-      .sign-area { text-align: right; font-size: 8px; color: #475569 !important; line-height: 1.35; }
-      .sign-date { font-weight: 500; color: #475569 !important; }
-      .sign-title { font-weight: 600; color: #475569 !important; margin-top: 2px; }
+      .tambahan-tbl td { padding: 1px 0 1px 6px; color: #0f172a ; background-color: #ffffff ; }
+      .subtotal-row { border-top: 1.5px solid #cbd5e1; margin-top: 3px; padding-top: 3px; font-weight: 800; color: #0f172a ; font-size: 10px; }
+      .deduction-row { color: #dc2626 ; font-size: 9px; padding: 2px 0; }
+      .deduction-row * { color: #dc2626 ; }
+      .slip-footer-area { padding: 0 10px 7px; background-color: #ffffff ; }
+      .net-pay-bar { background-color: #059669 ; background: #059669 ; border-radius: 5px; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+      .net-pay-bar * { color: #ffffff ; }
+      .net-label { color: #ffffff ; font-size: 8.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+      .net-amount { color: #ffffff ; font-size: 13px; font-weight: 900; }
+      .sign-area { text-align: right; font-size: 8px; color: #475569 ; line-height: 1.35; }
+      .sign-date { font-weight: 500; color: #475569 ; }
+      .sign-title { font-weight: 600; color: #475569 ; margin-top: 2px; }
       .sign-space { height: 28px; }
-      .sign-name { font-weight: 800; color: #0f172a !important; text-decoration: underline; font-size: 8.5px; }
+      .sign-name { font-weight: 800; color: #0f172a ; text-decoration: underline; font-size: 8.5px; }
 
       .toolbar-btn { padding: 8px 18px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-family: 'Inter', sans-serif; transition: all 0.2s; }
-      @media print { .no-print { display: none !important; } }
+      @media print { .no-print { display: none ; } }
     </style>
   </head>
   <body>
@@ -6259,26 +6259,26 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
     </script>
     <style>
       @page { size: ${paperSize === 'F4' ? '215mm 330mm' : 'A4'} portrait; margin: 4mm; }
-      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
-      html, body { font-family: 'Inter', sans-serif; color: #0f172a !important; background-color: #ffffff !important; background: #ffffff !important; padding: 0; margin: 0; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
-      #print-area { background-color: #ffffff !important; background: #ffffff !important; color: #0f172a !important; padding: 6px; box-sizing: border-box; width: 100%; min-height: 100vh; }
-      body, div, p, span, td, th { color: #0f172a !important; }
+      * { -webkit-print-color-adjust: exact ; print-color-adjust: exact ; box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { font-family: 'Inter', sans-serif; color: #0f172a ; background-color: #ffffff ; background: #ffffff ; padding: 0; margin: 0; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+      #print-area { background-color: #ffffff ; background: #ffffff ; color: #0f172a ; padding: 6px; box-sizing: border-box; width: 100%; min-height: 100vh; }
+      body, div, p, span, td, th { color: #0f172a ; }
       
       .page-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; grid-gap: 6px; width: 100%; min-height: 95vh; padding: 4px; box-sizing: border-box; page-break-after: always; }
       .per-page-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
       .per-page-6 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; }
 
       .slip-card {
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid #e2e8f0 ;
         border-radius: 8px;
         display: flex;
         flex-direction: column;
-        background-color: #ffffff !important;
-        background: #ffffff !important;
+        background-color: #ffffff ;
+        background: #ffffff ;
         box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         overflow: hidden;
         position: relative;
-        color: #0f172a !important;
+        color: #0f172a ;
       }
 
       .slip-top-bar {
@@ -6287,8 +6287,8 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       }
 
       .slip-header-area {
-        background-color: #0f172a !important;
-        background: #0f172a !important;
+        background-color: #0f172a ;
+        background: #0f172a ;
         padding: 7px 10px;
         display: flex;
         justify-content: space-between;
@@ -6296,7 +6296,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       }
 
       .slip-header-area * {
-        color: #ffffff !important;
+        color: #ffffff ;
       }
 
       .company-badge {
@@ -6308,31 +6308,31 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       .company-icon {
         width: 26px;
         height: 26px;
-        background: linear-gradient(135deg, #f59e0b, #ef4444) !important;
+        background: linear-gradient(135deg, #f59e0b, #ef4444) ;
         border-radius: 6px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 13px;
-        color: #ffffff !important;
+        color: #ffffff ;
       }
 
       .company-name {
         font-size: 12px;
         font-weight: 800;
-        color: #fff !important;
+        color: #fff ;
         letter-spacing: 0.5px;
       }
 
       .company-id {
         font-size: 9px;
-        color: #94a3b8 !important;
+        color: #94a3b8 ;
         font-weight: 500;
       }
 
       .period-badge {
-        background: rgba(255,255,255,0.12) !important;
-        color: #e2e8f0 !important;
+        background: rgba(255,255,255,0.12) ;
+        color: #e2e8f0 ;
         padding: 3px 8px;
         border-radius: 4px;
         font-size: 8.5px;
@@ -6345,7 +6345,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       .slip-body {
         padding: 7px 10px 4px;
         flex: 1;
-        background-color: #ffffff !important;
+        background-color: #ffffff ;
       }
 
       .emp-info-row {
@@ -6360,15 +6360,15 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       .emp-name {
         font-size: 11px;
         font-weight: 800;
-        color: #0f172a !important;
+        color: #0f172a ;
       }
 
       .emp-pos {
         font-size: 8px;
         font-weight: 600;
-        color: #4338ca !important;
-        background-color: #e0e7ff !important;
-        background: #e0e7ff !important;
+        color: #4338ca ;
+        background-color: #e0e7ff ;
+        background: #e0e7ff ;
         padding: 2px 6px;
         border-radius: 3px;
         text-transform: uppercase;
@@ -6389,18 +6389,18 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       .detail-row .amount {
         font-weight: 700;
         font-variant-numeric: tabular-nums;
-        color: #0f172a !important;
+        color: #0f172a ;
       }
 
       .main-row {
-        color: #0f172a !important;
+        color: #0f172a ;
         font-weight: 600;
       }
 
       .tambahan-label {
         font-size: 8.5px;
         font-weight: 700;
-        color: #475569 !important;
+        color: #475569 ;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin: 3px 0 1px;
@@ -6415,8 +6415,8 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
 
       .tambahan-tbl td {
         padding: 1px 0 1px 6px;
-        color: #0f172a !important;
-        background-color: #ffffff !important;
+        color: #0f172a ;
+        background-color: #ffffff ;
       }
 
       .subtotal-row {
@@ -6424,28 +6424,28 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
         margin-top: 3px;
         padding-top: 3px;
         font-weight: 800;
-        color: #0f172a !important;
+        color: #0f172a ;
         font-size: 10px;
       }
 
       .deduction-row {
-        color: #dc2626 !important;
+        color: #dc2626 ;
         font-size: 9px;
         padding: 2px 0;
       }
 
       .deduction-row * {
-        color: #dc2626 !important;
+        color: #dc2626 ;
       }
 
       .slip-footer-area {
         padding: 0 10px 7px;
-        background-color: #ffffff !important;
+        background-color: #ffffff ;
       }
 
       .net-pay-bar {
-        background-color: #059669 !important;
-        background: #059669 !important;
+        background-color: #059669 ;
+        background: #059669 ;
         border-radius: 5px;
         padding: 5px 10px;
         display: flex;
@@ -6455,11 +6455,11 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       }
 
       .net-pay-bar * {
-        color: #ffffff !important;
+        color: #ffffff ;
       }
 
       .net-label {
-        color: #ffffff !important;
+        color: #ffffff ;
         font-size: 8.5px;
         font-weight: 700;
         letter-spacing: 1px;
@@ -6467,7 +6467,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       }
 
       .net-amount {
-        color: #ffffff !important;
+        color: #ffffff ;
         font-size: 13px;
         font-weight: 900;
         letter-spacing: 0.3px;
@@ -6476,14 +6476,14 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       .sign-area {
         text-align: right;
         font-size: 8px;
-        color: #475569 !important;
+        color: #475569 ;
         line-height: 1.35;
       }
 
-      .sign-date { font-weight: 500; color: #475569 !important; }
-      .sign-title { font-weight: 600; color: #475569 !important; margin-top: 2px; }
+      .sign-date { font-weight: 500; color: #475569 ; }
+      .sign-title { font-weight: 600; color: #475569 ; margin-top: 2px; }
       .sign-space { height: 28px; }
-      .sign-name { font-weight: 800; color: #0f172a !important; text-decoration: underline; font-size: 8.5px; }
+      .sign-name { font-weight: 800; color: #0f172a ; text-decoration: underline; font-size: 8.5px; }
 
       .toolbar-btn {
         padding: 8px 18px;
@@ -6498,7 +6498,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
 
       .toolbar-btn:hover { opacity: 0.9; transform: translateY(-1px); }
 
-      @media print { .no-print { display: none !important; } }
+      @media print { .no-print { display: none ; } }
     </style>
   </head>
   <body>
@@ -6600,29 +6600,29 @@ window._printAuditDocuments = () => {
     </script>
     <style>
       @page { size: A4 landscape; margin: 4mm 6mm; }
-      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
-      html, body { font-family: 'Inter', sans-serif; color: #0f172a !important; background-color: #ffffff !important; background: #ffffff !important; padding: 0; margin: 0; -webkit-font-smoothing: antialiased; }
-      #print-area { background-color: #ffffff !important; background: #ffffff !important; color: #0f172a !important; padding: 6px; box-sizing: border-box; width: 100%; min-height: 100vh; }
-      body, div, p, span, td, th { color: #0f172a !important; }
+      * { -webkit-print-color-adjust: exact ; print-color-adjust: exact ; box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { font-family: 'Inter', sans-serif; color: #0f172a ; background-color: #ffffff ; background: #ffffff ; padding: 0; margin: 0; -webkit-font-smoothing: antialiased; }
+      #print-area { background-color: #ffffff ; background: #ffffff ; color: #0f172a ; padding: 6px; box-sizing: border-box; width: 100%; min-height: 100vh; }
+      body, div, p, span, td, th { color: #0f172a ; }
       
       .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
-      .header-card { background: #0f172a !important; color: #ffffff !important; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-      .header-card * { color: #ffffff !important; }
+      .header-card { background: #0f172a ; color: #ffffff ; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .header-card * { color: #ffffff ; }
       .brand-box { display: flex; align-items: center; gap: 8px; }
-      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ffffff !important; }
-      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #ffffff !important; }
-      .brand-sub { font-size: 9.5px; color: #94a3b8 !important; }
-      .period-badge { background: rgba(255,255,255,0.18) !important; color: #ffffff !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.5px; }
+      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ffffff ; }
+      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #ffffff ; }
+      .brand-sub { font-size: 9.5px; color: #94a3b8 ; }
+      .period-badge { background: rgba(255,255,255,0.18) ; color: #ffffff ; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.5px; }
 
-      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a !important; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
+      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a ; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
 
-      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10px; background-color: #ffffff !important; background: #ffffff !important; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-      th, td { border: 1px solid #cbd5e1; padding: 5px 7px; color: #0f172a !important; background-color: #ffffff !important; }
-      th { background-color: #0f172a !important; background: #0f172a !important; color: #ffffff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.3px; }
-      tfoot td { background-color: #f1f5f9 !important; background: #f1f5f9 !important; font-weight: 800; color: #0f172a !important; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10px; background-color: #ffffff ; background: #ffffff ; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+      th, td { border: 1px solid #cbd5e1; padding: 5px 7px; color: #0f172a ; background-color: #ffffff ; }
+      th { background-color: #0f172a ; background: #0f172a ; color: #ffffff ; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.3px; }
+      tfoot td { background-color: #f1f5f9 ; background: #f1f5f9 ; font-weight: 800; color: #0f172a ; }
       
       .toolbar-btn { padding: 7px 16px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; }
-      @media print { .no-print { display: none !important; } }
+      @media print { .no-print { display: none ; } }
     </style>
   </head>
   <body>
@@ -7020,29 +7020,29 @@ window._printInternalPayrollSummary = () => {
     </script>
     <style>
       @page { size: A4 landscape; margin: 5mm; }
-      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
-      html, body { font-family: 'Inter', sans-serif; color: #0f172a !important; background-color: #ffffff !important; background: #ffffff !important; padding: 0; margin: 0; -webkit-font-smoothing: antialiased; }
-      #print-area { background-color: #ffffff !important; background: #ffffff !important; color: #0f172a !important; padding: 6px; box-sizing: border-box; width: 100%; min-height: 100vh; }
-      body, div, p, span, td, th { color: #0f172a !important; }
+      * { -webkit-print-color-adjust: exact ; print-color-adjust: exact ; box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { font-family: 'Inter', sans-serif; color: #0f172a ; background-color: #ffffff ; background: #ffffff ; padding: 0; margin: 0; -webkit-font-smoothing: antialiased; }
+      #print-area { background-color: #ffffff ; background: #ffffff ; color: #0f172a ; padding: 6px; box-sizing: border-box; width: 100%; min-height: 100vh; }
+      body, div, p, span, td, th { color: #0f172a ; }
       
       .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
-      .header-card { background: #0f172a !important; color: #ffffff !important; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-      .header-card * { color: #ffffff !important; }
+      .header-card { background: #0f172a ; color: #ffffff ; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .header-card * { color: #ffffff ; }
       .brand-box { display: flex; align-items: center; gap: 8px; }
-      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ffffff !important; }
-      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #ffffff !important; }
-      .brand-sub { font-size: 9.5px; color: #94a3b8 !important; }
-      .period-badge { background: rgba(255,255,255,0.18) !important; color: #ffffff !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.5px; }
+      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ffffff ; }
+      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #ffffff ; }
+      .brand-sub { font-size: 9.5px; color: #94a3b8 ; }
+      .period-badge { background: rgba(255,255,255,0.18) ; color: #ffffff ; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.5px; }
 
-      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a !important; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
+      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a ; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
 
-      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5px; background-color: #ffffff !important; background: #ffffff !important; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-      th, td { border: 1px solid #cbd5e1; padding: 5px 6px; color: #0f172a !important; background-color: #ffffff !important; }
-      th { background-color: #0f172a !important; background: #0f172a !important; color: #ffffff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px; }
-      tfoot td { background-color: #f1f5f9 !important; background: #f1f5f9 !important; font-weight: 800; color: #0f172a !important; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5px; background-color: #ffffff ; background: #ffffff ; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+      th, td { border: 1px solid #cbd5e1; padding: 5px 6px; color: #0f172a ; background-color: #ffffff ; }
+      th { background-color: #0f172a ; background: #0f172a ; color: #ffffff ; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px; }
+      tfoot td { background-color: #f1f5f9 ; background: #f1f5f9 ; font-weight: 800; color: #0f172a ; }
       
       .toolbar-btn { padding: 7px 16px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; }
-      @media print { .no-print { display: none !important; } }
+      @media print { .no-print { display: none ; } }
     </style>
   </head>
   <body>
@@ -7198,29 +7198,29 @@ window._printSavingsSummary = () => {
     </script>
     <style>
       @page { size: A4 landscape; margin: 5mm; }
-      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
-      html, body { font-family: 'Inter', sans-serif; color: #0f172a !important; background-color: #ffffff !important; background: #ffffff !important; padding: 0; margin: 0; -webkit-font-smoothing: antialiased; }
-      #print-area { background-color: #ffffff !important; background: #ffffff !important; color: #0f172a !important; padding: 6px; box-sizing: border-box; width: 100%; min-height: 100vh; }
-      body, div, p, span, td, th { color: #0f172a !important; }
+      * { -webkit-print-color-adjust: exact ; print-color-adjust: exact ; box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { font-family: 'Inter', sans-serif; color: #0f172a ; background-color: #ffffff ; background: #ffffff ; padding: 0; margin: 0; -webkit-font-smoothing: antialiased; }
+      #print-area { background-color: #ffffff ; background: #ffffff ; color: #0f172a ; padding: 6px; box-sizing: border-box; width: 100%; min-height: 100vh; }
+      body, div, p, span, td, th { color: #0f172a ; }
       
       .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
-      .header-card { background: #0f172a !important; color: #ffffff !important; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-      .header-card * { color: #ffffff !important; }
+      .header-card { background: #0f172a ; color: #ffffff ; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .header-card * { color: #ffffff ; }
       .brand-box { display: flex; align-items: center; gap: 8px; }
-      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ffffff !important; }
-      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #ffffff !important; }
-      .brand-sub { font-size: 9.5px; color: #94a3b8 !important; }
-      .period-badge { background: rgba(255,255,255,0.18) !important; color: #ffffff !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.5px; }
+      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ffffff ; }
+      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #ffffff ; }
+      .brand-sub { font-size: 9.5px; color: #94a3b8 ; }
+      .period-badge { background: rgba(255,255,255,0.18) ; color: #ffffff ; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.5px; }
 
-      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a !important; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
+      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a ; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
 
-      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9px; background-color: #ffffff !important; background: #ffffff !important; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-      th, td { border: 1px solid #cbd5e1; padding: 4.5px 5px; color: #0f172a !important; background-color: #ffffff !important; }
-      th { background-color: #0f172a !important; background: #0f172a !important; color: #ffffff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px; }
-      tfoot td { background-color: #f1f5f9 !important; background: #f1f5f9 !important; font-weight: 800; color: #0f172a !important; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9px; background-color: #ffffff ; background: #ffffff ; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+      th, td { border: 1px solid #cbd5e1; padding: 4.5px 5px; color: #0f172a ; background-color: #ffffff ; }
+      th { background-color: #0f172a ; background: #0f172a ; color: #ffffff ; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px; }
+      tfoot td { background-color: #f1f5f9 ; background: #f1f5f9 ; font-weight: 800; color: #0f172a ; }
       
       .toolbar-btn { padding: 7px 16px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; }
-      @media print { .no-print { display: none !important; } }
+      @media print { .no-print { display: none ; } }
     </style>
   </head>
   <body>
@@ -7352,29 +7352,29 @@ window._printOvertimeSummary = () => {
     </script>
     <style>
       @page { size: A4 landscape; margin: 4mm 6mm; }
-      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
-      html, body { font-family: 'Inter', sans-serif; color: #0f172a !important; background-color: #ffffff !important; background: #ffffff !important; padding: 0; margin: 0; -webkit-font-smoothing: antialiased; }
-      #print-area { background-color: #ffffff !important; background: #ffffff !important; color: #0f172a !important; padding: 6px; box-sizing: border-box; width: 100%; min-height: 100vh; }
-      body, div, p, span, td, th { color: #0f172a !important; }
+      * { -webkit-print-color-adjust: exact ; print-color-adjust: exact ; box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { font-family: 'Inter', sans-serif; color: #0f172a ; background-color: #ffffff ; background: #ffffff ; padding: 0; margin: 0; -webkit-font-smoothing: antialiased; }
+      #print-area { background-color: #ffffff ; background: #ffffff ; color: #0f172a ; padding: 6px; box-sizing: border-box; width: 100%; min-height: 100vh; }
+      body, div, p, span, td, th { color: #0f172a ; }
       
       .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
-      .header-card { background: #0f172a !important; color: #ffffff !important; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-      .header-card * { color: #ffffff !important; }
+      .header-card { background: #0f172a ; color: #ffffff ; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .header-card * { color: #ffffff ; }
       .brand-box { display: flex; align-items: center; gap: 8px; }
-      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ffffff !important; }
-      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #ffffff !important; }
-      .brand-sub { font-size: 9.5px; color: #94a3b8 !important; }
-      .period-badge { background: rgba(255,255,255,0.18) !important; color: #ffffff !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.5px; }
+      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ffffff ; }
+      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #ffffff ; }
+      .brand-sub { font-size: 9.5px; color: #94a3b8 ; }
+      .period-badge { background: rgba(255,255,255,0.18) ; color: #ffffff ; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.5px; }
 
-      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a !important; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
+      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a ; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
 
-      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10px; background-color: #ffffff !important; background: #ffffff !important; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-      th, td { border: 1px solid #cbd5e1; padding: 5.5px 7px; color: #0f172a !important; background-color: #ffffff !important; }
-      th { background-color: #0f172a !important; background: #0f172a !important; color: #ffffff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.3px; }
-      tfoot td { background-color: #f1f5f9 !important; background: #f1f5f9 !important; font-weight: 800; color: #0f172a !important; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10px; background-color: #ffffff ; background: #ffffff ; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+      th, td { border: 1px solid #cbd5e1; padding: 5.5px 7px; color: #0f172a ; background-color: #ffffff ; }
+      th { background-color: #0f172a ; background: #0f172a ; color: #ffffff ; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.3px; }
+      tfoot td { background-color: #f1f5f9 ; background: #f1f5f9 ; font-weight: 800; color: #0f172a ; }
       
       .toolbar-btn { padding: 7px 16px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; }
-      @media print { .no-print { display: none !important; } }
+      @media print { .no-print { display: none ; } }
     </style>
   </head>
   <body>
