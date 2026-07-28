@@ -5643,7 +5643,7 @@ window._printAllPayrollBundle = () => {
 
     currentPageSlips.push(slipHTML);
     if (currentPageSlips.length === 6 || idx === users.length - 1) {
-      slipsHTML += `<div class="page-grid per-page-6">${currentPageSlips.join('')}</div>`;
+      slipsHTML += `<div class="landscape-page-wrapper"><div class="page-grid per-page-6">${currentPageSlips.join('')}</div></div>`;
       currentPageSlips = [];
     }
   });
@@ -5810,8 +5810,9 @@ window._printAllPayrollBundle = () => {
       th { background: #0f172a !important; color: #fff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px; }
       tfoot td { background: #f1f5f9 !important; font-weight: 800; color: #0f172a; }
 
-      .page-grid { display: grid; grid-gap: 6px; page-break-after: always; width: 100%; min-height: 96vh; padding: 3px; }
-      .per-page-6 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+      .landscape-page-wrapper { width: 297mm; height: 210mm; position: relative; overflow: hidden; page-break-after: always; }
+      .page-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; grid-gap: 6px; width: 210mm; height: 297mm; padding: 6px; box-sizing: border-box; position: absolute; top: 0; left: 0; transform: translate(297mm, 0) rotate(90deg); transform-origin: 0 0; }
+      .per-page-6 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; }
       .slip-card { border: none; border-radius: 8px; display: flex; flex-direction: column; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; position: relative; }
       .slip-top-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); }
       .slip-header-area { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%) !important; padding: 7px 10px; display: flex; justify-content: space-between; align-items: center; }
@@ -6161,7 +6162,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
     currentPageSlips.push(slipHTML);
 
     if (currentPageSlips.length === perPage || idx === users.length - 1) {
-      slipsHTML += `<div class="page-grid per-page-${perPage}">${currentPageSlips.join('')}</div>`;
+      slipsHTML += `<div class="landscape-page-wrapper"><div class="page-grid per-page-${perPage}">${currentPageSlips.join('')}</div></div>`;
       currentPageSlips = [];
     }
   });
@@ -6196,9 +6197,10 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
       
-      .page-grid { display: grid; grid-gap: 6px; page-break-after: always; width: 100%; min-height: 96vh; padding: 3px; }
+      .landscape-page-wrapper { width: ${paperSize === 'F4' ? '330mm' : '297mm'}; height: ${paperSize === 'F4' ? '215mm' : '210mm'}; position: relative; overflow: hidden; page-break-after: always; }
+      .page-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; grid-gap: 6px; width: ${paperSize === 'F4' ? '215mm' : '210mm'}; height: ${paperSize === 'F4' ? '330mm' : '297mm'}; padding: 6px; box-sizing: border-box; position: absolute; top: 0; left: 0; transform: translate(${paperSize === 'F4' ? '330mm' : '297mm'}, 0) rotate(90deg); transform-origin: 0 0; }
       .per-page-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
-      .per-page-6 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+      .per-page-6 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; }
 
       .slip-card {
         border: none;
