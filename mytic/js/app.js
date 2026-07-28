@@ -6801,13 +6801,16 @@ window._printAllPayrollBundle = () => {
   const formattedPrintDate = new Date(printDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
   const currentYear = new Date().getFullYear();
 
-  const spvAdminCount = users.filter(u => {
-    const p = (u.position || '').toLowerCase();
-    return p.includes('admin') || p.includes('supervisor') || p.includes('spv');
-  }).length || 3;
-  const oprCsCount = users.length - spvAdminCount || 11;
-  const rawPwSpvAdmin = (pwInt.total * 0.20) / Math.max(1, spvAdminCount);
-  const rawPwOprCs = (pwInt.total * 0.80) / Math.max(1, oprCsCount);
+  const group1Users = users.filter(u => isPositionMatch(u.position, settings.pw_int_group1_positions));
+  const group2Users = users.filter(u => !isPositionMatch(u.position, settings.pw_int_group1_positions));
+
+  const g1Count = Math.max(1, group1Users.length);
+  const g2Count = Math.max(1, group2Users.length);
+
+  const pctSpv = (settings.pw_int_group1_percent || 20) / 100;
+  const pctOpr = (settings.pw_int_group2_percent || 80) / 100;
+  const rawPwSpvAdmin = (pwInt.total * pctSpv) / g1Count;
+  const rawPwOprCs = (pwInt.total * pctOpr) / g2Count;
 
   // --- 1. SLIP GAJI AMPLOP (6 SLIP / PAGE) ---
   let slipsHTML = '';
