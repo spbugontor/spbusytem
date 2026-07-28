@@ -5245,10 +5245,25 @@ function getPayrollSettings() {
     umk_staf: Number(s.umk_staf !== undefined ? s.umk_staf : 2549876),
     umk_manager: Number(s.umk_manager !== undefined ? s.umk_manager : 3059851),
     bpjs_percent: Number(s.bpjs_percent !== undefined ? s.bpjs_percent : 1),
-    pw_percent_internal_spv_admin: Number(s.pw_percent_internal_spv_admin !== undefined ? s.pw_percent_internal_spv_admin : 20),
-    pw_percent_internal_opr_cs: Number(s.pw_percent_internal_opr_cs !== undefined ? s.pw_percent_internal_opr_cs : 80),
-    pw_percent_audit_mgr_admin: Number(s.pw_percent_audit_mgr_admin !== undefined ? s.pw_percent_audit_mgr_admin : 20),
-    pw_percent_audit_staff: Number(s.pw_percent_audit_staff !== undefined ? s.pw_percent_audit_staff : 80),
+
+    // PW Internal Groups
+    pw_int_group1_name: s.pw_int_group1_name || 'SPV & Admin',
+    pw_int_group1_positions: s.pw_int_group1_positions || ['Supervisor', 'Admin', 'SPV'],
+    pw_int_group1_percent: Number(s.pw_int_group1_percent !== undefined ? s.pw_int_group1_percent : 20),
+
+    pw_int_group2_name: s.pw_int_group2_name || 'Operator & CS',
+    pw_int_group2_positions: s.pw_int_group2_positions || ['Operator', 'Cleaning Service', 'CS'],
+    pw_int_group2_percent: Number(s.pw_int_group2_percent !== undefined ? s.pw_int_group2_percent : 80),
+
+    // PW Audit Groups
+    pw_aud_group1_name: s.pw_aud_group1_name || 'Manager & Admin',
+    pw_aud_group1_positions: s.pw_aud_group1_positions || ['Manager', 'Admin'],
+    pw_aud_group1_percent: Number(s.pw_aud_group1_percent !== undefined ? s.pw_aud_group1_percent : 20),
+
+    pw_aud_group2_name: s.pw_aud_group2_name || 'SPV, Operator & CS',
+    pw_aud_group2_positions: s.pw_aud_group2_positions || ['Supervisor', 'SPV', 'Operator', 'Cleaning Service', 'CS'],
+    pw_aud_group2_percent: Number(s.pw_aud_group2_percent !== undefined ? s.pw_aud_group2_percent : 80),
+
     bbm_products: Array.isArray(s.bbm_products) && s.bbm_products.length > 0 ? s.bbm_products : [
       { id: 'pertalite', name: 'Pertalite', mult_internal: 2, mult_audit: 4 },
       { id: 'solar', name: 'Solar / Biosolar', mult_internal: 2, mult_audit: 4 },
@@ -5265,6 +5280,23 @@ function getPayrollSettings() {
       { id: 'tunj_masa_kerja', name: 'Tunjangan Masa Kerja' }
     ]
   };
+}
+
+function isPositionMatch(empPosition, positionList) {
+  if (!empPosition || !Array.isArray(positionList)) return false;
+  const empPosLower = empPosition.toLowerCase().trim();
+  return positionList.some(p => {
+    const pLower = (p || '').toLowerCase().trim();
+    if (!pLower) return false;
+    return empPosLower.includes(pLower) || pLower.includes(empPosLower);
+  });
+}
+
+function getAvailablePositions() {
+  const users = getUsers();
+  const defaultPositions = ['Manager', 'Supervisor', 'Admin', 'Operator', 'Cleaning Service'];
+  const userPositions = users.map(u => u.position).filter(Boolean);
+  return Array.from(new Set([...defaultPositions, ...userPositions]));
 }
 
 function getBbmProducts() {
@@ -5450,16 +5482,41 @@ window._resetPayrollMonthData = async () => {
 
 window._savePayrollSettings = async () => {
   const current = getPayrollSettings();
+
+  const getCheckedPositions = (className) => {
+    return Array.from(document.querySelectorAll(`.${className}:checked`)).map(el => el.value);
+  };
+
+  const intG1Pos = getCheckedPositions('pw-int-g1-pos');
+  const intG2Pos = getCheckedPositions('pw-int-g2-pos');
+  const audG1Pos = getCheckedPositions('pw-aud-g1-pos');
+  const audG2Pos = getCheckedPositions('pw-aud-g2-pos');
+
   const settings = {
     ...current,
     gaji_pokok_internal_staf: Number($('set-gaji-pokok-internal')?.value || 1000000),
     umk_staf: Number($('set-umk-staf')?.value || 2549876),
     umk_manager: Number($('set-umk-manager')?.value || 3059851),
     bpjs_percent: Number($('set-bpjs-percent')?.value || 1),
-    pw_percent_internal_spv_admin: Number($('set-pw-int-spv')?.value || 20),
-    pw_percent_internal_opr_cs: Number($('set-pw-int-opr')?.value || 80),
-    pw_percent_audit_mgr_admin: Number($('set-pw-aud-mgr')?.value || 20),
-    pw_percent_audit_staff: Number($('set-pw-aud-staf')?.value || 80),
+
+    // PW Int Groups
+    pw_int_group1_name: $('set-pw-int-g1-name')?.value.trim() || 'Kelompok 1 (Internal)',
+    pw_int_group1_positions: intG1Pos.length > 0 ? intG1Pos : current.pw_int_group1_positions,
+    pw_int_group1_percent: Number($('set-pw-int-g1-pct')?.value || 20),
+
+    pw_int_group2_name: $('set-pw-int-g2-name')?.value.trim() || 'Kelompok 2 (Internal)',
+    pw_int_group2_positions: intG2Pos.length > 0 ? intG2Pos : current.pw_int_group2_positions,
+    pw_int_group2_percent: Number($('set-pw-int-g2-pct')?.value || 80),
+
+    // PW Aud Groups
+    pw_aud_group1_name: $('set-pw-aud-g1-name')?.value.trim() || 'Kelompok 1 (Audit)',
+    pw_aud_group1_positions: audG1Pos.length > 0 ? audG1Pos : current.pw_aud_group1_positions,
+    pw_aud_group1_percent: Number($('set-pw-aud-g1-pct')?.value || 20),
+
+    pw_aud_group2_name: $('set-pw-aud-g2-name')?.value.trim() || 'Kelompok 2 (Audit)',
+    pw_aud_group2_positions: audG2Pos.length > 0 ? audG2Pos : current.pw_aud_group2_positions,
+    pw_aud_group2_percent: Number($('set-pw-aud-g2-pct')?.value || 80),
+
     name_finance_manager: $('set-name-finance')?.value.trim() || 'Hazel Hudaya Bisri',
     name_audit_supervisor: $('set-name-spv')?.value.trim() || 'Gilang Wahyu Ramadhan',
     name_audit_manager: $('set-name-manager')?.value.trim() || 'Pedri Fauzi',
@@ -5470,7 +5527,7 @@ window._savePayrollSettings = async () => {
   renderCurrentSection();
 
   await set(ref(db, 'payroll_settings'), settings);
-  showToast('Pengaturan Master Gaji berhasil disimpan!', 'success');
+  showToast('Pengaturan Master Gaji & Jabatan berhasil disimpan!', 'success');
 };
 
 window._addBbmProduct = async () => {
@@ -6157,18 +6214,17 @@ function renderInternalPayrollTab() {
   const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
   const monthData = (allData.payroll && allData.payroll[month] && allData.payroll[month].internal_data) || {};
 
-  // Count non-manager employees for PW distribution
-  const spvAdminCount = users.filter(u => {
-    const p = (u.position || '').toLowerCase();
-    return p.includes('admin') || p.includes('supervisor') || p.includes('spv');
-  }).length || 3;
+  // Count non-manager employees for PW distribution based on configured positions
+  const group1Users = users.filter(u => isPositionMatch(u.position, settings.pw_int_group1_positions));
+  const group2Users = users.filter(u => !isPositionMatch(u.position, settings.pw_int_group1_positions));
 
-  const oprCsCount = users.length - spvAdminCount || 11;
+  const g1Count = Math.max(1, group1Users.length);
+  const g2Count = Math.max(1, group2Users.length);
 
-  const pctSpv = (settings.pw_percent_internal_spv_admin || 20) / 100;
-  const pctOpr = (settings.pw_percent_internal_opr_cs || 80) / 100;
-  const rawPwSpvAdmin = (pwInt.total * pctSpv) / Math.max(1, spvAdminCount);
-  const rawPwOprCs = (pwInt.total * pctOpr) / Math.max(1, oprCsCount);
+  const pctSpv = (settings.pw_int_group1_percent || 20) / 100;
+  const pctOpr = (settings.pw_int_group2_percent || 80) / 100;
+  const rawPwSpvAdmin = (pwInt.total * pctSpv) / g1Count;
+  const rawPwOprCs = (pwInt.total * pctOpr) / g2Count;
 
   let totalGajiKotorAll = 0;
   let totalTabunganAll = 0;
@@ -6179,7 +6235,7 @@ function renderInternalPayrollTab() {
     const empId = u.emp_id;
     const empData = monthData[empId] || {};
     const pos = u.position || '-';
-    const isSpvAdmin = pos.toLowerCase().includes('admin') || pos.toLowerCase().includes('supervisor') || pos.toLowerCase().includes('spv');
+    const isSpvAdmin = isPositionMatch(pos, settings.pw_int_group1_positions);
     const defaultPwRound = isSpvAdmin ? 150000 : 100000;
     
     const pwEnabled = empData.pw_enabled !== undefined ? empData.pw_enabled : false;
@@ -6324,7 +6380,7 @@ function renderInternalPayrollTab() {
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.85rem; flex-wrap:wrap; gap:0.5rem;">
         <div style="font-size:0.8rem; font-weight:700; color:var(--text-main);">
-          Total PW Internal: <span style="color:var(--primary); font-size:0.95rem;">${fmt(pwInt.total)}</span> (SPV+Admin ${settings.pw_percent_internal_spv_admin}%: ${fmt(pwInt.total * pctSpv)} | OPR+CS ${settings.pw_percent_internal_opr_cs}%: ${fmt(pwInt.total * pctOpr)})
+          Total PW Internal: <span style="color:var(--primary); font-size:0.95rem;">${fmt(pwInt.total)}</span> (${esc(settings.pw_int_group1_name)} ${settings.pw_int_group1_percent}%: ${fmt(pwInt.total * pctSpv)} | ${esc(settings.pw_int_group2_name)} ${settings.pw_int_group2_percent}%: ${fmt(pwInt.total * pctOpr)})
         </div>
         <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
           <button class="btn btn-outline-danger" style="padding:0.4rem 0.9rem; font-size:0.8rem;" ${isLocked ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="window._resetPayrollMonthData()">🗑️ Bersihkan Data Bulan Ini</button>
@@ -6393,10 +6449,16 @@ function renderAuditPayrollTab() {
   const staffUsers = users.filter(u => u.emp_id !== managerObj.emp_id);
   const auditUsers = [managerObj, ...staffUsers];
 
-  const pctMgrAud = (settings.pw_percent_audit_mgr_admin || 20) / 100;
-  const pctStafAud = (settings.pw_percent_audit_staff || 80) / 100;
-  const pwMgrAdminEach = (pwAudit.total * pctMgrAud) / 2;
-  const pwStaffEach = (pwAudit.total * pctStafAud) / 13;
+  const group1AuditUsers = auditUsers.filter(u => isPositionMatch(u.position, settings.pw_aud_group1_positions));
+  const group2AuditUsers = auditUsers.filter(u => !isPositionMatch(u.position, settings.pw_aud_group1_positions));
+
+  const g1AudCount = Math.max(1, group1AuditUsers.length);
+  const g2AudCount = Math.max(1, group2AuditUsers.length);
+
+  const pctMgrAud = (settings.pw_aud_group1_percent || 20) / 100;
+  const pctStafAud = (settings.pw_aud_group2_percent || 80) / 100;
+  const pwMgrAdminEach = (pwAudit.total * pctMgrAud) / g1AudCount;
+  const pwStaffEach = (pwAudit.total * pctStafAud) / g2AudCount;
 
   let totalGajiPokokAll = 0;
   let totalPwAll = 0;
@@ -6406,10 +6468,10 @@ function renderAuditPayrollTab() {
   const rowsHTML = auditUsers.map((u, idx) => {
     const pos = u.position || '-';
     const isMgr = pos.toLowerCase() === 'manager' || u.emp_id === managerObj.emp_id;
-    const isAdmin = pos.toLowerCase().includes('admin');
+    const isG1 = isPositionMatch(pos, settings.pw_aud_group1_positions);
 
     const gajiPokok = isMgr ? settings.umk_manager : settings.umk_staf;
-    const pwVal = (isMgr || isAdmin) ? pwMgrAdminEach : pwStaffEach;
+    const pwVal = isG1 ? pwMgrAdminEach : pwStaffEach;
     const bpjsVal = gajiPokok * (settings.bpjs_percent / 100);
     const thpVal = gajiPokok + pwVal - bpjsVal;
 
@@ -6445,8 +6507,8 @@ function renderAuditPayrollTab() {
 
       <div style="background:var(--surface); border:1px solid var(--border); padding:0.75rem; border-radius:var(--radius-md); margin-bottom:1rem; font-size:0.8rem;">
         <strong>Omset Penjualan Liter BBM (Audit):</strong> Total PW Audit = <strong style="color:var(--primary);">${fmt(pwAudit.total)}</strong><br>
-        • Manager & Admin (${settings.pw_percent_audit_mgr_admin}%): ${fmt(pwAudit.total * pctMgrAud)} (Per @ ${fmt(pwMgrAdminEach)})<br>
-        • SPV, Operator, & CS (${settings.pw_percent_audit_staff}%): ${fmt(pwAudit.total * pctStafAud)} (Per @ ${fmt(pwStaffEach)})
+        • ${esc(settings.pw_aud_group1_name)} (${settings.pw_aud_group1_percent}%): ${fmt(pwAudit.total * pctMgrAud)} (Per @ ${fmt(pwMgrAdminEach)})<br>
+        • ${esc(settings.pw_aud_group2_name)} (${settings.pw_aud_group2_percent}%): ${fmt(pwAudit.total * pctStafAud)} (Per @ ${fmt(pwStaffEach)})
       </div>
 
       <div style="overflow-x:auto;">
@@ -6480,6 +6542,7 @@ function renderAuditPayrollTab() {
 
 function renderPayrollSettingsTab() {
   const s = getPayrollSettings();
+  const availPositions = getAvailablePositions();
 
   const bbmRowsHTML = s.bbm_products.map((b, idx) => {
     return `<tr>
@@ -6536,35 +6599,95 @@ function renderPayrollSettingsTab() {
         <button class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="window._savePayrollSettings()">Simpan Pengaturan Master Gaji</button>
       </div>
 
-      <!-- CARD 2: PERSENTASE PEMBAGIAN PW JABATAN -->
+      <!-- CARD 2: PERSENTASE & PEMILIHAN JABATAN PERTAMINA WAY (PW) -->
       <div class="card">
-        <h4 style="font-size:1rem; font-weight:800; color:var(--primary); margin-bottom:1rem;">📊 Persentase Pembagian Pertamina Way (PW)</h4>
+        <h4 style="font-size:1rem; font-weight:800; color:var(--primary); margin-bottom:1rem;">📊 Kelompok Jabatan & Persentase PW</h4>
         
-        <h5 style="font-size:0.85rem; font-weight:700; color:var(--text-main); margin-bottom:0.5rem;">Mode Internal (Gaji Asli):</h5>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem; margin-bottom:0.85rem;">
-          <div>
-            <label class="form-label" style="font-size:0.75rem;">SPV & Admin (%)</label>
-            <input id="set-pw-int-spv" type="number" value="${s.pw_percent_internal_spv_admin}" class="form-input">
+        <div style="background:var(--surface); border:1px solid var(--border); padding:0.75rem; border-radius:var(--radius-md); margin-bottom:1rem;">
+          <h5 style="font-size:0.85rem; font-weight:700; color:var(--text-main); margin-bottom:0.5rem;">Mode Internal (Gaji Asli):</h5>
+          
+          <div style="margin-bottom:0.75rem; padding-bottom:0.6rem; border-bottom:1px dashed var(--border);">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; margin-bottom:0.3rem;">
+              <input id="set-pw-int-g1-name" type="text" value="${esc(s.pw_int_group1_name)}" class="form-input" style="padding:0.25rem 0.4rem; font-size:0.8rem; font-weight:bold; flex:1;" title="Nama Kelompok 1 Internal">
+              <div style="display:flex; align-items:center; gap:0.2rem;">
+                <input id="set-pw-int-g1-pct" type="number" value="${s.pw_int_group1_percent}" class="form-input" style="width:55px; padding:0.25rem 0.3rem; font-size:0.8rem; font-weight:bold; text-align:right;">
+                <span style="font-size:0.78rem; font-weight:bold;">%</span>
+              </div>
+            </div>
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:0.25rem;">Pilih Jabatan Kelompok 1 Internal:</div>
+            <div style="display:flex; flex-wrap:wrap; gap:0.35rem;">
+              ${availPositions.map(pos => {
+                const isChecked = isPositionMatch(pos, s.pw_int_group1_positions);
+                return `<label style="font-size:0.72rem; background:var(--bg-color); padding:2px 6px; border-radius:4px; border:1px solid var(--border); display:flex; align-items:center; gap:0.25rem; cursor:pointer;">
+                  <input type="checkbox" class="pw-int-g1-pos" value="${esc(pos)}" ${isChecked ? 'checked' : ''}> ${esc(pos)}
+                </label>`;
+              }).join('')}
+            </div>
           </div>
+
           <div>
-            <label class="form-label" style="font-size:0.75rem;">Operator & CS (%)</label>
-            <input id="set-pw-int-opr" type="number" value="${s.pw_percent_internal_opr_cs}" class="form-input">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; margin-bottom:0.3rem;">
+              <input id="set-pw-int-g2-name" type="text" value="${esc(s.pw_int_group2_name)}" class="form-input" style="padding:0.25rem 0.4rem; font-size:0.8rem; font-weight:bold; flex:1;" title="Nama Kelompok 2 Internal">
+              <div style="display:flex; align-items:center; gap:0.2rem;">
+                <input id="set-pw-int-g2-pct" type="number" value="${s.pw_int_group2_percent}" class="form-input" style="width:55px; padding:0.25rem 0.3rem; font-size:0.8rem; font-weight:bold; text-align:right;">
+                <span style="font-size:0.78rem; font-weight:bold;">%</span>
+              </div>
+            </div>
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:0.25rem;">Pilih Jabatan Kelompok 2 Internal:</div>
+            <div style="display:flex; flex-wrap:wrap; gap:0.35rem;">
+              ${availPositions.map(pos => {
+                const isChecked = isPositionMatch(pos, s.pw_int_group2_positions);
+                return `<label style="font-size:0.72rem; background:var(--bg-color); padding:2px 6px; border-radius:4px; border:1px solid var(--border); display:flex; align-items:center; gap:0.25rem; cursor:pointer;">
+                  <input type="checkbox" class="pw-int-g2-pos" value="${esc(pos)}" ${isChecked ? 'checked' : ''}> ${esc(pos)}
+                </label>`;
+              }).join('')}
+            </div>
           </div>
         </div>
 
-        <h5 style="font-size:0.85rem; font-weight:700; color:var(--text-main); margin-bottom:0.5rem;">Mode Audit (Dokumen Pertamina):</h5>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem; margin-bottom:1rem;">
-          <div>
-            <label class="form-label" style="font-size:0.75rem;">Manager & Admin (%)</label>
-            <input id="set-pw-aud-mgr" type="number" value="${s.pw_percent_audit_mgr_admin}" class="form-input">
+        <div style="background:var(--surface); border:1px solid var(--border); padding:0.75rem; border-radius:var(--radius-md); margin-bottom:1rem;">
+          <h5 style="font-size:0.85rem; font-weight:700; color:var(--text-main); margin-bottom:0.5rem;">Mode Audit (Dokumen Pertamina):</h5>
+          
+          <div style="margin-bottom:0.75rem; padding-bottom:0.6rem; border-bottom:1px dashed var(--border);">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; margin-bottom:0.3rem;">
+              <input id="set-pw-aud-g1-name" type="text" value="${esc(s.pw_aud_group1_name)}" class="form-input" style="padding:0.25rem 0.4rem; font-size:0.8rem; font-weight:bold; flex:1;" title="Nama Kelompok 1 Audit">
+              <div style="display:flex; align-items:center; gap:0.2rem;">
+                <input id="set-pw-aud-g1-pct" type="number" value="${s.pw_aud_group1_percent}" class="form-input" style="width:55px; padding:0.25rem 0.3rem; font-size:0.8rem; font-weight:bold; text-align:right;">
+                <span style="font-size:0.78rem; font-weight:bold;">%</span>
+              </div>
+            </div>
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:0.25rem;">Pilih Jabatan Kelompok 1 Audit:</div>
+            <div style="display:flex; flex-wrap:wrap; gap:0.35rem;">
+              ${availPositions.map(pos => {
+                const isChecked = isPositionMatch(pos, s.pw_aud_group1_positions);
+                return `<label style="font-size:0.72rem; background:var(--bg-color); padding:2px 6px; border-radius:4px; border:1px solid var(--border); display:flex; align-items:center; gap:0.25rem; cursor:pointer;">
+                  <input type="checkbox" class="pw-aud-g1-pos" value="${esc(pos)}" ${isChecked ? 'checked' : ''}> ${esc(pos)}
+                </label>`;
+              }).join('')}
+            </div>
           </div>
+
           <div>
-            <label class="form-label" style="font-size:0.75rem;">SPV, Operator & CS (%)</label>
-            <input id="set-pw-aud-staf" type="number" value="${s.pw_percent_audit_staff}" class="form-input">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; margin-bottom:0.3rem;">
+              <input id="set-pw-aud-g2-name" type="text" value="${esc(s.pw_aud_group2_name)}" class="form-input" style="padding:0.25rem 0.4rem; font-size:0.8rem; font-weight:bold; flex:1;" title="Nama Kelompok 2 Audit">
+              <div style="display:flex; align-items:center; gap:0.2rem;">
+                <input id="set-pw-aud-g2-pct" type="number" value="${s.pw_aud_group2_percent}" class="form-input" style="width:55px; padding:0.25rem 0.3rem; font-size:0.8rem; font-weight:bold; text-align:right;">
+                <span style="font-size:0.78rem; font-weight:bold;">%</span>
+              </div>
+            </div>
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:0.25rem;">Pilih Jabatan Kelompok 2 Audit:</div>
+            <div style="display:flex; flex-wrap:wrap; gap:0.35rem;">
+              ${availPositions.map(pos => {
+                const isChecked = isPositionMatch(pos, s.pw_aud_group2_positions);
+                return `<label style="font-size:0.72rem; background:var(--bg-color); padding:2px 6px; border-radius:4px; border:1px solid var(--border); display:flex; align-items:center; gap:0.25rem; cursor:pointer;">
+                  <input type="checkbox" class="pw-aud-g2-pos" value="${esc(pos)}" ${isChecked ? 'checked' : ''}> ${esc(pos)}
+                </label>`;
+              }).join('')}
+            </div>
           </div>
         </div>
 
-        <button class="btn btn-primary" style="width:100%;" onclick="window._savePayrollSettings()">Simpan Persentase Pembagian</button>
+        <button class="btn btn-primary" style="width:100%;" onclick="window._savePayrollSettings()">Simpan Pengaturan Jabatan & Persentase</button>
       </div>
 
       <!-- CARD 3: TTD & PENANDATANGAN -->
