@@ -5776,13 +5776,17 @@ window._printAllPayrollBundle = () => {
     <script>
       function downloadPDFDirect() {
         const btn = document.getElementById('btn-dl-direct');
+        const origText = btn ? btn.innerHTML : '📥 UNDUH FILE PDF DIRECT';
         if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
         
+        document.body.classList.add('pdf-exporting');
+
+        function restoreUI() {
+          document.body.classList.remove('pdf-exporting');
+          if (btn) { btn.innerHTML = origText; btn.disabled = false; }
+        }
+
         function runGen() {
-          const content = document.createElement('div');
-          content.innerHTML = document.body.innerHTML;
-          content.querySelectorAll('.no-print').forEach(function(el){ el.remove(); });
-          
           const opt = {
             margin: [3, 3, 3, 3],
             filename: 'Laporan_Penggajian_Lengkap_SPBU_Gontor_${month}.pdf',
@@ -5791,23 +5795,23 @@ window._printAllPayrollBundle = () => {
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
             pagebreak: { mode: ['css', 'legacy'] }
           };
-          html2pdf().set(opt).from(content).save().then(function() {
-            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+          html2pdf().set(opt).from(document.body).save().then(function() {
+            restoreUI();
           }).catch(function(err) {
             console.error(err);
-            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            restoreUI();
             window.print();
           });
         }
 
         if (typeof html2pdf !== 'undefined') {
-          runGen();
+          setTimeout(runGen, 100);
         } else {
           var s = document.createElement('script');
           s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-          s.onload = runGen;
+          s.onload = function() { setTimeout(runGen, 100); };
           s.onerror = function() {
-            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            restoreUI();
             window.print();
           };
           document.head.appendChild(s);
@@ -5818,6 +5822,7 @@ window._printAllPayrollBundle = () => {
       @page { size: A4 landscape; margin: 4mm 6mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; padding: 6px; font-size: 10px; -webkit-font-smoothing: antialiased; }
+      body.pdf-exporting .no-print { display: none !important; }
 
       .page-break { page-break-before: always; }
       .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
@@ -6202,13 +6207,17 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
     <script>
       function downloadPDFDirect() {
         const btn = document.getElementById('btn-dl-direct');
+        const origText = btn ? btn.innerHTML : '📥 UNDUH FILE PDF DIRECT';
         if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
         
+        document.body.classList.add('pdf-exporting');
+
+        function restoreUI() {
+          document.body.classList.remove('pdf-exporting');
+          if (btn) { btn.innerHTML = origText; btn.disabled = false; }
+        }
+
         function runGen() {
-          const content = document.createElement('div');
-          content.innerHTML = document.body.innerHTML;
-          content.querySelectorAll('.no-print').forEach(function(el){ el.remove(); });
-          
           const opt = {
             margin: [2, 2, 2, 2],
             filename: 'Slip_Gaji_Amplop_${month}.pdf',
@@ -6217,23 +6226,23 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
             jsPDF: { unit: 'mm', format: paperSize === 'F4' ? [215, 330] : 'a4', orientation: 'portrait', compress: true },
             pagebreak: { mode: ['css', 'legacy'] }
           };
-          html2pdf().set(opt).from(content).save().then(function() {
-            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+          html2pdf().set(opt).from(document.body).save().then(function() {
+            restoreUI();
           }).catch(function(err) {
             console.error(err);
-            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            restoreUI();
             window.print();
           });
         }
 
         if (typeof html2pdf !== 'undefined') {
-          runGen();
+          setTimeout(runGen, 100);
         } else {
           var s = document.createElement('script');
           s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-          s.onload = runGen;
+          s.onload = function() { setTimeout(runGen, 100); };
           s.onerror = function() {
-            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            restoreUI();
             window.print();
           };
           document.head.appendChild(s);
@@ -6244,6 +6253,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       @page { size: ${paperSize === 'F4' ? '215mm 330mm' : 'A4'} portrait; margin: 4mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+      body.pdf-exporting .no-print { display: none !important; }
       
       .page-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; grid-gap: 6px; width: 100%; min-height: 95vh; padding: 4px; box-sizing: border-box; page-break-after: always; }
       .per-page-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
@@ -6515,13 +6525,17 @@ window._printAuditDocuments = () => {
     <script>
       function downloadPDFDirect() {
         const btn = document.getElementById('btn-dl-direct');
+        const origText = btn ? btn.innerHTML : '📥 UNDUH FILE PDF DIRECT';
         if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
         
+        document.body.classList.add('pdf-exporting');
+
+        function restoreUI() {
+          document.body.classList.remove('pdf-exporting');
+          if (btn) { btn.innerHTML = origText; btn.disabled = false; }
+        }
+
         function runGen() {
-          const content = document.createElement('div');
-          content.innerHTML = document.body.innerHTML;
-          content.querySelectorAll('.no-print').forEach(function(el){ el.remove(); });
-          
           const opt = {
             margin: [3, 3, 3, 3],
             filename: 'Dokumen_Audit_Pertamina_${month}.pdf',
@@ -6530,23 +6544,23 @@ window._printAuditDocuments = () => {
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
             pagebreak: { mode: ['css', 'legacy'] }
           };
-          html2pdf().set(opt).from(content).save().then(function() {
-            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+          html2pdf().set(opt).from(document.body).save().then(function() {
+            restoreUI();
           }).catch(function(err) {
             console.error(err);
-            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            restoreUI();
             window.print();
           });
         }
 
         if (typeof html2pdf !== 'undefined') {
-          runGen();
+          setTimeout(runGen, 100);
         } else {
           var s = document.createElement('script');
           s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-          s.onload = runGen;
+          s.onload = function() { setTimeout(runGen, 100); };
           s.onerror = function() {
-            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            restoreUI();
             window.print();
           };
           document.head.appendChild(s);
@@ -6557,6 +6571,7 @@ window._printAuditDocuments = () => {
       @page { size: A4 landscape; margin: 4mm 6mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; padding: 6px; font-size: 10.5px; -webkit-font-smoothing: antialiased; }
+      body.pdf-exporting .no-print { display: none !important; }
       
       .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
       .header-card { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%) !important; color: #fff; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
@@ -6925,13 +6940,17 @@ window._printInternalPayrollSummary = () => {
     <script>
       function downloadPDFDirect() {
         const btn = document.getElementById('btn-dl-direct');
+        const origText = btn ? btn.innerHTML : '📥 UNDUH FILE PDF DIRECT';
         if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
         
+        document.body.classList.add('pdf-exporting');
+
+        function restoreUI() {
+          document.body.classList.remove('pdf-exporting');
+          if (btn) { btn.innerHTML = origText; btn.disabled = false; }
+        }
+
         function runGen() {
-          const content = document.createElement('div');
-          content.innerHTML = document.body.innerHTML;
-          content.querySelectorAll('.no-print').forEach(function(el){ el.remove(); });
-          
           const opt = {
             margin: [3, 3, 3, 3],
             filename: 'Rekap_Gaji_Internal_${month}.pdf',
@@ -6940,23 +6959,23 @@ window._printInternalPayrollSummary = () => {
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
             pagebreak: { mode: ['css', 'legacy'] }
           };
-          html2pdf().set(opt).from(content).save().then(function() {
-            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+          html2pdf().set(opt).from(document.body).save().then(function() {
+            restoreUI();
           }).catch(function(err) {
             console.error(err);
-            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            restoreUI();
             window.print();
           });
         }
 
         if (typeof html2pdf !== 'undefined') {
-          runGen();
+          setTimeout(runGen, 100);
         } else {
           var s = document.createElement('script');
           s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-          s.onload = runGen;
+          s.onload = function() { setTimeout(runGen, 100); };
           s.onerror = function() {
-            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            restoreUI();
             window.print();
           };
           document.head.appendChild(s);
@@ -6967,6 +6986,7 @@ window._printInternalPayrollSummary = () => {
       @page { size: A4 landscape; margin: 5mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; padding: 6px; font-size: 9.5px; -webkit-font-smoothing: antialiased; }
+      body.pdf-exporting .no-print { display: none !important; }
       
       .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
       .header-card { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%) !important; color: #fff; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
@@ -7100,13 +7120,17 @@ window._printSavingsSummary = () => {
     <script>
       function downloadPDFDirect() {
         const btn = document.getElementById('btn-dl-direct');
+        const origText = btn ? btn.innerHTML : '📥 UNDUH FILE PDF DIRECT';
         if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
         
+        document.body.classList.add('pdf-exporting');
+
+        function restoreUI() {
+          document.body.classList.remove('pdf-exporting');
+          if (btn) { btn.innerHTML = origText; btn.disabled = false; }
+        }
+
         function runGen() {
-          const content = document.createElement('div');
-          content.innerHTML = document.body.innerHTML;
-          content.querySelectorAll('.no-print').forEach(function(el){ el.remove(); });
-          
           const opt = {
             margin: [3, 3, 3, 3],
             filename: 'Rekap_Tabungan_Karyawan_${currentYear}.pdf',
@@ -7115,23 +7139,23 @@ window._printSavingsSummary = () => {
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
             pagebreak: { mode: ['css', 'legacy'] }
           };
-          html2pdf().set(opt).from(content).save().then(function() {
-            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+          html2pdf().set(opt).from(document.body).save().then(function() {
+            restoreUI();
           }).catch(function(err) {
             console.error(err);
-            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            restoreUI();
             window.print();
           });
         }
 
         if (typeof html2pdf !== 'undefined') {
-          runGen();
+          setTimeout(runGen, 100);
         } else {
           var s = document.createElement('script');
           s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-          s.onload = runGen;
+          s.onload = function() { setTimeout(runGen, 100); };
           s.onerror = function() {
-            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            restoreUI();
             window.print();
           };
           document.head.appendChild(s);
@@ -7142,6 +7166,7 @@ window._printSavingsSummary = () => {
       @page { size: A4 landscape; margin: 5mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; padding: 6px; font-size: 9px; -webkit-font-smoothing: antialiased; }
+      body.pdf-exporting .no-print { display: none !important; }
       
       .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
       .header-card { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%) !important; color: #fff; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
@@ -7251,13 +7276,17 @@ window._printOvertimeSummary = () => {
     <script>
       function downloadPDFDirect() {
         const btn = document.getElementById('btn-dl-direct');
+        const origText = btn ? btn.innerHTML : '📥 UNDUH FILE PDF DIRECT';
         if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
         
+        document.body.classList.add('pdf-exporting');
+
+        function restoreUI() {
+          document.body.classList.remove('pdf-exporting');
+          if (btn) { btn.innerHTML = origText; btn.disabled = false; }
+        }
+
         function runGen() {
-          const content = document.createElement('div');
-          content.innerHTML = document.body.innerHTML;
-          content.querySelectorAll('.no-print').forEach(function(el){ el.remove(); });
-          
           const opt = {
             margin: [4, 4, 4, 4],
             filename: 'Rekap_Lembur_Karyawan_${month}.pdf',
@@ -7266,23 +7295,23 @@ window._printOvertimeSummary = () => {
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
             pagebreak: { mode: ['css', 'legacy'] }
           };
-          html2pdf().set(opt).from(content).save().then(function() {
-            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+          html2pdf().set(opt).from(document.body).save().then(function() {
+            restoreUI();
           }).catch(function(err) {
             console.error(err);
-            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            restoreUI();
             window.print();
           });
         }
 
         if (typeof html2pdf !== 'undefined') {
-          runGen();
+          setTimeout(runGen, 100);
         } else {
           var s = document.createElement('script');
           s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-          s.onload = runGen;
+          s.onload = function() { setTimeout(runGen, 100); };
           s.onerror = function() {
-            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            restoreUI();
             window.print();
           };
           document.head.appendChild(s);
@@ -7293,6 +7322,7 @@ window._printOvertimeSummary = () => {
       @page { size: A4 landscape; margin: 4mm 6mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; padding: 6px; font-size: 10.5px; -webkit-font-smoothing: antialiased; }
+      body.pdf-exporting .no-print { display: none !important; }
       
       .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
       .header-card { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%) !important; color: #fff; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
