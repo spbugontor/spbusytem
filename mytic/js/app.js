@@ -5772,7 +5772,6 @@ window._printAllPayrollBundle = () => {
     <title>Bundel Laporan Penggajian Lengkap - SPBU Gontor</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
       function downloadPDFDirect() {
         const btn = document.getElementById('btn-dl-direct');
@@ -5786,20 +5785,13 @@ window._printAllPayrollBundle = () => {
           }
         }
 
-        if (window.opener && typeof window.opener._downloadPdfFromMainWindow === 'function') {
-          window.opener._downloadPdfFromMainWindow('bundle', 'A4', '${month}', function(success) {
-            if (success) {
-              restoreUI('✅ PDF Terunduh!');
-            } else {
-              runLocalGen();
-            }
-          });
-          return;
-        }
+        const pdfLib = (window.opener && window.opener.html2pdf) ? window.opener.html2pdf : window.html2pdf;
 
-        runLocalGen();
+        if (typeof pdfLib !== 'undefined') {
+          const clone = document.createElement('div');
+          clone.innerHTML = document.body.innerHTML;
+          clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
 
-        function runLocalGen() {
           const opt = {
             margin: [3, 3, 3, 3],
             filename: 'Laporan_Penggajian_Lengkap_SPBU_Gontor_${month}.pdf',
@@ -5809,18 +5801,16 @@ window._printAllPayrollBundle = () => {
             pagebreak: { mode: ['css', 'legacy'] }
           };
 
-          if (typeof html2pdf !== 'undefined') {
-            html2pdf().set(opt).from(document.body).save().then(function() {
-              restoreUI('✅ PDF Terunduh!');
-            }).catch(function(err) {
-              console.error(err);
-              restoreUI();
-              alert('Penyimpanan otomatis diblokir browser. Gunakan tombol CETAK / PRINT.');
-            });
-          } else {
+          pdfLib().set(opt).from(clone).save().then(function() {
+            restoreUI('✅ PDF Terunduh!');
+          }).catch(function(err) {
+            console.error(err);
             restoreUI();
-            alert('Pustaka PDF belum siap.');
-          }
+            alert('Perangkat Anda memblokir unduhan otomatis. Silakan gunakan tombol CETAK / PRINT.');
+          });
+        } else {
+          restoreUI();
+          alert('Pustaka PDF belum dimuat. Silakan muat ulang halaman utama.');
         }
       }
     </script>
@@ -6208,7 +6198,6 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
     <title>Slip Gaji Amplop - SPBU Gontor</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
       function downloadPDFDirect() {
         const btn = document.getElementById('btn-dl-direct');
@@ -6222,20 +6211,13 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
           }
         }
 
-        if (window.opener && typeof window.opener._downloadPdfFromMainWindow === 'function') {
-          window.opener._downloadPdfFromMainWindow('slips', '${paperSize}', '${month}', function(success) {
-            if (success) {
-              restoreUI('✅ PDF Terunduh!');
-            } else {
-              runLocalGen();
-            }
-          });
-          return;
-        }
+        const pdfLib = (window.opener && window.opener.html2pdf) ? window.opener.html2pdf : window.html2pdf;
 
-        runLocalGen();
+        if (typeof pdfLib !== 'undefined') {
+          const clone = document.createElement('div');
+          clone.innerHTML = document.body.innerHTML;
+          clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
 
-        function runLocalGen() {
           const opt = {
             margin: [2, 2, 2, 2],
             filename: 'Slip_Gaji_Amplop_${month}.pdf',
@@ -6245,18 +6227,16 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
             pagebreak: { mode: ['css', 'legacy'] }
           };
 
-          if (typeof html2pdf !== 'undefined') {
-            html2pdf().set(opt).from(document.body).save().then(function() {
-              restoreUI('✅ PDF Terunduh!');
-            }).catch(function(err) {
-              console.error(err);
-              restoreUI();
-              alert('Penyimpanan otomatis diblokir browser. Gunakan tombol CETAK / PRINT.');
-            });
-          } else {
+          pdfLib().set(opt).from(clone).save().then(function() {
+            restoreUI('✅ PDF Terunduh!');
+          }).catch(function(err) {
+            console.error(err);
             restoreUI();
-            alert('Pustaka PDF belum siap.');
-          }
+            alert('Perangkat Anda memblokir unduhan otomatis. Silakan gunakan tombol CETAK / PRINT.');
+          });
+        } else {
+          restoreUI();
+          alert('Pustaka PDF belum dimuat. Silakan muat ulang halaman utama.');
         }
       }
     </script>
@@ -6531,7 +6511,6 @@ window._printAuditDocuments = () => {
     <title>Dokumen Resmi Audit Pertamina - SPBU Gontor</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
       function downloadPDFDirect() {
         const btn = document.getElementById('btn-dl-direct');
@@ -6545,20 +6524,13 @@ window._printAuditDocuments = () => {
           }
         }
 
-        if (window.opener && typeof window.opener._downloadPdfFromMainWindow === 'function') {
-          window.opener._downloadPdfFromMainWindow('audit', 'A4', '${month}', function(success) {
-            if (success) {
-              restoreUI('✅ PDF Terunduh!');
-            } else {
-              runLocalGen();
-            }
-          });
-          return;
-        }
+        const pdfLib = (window.opener && window.opener.html2pdf) ? window.opener.html2pdf : window.html2pdf;
 
-        runLocalGen();
+        if (typeof pdfLib !== 'undefined') {
+          const clone = document.createElement('div');
+          clone.innerHTML = document.body.innerHTML;
+          clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
 
-        function runLocalGen() {
           const opt = {
             margin: [3, 3, 3, 3],
             filename: 'Dokumen_Audit_Pertamina_${month}.pdf',
@@ -6568,18 +6540,16 @@ window._printAuditDocuments = () => {
             pagebreak: { mode: ['css', 'legacy'] }
           };
 
-          if (typeof html2pdf !== 'undefined') {
-            html2pdf().set(opt).from(document.body).save().then(function() {
-              restoreUI('✅ PDF Terunduh!');
-            }).catch(function(err) {
-              console.error(err);
-              restoreUI();
-              alert('Penyimpanan otomatis diblokir browser. Gunakan tombol CETAK / PRINT.');
-            });
-          } else {
+          pdfLib().set(opt).from(clone).save().then(function() {
+            restoreUI('✅ PDF Terunduh!');
+          }).catch(function(err) {
+            console.error(err);
             restoreUI();
-            alert('Pustaka PDF belum siap.');
-          }
+            alert('Perangkat Anda memblokir unduhan otomatis. Silakan gunakan tombol CETAK / PRINT.');
+          });
+        } else {
+          restoreUI();
+          alert('Pustaka PDF belum dimuat. Silakan muat ulang halaman utama.');
         }
       }
     </script>
@@ -6952,7 +6922,6 @@ window._printInternalPayrollSummary = () => {
     <title>Penerimaan Gaji Karyawan Internal - SPBU Gontor</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
       function downloadPDFDirect() {
         const btn = document.getElementById('btn-dl-direct');
@@ -6966,20 +6935,13 @@ window._printInternalPayrollSummary = () => {
           }
         }
 
-        if (window.opener && typeof window.opener._downloadPdfFromMainWindow === 'function') {
-          window.opener._downloadPdfFromMainWindow('internal', 'A4', '${month}', function(success) {
-            if (success) {
-              restoreUI('✅ PDF Terunduh!');
-            } else {
-              runLocalGen();
-            }
-          });
-          return;
-        }
+        const pdfLib = (window.opener && window.opener.html2pdf) ? window.opener.html2pdf : window.html2pdf;
 
-        runLocalGen();
+        if (typeof pdfLib !== 'undefined') {
+          const clone = document.createElement('div');
+          clone.innerHTML = document.body.innerHTML;
+          clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
 
-        function runLocalGen() {
           const opt = {
             margin: [3, 3, 3, 3],
             filename: 'Rekap_Gaji_Internal_${month}.pdf',
@@ -6989,18 +6951,16 @@ window._printInternalPayrollSummary = () => {
             pagebreak: { mode: ['css', 'legacy'] }
           };
 
-          if (typeof html2pdf !== 'undefined') {
-            html2pdf().set(opt).from(document.body).save().then(function() {
-              restoreUI('✅ PDF Terunduh!');
-            }).catch(function(err) {
-              console.error(err);
-              restoreUI();
-              alert('Penyimpanan otomatis diblokir browser. Gunakan tombol CETAK / PRINT.');
-            });
-          } else {
+          pdfLib().set(opt).from(clone).save().then(function() {
+            restoreUI('✅ PDF Terunduh!');
+          }).catch(function(err) {
+            console.error(err);
             restoreUI();
-            alert('Pustaka PDF belum siap.');
-          }
+            alert('Perangkat Anda memblokir unduhan otomatis. Silakan gunakan tombol CETAK / PRINT.');
+          });
+        } else {
+          restoreUI();
+          alert('Pustaka PDF belum dimuat. Silakan muat ulang halaman utama.');
         }
       }
     </script>
