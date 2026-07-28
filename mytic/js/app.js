@@ -3234,7 +3234,7 @@ window._generateRatingPDFHtml = (key) => {
     tr { page-break-inside: avoid !important; page-break-after: auto !important; }
     .signature-area { margin-top: 10px; display: flex; justify-content: space-between; page-break-inside: avoid; }
     .sig-box { width: 200px; text-align: center; font-size: 9.5px; color: #0f172a !important; }
-    .sig-space { height: 35px; }
+    .sig-space { height: 65px; }
     @media print {
       html, body { height: 100%; overflow: hidden; background: #fff; padding: 0; }
       .rapor-container { box-shadow: none; padding: 0; max-width: 100% !important; border-radius: 0; page-break-inside: avoid; page-break-after: avoid; }
@@ -3558,7 +3558,7 @@ window._downloadAllRatingsPDF = () => {
     tr { page-break-inside: avoid !important; }
     .signature-area { margin-top: 10px; display: flex; justify-content: space-between; page-break-inside: avoid; }
     .sig-box { width: 200px; text-align: center; font-size: 9.5px; color: #0f172a !important; }
-    .sig-space { height: 35px; }
+    .sig-space { height: 65px; }
     @media print {
       html, body { background: #fff; padding: 0; }
       .rapor-container { box-shadow: none; padding: 0; max-width: 100% !important; border-radius: 0; }
@@ -6073,7 +6073,7 @@ window._printAllPayrollBundle = () => {
       .sign-area { text-align: right; font-size: 8px; color: #475569 ; line-height: 1.35; }
       .sign-date { font-weight: 500; color: #475569 ; }
       .sign-title { font-weight: 600; color: #475569 ; margin-top: 2px; }
-      .sign-space { height: 28px; }
+      .sign-space { height: 50px; }
       .sign-name { font-weight: 800; color: #0f172a ; text-decoration: underline; font-size: 8.5px; }
 
       .toolbar-btn { padding: 8px 18px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-family: 'Inter', sans-serif; transition: all 0.2s; }
@@ -6120,7 +6120,7 @@ window._printAllPayrollBundle = () => {
     </table>
     <div style="display:flex; justify-content:space-between; margin-top:20px; font-size:9.5px; color:#475569;">
       <div><strong style="color:#0f172a;">TOTAL PENGELUARAN GAJI UNTUK KARYAWAN:</strong> <span style="font-size:12px; font-weight:bold; background:#facc15; color:#0f172a; padding:3px 8px; border-radius:4px; margin-left:10px;">${fmt(totalBersih + totalTabungan)}</span></div>
-      <div style="text-align:right;">Ponorogo, ${formattedPrintDate}<br><div style="height:55px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_finance_manager)}</strong><br><span>Manajer Keuangan</span></div>
+      <div style="text-align:right;">Ponorogo, ${formattedPrintDate}<br><div style="height:75px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_finance_manager)}</strong><br><span>Manajer Keuangan</span></div>
     </div>
 
     <!-- SEKSI 3: REKAP LEMBURAN -->
@@ -6139,7 +6139,7 @@ window._printAllPayrollBundle = () => {
       <tfoot><tr><td colspan="5" style="text-align:right;">TOTAL</td><td style="text-align:right; color:#059669; font-size:11px;">Rp ${fmt(totalOtAmtAll)}</td></tr></tfoot>
     </table>
     <div style="text-align:right; margin-top:20px; font-size:9.5px; color:#475569;">
-      Ponorogo, ${formattedPrintDate}<br><div style="height:55px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_finance_manager)}</strong><br><span>Manajer Keuangan</span>
+      Ponorogo, ${formattedPrintDate}<br><div style="height:75px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_finance_manager)}</strong><br><span>Manajer Keuangan</span>
     </div>
 
     <!-- SEKSI 4: REKAP TABUNGAN -->
@@ -6158,7 +6158,7 @@ window._printAllPayrollBundle = () => {
       <tfoot><tr><td colspan="14" style="text-align:right;">Total</td><td style="text-align:right; background:#facc15; font-weight:800; color:#0f172a;">${fmt(totalAllSavings)}</td></tr></tfoot>
     </table>
     <div style="text-align:right; margin-top:20px; font-size:9.5px; color:#475569;">
-      Ponorogo, ${formattedPrintDate}<br><div style="height:55px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_finance_manager)}</strong><br><span>Manajer Keuangan</span>
+      Ponorogo, ${formattedPrintDate}<br><div style="height:75px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_finance_manager)}</strong><br><span>Manajer Keuangan</span>
     </div>
 
     <!-- SEKSI 5: DOKUMEN AUDIT PERTAMINA HALAMAN 1 -->
@@ -6202,8 +6202,8 @@ window._printAllPayrollBundle = () => {
       <tfoot><tr><td>TOTAL</td><td style="text-align:center;">100%</td><td style="text-align:right; color:#059669; font-size:11px;">${fmt(pwAudit.total)}</td><td></td></tr></tfoot>
     </table>
     <div style="display:flex; justify-content:space-between; margin-top:15px; font-size:9.5px; color:#475569;">
-      <div>Mengetahui,<br><strong style="color:#0f172a;">SPBU 54.634.25 MLARAK</strong><br><div style="height:55px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_manager)}</strong><br><span>Manager</span></div>
-      <div style="text-align:right;">Ponorogo, ${formattedPrintDate}<br><div style="height:55px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_supervisor)}</strong><br><span>Supervisor</span></div>
+      <div>Mengetahui,<br><strong style="color:#0f172a;">SPBU 54.634.25 MLARAK</strong><br><div style="height:75px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_manager)}</strong><br><span>Manager</span></div>
+      <div style="text-align:right;">Ponorogo, ${formattedPrintDate}<br><div style="height:75px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_supervisor)}</strong><br><span>Supervisor</span></div>
     </div>
 
     <!-- SEKSI 6: DOKUMEN AUDIT PERTAMINA HALAMAN 2 -->
@@ -6225,7 +6225,7 @@ window._printAllPayrollBundle = () => {
       <tfoot><tr><td colspan="3" style="text-align:right;">TOTAL</td><td style="text-align:right; color:#059669; font-size:11px;">${fmt(pwAudit.total)}</td></tr></tfoot>
     </table>
     <div style="text-align:right; margin-top:20px; font-size:9.5px; color:#475569;">
-      Ponorogo, ${formattedPrintDate}<br><div style="height:55px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_supervisor)}</strong><br><span>Supervisor</span>
+      Ponorogo, ${formattedPrintDate}<br><div style="height:75px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_supervisor)}</strong><br><span>Supervisor</span>
     </div>
 
     <!-- SEKSI 7: DOKUMEN AUDIT PERTAMINA HALAMAN 3 -->
@@ -6248,7 +6248,7 @@ window._printAllPayrollBundle = () => {
       <tfoot><tr><td colspan="3" style="text-align:right;">Total</td><td style="text-align:right;">${fmt(totalGajiPokokAll)}</td><td style="text-align:right;">${fmt(totalPwAll)}</td><td style="text-align:right;">${fmt(totalBpjsAll)}</td><td style="text-align:right; color:#059669; font-size:11px;">${fmt(totalThpAll)}</td><td colspan="2"></td></tr></tfoot>
     </table>
     <div style="text-align:right; margin-top:20px; font-size:9.5px; color:#475569;">
-      Ponorogo, ${formattedPrintDate}<br><div style="height:55px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_supervisor)}</strong><br><span>Supervisor</span>
+      Ponorogo, ${formattedPrintDate}<br><div style="height:75px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_supervisor)}</strong><br><span>Supervisor</span>
     </div>
     </div>
   </body>
@@ -6680,7 +6680,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
 
       .sign-date { font-weight: 500; color: #475569 ; }
       .sign-title { font-weight: 600; color: #475569 ; margin-top: 2px; }
-      .sign-space { height: 28px; }
+      .sign-space { height: 50px; }
       .sign-name { font-weight: 800; color: #0f172a ; text-decoration: underline; font-size: 8.5px; }
 
       .toolbar-btn {
@@ -6913,13 +6913,13 @@ window._printAuditDocuments = () => {
         <div>
           Mengetahui,<br>
           <strong style="color:#0f172a;">SPBU 54.634.25 MLARAK</strong><br>
-          <div style="height:55px;"></div>
+          <div style="height:75px;"></div>
           <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_manager)}</strong><br>
           <span>Manager</span>
         </div>
         <div style="text-align:right;">
           Ponorogo, ${formattedPrintDate}<br>
-          <div style="height:55px;"></div>
+          <div style="height:75px;"></div>
           <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_supervisor)}</strong><br>
           <span>Supervisor</span>
         </div>
@@ -6971,7 +6971,7 @@ window._printAuditDocuments = () => {
 
       <div style="text-align:right; margin-top:20px; font-size:9.5px; color:#475569;">
         Ponorogo, ${formattedPrintDate}<br>
-        <div style="height:55px;"></div>
+        <div style="height:75px;"></div>
         <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_supervisor)}</strong><br>
         <span>Supervisor</span>
       </div>
@@ -7068,7 +7068,7 @@ window._printAuditDocuments = () => {
 
       <div style="text-align:right; margin-top:20px; font-size:9.5px; color:#475569;">
         Ponorogo, ${formattedPrintDate}<br>
-        <div style="height:55px;"></div>
+        <div style="height:75px;"></div>
         <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_supervisor)}</strong><br>
         <span>Supervisor</span>
       </div>
@@ -7303,7 +7303,7 @@ window._printInternalPayrollSummary = () => {
       </div>
       <div style="text-align:right;">
         Ponorogo, ${formattedPrintDate}<br>
-        <div style="height:55px;"></div>
+        <div style="height:75px;"></div>
         <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_finance_manager)}</strong><br>
         <span>Manajer Keuangan</span>
       </div>
@@ -7456,7 +7456,7 @@ window._printSavingsSummary = () => {
 
     <div style="text-align:right; margin-top:20px; font-size:9.5px; color:#475569;">
       Ponorogo, ${formattedPrintDate}<br>
-      <div style="height:55px;"></div>
+      <div style="height:75px;"></div>
       <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_finance_manager)}</strong><br>
       <span>Manajer Keuangan</span>
     </div>
@@ -7611,7 +7611,7 @@ window._printOvertimeSummary = () => {
 
     <div style="text-align:right; margin-top:20px; font-size:9.5px; color:#475569;">
       Ponorogo, ${formattedPrintDate}<br>
-      <div style="height:55px;"></div>
+      <div style="height:75px;"></div>
       <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_finance_manager)}</strong><br>
       <span>Manajer Keuangan</span>
     </div>
