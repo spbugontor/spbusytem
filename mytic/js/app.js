@@ -5305,6 +5305,13 @@ function isPositionMatch(empPosition, positionList) {
   });
 }
 
+function getPositionsLabel(positions, defaultName) {
+  if (Array.isArray(positions) && positions.length > 0) {
+    return positions.map(p => p.toUpperCase()).join(' + ');
+  }
+  return (defaultName || '').toUpperCase();
+}
+
 function getAvailablePositions() {
   const users = getUsers();
   const defaultPositions = ['Manager', 'Supervisor', 'Admin', 'Operator', 'Cleaning Service'];
@@ -6368,30 +6375,23 @@ function renderInternalPayrollTab() {
   }).join('');
 
   return `<div class="fade-in">
-    <!-- STATUS LOCK / DRAFT BANNER & REVISION CONTROLS -->
-    <div style="background:${isLocked ? '#fef2f2' : '#eff6ff'}; border:1.5px solid ${isLocked ? '#ef4444' : '#3b82f6'}; border-radius:8px; padding:0.75rem 1rem; margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
-      <div style="display:flex; align-items:center; gap:0.6rem;">
-        <span style="font-size:1.4rem;">${isLocked ? '🔒' : '📝'}</span>
-        <div>
-          <strong style="font-size:0.9rem; color:${isLocked ? '#991b1b' : '#1e40af'}; display:block;">
-            Status Periode Penggajian (${month}): ${isLocked ? 'TERKUNCI (FINAL)' : 'REVISI / DRAFT (DAPAT DIEDIT)'}
-          </strong>
-          <span style="font-size:0.75rem; color:${isLocked ? '#b91c1c' : '#2563eb'};">
+    <!-- STATUS & CONTROLS -->
+    <div class="card" style="margin-bottom:1.25rem; background:var(--surface); border:1px solid var(--border);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <span class="badge ${isLocked ? 'badge-success' : 'badge-warning'}" style="font-size:0.85rem; padding:0.4rem 0.75rem; font-weight:bold;">
+            ${isLocked ? '🔒 TERKUNCI / FINAL' : '✏️ MODE REVISI (DRAFT)'}
+          </span>
+          <span class="text-xs text-muted">
             ${isLocked ? 'Data gaji bulan ini sudah final & dikunci agar tidak sengaja terubah. Buka kunci jika ingin melakukan revisi.' : 'Mode revisi aktif. Anda dapat mengubah nominal, menyalin dari bulan lalu, atau mengunci gaji jika sudah final.'}
           </span>
         </div>
-      </div>
-      <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
-        ${!isLocked ? `
-        <button class="btn btn-outline-primary" style="font-weight:700; font-size:0.78rem; background:#fff;" onclick="window._copyPreviousMonthPayroll('${month}')" title="Salin seluruh komponen gaji dari bulan lalu ke bulan ini">
-          📋 Salin Gaji dari Bulan Lalu
-        </button>
-        <button class="btn btn-success" style="font-weight:800; font-size:0.78rem;" onclick="window._setPayrollMonthStatus('${month}', 'FINAL')" title="Kunci data gaji agar tidak dapat diubah lagi">
-          🔒 Kunci & Finalkan Gaji
-        </button>` : `
-        <button class="btn btn-outline-danger" style="font-weight:800; font-size:0.78rem; background:#fff;" onclick="window._setPayrollMonthStatus('${month}', 'DRAFT')" title="Buka kunci untuk mengedit / merevisi data gaji">
-          🔓 Buka Kunci untuk Revisi
-        </button>`}
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+          ${!isLocked ? `
+          <button class="btn btn-outline-primary" style="font-weight:700; font-size:0.78rem; background:#fff;" onclick="window._copyPreviousMonthPayroll('${month}')">📋 Salin Gaji dari Bulan Lalu</button>
+          <button class="btn btn-success" style="font-weight:800; font-size:0.78rem;" onclick="window._setPayrollMonthStatus('${month}', 'FINAL')">🔒 Kunci & Finalkan Gaji</button>` : `
+          <button class="btn btn-outline-danger" style="font-weight:800; font-size:0.78rem; background:#fff;" onclick="window._setPayrollMonthStatus('${month}', 'DRAFT')">🔓 Buka Kunci untuk Revisi</button>`}
+        </div>
       </div>
     </div>
 
@@ -6408,7 +6408,7 @@ function renderInternalPayrollTab() {
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.85rem; flex-wrap:wrap; gap:0.5rem;">
         <div style="font-size:0.8rem; font-weight:700; color:var(--text-main);">
-          Total PW Internal: <span style="color:var(--primary); font-size:0.95rem;">${fmt(pwInt.total)}</span> (${esc(settings.pw_int_group1_name)} ${settings.pw_int_group1_percent}%: ${fmt(pwInt.total * pctSpv)} | ${esc(settings.pw_int_group2_name)} ${settings.pw_int_group2_percent}%: ${fmt(pwInt.total * pctOpr)})
+          Total PW Internal: <span style="color:var(--primary); font-size:0.95rem;">${fmt(pwInt.total)}</span> (${esc(g1IntPosText)} ${settings.pw_int_group1_percent}%: ${fmt(pwInt.total * pctSpv)} | ${esc(g2IntPosText)} ${settings.pw_int_group2_percent}%: ${fmt(pwInt.total * pctOpr)})
         </div>
         <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
           <button class="btn btn-outline-danger" style="padding:0.4rem 0.9rem; font-size:0.8rem;" ${isLocked ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="window._resetPayrollMonthData()">🗑️ Bersihkan Data Bulan Ini</button>
@@ -6423,15 +6423,8 @@ function renderInternalPayrollTab() {
         <h4 style="font-size:1rem; font-weight:800; color:var(--text-main); margin:0;">📋 Daftar Gaji Internal Karyawan (${users.length} Karyawan)</h4>
         <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
           <button class="btn btn-warning" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" ${isLocked ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="window._openMassAllowanceModal()">⚡ Input Massal Gaji & Tunjangan</button>
-          <label style="font-size:0.75rem; font-weight:700;">Tgl Cetak:</label>
           <input type="date" value="${printDate}" class="form-input" style="padding:0.3rem 0.5rem; font-size:0.75rem; width:135px;" onchange="window._setPayrollPrintDate(this.value)">
           <button class="btn btn-primary" style="padding:0.4rem 0.9rem; font-size:0.78rem; font-weight:900; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; border:none; box-shadow:0 2px 8px rgba(99,102,241,0.3);" onclick="window._printAllPayrollBundle()">👁️ Pratinjau & Cetak Bundel Gaji (PDF)</button>
-          <button class="btn btn-outline-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._exportToExcel('internal')">📊 Export Excel</button>
-          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printInternalPayrollSummary()">🖨️ Rekap Gaji (1 Hal)</button>
-          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printOvertimeSummary()">⏰ Rekap Lemburan</button>
-          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printSavingsSummary()">🏦 Rekap Tabungan</button>
-          <button class="btn btn-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._printEnvelopeSlips('A4', 6)">✂️ Cetak 6 Slip / A4</button>
-          <button class="btn btn-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._printEnvelopeSlips('F4', 6)">✂️ Cetak 6 Slip / F4</button>
         </div>
       </div>
 
@@ -6462,17 +6455,13 @@ function renderInternalPayrollTab() {
 
 function renderAuditPayrollTab() {
   const month = window._payrollMonth || getTodayStr().substring(0, 7);
-  const printDate = window._payrollPrintDate || getTodayStr();
   const settings = getPayrollSettings();
   const bbm = getBbmSalesData(month);
   const pwAudit = computePwAudit(bbm);
 
-  // Audit includes 15 employees (Manager Pedri Fauzi + 14 staff)
   const users = getUsers();
   let managerObj = users.find(u => (u.position || '').toLowerCase() === 'manager' || (u.name || '').toLowerCase().includes('pedri'));
-  if (!managerObj) {
-    managerObj = { emp_id: 'M1', name: settings.name_audit_manager, position: 'Manager' };
-  }
+  if (!managerObj) managerObj = { emp_id: 'M1', name: settings.name_audit_manager, position: 'Manager' };
 
   const staffUsers = users.filter(u => u.emp_id !== managerObj.emp_id);
   const auditUsers = [managerObj, ...staffUsers];
@@ -6488,26 +6477,20 @@ function renderAuditPayrollTab() {
   const pwMgrAdminEach = (pwAudit.total * pctMgrAud) / g1AudCount;
   const pwStaffEach = (pwAudit.total * pctStafAud) / g2AudCount;
 
-  let totalGajiPokokAll = 0;
-  let totalPwAll = 0;
-  let totalBpjsAll = 0;
-  let totalThpAll = 0;
+  let totalGajiPokokAll = 0, totalPwAll = 0, totalBpjsAll = 0, totalThpAll = 0;
+
+  const g1AudPosText = getPositionsLabel(settings.pw_aud_group1_positions, settings.pw_aud_group1_name);
+  const g2AudPosText = getPositionsLabel(settings.pw_aud_group2_positions, settings.pw_aud_group2_name);
 
   const rowsHTML = auditUsers.map((u, idx) => {
     const pos = u.position || '-';
     const isMgr = pos.toLowerCase() === 'manager' || u.emp_id === managerObj.emp_id;
     const isG1 = isPositionMatch(pos, settings.pw_aud_group1_positions);
-
     const gajiPokok = isMgr ? settings.umk_manager : settings.umk_staf;
     const pwVal = isG1 ? pwMgrAdminEach : pwStaffEach;
     const bpjsVal = gajiPokok * (settings.bpjs_percent / 100);
     const thpVal = gajiPokok + pwVal - bpjsVal;
-
-    totalGajiPokokAll += gajiPokok;
-    totalPwAll += pwVal;
-    totalBpjsAll += bpjsVal;
-    totalThpAll += thpVal;
-
+    totalGajiPokokAll += gajiPokok; totalPwAll += pwVal; totalBpjsAll += bpjsVal; totalThpAll += thpVal;
     return `<tr>
       <td style="text-align:center; font-weight:bold;">${idx + 1}</td>
       <td><strong>${esc(u.name)}</strong></td>
@@ -6521,10 +6504,10 @@ function renderAuditPayrollTab() {
 
   return `<div class="fade-in">
     <div class="card" style="margin-bottom:1.25rem;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
         <div>
-          <h4 style="font-size:1rem; font-weight:800; color:var(--text-main); margin:0;">📋 Lembar Penggajian & Pertamina Way Mode Audit (${auditUsers.length} Karyawan)</h4>
-          <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Berisi 15 Karyawan (Termasuk Manager ${esc(settings.name_audit_manager)}) | UMK Staf: ${fmt(settings.umk_staf)} | UMK Manager: ${fmt(settings.umk_manager)}</p>
+          <h4 style="font-size:1.05rem; font-weight:800; color:var(--text-main); margin:0;">📋 Lembar Penggajian & Pertamina Way Mode Audit (${auditUsers.length} Karyawan)</h4>
+          <span class="text-xs text-muted">Berisi ${auditUsers.length} Karyawan (Termasuk Manager ${esc(managerObj.name)}) | UMK Staf: ${fmt(settings.umk_staf)} | UMK Manager: ${fmt(settings.umk_manager)}</span>
         </div>
         <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
           <button class="btn btn-primary" style="padding:0.45rem 1rem; font-size:0.8rem; font-weight:900; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; border:none; box-shadow:0 2px 8px rgba(99,102,241,0.3);" onclick="window._printAllPayrollBundle()">👁️ Pratinjau & Cetak Bundel Gaji (PDF)</button>
@@ -6532,13 +6515,11 @@ function renderAuditPayrollTab() {
           <button class="btn btn-primary" style="font-weight:bold; padding:0.45rem 1rem;" onclick="window._printAuditDocuments()">👁️ Pratinjau & Cetak Audit Pertamina (PDF)</button>
         </div>
       </div>
-
       <div style="background:var(--surface); border:1px solid var(--border); padding:0.75rem; border-radius:var(--radius-md); margin-bottom:1rem; font-size:0.8rem;">
         <strong>Omset Penjualan Liter BBM (Audit):</strong> Total PW Audit = <strong style="color:var(--primary);">${fmt(pwAudit.total)}</strong><br>
-        • ${esc(settings.pw_aud_group1_name)} (${settings.pw_aud_group1_percent}%): ${fmt(pwAudit.total * pctMgrAud)} (Per @ ${fmt(pwMgrAdminEach)})<br>
-        • ${esc(settings.pw_aud_group2_name)} (${settings.pw_aud_group2_percent}%): ${fmt(pwAudit.total * pctStafAud)} (Per @ ${fmt(pwStaffEach)})
+        • ${esc(g1AudPosText)} (${settings.pw_aud_group1_percent}%): ${fmt(pwAudit.total * pctMgrAud)} (Per @ ${fmt(pwMgrAdminEach)})<br>
+        • ${esc(g2AudPosText)} (${settings.pw_aud_group2_percent}%): ${fmt(pwAudit.total * pctStafAud)} (Per @ ${fmt(pwStaffEach)})
       </div>
-
       <div style="overflow-x:auto;">
         <table class="metric-table" style="width:100%; border-collapse:collapse;">
           <thead>
@@ -7292,8 +7273,8 @@ window._printAllPayrollBundle = () => {
     <table>
       <thead><tr><th>RINCIAN PEMBAGIAN</th><th>PRESENTASE (%)</th><th>JUMLAH</th><th>PW PER @</th></tr></thead>
       <tbody>
-        <tr><td>${esc(settings.pw_aud_group1_name.toUpperCase())}</td><td style="text-align:center;">${settings.pw_aud_group1_percent}%</td><td style="text-align:right;">${fmt(pwAudit.total * pctMgrAud)}</td><td style="text-align:right; font-weight:600;">${fmt(pwMgrAdminEach)}</td></tr>
-        <tr><td>${esc(settings.pw_aud_group2_name.toUpperCase())}</td><td style="text-align:center;">${settings.pw_aud_group2_percent}%</td><td style="text-align:right;">${fmt(pwAudit.total * pctStafAud)}</td><td style="text-align:right; font-weight:600;">${fmt(pwStaffEach)}</td></tr>
+        <tr><td>${esc(g1AudPosText)}</td><td style="text-align:center;">${settings.pw_aud_group1_percent}%</td><td style="text-align:right;">${fmt(pwAudit.total * pctMgrAud)}</td><td style="text-align:right; font-weight:600;">${fmt(pwMgrAdminEach)}</td></tr>
+        <tr><td>${esc(g2AudPosText)}</td><td style="text-align:center;">${settings.pw_aud_group2_percent}%</td><td style="text-align:right;">${fmt(pwAudit.total * pctStafAud)}</td><td style="text-align:right; font-weight:600;">${fmt(pwStaffEach)}</td></tr>
       </tbody>
       <tfoot><tr><td>TOTAL</td><td style="text-align:center;">100%</td><td style="text-align:right; color:#059669; font-size:11px;">${fmt(pwAudit.total)}</td><td></td></tr></tfoot>
     </table>
@@ -7999,8 +7980,8 @@ window._printAuditDocuments = () => {
           </tr>
         </thead>
         <tbody>
-          <tr><td>${esc(settings.pw_aud_group1_name.toUpperCase())}</td><td style="text-align:center;">${settings.pw_aud_group1_percent}%</td><td style="text-align:right;">${fmt(pwAudit.total * pctMgrAud)}</td><td style="text-align:right; font-weight:600;">${fmt(pwMgrAdminEach)}</td></tr>
-          <tr><td>${esc(settings.pw_aud_group2_name.toUpperCase())}</td><td style="text-align:center;">${settings.pw_aud_group2_percent}%</td><td style="text-align:right;">${fmt(pwAudit.total * pctStafAud)}</td><td style="text-align:right; font-weight:600;">${fmt(pwStaffEach)}</td></tr>
+          <tr><td>${esc(g1AudPosText)}</td><td style="text-align:center;">${settings.pw_aud_group1_percent}%</td><td style="text-align:right;">${fmt(pwAudit.total * pctMgrAud)}</td><td style="text-align:right; font-weight:600;">${fmt(pwMgrAdminEach)}</td></tr>
+          <tr><td>${esc(g2AudPosText)}</td><td style="text-align:center;">${settings.pw_aud_group2_percent}%</td><td style="text-align:right;">${fmt(pwAudit.total * pctStafAud)}</td><td style="text-align:right; font-weight:600;">${fmt(pwStaffEach)}</td></tr>
         </tbody>
         <tfoot>
           <tr>
