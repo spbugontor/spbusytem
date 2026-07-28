@@ -5224,13 +5224,16 @@ function renderPayrollPage() {
       <button class="btn ${tab === 'audit' ? 'btn-primary' : 'btn-secondary'}" style="border-radius:var(--radius-md) var(--radius-md) 0 0; font-weight:700; padding:0.5rem 1.1rem;" onclick="window._setPayrollTab('audit')">
         📋 Gaji Audit (Pertamina)
       </button>
+      <button class="btn ${tab === 'history' ? 'btn-primary' : 'btn-secondary'}" style="border-radius:var(--radius-md) var(--radius-md) 0 0; font-weight:700; padding:0.5rem 1.1rem;" onclick="window._setPayrollTab('history')">
+        📜 Riwayat Gaji Bulanan
+      </button>
       <button class="btn ${tab === 'settings' ? 'btn-primary' : 'btn-secondary'}" style="border-radius:var(--radius-md) var(--radius-md) 0 0; font-weight:700; padding:0.5rem 1.1rem;" onclick="window._setPayrollTab('settings')">
         ⚙️ Pengaturan Master & TTD
       </button>
     </div>
 
     <div id="payroll-tab-content">
-      ${tab === 'internal' ? renderInternalPayrollTab() : tab === 'audit' ? renderAuditPayrollTab() : renderPayrollSettingsTab()}
+      ${tab === 'internal' ? renderInternalPayrollTab() : tab === 'audit' ? renderAuditPayrollTab() : tab === 'history' ? renderHistoryPayrollTab() : renderPayrollSettingsTab()}
     </div>
   </div>`;
 }
@@ -5839,6 +5842,217 @@ window._copyPreviousMonthPayroll = async (targetMonth) => {
   await update(ref(db), dbUpdates).catch(err => console.error('Firebase copy error:', err));
   showToast(`Berhasil menyalin data gaji dari ${prevMonthName} ke ${targetMonthName}!`, 'success');
 };
+
+function renderHistoryPayrollTab() {
+  const payrollData = allData.payroll || {};
+  const settings = getPayrollSettings();
+  const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
+
+  const selectedEmpId = window._payrollHistoryEmpId || 'ALL';
+
+  const allMonths = Object.keys(payrollData).filter(m => m.match(/^\d{4}-\d{2}$/)).sort().reverse();
+
+  const monthSummaries = allMonths.map(m => {
+    const mData = payrollData[m] || {};
+    const intData = mData.internal_data || {};
+    const status = mData.status || 'DRAFT';
+    const monthName = new Date(m + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+
+    let empCount = 0;
+    let totalKotor = 0;
+    let totalTabungan = 0;
+    let totalBersih = 0;
+
+    users.forEach(u => {
+      const empData = intData[u.emp_id] || {};
+      const pos = u.position || '-';
+      
+      const gajiPokok = Number(empData.gaji_pokok !== undefined ? empData.gaji_pokok : 0);
+      const tunjData = empData.tunjangan || {};
+      const tunjJabatan = (tunjData['tunj_jabatan'] && tunjData['tunj_jabatan'].enabled) ? Number(tunjData['tunj_jabatan'].amount || 0) : 0;
+      const tunjKinerja = (tunjData['tunj_kinerja'] && tunjData['tunj_kinerja'].enabled) ? Number(tunjData['tunj_kinerja'].amount || 0) : 0;
+      const tunjMasa = (tunjData['tunj_masa_kerja'] && tunjData['tunj_masa_kerja'].enabled) ? Number(tunjData['tunj_masa_kerja'].amount || 0) : 0;
+      const pwAmt = (empData.pw_enabled) ? Number(empData.pw_amount || 0) : 0;
+      const otAmt = Number(empData.overtime_shifts || 0) * 50000;
+      
+      let customTunjSum = 0;
+      settings.custom_allowances.forEach(ca => {
+        if (['tunj_jabatan', 'tunj_kinerja', 'tunj_masa_kerja'].includes(ca.id)) return;
+        const cItem = tunjData[ca.id] || {};
+        if (cItem.enabled) customTunjSum += Number(cItem.amount || 0);
+      });
+
+      const totalTambahan = tunjJabatan + tunjKinerja + tunjMasa + pwAmt + otAmt + customTunjSum;
+      const gajiKotor = gajiPokok + totalTambahan;
+      const tabunganAmt = Number(empData.savings_deduction || 0);
+      const gajiBersih = gajiKotor - tabunganAmt;
+
+      if (Object.keys(empData).length > 0 || gajiKotor > 0) empCount++;
+      totalKotor += gajiKotor;
+      totalTabungan += tabunganAmt;
+      totalBersih += gajiBersih;
+    });
+
+    return {
+      monthKey: m,
+      monthName,
+      status,
+      empCount: empCount || users.length,
+      totalKotor,
+      totalTabungan,
+      totalBersih
+    };
+  });
+
+  const empOptionsHTML = `<option value="ALL" ${selectedEmpId === 'ALL' ? 'selected' : ''}>-- Rekap Seluruh Perusahaan --</option>` +
+    users.map(u => `<option value="${u.emp_id}" ${selectedEmpId === u.emp_id ? 'selected' : ''}>${esc(u.name)} (${esc(u.position)})</option>`).join('');
+
+  let empHistoryTableHTML = '';
+  if (selectedEmpId !== 'ALL') {
+    const selectedUser = users.find(u => u.emp_id === selectedEmpId);
+    if (selectedUser) {
+      const empRows = allMonths.map((m, idx) => {
+        const mData = payrollData[m] || {};
+        const empData = (mData.internal_data && mData.internal_data[selectedEmpId]) || {};
+        const monthName = new Date(m + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+        
+        const gajiPokok = Number(empData.gaji_pokok !== undefined ? empData.gaji_pokok : 0);
+        const tunjData = empData.tunjangan || {};
+        const tunjJabatan = (tunjData['tunj_jabatan'] && tunjData['tunj_jabatan'].enabled) ? Number(tunjData['tunj_jabatan'].amount || 0) : 0;
+        const tunjKinerja = (tunjData['tunj_kinerja'] && tunjData['tunj_kinerja'].enabled) ? Number(tunjData['tunj_kinerja'].amount || 0) : 0;
+        const tunjMasa = (tunjData['tunj_masa_kerja'] && tunjData['tunj_masa_kerja'].enabled) ? Number(tunjData['tunj_masa_kerja'].amount || 0) : 0;
+        const pwAmt = (empData.pw_enabled) ? Number(empData.pw_amount || 0) : 0;
+        const otShifts = Number(empData.overtime_shifts || 0);
+        const otAmt = otShifts * 50000;
+        const tabunganAmt = Number(empData.savings_deduction || 0);
+
+        let customTunjSum = 0;
+        settings.custom_allowances.forEach(ca => {
+          if (['tunj_jabatan', 'tunj_kinerja', 'tunj_masa_kerja'].includes(ca.id)) return;
+          const cItem = tunjData[ca.id] || {};
+          if (cItem.enabled) customTunjSum += Number(cItem.amount || 0);
+        });
+
+        const totalTunj = tunjJabatan + tunjKinerja + tunjMasa + customTunjSum;
+        const gajiKotor = gajiPokok + totalTunj + pwAmt + otAmt;
+        const gajiBersih = gajiKotor - tabunganAmt;
+
+        return `<tr>
+          <td style="text-align:center; font-weight:bold;">${idx + 1}</td>
+          <td><strong>${monthName}</strong></td>
+          <td style="text-align:right;">${fmt(gajiPokok)}</td>
+          <td style="text-align:right;">${fmt(totalTunj)}</td>
+          <td style="text-align:right;">${fmt(pwAmt)}</td>
+          <td style="text-align:center;">${otShifts} shift (${fmt(otAmt)})</td>
+          <td style="text-align:right; color:#dc2626;">${fmt(tabunganAmt)}</td>
+          <td style="text-align:right; font-weight:bold; color:#16a34a; font-size:0.85rem;">${fmt(gajiBersih)}</td>
+        </tr>`;
+      }).join('');
+
+      empHistoryTableHTML = `
+      <div class="card" style="margin-top:1.25rem;">
+        <h4 style="font-size:1rem; font-weight:800; color:var(--text-main); margin-bottom:1rem;">
+          👤 Riwayat Gaji Individual: ${esc(selectedUser.name)} (${esc(selectedUser.position)})
+        </h4>
+        <div class="table-responsive">
+          <table class="metric-table" style="width:100%; border-collapse:collapse; font-size:0.75rem;">
+            <thead>
+              <tr>
+                <th style="width:35px; text-align:center;">#</th>
+                <th>Bulan / Periode</th>
+                <th style="text-align:right;">Gaji Pokok</th>
+                <th style="text-align:right;">Total Tunjangan</th>
+                <th style="text-align:right;">Pertamina Way</th>
+                <th style="text-align:center;">Lemburan</th>
+                <th style="text-align:right;">Tabungan</th>
+                <th style="text-align:right;">THP Bersih</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${empRows || '<tr><td colspan="8" class="text-center text-muted p-4">Belum ada riwayat gaji terdaftar untuk karyawan ini.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    }
+  }
+
+  const tableRows = monthSummaries.map((ms, idx) => {
+    const isLocked = ms.status === 'FINAL';
+    return `<tr>
+      <td style="text-align:center; font-weight:bold; padding:8px;">${idx + 1}</td>
+      <td style="padding:8px;">
+        <strong style="font-size:0.88rem; color:var(--text-main);">${ms.monthName}</strong>
+        <div class="text-xs text-muted">Periode: ${ms.monthKey}</div>
+      </td>
+      <td style="text-align:center; padding:8px;">
+        <span class="badge" style="background:${isLocked ? '#fef2f2' : '#eff6ff'}; color:${isLocked ? '#991b1b' : '#1e40af'}; border:1px solid ${isLocked ? '#fca5a5' : '#bfdbfe'}; font-size:0.72rem; padding:3px 8px; font-weight:bold;">
+          ${isLocked ? '🔒 FINAL' : '📝 REVISI'}
+        </span>
+      </td>
+      <td style="text-align:center; padding:8px; font-weight:600;">${ms.empCount} Karyawan</td>
+      <td style="text-align:right; padding:8px; font-weight:600;">${fmt(ms.totalKotor)}</td>
+      <td style="text-align:right; padding:8px; color:#dc2626; font-weight:600;">${fmt(ms.totalTabungan)}</td>
+      <td style="text-align:right; padding:8px; font-weight:800; color:#16a34a; font-size:0.85rem;">${fmt(ms.totalBersih)}</td>
+      <td style="text-align:center; padding:8px;">
+        <div style="display:flex; justify-content:center; gap:0.35rem; flex-wrap:wrap;">
+          <button class="btn btn-sm btn-primary" style="padding:0.25rem 0.55rem; font-size:0.72rem; font-weight:bold;" onclick="window._setPayrollMonth('${ms.monthKey}'); window._setPayrollTab('internal');" title="Buka detail payroll bulan ${ms.monthKey}">
+            👁️ Buka Periode
+          </button>
+          <button class="btn btn-sm btn-outline-primary" style="padding:0.25rem 0.45rem; font-size:0.72rem;" onclick="window._setPayrollMonth('${ms.monthKey}'); window._printInternalPayrollSummary();" title="Cetak Rekap 1 Lembar">
+            🖨️ Rekap
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="fade-in">
+    <!-- FILTER BAR RIWAYAT GAJI -->
+    <div class="card" style="margin-bottom:1.25rem; background:var(--surface); border:1px solid var(--border);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <h4 style="font-size:1rem; font-weight:800; color:var(--text-main); margin:0;">📜 Riwayat Penggajian Bulanan SPBU Gontor</h4>
+          <p style="font-size:0.78rem; color:var(--text-muted); margin-top:0.15rem; margin-bottom:0;">Lihat & pantau rekapitulasi penggajian bulan demi bulan atau riwayat per karyawan</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <label style="font-size:0.8rem; font-weight:700;">Filter Karyawan:</label>
+          <select class="form-input form-select" style="padding:0.4rem 0.75rem; font-size:0.8rem; min-width:220px;" onchange="window._payrollHistoryEmpId = this.value; switchSection('payroll');">
+            ${empOptionsHTML}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN HISTORY TABLE -->
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <h4 style="font-size:0.95rem; font-weight:800; color:var(--text-main); margin:0;">📊 Summary Rekapitulasi Gaji Per Bulan (${allMonths.length} Bulan Terdaftar)</h4>
+      </div>
+      <div class="table-responsive">
+        <table class="metric-table" style="width:100%; border-collapse:collapse; font-size:0.78rem;">
+          <thead>
+            <tr>
+              <th style="width:40px; text-align:center;">#</th>
+              <th>Bulan / Periode</th>
+              <th style="text-align:center; width:100px;">Status</th>
+              <th style="text-align:center; width:110px;">Penerima</th>
+              <th style="text-align:right;">Total Gaji Kotor</th>
+              <th style="text-align:right;">Total Tabungan</th>
+              <th style="text-align:right;">Total THP Bersih</th>
+              <th style="text-align:center; width:150px;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows || '<tr><td colspan="8" class="text-center text-muted p-4">Belum ada riwayat penggajian terdaftar di database.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    ${empHistoryTableHTML}
+  </div>`;
+}
 
 function renderInternalPayrollTab() {
   const month = window._payrollMonth || getTodayStr().substring(0, 7);
