@@ -5618,7 +5618,7 @@ window._printAllPayrollBundle = () => {
     const slipHTML = `<div class="slip-card">
       <div class="slip-top-bar"></div>
       <div class="slip-header-area">
-        <div class="company-badge"><div class="company-icon">⛽</div><div><div class="company-name">SPBU GONTOR</div><div class="company-id">54.634.25</div></div></div>
+        <div class="company-badge"><div><div class="company-name">SPBU GONTOR</div><div class="company-id">54.634.25</div></div></div>
         <div class="period-badge">${monthName}</div>
       </div>
       <div class="slip-body">
@@ -5895,7 +5895,7 @@ window._printAllPayrollBundle = () => {
     <div class="page-break"></div>
     <div class="top-accent-bar"></div>
     <div class="header-card">
-      <div class="brand-box"><div class="brand-icon">⛽</div><div><div class="brand-title">SPBU GONTOR 54.634.25 MLARAK</div><div class="brand-sub">Laporan Rekapitulasi Penerimaan Gaji Internal Karyawan</div></div></div>
+      <div class="brand-box"><div><div class="brand-title">SPBU GONTOR 54.634.25 MLARAK</div><div class="brand-sub">Laporan Rekapitulasi Penerimaan Gaji Internal Karyawan</div></div></div>
       <div class="period-badge">BULAN ${monthNameUpper}</div>
     </div>
     <div class="doc-title-bar">REKAPITULASI PENERIMAAN GAJI KARYAWAN INTERNAL</div>
@@ -6143,7 +6143,6 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       <div class="slip-top-bar"></div>
       <div class="slip-header-area">
         <div class="company-badge">
-          <div class="company-icon">⛽</div>
           <div>
             <div class="company-name">SPBU GONTOR</div>
             <div class="company-id">54.634.25</div>
@@ -6636,7 +6635,6 @@ window._printAuditDocuments = () => {
       <div class="top-accent-bar"></div>
       <div class="header-card">
         <div class="brand-box">
-          <div class="brand-icon">⛽</div>
           <div>
             <div class="brand-title">SPBU GONTOR 54.634.25</div>
             <div class="brand-sub">Dokumen Perhitungan Pertamina Way Internal</div>
@@ -7053,7 +7051,6 @@ window._printInternalPayrollSummary = () => {
     <div class="top-accent-bar"></div>
     <div class="header-card">
       <div class="brand-box">
-        <div class="brand-icon">⛽</div>
         <div>
           <div class="brand-title">SPBU GONTOR 54.634.25 MLARAK</div>
           <div class="brand-sub">Laporan Rekapitulasi Penerimaan Gaji Internal Karyawan</div>
@@ -7230,7 +7227,6 @@ window._printSavingsSummary = () => {
     <div class="top-accent-bar"></div>
     <div class="header-card">
       <div class="brand-box">
-        <div class="brand-icon">💳</div>
         <div>
           <div class="brand-title">SPBU GONTOR 54.634.25 MLARAK</div>
           <div class="brand-sub">Laporan Rekapitulasi Tabungan Karyawan</div>
@@ -7383,7 +7379,6 @@ window._printOvertimeSummary = () => {
     <div class="top-accent-bar"></div>
     <div class="header-card">
       <div class="brand-box">
-        <div class="brand-icon">⏰</div>
         <div>
           <div class="brand-title">SPBU GONTOR 54.634.25 MLARAK</div>
           <div class="brand-sub">Laporan Rekapitulasi Lembur Kerja Karyawan</div>
