@@ -5840,7 +5840,7 @@ window._printAllPayrollBundle = () => {
       .sign-area { text-align: right; font-size: 8px; color: #64748b; line-height: 1.35; }
       .sign-date { font-weight: 500; }
       .sign-title { font-weight: 600; color: #475569; margin-top: 2px; }
-      .sign-space { height: 42px; }
+      .sign-space { height: 28px; }
       .sign-name { font-weight: 700; color: #0f172a; text-decoration: underline; font-size: 8.5px; }
 
       .toolbar-btn { padding: 8px 18px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-family: 'Inter', sans-serif; transition: all 0.2s; }
@@ -6396,7 +6396,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
 
       .sign-date { font-weight: 500; }
       .sign-title { font-weight: 600; color: #475569; margin-top: 2px; }
-      .sign-space { height: 42px; }
+      .sign-space { height: 28px; }
       .sign-name { font-weight: 700; color: #0f172a; text-decoration: underline; font-size: 8.5px; }
 
       .toolbar-btn {
