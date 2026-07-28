@@ -6211,8 +6211,19 @@ window._printAuditDocuments = () => {
             totalBpjsAll += bpjsVal;
             totalThpAll += thpVal;
 
-            const isLeft = (idx % 2 === 0);
-            const ttdCellLeft = isLeft ? `<td style="width:70px; vertical-align:top; padding:4px 6px; border-right:1px solid #cbd5e1; font-weight:700; color:#334155; font-size:9.5px; height:32px;">${idx + 1}.</td><td style="width:70px; height:32px;"></td>` : `<td style="width:70px; border-right:1px solid #cbd5e1; height:32px;"></td><td style="width:70px; vertical-align:top; padding:4px 6px; font-weight:700; color:#334155; font-size:9.5px; height:32px;">${idx + 1}.</td>`;
+            const isOddRow = (idx % 2 === 0);
+            const nextUserExists = (idx + 1 < auditUsers.length);
+
+            let ttdCells = '';
+            if (isOddRow) {
+              const leftNum = idx + 1;
+              const rightNum = idx + 2;
+              const rSpan = nextUserExists ? 'rowspan="2"' : 'rowspan="1"';
+              const rightCellContent = nextUserExists ? `${rightNum}.` : '';
+
+              ttdCells = `<td ${rSpan} style="width:70px; vertical-align:top; padding:6px 8px; border:1px solid #cbd5e1; font-weight:700; color:#334155; font-size:9.5px; background:#fff;">${leftNum}.</td>
+              <td ${rSpan} style="width:70px; vertical-align:top; padding:6px 8px; border:1px solid #cbd5e1; font-weight:700; color:#334155; font-size:9.5px; background:#fff;">${rightCellContent}</td>`;
+            }
 
             return `<tr>
               <td style="text-align:center;">${idx + 1}</td>
@@ -6222,7 +6233,7 @@ window._printAuditDocuments = () => {
               <td style="text-align:right;">${fmt(pwVal)}</td>
               <td style="text-align:right;">${fmt(bpjsVal)}</td>
               <td style="text-align:right; font-weight:800; color:#0f172a;">${fmt(thpVal)}</td>
-              ${ttdCellLeft}
+              ${ttdCells}
             </tr>`;
           }).join('')}
         </tbody>
@@ -6452,6 +6463,9 @@ window._printInternalPayrollSummary = () => {
 };
 
 window._printSavingsSummary = () => {
+  const printDate = window._payrollPrintDate || getTodayStr();
+  const settings = getPayrollSettings();
+  const formattedPrintDate = new Date(printDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
   const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
   const currentYear = new Date().getFullYear();
   const monthsList = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
