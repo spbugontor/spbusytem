@@ -6933,17 +6933,25 @@ window._printAllPayrollBundle = () => {
   let managerObj = allUsers.find(u => (u.position || '').toLowerCase() === 'manager' || (u.name || '').toLowerCase().includes('pedri'));
   if (!managerObj) managerObj = { emp_id: 'M1', name: settings.name_audit_manager, position: 'Manager' };
   const staffUsers = allUsers.filter(u => u.emp_id !== managerObj.emp_id);
-  const auditUsers = [managerObj, ...staffUsers];
-  const pwMgrAdminEach = (pwAudit.total * 0.20) / 2;
-  const pwStaffEach = (pwAudit.total * 0.80) / 13;
+  const group1AuditUsers = auditUsers.filter(u => isPositionMatch(u.position, settings.pw_aud_group1_positions));
+  const group2AuditUsers = auditUsers.filter(u => !isPositionMatch(u.position, settings.pw_aud_group1_positions));
+
+  const g1AudCount = Math.max(1, group1AuditUsers.length);
+  const g2AudCount = Math.max(1, group2AuditUsers.length);
+
+  const pctMgrAud = (settings.pw_aud_group1_percent || 20) / 100;
+  const pctStafAud = (settings.pw_aud_group2_percent || 80) / 100;
+  const pwMgrAdminEach = (pwAudit.total * pctMgrAud) / g1AudCount;
+  const pwStaffEach = (pwAudit.total * pctStafAud) / g2AudCount;
+
   let totalGajiPokokAll = 0, totalPwAll = 0, totalBpjsAll = 0, totalThpAll = 0;
 
   const auditH3Rows = auditUsers.map((u, idx) => {
     const pos = u.position || '-';
     const isMgr = pos.toLowerCase() === 'manager' || u.emp_id === managerObj.emp_id;
-    const isAdmin = pos.toLowerCase().includes('admin');
+    const isG1 = isPositionMatch(pos, settings.pw_aud_group1_positions);
     const gajiPokok = isMgr ? settings.umk_manager : settings.umk_staf;
-    const pwVal = (isMgr || isAdmin) ? pwMgrAdminEach : pwStaffEach;
+    const pwVal = isG1 ? pwMgrAdminEach : pwStaffEach;
     const bpjsVal = gajiPokok * (settings.bpjs_percent / 100);
     const thpVal = gajiPokok + pwVal - bpjsVal;
 
@@ -7779,9 +7787,16 @@ window._printAuditDocuments = () => {
 
   const staffUsers = users.filter(u => u.emp_id !== managerObj.emp_id);
   const auditUsers = [managerObj, ...staffUsers];
+  const group1AuditUsers = auditUsers.filter(u => isPositionMatch(u.position, settings.pw_aud_group1_positions));
+  const group2AuditUsers = auditUsers.filter(u => !isPositionMatch(u.position, settings.pw_aud_group1_positions));
 
-  const pwMgrAdminEach = (pwAudit.total * 0.20) / 2;
-  const pwStaffEach = (pwAudit.total * 0.80) / 13;
+  const g1AudCount = Math.max(1, group1AuditUsers.length);
+  const g2AudCount = Math.max(1, group2AuditUsers.length);
+
+  const pctMgrAud = (settings.pw_aud_group1_percent || 20) / 100;
+  const pctStafAud = (settings.pw_aud_group2_percent || 80) / 100;
+  const pwMgrAdminEach = (pwAudit.total * pctMgrAud) / g1AudCount;
+  const pwStaffEach = (pwAudit.total * pctStafAud) / g2AudCount;
 
   let totalGajiPokokAll = 0;
   let totalPwAll = 0;
@@ -7944,8 +7959,8 @@ window._printAuditDocuments = () => {
           </tr>
         </thead>
         <tbody>
-          <tr><td>MANAGER & ADMIN</td><td style="text-align:center;">20%</td><td style="text-align:right;">${fmt(pwAudit.total * 0.2)}</td><td style="text-align:right; font-weight:600;">${fmt(pwMgrAdminEach)}</td></tr>
-          <tr><td>PENGAWAS + OPERATOR + CS</td><td style="text-align:center;">80%</td><td style="text-align:right;">${fmt(pwAudit.total * 0.8)}</td><td style="text-align:right; font-weight:600;">${fmt(pwStaffEach)}</td></tr>
+          <tr><td>${esc(settings.pw_aud_group1_name.toUpperCase())}</td><td style="text-align:center;">${settings.pw_aud_group1_percent}%</td><td style="text-align:right;">${fmt(pwAudit.total * pctMgrAud)}</td><td style="text-align:right; font-weight:600;">${fmt(pwMgrAdminEach)}</td></tr>
+          <tr><td>${esc(settings.pw_aud_group2_name.toUpperCase())}</td><td style="text-align:center;">${settings.pw_aud_group2_percent}%</td><td style="text-align:right;">${fmt(pwAudit.total * pctStafAud)}</td><td style="text-align:right; font-weight:600;">${fmt(pwStaffEach)}</td></tr>
         </tbody>
         <tfoot>
           <tr>
@@ -8007,7 +8022,7 @@ window._printAuditDocuments = () => {
             <td style="text-align:center;">${idx + 1}</td>
             <td><strong>${esc(u.name)}</strong></td>
             <td style="text-align:center;">${esc(u.position || '-')}</td>
-            <td style="text-align:right; font-weight:600;">${fmt((u.position || '').toLowerCase().includes('manager') || (u.position || '').toLowerCase().includes('admin') ? pwMgrAdminEach : pwStaffEach)}</td>
+            <td style="text-align:right; font-weight:600;">${fmt(isPositionMatch(u.position, settings.pw_aud_group1_positions) ? pwMgrAdminEach : pwStaffEach)}</td>
           </tr>`).join('')}
         </tbody>
         <tfoot>
