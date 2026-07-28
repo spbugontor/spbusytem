@@ -6200,7 +6200,7 @@ window._printAuditDocuments = () => {
             <th rowspan="2" colspan="2" style="width:140px;">TANDA TANGAN</th>
           </tr>
           <tr>
-            <th>PX/PL/PXT/PTD</th>
+            <th>PX/PL/PXT/PTD/BS</th>
             <th>KESEHATAN 1%</th>
           </tr>
         </thead>
