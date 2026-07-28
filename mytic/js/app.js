@@ -5971,6 +5971,8 @@ window._printAuditDocuments = () => {
   <head>
     <meta charset="utf-8">
     <title>Dokumen Resmi Audit Pertamina - SPBU Gontor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
       function downloadPDF() {
@@ -5978,7 +5980,7 @@ window._printAuditDocuments = () => {
         if (btnBar) btnBar.style.display = 'none';
         if (window.html2pdf) {
           const opt = {
-            margin: [4, 4, 4, 4],
+            margin: [3, 3, 3, 3],
             filename: 'Dokumen_Audit_Pertamina_${month}.pdf',
             image: { type: 'jpeg', quality: 1.0 },
             html2canvas: { scale: 4, useCORS: true, logging: false, letterRendering: true },
@@ -5989,28 +5991,52 @@ window._printAuditDocuments = () => {
       }
     </script>
     <style>
-      @page { size: A4 portrait; margin: 8mm; }
-      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 10px; background: #fff; font-size: 11px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
-      .title-head { text-align: center; font-weight: 900; font-size: 15px; text-decoration: underline; text-transform: uppercase; margin-bottom: 3px; letter-spacing: 0.5px; }
-      .subtitle-head { text-align: center; font-weight: 800; font-size: 12.5px; margin-bottom: 12px; letter-spacing: 0.3px; }
-      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10.5px; }
-      th, td { border: 1.2px solid #000; padding: 4.5px 6px; }
-      th { background: #e2e8f0 !important; font-weight: bold; text-align: center; text-transform: uppercase; font-size: 10px; letter-spacing: 0.3px; }
+      @page { size: A4 portrait; margin: 6mm; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; padding: 6px; font-size: 10.5px; -webkit-font-smoothing: antialiased; }
+      
+      .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
+      .header-card { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%) !important; color: #fff; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .brand-box { display: flex; align-items: center; gap: 8px; }
+      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #f59e0b, #ef4444); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #fff !important; }
+      .brand-sub { font-size: 9.5px; color: #94a3b8 !important; }
+      .period-badge { background: rgba(255,255,255,0.12) !important; color: #e2e8f0 !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.18); text-transform: uppercase; letter-spacing: 0.5px; }
+
+      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
+
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10px; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+      th, td { border: 1px solid #cbd5e1; padding: 5px 7px; }
+      th { background: #0f172a !important; color: #fff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.3px; }
+      tfoot td { background: #f1f5f9 !important; font-weight: 800; color: #0f172a; }
+      
+      .toolbar-btn { padding: 7px 16px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; }
       @media print { .no-print { display: none !important; } }
     </style>
   </head>
   <body>
-    <div class="no-print" style="padding:8px 12px; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-bottom:10px; display:flex; justify-content:flex-end; gap:8px; align-items:center;">
-      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Super HD)</button>
-      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Dokumen Audit (3 Halaman)</button>
-      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">✕ Tutup</button>
+    <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
+      <button onclick="downloadPDF()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff;">📥 UNDUH PDF (Super HD)</button>
+      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff;">🖨️ Cetak Dokumen Audit (3 Halaman)</button>
+      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
 
     <!-- HALAMAN 1: PERHITUNGAN PERTAMINA WAY -->
     <div>
-      <div class="title-head">PERHITUNGAN PERTAMINA WAY BULAN ${monthNameUpper}</div>
-      <br>
+      <div class="top-accent-bar"></div>
+      <div class="header-card">
+        <div class="brand-box">
+          <div class="brand-icon">⛽</div>
+          <div>
+            <div class="brand-title">SPBU GONTOR 54.634.25</div>
+            <div class="brand-sub">Dokumen Perhitungan Pertamina Way Internal</div>
+          </div>
+        </div>
+        <div class="period-badge">BULAN ${monthNameUpper}</div>
+      </div>
+
+      <div class="doc-title-bar">PERHITUNGAN PERTAMINA WAY BULAN ${monthNameUpper}</div>
+
       <table>
         <thead>
           <tr>
@@ -6026,29 +6052,29 @@ window._printAuditDocuments = () => {
           </tr>
         </thead>
         <tbody>
-          <tr><td>PERTALITE</td><td style="text-align:right;">${fmtNum(bbm.pertalite)}</td><td></td><td style="text-align:right;">Rp 4</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">${fmt(pwAudit.pwPertalite)}</td></tr>
-          <tr><td>SOLAR (BIOSOLAR)</td><td style="text-align:right;">${fmtNum(bbm.solar)}</td><td></td><td style="text-align:right;">Rp 4</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">${fmt(pwAudit.pwSolar)}</td></tr>
-          <tr><td>PERTAMAX TURBO</td><td style="text-align:right;">${fmtNum(bbm.turbo)}</td><td></td><td style="text-align:right;">Rp 30</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">${fmt(pwAudit.pwTurbo)}</td></tr>
-          <tr><td>PERTAMAX 92</td><td style="text-align:right;">${fmtNum(bbm.px92)}</td><td></td><td style="text-align:right;">Rp 30</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">${fmt(pwAudit.pwPx92)}</td></tr>
-          <tr><td>PERTAMINA DEX</td><td style="text-align:right;">${fmtNum(bbm.dex)}</td><td></td><td style="text-align:right;">Rp 30</td><td style="text-align:right;">Rp -</td><td style="text-align:right;">${fmt(pwAudit.pwDex)}</td></tr>
+          <tr><td>PERTALITE</td><td style="text-align:right;">${fmtNum(bbm.pertalite)}</td><td></td><td style="text-align:right;">Rp 4</td><td style="text-align:right;">Rp -</td><td style="text-align:right; font-weight:600;">${fmt(pwAudit.pwPertalite)}</td></tr>
+          <tr><td>SOLAR (BIOSOLAR)</td><td style="text-align:right;">${fmtNum(bbm.solar)}</td><td></td><td style="text-align:right;">Rp 4</td><td style="text-align:right;">Rp -</td><td style="text-align:right; font-weight:600;">${fmt(pwAudit.pwSolar)}</td></tr>
+          <tr><td>PERTAMAX TURBO</td><td style="text-align:right;">${fmtNum(bbm.turbo)}</td><td></td><td style="text-align:right;">Rp 30</td><td style="text-align:right;">Rp -</td><td style="text-align:right; font-weight:600;">${fmt(pwAudit.pwTurbo)}</td></tr>
+          <tr><td>PERTAMAX 92</td><td style="text-align:right;">${fmtNum(bbm.px92)}</td><td></td><td style="text-align:right;">Rp 30</td><td style="text-align:right;">Rp -</td><td style="text-align:right; font-weight:600;">${fmt(pwAudit.pwPx92)}</td></tr>
+          <tr><td>PERTAMINA DEX</td><td style="text-align:right;">${fmtNum(bbm.dex)}</td><td></td><td style="text-align:right;">Rp 30</td><td style="text-align:right;">Rp -</td><td style="text-align:right; font-weight:600;">${fmt(pwAudit.pwDex)}</td></tr>
         </tbody>
         <tfoot>
-          <tr style="font-weight:bold; background:#e5e7eb;">
+          <tr>
             <td colspan="4" style="text-align:right;">TOTAL</td>
             <td style="text-align:right;">Rp -</td>
-            <td style="text-align:right;">${fmt(pwAudit.total)}</td>
+            <td style="text-align:right; color:#059669; font-size:11px;">${fmt(pwAudit.total)}</td>
           </tr>
         </tfoot>
       </table>
 
-      <div style="font-weight:bold; margin-bottom:4px;">TOTAL PENERIMAAN PERTAMINA WAY</div>
-      <table style="width:280px;">
+      <div style="font-weight:700; color:#0f172a; margin-bottom:4px; font-size:11px;">TOTAL PENERIMAAN PERTAMINA WAY</div>
+      <table style="width:320px;">
         <tr><td>PW PERUSAHAAN</td><td style="text-align:right;">Rp -</td></tr>
-        <tr><td>PW KARYAWAN</td><td style="text-align:right;">${fmt(pwAudit.total)}</td></tr>
-        <tr style="font-weight:bold; background:#e5e7eb;"><td>TOTAL</td><td style="text-align:right;">${fmt(pwAudit.total)}</td></tr>
+        <tr><td>PW KARYAWAN</td><td style="text-align:right; font-weight:600;">${fmt(pwAudit.total)}</td></tr>
+        <tfoot><tr><td>TOTAL</td><td style="text-align:right; color:#059669; font-size:11px;">${fmt(pwAudit.total)}</td></tr></tfoot>
       </table>
 
-      <div style="font-weight:bold; margin-top:10px; margin-bottom:4px; text-decoration:underline;">PERTAMINA WAY YANG DIBAGIKAN KE KARYAWAN</div>
+      <div style="font-weight:700; color:#0f172a; margin-top:10px; margin-bottom:4px; font-size:11px;">PERTAMINA WAY YANG DIBAGIKAN KE KARYAWAN</div>
       <table>
         <thead>
           <tr>
@@ -6059,77 +6085,99 @@ window._printAuditDocuments = () => {
           </tr>
         </thead>
         <tbody>
-          <tr><td>MANAGER & ADMIN</td><td style="text-align:center;">20%</td><td style="text-align:right;">${fmt(pwAudit.total * 0.2)}</td><td style="text-align:right;">${fmt(pwMgrAdminEach)}</td></tr>
-          <tr><td>PENGAWAS + OPERATOR + CS</td><td style="text-align:center;">80%</td><td style="text-align:right;">${fmt(pwAudit.total * 0.8)}</td><td style="text-align:right;">${fmt(pwStaffEach)}</td></tr>
+          <tr><td>MANAGER & ADMIN</td><td style="text-align:center;">20%</td><td style="text-align:right;">${fmt(pwAudit.total * 0.2)}</td><td style="text-align:right; font-weight:600;">${fmt(pwMgrAdminEach)}</td></tr>
+          <tr><td>PENGAWAS + OPERATOR + CS</td><td style="text-align:center;">80%</td><td style="text-align:right;">${fmt(pwAudit.total * 0.8)}</td><td style="text-align:right; font-weight:600;">${fmt(pwStaffEach)}</td></tr>
         </tbody>
         <tfoot>
-          <tr style="font-weight:bold; background:#e5e7eb;">
+          <tr>
             <td>TOTAL</td>
             <td style="text-align:center;">100%</td>
-            <td style="text-align:right;">${fmt(pwAudit.total)}</td>
+            <td style="text-align:right; color:#059669; font-size:11px;">${fmt(pwAudit.total)}</td>
             <td></td>
           </tr>
         </tfoot>
       </table>
 
-      <div style="display:flex; justify-content:space-between; margin-top:15px;">
+      <div style="display:flex; justify-content:space-between; margin-top:15px; font-size:9.5px; color:#475569;">
         <div>
           Mengetahui,<br>
-          <strong>SPBU 54.634.25 MLARAK</strong><br>
-          <div style="height:35px;"></div>
-          <strong style="text-decoration:underline;">${esc(settings.name_audit_manager)}</strong><br>
+          <strong style="color:#0f172a;">SPBU 54.634.25 MLARAK</strong><br>
+          <div style="height:30px;"></div>
+          <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_manager)}</strong><br>
           <span>Manager</span>
         </div>
         <div style="text-align:right;">
           Ponorogo, ${formattedPrintDate}<br>
-          <div style="height:35px;"></div>
-          <strong style="text-decoration:underline;">${esc(settings.name_audit_supervisor)}</strong><br>
+          <div style="height:30px;"></div>
+          <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_supervisor)}</strong><br>
           <span>Supervisor</span>
         </div>
       </div>
     </div>
 
     <!-- HALAMAN 2: DAFTAR PENERIMAAN PW -->
-    <div style="page-break-before:always; margin-top:15px;">
-      <div class="title-head">DAFTAR PENERIMAAN PERTAMINA WAY</div>
-      <div class="subtitle-head">KARYAWAN SPBU GONTOR 54.634.25 MLARAK BULAN ${monthNameUpper}</div>
+    <div style="page-break-before:always; padding-top:10px;">
+      <div class="top-accent-bar"></div>
+      <div class="header-card">
+        <div class="brand-box">
+          <div class="brand-icon">⛽</div>
+          <div>
+            <div class="brand-title">SPBU GONTOR 54.634.25</div>
+            <div class="brand-sub">Daftar Penerimaan Pertamina Way Karyawan</div>
+          </div>
+        </div>
+        <div class="period-badge">BULAN ${monthNameUpper}</div>
+      </div>
+
+      <div class="doc-title-bar">DAFTAR PENERIMAAN PERTAMINA WAY</div>
       <table>
         <thead>
           <tr>
-            <th style="width:25px;">NO</th>
+            <th style="width:30px;">NO</th>
             <th>NAMA KARYAWAN</th>
             <th>JABATAN</th>
-            <th style="text-align:right; width:140px;">Insentif</th>
+            <th style="text-align:right; width:150px;">INSENTIF (PW)</th>
           </tr>
         </thead>
         <tbody>
           ${auditUsers.map((u, idx) => `<tr>
             <td style="text-align:center;">${idx + 1}</td>
-            <td>${esc(u.name)}</td>
-            <td>${esc(u.position || '-')}</td>
-            <td style="text-align:right;">${fmt((u.position || '').toLowerCase().includes('manager') || (u.position || '').toLowerCase().includes('admin') ? pwMgrAdminEach : pwStaffEach)}</td>
+            <td><strong>${esc(u.name)}</strong></td>
+            <td style="text-align:center;">${esc(u.position || '-')}</td>
+            <td style="text-align:right; font-weight:600;">${fmt((u.position || '').toLowerCase().includes('manager') || (u.position || '').toLowerCase().includes('admin') ? pwMgrAdminEach : pwStaffEach)}</td>
           </tr>`).join('')}
         </tbody>
         <tfoot>
-          <tr style="font-weight:bold; background:#e5e7eb;">
+          <tr>
             <td colspan="3" style="text-align:right;">TOTAL</td>
-            <td style="text-align:right;">${fmt(pwAudit.total)}</td>
+            <td style="text-align:right; color:#059669; font-size:11px;">${fmt(pwAudit.total)}</td>
           </tr>
         </tfoot>
       </table>
 
-      <div style="text-align:right; margin-top:20px;">
+      <div style="text-align:right; margin-top:20px; font-size:9.5px; color:#475569;">
         Ponorogo, ${formattedPrintDate}<br>
         <div style="height:35px;"></div>
-        <strong style="text-decoration:underline;">${esc(settings.name_audit_supervisor)}</strong><br>
+        <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_supervisor)}</strong><br>
         <span>Supervisor</span>
       </div>
     </div>
 
     <!-- HALAMAN 3: PENERIMAAN GAJI AUDIT -->
-    <div style="page-break-before:always; margin-top:15px;">
-      <div class="title-head">PENERIMAAN GAJI</div>
-      <div class="subtitle-head">KARYAWAN SPBU GONTOR 54.634.25 MLARAK BULAN ${monthNameUpper}</div>
+    <div style="page-break-before:always; padding-top:10px;">
+      <div class="top-accent-bar"></div>
+      <div class="header-card">
+        <div class="brand-box">
+          <div class="brand-icon">⛽</div>
+          <div>
+            <div class="brand-title">SPBU GONTOR 54.634.25</div>
+            <div class="brand-sub">Daftar Penerimaan Gaji Resmi Audit</div>
+          </div>
+        </div>
+        <div class="period-badge">BULAN ${monthNameUpper}</div>
+      </div>
+
+      <div class="doc-title-bar">PENERIMAAN GAJI KARYAWAN AUDIT PERTAMINA</div>
       <table>
         <thead>
           <tr>
@@ -6139,12 +6187,12 @@ window._printAuditDocuments = () => {
             <th rowspan="2">GAJI POKOK</th>
             <th>PERTAMINA WAY</th>
             <th>BPJS</th>
-            <th rowspan="2">JUMLAH</th>
+            <th rowspan="2">JUMLAH (THP)</th>
             <th rowspan="2" colspan="2" style="width:90px;">TANDA TANGAN</th>
           </tr>
           <tr>
             <th>PX/PL/PXT/PTD</th>
-            <th>KESEHATAN 1 %</th>
+            <th>KESEHATAN 1%</th>
           </tr>
         </thead>
         <tbody>
@@ -6173,28 +6221,28 @@ window._printAuditDocuments = () => {
               <td style="text-align:right;">${fmt(gajiPokok)}</td>
               <td style="text-align:right;">${fmt(pwVal)}</td>
               <td style="text-align:right;">${fmt(bpjsVal)}</td>
-              <td style="text-align:right; font-weight:bold;">${fmt(thpVal)}</td>
+              <td style="text-align:right; font-weight:800; color:#0f172a;">${fmt(thpVal)}</td>
               <td style="width:40px; font-size:9px; vertical-align:top; border-right:none;">${ttdLeft}</td>
               <td style="width:40px; font-size:9px; vertical-align:bottom; text-align:right; border-left:none;">${ttdRight}</td>
             </tr>`;
           }).join('')}
         </tbody>
         <tfoot>
-          <tr style="font-weight:bold; background:#e5e7eb;">
+          <tr>
             <td colspan="3" style="text-align:right;">Total</td>
             <td style="text-align:right;">${fmt(totalGajiPokokAll)}</td>
             <td style="text-align:right;">${fmt(totalPwAll)}</td>
             <td style="text-align:right;">${fmt(totalBpjsAll)}</td>
-            <td style="text-align:right;">${fmt(totalThpAll)}</td>
+            <td style="text-align:right; color:#059669; font-size:11px;">${fmt(totalThpAll)}</td>
             <td colspan="2"></td>
           </tr>
         </tfoot>
       </table>
 
-      <div style="text-align:right; margin-top:15px;">
+      <div style="text-align:right; margin-top:15px; font-size:9.5px; color:#475569;">
         Ponorogo, ${formattedPrintDate}<br>
         <div style="height:35px;"></div>
-        <strong style="text-decoration:underline;">${esc(settings.name_audit_supervisor)}</strong><br>
+        <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_supervisor)}</strong><br>
         <span>Supervisor</span>
       </div>
     </div>
@@ -6288,6 +6336,8 @@ window._printInternalPayrollSummary = () => {
   <head>
     <meta charset="utf-8">
     <title>Penerimaan Gaji Karyawan Internal - SPBU Gontor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
       function downloadPDF() {
@@ -6306,27 +6356,49 @@ window._printInternalPayrollSummary = () => {
       }
     </script>
     <style>
-      @page { size: A4 landscape; margin: 6mm; }
-      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 10px; background: #fff; font-size: 10px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
-      .title-head { text-align: center; font-weight: 900; font-size: 16px; text-decoration: underline; text-transform: uppercase; margin-bottom: 3px; letter-spacing: 0.5px; }
-      .subtitle-head { text-align: center; font-weight: 800; font-size: 12.5px; margin-bottom: 14px; letter-spacing: 0.3px; }
-      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5px; }
-      th, td { border: 1.2px solid #000; padding: 4.5px 6px; }
-      th { background: #e2e8f0 !important; font-weight: bold; text-align: center; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.3px; }
+      @page { size: A4 landscape; margin: 5mm; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; padding: 6px; font-size: 9.5px; -webkit-font-smoothing: antialiased; }
+      
+      .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
+      .header-card { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%) !important; color: #fff; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .brand-box { display: flex; align-items: center; gap: 8px; }
+      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #f59e0b, #ef4444); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #fff !important; }
+      .brand-sub { font-size: 9.5px; color: #94a3b8 !important; }
+      .period-badge { background: rgba(255,255,255,0.12) !important; color: #e2e8f0 !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.18); text-transform: uppercase; letter-spacing: 0.5px; }
+
+      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
+
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9px; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+      th, td { border: 1px solid #cbd5e1; padding: 5px 6px; }
+      th { background: #0f172a !important; color: #fff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px; }
+      tfoot td { background: #f1f5f9 !important; font-weight: 800; color: #0f172a; }
+      
+      .toolbar-btn { padding: 7px 16px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; }
       @media print { .no-print { display: none !important; } }
     </style>
   </head>
   <body>
-    <div class="no-print" style="padding:8px 12px; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-bottom:10px; display:flex; justify-content:flex-end; gap:8px; align-items:center;">
-      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Pilih Save as PDF)</button>
-      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Rekapitulasi Gaji Internal</button>
-      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">✕ Tutup</button>
+    <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
+      <button onclick="downloadPDF()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff;">📥 UNDUH PDF (Super HD)</button>
+      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff;">🖨️ Cetak Rekapitulasi Gaji Internal</button>
+      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
 
-    <div class="title-head">PENERIMAAN GAJI</div>
-    <div class="subtitle-head">KARYAWAN SPBU GONTOR 54.634.25 MLARAK</div>
-    <div style="font-weight:bold; margin-bottom:6px;">BULAN : ${monthNameUpper}</div>
+    <div class="top-accent-bar"></div>
+    <div class="header-card">
+      <div class="brand-box">
+        <div class="brand-icon">⛽</div>
+        <div>
+          <div class="brand-title">SPBU GONTOR 54.634.25 MLARAK</div>
+          <div class="brand-sub">Laporan Rekapitulasi Penerimaan Gaji Internal Karyawan</div>
+        </div>
+      </div>
+      <div class="period-badge">BULAN ${monthNameUpper}</div>
+    </div>
+
+    <div class="doc-title-bar">REKAPITULASI PENERIMAAN GAJI KARYAWAN INTERNAL</div>
 
     <table>
       <thead>
@@ -6411,6 +6483,8 @@ window._printSavingsSummary = () => {
   <head>
     <meta charset="utf-8">
     <title>Rekapitulasi Tabungan Karyawan - SPBU Gontor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
       function downloadPDF() {
@@ -6429,24 +6503,49 @@ window._printSavingsSummary = () => {
       }
     </script>
     <style>
-      @page { size: A4 landscape; margin: 6mm; }
-      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 10px; background: #fff; font-size: 9.5px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
-      .title-head { font-weight: 900; font-size: 15px; text-transform: uppercase; margin-bottom: 8px; text-decoration: underline; letter-spacing: 0.5px; }
-      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9px; }
-      th, td { border: 1.2px solid #000; padding: 4.5px; }
-      th { background: #e2e8f0 !important; font-weight: bold; text-align: center; font-size: 9px; letter-spacing: 0.3px; }
+      @page { size: A4 landscape; margin: 5mm; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; padding: 6px; font-size: 9px; -webkit-font-smoothing: antialiased; }
+      
+      .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
+      .header-card { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%) !important; color: #fff; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .brand-box { display: flex; align-items: center; gap: 8px; }
+      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #059669, #10b981); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #fff !important; }
+      .brand-sub { font-size: 9.5px; color: #94a3b8 !important; }
+      .period-badge { background: rgba(255,255,255,0.12) !important; color: #e2e8f0 !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.18); text-transform: uppercase; letter-spacing: 0.5px; }
+
+      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
+
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9px; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+      th, td { border: 1px solid #cbd5e1; padding: 4.5px 5px; }
+      th { background: #0f172a !important; color: #fff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px; }
+      tfoot td { background: #f1f5f9 !important; font-weight: 800; color: #0f172a; }
+      
+      .toolbar-btn { padding: 7px 16px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; }
       @media print { .no-print { display: none !important; } }
     </style>
   </head>
   <body>
-    <div class="no-print" style="padding:8px 12px; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-bottom:10px; display:flex; justify-content:flex-end; gap:8px; align-items:center;">
-      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Super HD)</button>
-      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Rekap Tabungan (Printer)</button>
-      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">✕ Tutup</button>
+    <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
+      <button onclick="downloadPDF()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff;">📥 UNDUH PDF (Super HD)</button>
+      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff;">🖨️ Cetak Rekap Tabungan (Printer)</button>
+      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
 
-    <div class="title-head">TABUNGAN KARYAWAN (${currentYear})</div>
+    <div class="top-accent-bar"></div>
+    <div class="header-card">
+      <div class="brand-box">
+        <div class="brand-icon">💳</div>
+        <div>
+          <div class="brand-title">SPBU GONTOR 54.634.25 MLARAK</div>
+          <div class="brand-sub">Laporan Rekapitulasi Tabungan Karyawan</div>
+        </div>
+      </div>
+      <div class="period-badge">TAHUN ${currentYear}</div>
+    </div>
+
+    <div class="doc-title-bar">REKAPITULASI TABUNGAN KARYAWAN PERIODE ${currentYear}</div>
     <table>
       <thead>
         <tr>
@@ -6501,6 +6600,8 @@ window._printOvertimeSummary = () => {
   <head>
     <meta charset="utf-8">
     <title>Rekapitulasi Lemburan Karyawan - SPBU Gontor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
       function downloadPDF() {
@@ -6519,27 +6620,49 @@ window._printOvertimeSummary = () => {
       }
     </script>
     <style>
-      @page { size: A4 portrait; margin: 8mm; }
-      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-      body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 10px; background: #fff; font-size: 11px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
-      .title-head { text-align: center; font-weight: 900; font-size: 15px; text-decoration: underline; text-transform: uppercase; margin-bottom: 3px; letter-spacing: 0.5px; }
-      .subtitle-head { text-align: center; font-weight: 800; font-size: 12.5px; margin-bottom: 12px; letter-spacing: 0.3px; }
-      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10.5px; }
-      th, td { border: 1.2px solid #000; padding: 4.5px 6px; }
-      th { background: #e2e8f0 !important; font-weight: bold; text-align: center; text-transform: uppercase; font-size: 10px; letter-spacing: 0.3px; }
+      @page { size: A4 portrait; margin: 6mm; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; padding: 6px; font-size: 10.5px; -webkit-font-smoothing: antialiased; }
+      
+      .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
+      .header-card { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%) !important; color: #fff; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .brand-box { display: flex; align-items: center; gap: 8px; }
+      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #3b82f6, #6366f1); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #fff !important; }
+      .brand-sub { font-size: 9.5px; color: #94a3b8 !important; }
+      .period-badge { background: rgba(255,255,255,0.12) !important; color: #e2e8f0 !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.18); text-transform: uppercase; letter-spacing: 0.5px; }
+
+      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
+
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10px; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+      th, td { border: 1px solid #cbd5e1; padding: 5.5px 7px; }
+      th { background: #0f172a !important; color: #fff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.3px; }
+      tfoot td { background: #f1f5f9 !important; font-weight: 800; color: #0f172a; }
+      
+      .toolbar-btn { padding: 7px 16px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; }
       @media print { .no-print { display: none !important; } }
     </style>
   </head>
   <body>
-    <div class="no-print" style="padding:8px 12px; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-bottom:10px; display:flex; justify-content:flex-end; gap:8px; align-items:center;">
-      <button onclick="downloadPDF()" style="padding:6px 16px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📥 UNDUH FILE / SIMPAN PDF (Super HD)</button>
-      <button onclick="window.print()" style="padding:6px 16px; background:#1d4ed8; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">🖨️ Cetak Rekap Lemburan (Printer)</button>
-      <button onclick="window.close()" style="padding:6px 12px; background:#64748b; color:#fff; border:none; border-radius:4px; cursor:pointer;">✕ Tutup</button>
+    <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
+      <button onclick="downloadPDF()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff;">📥 UNDUH PDF (Super HD)</button>
+      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff;">🖨️ Cetak Rekap Lemburan (Printer)</button>
+      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
 
-    <div class="title-head">LEMBURAN</div>
-    <div class="subtitle-head">KARYAWAN SPBU 54.634.25 MLARAK</div>
-    <div style="font-weight:bold; margin-bottom:6px;">BULAN : ${monthNameUpper}</div>
+    <div class="top-accent-bar"></div>
+    <div class="header-card">
+      <div class="brand-box">
+        <div class="brand-icon">⏰</div>
+        <div>
+          <div class="brand-title">SPBU GONTOR 54.634.25 MLARAK</div>
+          <div class="brand-sub">Laporan Rekapitulasi Lembur Kerja Karyawan</div>
+        </div>
+      </div>
+      <div class="period-badge">BULAN ${monthNameUpper}</div>
+    </div>
+
+    <div class="doc-title-bar">REKAPITULASI LEMBURAN KARYAWAN</div>
 
     <table>
       <thead>
