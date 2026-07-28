@@ -5927,7 +5927,7 @@ window._printAllPayrollBundle = () => {
     <div class="page-break"></div>
     <div class="top-accent-bar"></div>
     <div class="header-card">
-      <div class="brand-box"><div class="brand-icon">⏰</div><div><div class="brand-title">SPBU GONTOR 54.634.25 MLARAK</div><div class="brand-sub">Laporan Rekapitulasi Lembur Kerja Karyawan</div></div></div>
+      <div class="brand-box"><div><div class="brand-title">SPBU GONTOR 54.634.25 MLARAK</div><div class="brand-sub">Laporan Rekapitulasi Lembur Kerja Karyawan</div></div></div>
       <div class="period-badge">BULAN ${monthNameUpper}</div>
     </div>
     <div class="doc-title-bar">REKAPITULASI LEMBURAN KARYAWAN</div>
@@ -5946,7 +5946,7 @@ window._printAllPayrollBundle = () => {
     <div class="page-break"></div>
     <div class="top-accent-bar"></div>
     <div class="header-card">
-      <div class="brand-box"><div class="brand-icon">💳</div><div><div class="brand-title">SPBU GONTOR 54.634.25 MLARAK</div><div class="brand-sub">Laporan Rekapitulasi Tabungan Karyawan</div></div></div>
+      <div class="brand-box"><div><div class="brand-title">SPBU GONTOR 54.634.25 MLARAK</div><div class="brand-sub">Laporan Rekapitulasi Tabungan Karyawan</div></div></div>
       <div class="period-badge">TAHUN ${currentYear}</div>
     </div>
     <div class="doc-title-bar">REKAPITULASI TABUNGAN KARYAWAN PERIODE ${currentYear}</div>
@@ -5965,7 +5965,7 @@ window._printAllPayrollBundle = () => {
     <div class="page-break"></div>
     <div class="top-accent-bar"></div>
     <div class="header-card">
-      <div class="brand-box"><div class="brand-icon">⛽</div><div><div class="brand-title">SPBU GONTOR 54.634.25</div><div class="brand-sub">Dokumen Perhitungan Pertamina Way Internal</div></div></div>
+      <div class="brand-box"><div><div class="brand-title">SPBU GONTOR 54.634.25</div><div class="brand-sub">Dokumen Perhitungan Pertamina Way Internal</div></div></div>
       <div class="period-badge">BULAN ${monthNameUpper}</div>
     </div>
     <div class="doc-title-bar">
@@ -6010,7 +6010,7 @@ window._printAllPayrollBundle = () => {
     <div class="page-break"></div>
     <div class="top-accent-bar"></div>
     <div class="header-card">
-      <div class="brand-box"><div class="brand-icon">⛽</div><div><div class="brand-title">SPBU GONTOR 54.634.25</div><div class="brand-sub">Daftar Penerimaan Pertamina Way Karyawan</div></div></div>
+      <div class="brand-box"><div><div class="brand-title">SPBU GONTOR 54.634.25</div><div class="brand-sub">Daftar Penerimaan Pertamina Way Karyawan</div></div></div>
       <div class="period-badge">BULAN ${monthNameUpper}</div>
     </div>
     <div class="doc-title-bar">
@@ -6032,7 +6032,7 @@ window._printAllPayrollBundle = () => {
     <div class="page-break"></div>
     <div class="top-accent-bar"></div>
     <div class="header-card">
-      <div class="brand-box"><div class="brand-icon">⛽</div><div><div class="brand-title">SPBU GONTOR 54.634.25</div><div class="brand-sub">Daftar Penerimaan Gaji Resmi Audit</div></div></div>
+      <div class="brand-box"><div><div class="brand-title">SPBU GONTOR 54.634.25</div><div class="brand-sub">Daftar Penerimaan Gaji Resmi Audit</div></div></div>
       <div class="period-badge">BULAN ${monthNameUpper}</div>
     </div>
     <div class="doc-title-bar">
