@@ -1455,13 +1455,11 @@ function renderRatings() {
   let ratings = getRatings();
   const users = getUsers();
 
-  const empFilter = (window._ratingSearchEmp || '').toLowerCase().trim();
+  const empFilter = (window._ratingSearchEmp || '').trim();
   const monthFilter = (window._ratingSearchMonth || '').trim();
 
   const filteredRatings = ratings.filter(r => {
-    const emp = getUserByEmpId(r.emp_id);
-    const empName = (emp ? emp.name : r.emp_id).toLowerCase();
-    const matchEmp = !empFilter || empName.includes(empFilter) || r.emp_id.toLowerCase().includes(empFilter);
+    const matchEmp = !empFilter || r.emp_id === empFilter;
     const matchMonth = !monthFilter || (r.date || '').startsWith(monthFilter);
     return matchEmp && matchMonth;
   });
@@ -1479,9 +1477,12 @@ function renderRatings() {
     <div class="card" style="margin-bottom:1.25rem; background:var(--surface); border:1px solid var(--border); padding:0.85rem 1rem;">
       <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end; justify-content:space-between;">
         <div style="display:flex; gap:0.75rem; flex-wrap:wrap; flex:1; align-items:flex-end;">
-          <div style="min-width:200px; flex:1;">
-            <label class="form-label" style="font-size:0.75rem; font-weight:700; margin-bottom:0.25rem;">🔍 Cari Nama / ID Karyawan</label>
-            <input type="text" id="rating-search-name" class="form-input" style="padding:0.4rem 0.6rem; font-size:0.82rem;" placeholder="Ketik nama karyawan..." value="${esc(window._ratingSearchEmp || '')}" oninput="window._filterRatings()">
+          <div style="min-width:220px; flex:1;">
+            <label class="form-label" style="font-size:0.75rem; font-weight:700; margin-bottom:0.25rem;">👤 Pilih Nama Karyawan</label>
+            <select id="rating-search-name" class="form-input form-select" style="padding:0.4rem 0.6rem; font-size:0.82rem;" onchange="window._filterRatings()">
+              <option value="">-- Semua Karyawan --</option>
+              ${users.map(u => `<option value="${u.emp_id}" ${window._ratingSearchEmp === u.emp_id ? 'selected' : ''}>${esc(u.name)} (${esc(u.position)})</option>`).join('')}
+            </select>
           </div>
           <div style="width:160px;">
             <label class="form-label" style="font-size:0.75rem; font-weight:700; margin-bottom:0.25rem;">📅 Periode Bulan</label>
@@ -3400,14 +3401,12 @@ window._downloadSingleRatingPDF = (key) => {
 window._downloadAllRatingsPDF = () => {
   let ratings = getRatings();
 
-  const empFilter = (window._ratingSearchEmp || '').toLowerCase().trim();
+  const empFilter = (window._ratingSearchEmp || '').trim();
   const monthFilter = (window._ratingSearchMonth || '').trim();
 
   if (empFilter || monthFilter) {
     ratings = ratings.filter(r => {
-      const emp = getUserByEmpId(r.emp_id);
-      const empName = (emp ? emp.name : r.emp_id).toLowerCase();
-      const matchEmp = !empFilter || empName.includes(empFilter) || r.emp_id.toLowerCase().includes(empFilter);
+      const matchEmp = !empFilter || r.emp_id === empFilter;
       const matchMonth = !monthFilter || (r.date || '').startsWith(monthFilter);
       return matchEmp && matchMonth;
     });
