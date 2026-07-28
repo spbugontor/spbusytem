@@ -5789,24 +5789,22 @@ window._printAllPayrollBundle = () => {
         function runGen() {
           attempts++;
           const pdfLib = window.html2pdf || (window.opener && window.opener.html2pdf);
-          if (typeof pdfLib !== 'undefined') {
-            document.body.classList.add('pdf-exporting');
+          const el = document.getElementById('print-area') || document.body;
 
+          if (typeof pdfLib !== 'undefined') {
             const opt = {
               margin: 3,
               filename: 'Laporan_Penggajian_Lengkap_SPBU_Gontor_${month}.pdf',
               image: { type: 'jpeg', quality: 0.98 },
-              html2canvas: { scale: 2, useCORS: true, logging: false },
+              html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
               jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
               pagebreak: { mode: ['css', 'legacy'] }
             };
 
-            pdfLib().set(opt).from(document.body).save().then(function() {
-              document.body.classList.remove('pdf-exporting');
+            pdfLib().set(opt).from(el).save().then(function() {
               restoreUI('✅ PDF Terunduh!');
             }).catch(function(err) {
               console.error(err);
-              document.body.classList.remove('pdf-exporting');
               restoreUI();
               window.print();
             });
@@ -5824,8 +5822,8 @@ window._printAllPayrollBundle = () => {
     <style>
       @page { size: A4 landscape; margin: 4mm 6mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: 'Inter', sans-serif; color: #0f172a !important; background: #ffffff !important; padding: 6px; font-size: 10px; -webkit-font-smoothing: antialiased; }
-      body, div, p, span, td, th { color: #0f172a !important; }
+      html, body { font-family: 'Inter', sans-serif; color: #0f172a !important; background-color: #ffffff !important; background: #ffffff !important; padding: 0; margin: 0; -webkit-font-smoothing: antialiased; }
+      #print-area { background-color: #ffffff !important; background: #ffffff !important; color: #0f172a !important; padding: 6px; box-sizing: border-box; width: 100%; min-height: 100vh; }
 
       .page-break { page-break-before: always; }
       .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
@@ -5838,38 +5836,37 @@ window._printAllPayrollBundle = () => {
       .period-badge { background: rgba(255,255,255,0.18) !important; color: #ffffff !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.5px; }
       .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a !important; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
 
-      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5px; background: #fff !important; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-      th, td { border: 1px solid #cbd5e1; padding: 5px 6px; color: #0f172a !important; }
-      th { background: #0f172a !important; color: #ffffff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px; }
-      tfoot td { background: #f1f5f9 !important; font-weight: 800; color: #0f172a !important; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5px; background-color: #ffffff !important; background: #ffffff !important; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+      th, td { border: 1px solid #cbd5e1; padding: 5px 6px; color: #0f172a !important; background-color: #ffffff !important; }
+      th { background-color: #0f172a !important; background: #0f172a !important; color: #ffffff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px; }
+      tfoot td { background-color: #f1f5f9 !important; background: #f1f5f9 !important; font-weight: 800; color: #0f172a !important; }
 
       .page-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; grid-gap: 6px; width: 100%; min-height: 95vh; padding: 4px; box-sizing: border-box; page-break-after: always; }
       .per-page-6 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; }
-      .slip-card { border: none; border-radius: 8px; display: flex; flex-direction: column; background: #fff !important; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; position: relative; color: #0f172a !important; }
-      .slip-card * { color: #0f172a !important; }
+      .slip-card { border: 1px solid #e2e8f0 !important; border-radius: 8px; display: flex; flex-direction: column; background-color: #ffffff !important; background: #ffffff !important; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; position: relative; color: #0f172a !important; }
       .slip-top-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); }
-      .slip-header-area { background: #0f172a !important; padding: 7px 10px; display: flex; justify-content: space-between; align-items: center; }
+      .slip-header-area { background-color: #0f172a !important; background: #0f172a !important; padding: 7px 10px; display: flex; justify-content: space-between; align-items: center; }
       .slip-header-area * { color: #ffffff !important; }
       .company-badge { display: flex; align-items: center; gap: 6px; }
       .company-icon { width: 26px; height: 26px; background: linear-gradient(135deg, #f59e0b, #ef4444) !important; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #fff !important; }
       .company-name { font-size: 12px; font-weight: 800; color: #fff !important; letter-spacing: 0.5px; }
       .company-id { font-size: 9px; color: #94a3b8 !important; font-weight: 500; }
-      .slip-body { padding: 7px 10px 4px; flex: 1; }
+      .slip-body { padding: 7px 10px 4px; flex: 1; background-color: #ffffff !important; }
       .emp-info-row { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 5px; border-bottom: 1.5px solid #e2e8f0; margin-bottom: 5px; }
       .emp-name { font-size: 11px; font-weight: 800; color: #0f172a !important; }
-      .emp-pos { font-size: 8px; font-weight: 700; color: #4338ca !important; background: #e0e7ff !important; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; }
+      .emp-pos { font-size: 8px; font-weight: 700; color: #4338ca !important; background-color: #e0e7ff !important; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; }
       .detail-section { font-size: 9.5px; }
       .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; }
       .detail-row .amount { font-weight: 700; font-variant-numeric: tabular-nums; color: #0f172a !important; }
       .main-row { color: #0f172a !important; font-weight: 600; }
       .tambahan-label { font-size: 8.5px; font-weight: 700; color: #475569 !important; text-transform: uppercase; margin: 3px 0 1px; }
       .tambahan-tbl { width: 100%; border-collapse: collapse; font-size: 9px; margin-bottom: 2px; }
-      .tambahan-tbl td { padding: 1px 0 1px 6px; color: #0f172a !important; }
+      .tambahan-tbl td { padding: 1px 0 1px 6px; color: #0f172a !important; background-color: #ffffff !important; }
       .subtotal-row { border-top: 1.5px solid #cbd5e1; margin-top: 3px; padding-top: 3px; font-weight: 800; color: #0f172a !important; font-size: 10px; }
       .deduction-row { color: #dc2626 !important; font-size: 9px; padding: 2px 0; }
       .deduction-row * { color: #dc2626 !important; }
-      .slip-footer-area { padding: 0 10px 7px; }
-      .net-pay-bar { background: #059669 !important; border-radius: 5px; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+      .slip-footer-area { padding: 0 10px 7px; background-color: #ffffff !important; }
+      .net-pay-bar { background-color: #059669 !important; background: #059669 !important; border-radius: 5px; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
       .net-pay-bar * { color: #ffffff !important; }
       .net-label { color: #ffffff !important; font-size: 8.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
       .net-amount { color: #ffffff !important; font-size: 13px; font-weight: 900; }
@@ -6227,24 +6224,22 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
         function runGen() {
           attempts++;
           const pdfLib = window.html2pdf || (window.opener && window.opener.html2pdf);
-          if (typeof pdfLib !== 'undefined') {
-            document.body.classList.add('pdf-exporting');
+          const el = document.getElementById('print-area') || document.body;
 
+          if (typeof pdfLib !== 'undefined') {
             const opt = {
               margin: 2,
               filename: 'Slip_Gaji_Amplop_${month}.pdf',
               image: { type: 'jpeg', quality: 0.98 },
-              html2canvas: { scale: 2, useCORS: true, logging: false },
+              html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
               jsPDF: { unit: 'mm', format: ${paperSize === 'F4' ? "[215, 330]" : "'a4'"}, orientation: 'portrait', compress: true },
               pagebreak: { mode: ['css', 'legacy'] }
             };
 
-            pdfLib().set(opt).from(document.body).save().then(function() {
-              document.body.classList.remove('pdf-exporting');
+            pdfLib().set(opt).from(el).save().then(function() {
               restoreUI('✅ PDF Terunduh!');
             }).catch(function(err) {
               console.error(err);
-              document.body.classList.remove('pdf-exporting');
               restoreUI();
               window.print();
             });
@@ -6485,11 +6480,13 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
     </style>
   </head>
   <body>
-    <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; display:flex; justify-content:flex-end; gap:10px; align-items:center;">
+    <div class="no-print" style="padding:10px 16px; background:#0f172a; border-bottom:3px solid #6366f1; display:flex; justify-content:flex-end; gap:10px; align-items:center;">
       <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
       <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
       <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
+
+    <div id="print-area">
     ${slipsHTML}
   </body>
   </html>`);
@@ -6548,24 +6545,22 @@ window._printAuditDocuments = () => {
         function runGen() {
           attempts++;
           const pdfLib = window.html2pdf || (window.opener && window.opener.html2pdf);
-          if (typeof pdfLib !== 'undefined') {
-            document.body.classList.add('pdf-exporting');
+          const el = document.getElementById('print-area') || document.body;
 
+          if (typeof pdfLib !== 'undefined') {
             const opt = {
               margin: 3,
               filename: 'Dokumen_Audit_Pertamina_${month}.pdf',
               image: { type: 'jpeg', quality: 0.98 },
-              html2canvas: { scale: 2, useCORS: true, logging: false },
+              html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
               jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
               pagebreak: { mode: ['css', 'legacy'] }
             };
 
-            pdfLib().set(opt).from(document.body).save().then(function() {
-              document.body.classList.remove('pdf-exporting');
+            pdfLib().set(opt).from(el).save().then(function() {
               restoreUI('✅ PDF Terunduh!');
             }).catch(function(err) {
               console.error(err);
-              document.body.classList.remove('pdf-exporting');
               restoreUI();
               window.print();
             });
@@ -6607,11 +6602,13 @@ window._printAuditDocuments = () => {
     </style>
   </head>
   <body>
-    <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
+    <div class="no-print" style="padding:10px 16px; background:#0f172a; border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
       <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
       <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
       <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
+
+    <div id="print-area">
 
     <!-- HALAMAN 1: PERHITUNGAN PERTAMINA WAY -->
     <div>
@@ -6967,24 +6964,22 @@ window._printInternalPayrollSummary = () => {
         function runGen() {
           attempts++;
           const pdfLib = window.html2pdf || (window.opener && window.opener.html2pdf);
-          if (typeof pdfLib !== 'undefined') {
-            document.body.classList.add('pdf-exporting');
+          const el = document.getElementById('print-area') || document.body;
 
+          if (typeof pdfLib !== 'undefined') {
             const opt = {
               margin: 3,
               filename: 'Rekap_Gaji_Internal_${month}.pdf',
               image: { type: 'jpeg', quality: 0.98 },
-              html2canvas: { scale: 2, useCORS: true, logging: false },
+              html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
               jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
               pagebreak: { mode: ['css', 'legacy'] }
             };
 
-            pdfLib().set(opt).from(document.body).save().then(function() {
-              document.body.classList.remove('pdf-exporting');
+            pdfLib().set(opt).from(el).save().then(function() {
               restoreUI('✅ PDF Terunduh!');
             }).catch(function(err) {
               console.error(err);
-              document.body.classList.remove('pdf-exporting');
               restoreUI();
               window.print();
             });
@@ -7025,11 +7020,13 @@ window._printInternalPayrollSummary = () => {
     </style>
   </head>
   <body>
-    <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
+    <div class="no-print" style="padding:10px 16px; background:#0f172a; border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
       <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
       <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
       <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
+
+    <div id="print-area">
 
     <div class="top-accent-bar"></div>
     <div class="header-card">
@@ -7149,23 +7146,20 @@ window._printSavingsSummary = () => {
         const pdfLib = window.html2pdf || (window.opener && window.opener.html2pdf);
 
         if (typeof pdfLib !== 'undefined') {
-          document.body.classList.add('pdf-exporting');
-
+          const el = document.getElementById('print-area') || document.body;
           const opt = {
             margin: 3,
             filename: 'Rekap_Tabungan_Karyawan_${currentYear}.pdf',
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
+            html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
             pagebreak: { mode: ['css', 'legacy'] }
           };
 
-          pdfLib().set(opt).from(document.body).save().then(function() {
-            document.body.classList.remove('pdf-exporting');
+          pdfLib().set(opt).from(el).save().then(function() {
             restoreUI('✅ PDF Terunduh!');
           }).catch(function(err) {
             console.error(err);
-            document.body.classList.remove('pdf-exporting');
             restoreUI();
             window.print();
           });
@@ -7202,11 +7196,13 @@ window._printSavingsSummary = () => {
     </style>
   </head>
   <body>
-    <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
+    <div class="no-print" style="padding:10px 16px; background:#0f172a; border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
       <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
       <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
       <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
+
+    <div id="print-area">
 
     <div class="top-accent-bar"></div>
     <div class="header-card">
@@ -7302,23 +7298,20 @@ window._printOvertimeSummary = () => {
         const pdfLib = window.html2pdf || (window.opener && window.opener.html2pdf);
 
         if (typeof pdfLib !== 'undefined') {
-          document.body.classList.add('pdf-exporting');
-
+          const el = document.getElementById('print-area') || document.body;
           const opt = {
             margin: 3,
             filename: 'Rekap_Lembur_Karyawan_${month}.pdf',
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
+            html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
             pagebreak: { mode: ['css', 'legacy'] }
           };
 
-          pdfLib().set(opt).from(document.body).save().then(function() {
-            document.body.classList.remove('pdf-exporting');
+          pdfLib().set(opt).from(el).save().then(function() {
             restoreUI('✅ PDF Terunduh!');
           }).catch(function(err) {
             console.error(err);
-            document.body.classList.remove('pdf-exporting');
             restoreUI();
             window.print();
           });
@@ -7354,11 +7347,13 @@ window._printOvertimeSummary = () => {
     </style>
   </head>
   <body>
-    <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
+    <div class="no-print" style="padding:10px 16px; background:#0f172a; border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
       <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
       <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
       <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
+
+    <div id="print-area">
 
     <div class="top-accent-bar"></div>
     <div class="header-card">
