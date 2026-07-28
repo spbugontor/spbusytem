@@ -5772,9 +5772,46 @@ window._printAllPayrollBundle = () => {
     <title>Bundel Laporan Penggajian Lengkap - SPBU Gontor</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
-      function downloadPDF() {
-        window.print();
+      function downloadPDFDirect() {
+        const btn = document.getElementById('btn-dl-direct');
+        if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
+        
+        function runGen() {
+          const content = document.createElement('div');
+          content.innerHTML = document.body.innerHTML;
+          content.querySelectorAll('.no-print').forEach(function(el){ el.remove(); });
+          
+          const opt = {
+            margin: [3, 3, 3, 3],
+            filename: 'Laporan_Penggajian_Lengkap_SPBU_Gontor_${month}.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
+            pagebreak: { mode: ['css', 'legacy'] }
+          };
+          html2pdf().set(opt).from(content).save().then(function() {
+            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+          }).catch(function(err) {
+            console.error(err);
+            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            window.print();
+          });
+        }
+
+        if (typeof html2pdf !== 'undefined') {
+          runGen();
+        } else {
+          var s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+          s.onload = runGen;
+          s.onerror = function() {
+            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            window.print();
+          };
+          document.head.appendChild(s);
+        }
       }
     </script>
     <style>
@@ -5836,8 +5873,9 @@ window._printAllPayrollBundle = () => {
   </head>
   <body>
     <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
-      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 SIMPAN SEBAGAI PDF / CETAK BUNDEL</button>
-      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup Window</button>
+      <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
+      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
+      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
 
     <!-- SEKSI 1: SLIP GAJI AMPLOP -->
@@ -6160,9 +6198,46 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
     <title>Slip Gaji Amplop - SPBU Gontor</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
-      function downloadPDF() {
-        window.print();
+      function downloadPDFDirect() {
+        const btn = document.getElementById('btn-dl-direct');
+        if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
+        
+        function runGen() {
+          const content = document.createElement('div');
+          content.innerHTML = document.body.innerHTML;
+          content.querySelectorAll('.no-print').forEach(function(el){ el.remove(); });
+          
+          const opt = {
+            margin: [2, 2, 2, 2],
+            filename: 'Slip_Gaji_Amplop_${month}.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'mm', format: paperSize === 'F4' ? [215, 330] : 'a4', orientation: 'portrait', compress: true },
+            pagebreak: { mode: ['css', 'legacy'] }
+          };
+          html2pdf().set(opt).from(content).save().then(function() {
+            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+          }).catch(function(err) {
+            console.error(err);
+            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            window.print();
+          });
+        }
+
+        if (typeof html2pdf !== 'undefined') {
+          runGen();
+        } else {
+          var s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+          s.onload = runGen;
+          s.onerror = function() {
+            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            window.print();
+          };
+          document.head.appendChild(s);
+        }
       }
     </script>
     <style>
@@ -6391,8 +6466,9 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
   </head>
   <body>
     <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; display:flex; justify-content:flex-end; gap:10px; align-items:center;">
-      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 SIMPAN SEBAGAI PDF / CETAK SLIP</button>
-      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup Window</button>
+      <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
+      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
+      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
     ${slipsHTML}
   </body>
@@ -6437,8 +6513,44 @@ window._printAuditDocuments = () => {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
-      function downloadPDF() {
-        window.print();
+      function downloadPDFDirect() {
+        const btn = document.getElementById('btn-dl-direct');
+        if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
+        
+        function runGen() {
+          const content = document.createElement('div');
+          content.innerHTML = document.body.innerHTML;
+          content.querySelectorAll('.no-print').forEach(function(el){ el.remove(); });
+          
+          const opt = {
+            margin: [3, 3, 3, 3],
+            filename: 'Dokumen_Audit_Pertamina_${month}.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
+            pagebreak: { mode: ['css', 'legacy'] }
+          };
+          html2pdf().set(opt).from(content).save().then(function() {
+            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+          }).catch(function(err) {
+            console.error(err);
+            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            window.print();
+          });
+        }
+
+        if (typeof html2pdf !== 'undefined') {
+          runGen();
+        } else {
+          var s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+          s.onload = runGen;
+          s.onerror = function() {
+            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            window.print();
+          };
+          document.head.appendChild(s);
+        }
       }
     </script>
     <style>
@@ -6467,8 +6579,9 @@ window._printAuditDocuments = () => {
   </head>
   <body>
     <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
-      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 SIMPAN SEBAGAI PDF / CETAK DOKUMEN AUDIT</button>
-      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup Window</button>
+      <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
+      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
+      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
 
     <!-- HALAMAN 1: PERHITUNGAN PERTAMINA WAY -->
@@ -6810,8 +6923,44 @@ window._printInternalPayrollSummary = () => {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
-      function downloadPDF() {
-        window.print();
+      function downloadPDFDirect() {
+        const btn = document.getElementById('btn-dl-direct');
+        if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
+        
+        function runGen() {
+          const content = document.createElement('div');
+          content.innerHTML = document.body.innerHTML;
+          content.querySelectorAll('.no-print').forEach(function(el){ el.remove(); });
+          
+          const opt = {
+            margin: [3, 3, 3, 3],
+            filename: 'Rekap_Gaji_Internal_${month}.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
+            pagebreak: { mode: ['css', 'legacy'] }
+          };
+          html2pdf().set(opt).from(content).save().then(function() {
+            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+          }).catch(function(err) {
+            console.error(err);
+            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            window.print();
+          });
+        }
+
+        if (typeof html2pdf !== 'undefined') {
+          runGen();
+        } else {
+          var s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+          s.onload = runGen;
+          s.onerror = function() {
+            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            window.print();
+          };
+          document.head.appendChild(s);
+        }
       }
     </script>
     <style>
@@ -6840,8 +6989,9 @@ window._printInternalPayrollSummary = () => {
   </head>
   <body>
     <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
-      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 SIMPAN SEBAGAI PDF / CETAK REKAP GAJI</button>
-      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup Window</button>
+      <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
+      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
+      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
 
     <div class="top-accent-bar"></div>
@@ -6948,8 +7098,44 @@ window._printSavingsSummary = () => {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
-      function downloadPDF() {
-        window.print();
+      function downloadPDFDirect() {
+        const btn = document.getElementById('btn-dl-direct');
+        if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
+        
+        function runGen() {
+          const content = document.createElement('div');
+          content.innerHTML = document.body.innerHTML;
+          content.querySelectorAll('.no-print').forEach(function(el){ el.remove(); });
+          
+          const opt = {
+            margin: [3, 3, 3, 3],
+            filename: 'Rekap_Tabungan_Karyawan_${currentYear}.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
+            pagebreak: { mode: ['css', 'legacy'] }
+          };
+          html2pdf().set(opt).from(content).save().then(function() {
+            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+          }).catch(function(err) {
+            console.error(err);
+            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            window.print();
+          });
+        }
+
+        if (typeof html2pdf !== 'undefined') {
+          runGen();
+        } else {
+          var s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+          s.onload = runGen;
+          s.onerror = function() {
+            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            window.print();
+          };
+          document.head.appendChild(s);
+        }
       }
     </script>
     <style>
@@ -6978,8 +7164,9 @@ window._printSavingsSummary = () => {
   </head>
   <body>
     <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
-      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 SIMPAN SEBAGAI PDF / CETAK TABUNGAN</button>
-      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup Window</button>
+      <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
+      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
+      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
 
     <div class="top-accent-bar"></div>
@@ -7062,8 +7249,44 @@ window._printOvertimeSummary = () => {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
-      function downloadPDF() {
-        window.print();
+      function downloadPDFDirect() {
+        const btn = document.getElementById('btn-dl-direct');
+        if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
+        
+        function runGen() {
+          const content = document.createElement('div');
+          content.innerHTML = document.body.innerHTML;
+          content.querySelectorAll('.no-print').forEach(function(el){ el.remove(); });
+          
+          const opt = {
+            margin: [4, 4, 4, 4],
+            filename: 'Rekap_Lembur_Karyawan_${month}.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
+            pagebreak: { mode: ['css', 'legacy'] }
+          };
+          html2pdf().set(opt).from(content).save().then(function() {
+            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+          }).catch(function(err) {
+            console.error(err);
+            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            window.print();
+          });
+        }
+
+        if (typeof html2pdf !== 'undefined') {
+          runGen();
+        } else {
+          var s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+          s.onload = runGen;
+          s.onerror = function() {
+            if (btn) { btn.innerHTML = '📥 UNDUH FILE PDF DIRECT'; btn.disabled = false; }
+            window.print();
+          };
+          document.head.appendChild(s);
+        }
       }
     </script>
     <style>
@@ -7092,8 +7315,9 @@ window._printOvertimeSummary = () => {
   </head>
   <body>
     <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
-      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 SIMPAN SEBAGAI PDF / CETAK LEMBURAN</button>
-      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup Window</button>
+      <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
+      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
+      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
 
     <div class="top-accent-bar"></div>
