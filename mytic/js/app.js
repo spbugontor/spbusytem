@@ -5357,13 +5357,13 @@ function renderInternalPayrollTab() {
           <button class="btn btn-warning" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._openMassAllowanceModal()">⚡ Input Massal Gaji & Tunjangan</button>
           <label style="font-size:0.75rem; font-weight:700;">Tgl Cetak:</label>
           <input type="date" value="${printDate}" class="form-input" style="padding:0.3rem 0.5rem; font-size:0.75rem; width:135px;" onchange="window._setPayrollPrintDate(this.value)">
-          <button class="btn btn-primary" style="padding:0.4rem 0.9rem; font-size:0.78rem; font-weight:900; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; border:none; box-shadow:0 2px 8px rgba(99,102,241,0.3);" onclick="window._printAllPayrollBundle()">📦 UNDUH SEMUA FILE GAJI (1 PDF BUNDEL LENGKAP)</button>
+          <button class="btn btn-primary" style="padding:0.4rem 0.9rem; font-size:0.78rem; font-weight:900; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; border:none; box-shadow:0 2px 8px rgba(99,102,241,0.3);" onclick="window._downloadPdfFromMainWindow('bundle')">📦 UNDUH SEMUA FILE GAJI (1 PDF BUNDEL LENGKAP)</button>
           <button class="btn btn-outline-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._exportToExcel('internal')">📊 Export Excel</button>
-          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printInternalPayrollSummary()">🖨️ Rekap Gaji (1 Hal)</button>
-          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printOvertimeSummary()">⏰ Rekap Lemburan</button>
-          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printSavingsSummary()">🏦 Rekap Tabungan</button>
-          <button class="btn btn-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._printEnvelopeSlips('A4', 6)">✂️ Cetak 6 Slip / A4</button>
-          <button class="btn btn-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._printEnvelopeSlips('F4', 6)">✂️ Cetak 6 Slip / F4</button>
+          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._downloadPdfFromMainWindow('internal')">📥 Unduh Rekap (1 Hal)</button>
+          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._downloadPdfFromMainWindow('overtime')">⏰ Unduh Lemburan</button>
+          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._downloadPdfFromMainWindow('savings')">🏦 Unduh Tabungan</button>
+          <button class="btn btn-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._downloadPdfFromMainWindow('slips', 'A4')">📥 Unduh 6 Slip (A4)</button>
+          <button class="btn btn-outline-secondary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printEnvelopeSlips('A4', 6)">👁️ Preview & Cetak</button>
         </div>
       </div>
 
@@ -5451,9 +5451,10 @@ function renderAuditPayrollTab() {
           <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Berisi 15 Karyawan (Termasuk Manager ${esc(settings.name_audit_manager)}) | UMK Staf: ${fmt(settings.umk_staf)} | UMK Manager: ${fmt(settings.umk_manager)}</p>
         </div>
         <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-          <button class="btn btn-primary" style="padding:0.45rem 1rem; font-size:0.8rem; font-weight:900; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; border:none; box-shadow:0 2px 8px rgba(99,102,241,0.3);" onclick="window._printAllPayrollBundle()">📦 UNDUH SEMUA FILE GAJI (1 PDF BUNDEL LENGKAP)</button>
+          <button class="btn btn-primary" style="padding:0.45rem 1rem; font-size:0.8rem; font-weight:900; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; border:none; box-shadow:0 2px 8px rgba(99,102,241,0.3);" onclick="window._downloadPdfFromMainWindow('bundle')">📦 UNDUH SEMUA FILE GAJI (1 PDF BUNDEL LENGKAP)</button>
           <button class="btn btn-outline-success" style="font-weight:bold; padding:0.45rem 1rem;" onclick="window._exportToExcel('audit')">📊 Export Excel (Audit)</button>
-          <button class="btn btn-primary" style="font-weight:bold; padding:0.45rem 1rem;" onclick="window._printAuditDocuments()">📥 UNDUH FILE AUDIT PERTAMINA (PDF)</button>
+          <button class="btn btn-primary" style="font-weight:bold; padding:0.45rem 1rem;" onclick="window._downloadPdfFromMainWindow('audit')">📥 UNDUH FILE AUDIT PERTAMINA (PDF)</button>
+          <button class="btn btn-outline-secondary" style="padding:0.45rem 1rem;" onclick="window._printAuditDocuments()">👁️ Preview & Cetak</button>
         </div>
       </div>
 
@@ -5772,57 +5773,13 @@ window._printAllPayrollBundle = () => {
     <title>Bundel Laporan Penggajian Lengkap - SPBU Gontor</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
-      function downloadPDFDirect() {
-        const btn = document.getElementById('btn-dl-direct');
-        const origText = btn ? btn.innerHTML : '📥 UNDUH FILE PDF DIRECT';
-        if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
-        
-        document.body.classList.add('pdf-exporting');
-
-        function restoreUI() {
-          document.body.classList.remove('pdf-exporting');
-          if (btn) { btn.innerHTML = origText; btn.disabled = false; }
-        }
-
-        function runGen() {
-          const opt = {
-            margin: [3, 3, 3, 3],
-            filename: 'Laporan_Penggajian_Lengkap_SPBU_Gontor_${month}.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
-            pagebreak: { mode: ['css', 'legacy'] }
-          };
-          html2pdf().set(opt).from(document.body).save().then(function() {
-            restoreUI();
-          }).catch(function(err) {
-            console.error(err);
-            restoreUI();
-            window.print();
-          });
-        }
-
-        if (typeof html2pdf !== 'undefined') {
-          setTimeout(runGen, 100);
-        } else {
-          var s = document.createElement('script');
-          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-          s.onload = function() { setTimeout(runGen, 100); };
-          s.onerror = function() {
-            restoreUI();
-            window.print();
-          };
-          document.head.appendChild(s);
-        }
-      }
+      // Native print script
     </script>
     <style>
       @page { size: A4 landscape; margin: 4mm 6mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; padding: 6px; font-size: 10px; -webkit-font-smoothing: antialiased; }
-      body.pdf-exporting .no-print { display: none !important; }
 
       .page-break { page-break-before: always; }
       .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
@@ -5878,9 +5835,8 @@ window._printAllPayrollBundle = () => {
   </head>
   <body>
     <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
-      <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
-      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
-      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
+      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">🖨️ CETAK PRINTER / SIMPAN SEBAGAI PDF</button>
+      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup Window</button>
     </div>
 
     <!-- SEKSI 1: SLIP GAJI AMPLOP -->
@@ -6203,57 +6159,13 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
     <title>Slip Gaji Amplop - SPBU Gontor</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
-      function downloadPDFDirect() {
-        const btn = document.getElementById('btn-dl-direct');
-        const origText = btn ? btn.innerHTML : '📥 UNDUH FILE PDF DIRECT';
-        if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
-        
-        document.body.classList.add('pdf-exporting');
-
-        function restoreUI() {
-          document.body.classList.remove('pdf-exporting');
-          if (btn) { btn.innerHTML = origText; btn.disabled = false; }
-        }
-
-        function runGen() {
-          const opt = {
-            margin: [2, 2, 2, 2],
-            filename: 'Slip_Gaji_Amplop_${month}.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
-            jsPDF: { unit: 'mm', format: paperSize === 'F4' ? [215, 330] : 'a4', orientation: 'portrait', compress: true },
-            pagebreak: { mode: ['css', 'legacy'] }
-          };
-          html2pdf().set(opt).from(document.body).save().then(function() {
-            restoreUI();
-          }).catch(function(err) {
-            console.error(err);
-            restoreUI();
-            window.print();
-          });
-        }
-
-        if (typeof html2pdf !== 'undefined') {
-          setTimeout(runGen, 100);
-        } else {
-          var s = document.createElement('script');
-          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-          s.onload = function() { setTimeout(runGen, 100); };
-          s.onerror = function() {
-            restoreUI();
-            window.print();
-          };
-          document.head.appendChild(s);
-        }
-      }
+      // Native print script
     </script>
     <style>
       @page { size: ${paperSize === 'F4' ? '215mm 330mm' : 'A4'} portrait; margin: 4mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
-      body.pdf-exporting .no-print { display: none !important; }
       
       .page-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; grid-gap: 6px; width: 100%; min-height: 95vh; padding: 4px; box-sizing: border-box; page-break-after: always; }
       .per-page-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
@@ -6476,9 +6388,8 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
   </head>
   <body>
     <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; display:flex; justify-content:flex-end; gap:10px; align-items:center;">
-      <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
-      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
-      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
+      <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">🖨️ CETAK PRINTER / SIMPAN SEBAGAI PDF</button>
+      <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup Window</button>
     </div>
     ${slipsHTML}
   </body>
