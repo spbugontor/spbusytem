@@ -5282,13 +5282,26 @@ function getPayrollSettings() {
   };
 }
 
+function normalizePosition(pos) {
+  const p = (pos || '').toString().toLowerCase().trim();
+  if (!p) return '';
+  if (p === 'cs' || p.includes('clean') || p.includes('kebersihan')) return 'cs';
+  if (p === 'spv' || p.includes('superv') || p.includes('pengawas')) return 'spv';
+  if (p.includes('admin')) return 'admin';
+  if (p.includes('operat') || p === 'opr') return 'operator';
+  if (p.includes('manager') || p === 'mgr') return 'manager';
+  return p;
+}
+
 function isPositionMatch(empPosition, positionList) {
   if (!empPosition || !Array.isArray(positionList)) return false;
-  const empPosLower = empPosition.toLowerCase().trim();
+  const empNorm = normalizePosition(empPosition);
+  if (!empNorm) return false;
+
   return positionList.some(p => {
-    const pLower = (p || '').toLowerCase().trim();
-    if (!pLower) return false;
-    return empPosLower.includes(pLower) || pLower.includes(empPosLower);
+    const pNorm = normalizePosition(p);
+    if (!pNorm) return false;
+    return empNorm === pNorm || empNorm.includes(pNorm) || pNorm.includes(empNorm);
   });
 }
 
@@ -5487,6 +5500,11 @@ window._savePayrollSettings = async () => {
     return Array.from(document.querySelectorAll(`.${className}:checked`)).map(el => el.value);
   };
 
+  const hasIntG1 = document.querySelectorAll('.pw-int-g1-pos').length > 0;
+  const hasIntG2 = document.querySelectorAll('.pw-int-g2-pos').length > 0;
+  const hasAudG1 = document.querySelectorAll('.pw-aud-g1-pos').length > 0;
+  const hasAudG2 = document.querySelectorAll('.pw-aud-g2-pos').length > 0;
+
   const intG1Pos = getCheckedPositions('pw-int-g1-pos');
   const intG2Pos = getCheckedPositions('pw-int-g2-pos');
   const audG1Pos = getCheckedPositions('pw-aud-g1-pos');
@@ -5501,20 +5519,20 @@ window._savePayrollSettings = async () => {
 
     // PW Int Groups
     pw_int_group1_name: $('set-pw-int-g1-name')?.value.trim() || 'Kelompok 1 (Internal)',
-    pw_int_group1_positions: intG1Pos.length > 0 ? intG1Pos : current.pw_int_group1_positions,
+    pw_int_group1_positions: hasIntG1 ? intG1Pos : current.pw_int_group1_positions,
     pw_int_group1_percent: Number($('set-pw-int-g1-pct')?.value || 20),
 
     pw_int_group2_name: $('set-pw-int-g2-name')?.value.trim() || 'Kelompok 2 (Internal)',
-    pw_int_group2_positions: intG2Pos.length > 0 ? intG2Pos : current.pw_int_group2_positions,
+    pw_int_group2_positions: hasIntG2 ? intG2Pos : current.pw_int_group2_positions,
     pw_int_group2_percent: Number($('set-pw-int-g2-pct')?.value || 80),
 
     // PW Aud Groups
     pw_aud_group1_name: $('set-pw-aud-g1-name')?.value.trim() || 'Kelompok 1 (Audit)',
-    pw_aud_group1_positions: audG1Pos.length > 0 ? audG1Pos : current.pw_aud_group1_positions,
+    pw_aud_group1_positions: hasAudG1 ? audG1Pos : current.pw_aud_group1_positions,
     pw_aud_group1_percent: Number($('set-pw-aud-g1-pct')?.value || 20),
 
     pw_aud_group2_name: $('set-pw-aud-g2-name')?.value.trim() || 'Kelompok 2 (Audit)',
-    pw_aud_group2_positions: audG2Pos.length > 0 ? audG2Pos : current.pw_aud_group2_positions,
+    pw_aud_group2_positions: hasAudG2 ? audG2Pos : current.pw_aud_group2_positions,
     pw_aud_group2_percent: Number($('set-pw-aud-g2-pct')?.value || 80),
 
     name_finance_manager: $('set-name-finance')?.value.trim() || 'Hazel Hudaya Bisri',
