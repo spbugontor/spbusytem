@@ -5833,55 +5833,60 @@ window._printAllPayrollBundle = () => {
     <style>
       @page { size: A4 landscape; margin: 4mm 6mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; padding: 6px; font-size: 10px; -webkit-font-smoothing: antialiased; }
+      body { font-family: 'Inter', sans-serif; color: #0f172a !important; background: #ffffff !important; padding: 6px; font-size: 10px; -webkit-font-smoothing: antialiased; }
+      body, div, p, span, td, th { color: #0f172a !important; }
 
       .page-break { page-break-before: always; }
       .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
-      .header-card { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%) !important; color: #fff; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .header-card { background: #0f172a !important; color: #ffffff !important; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .header-card * { color: #ffffff !important; }
       .brand-box { display: flex; align-items: center; gap: 8px; }
-      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
-      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #fff !important; }
+      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ffffff !important; }
+      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #ffffff !important; }
       .brand-sub { font-size: 9.5px; color: #94a3b8 !important; }
-      .period-badge { background: rgba(255,255,255,0.12) !important; color: #e2e8f0 !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.18); text-transform: uppercase; letter-spacing: 0.5px; }
-      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
+      .period-badge { background: rgba(255,255,255,0.18) !important; color: #ffffff !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.5px; }
+      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a !important; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
 
-      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5px; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-      th, td { border: 1px solid #cbd5e1; padding: 5px 6px; }
-      th { background: #0f172a !important; color: #fff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px; }
-      tfoot td { background: #f1f5f9 !important; font-weight: 800; color: #0f172a; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5px; background: #fff !important; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+      th, td { border: 1px solid #cbd5e1; padding: 5px 6px; color: #0f172a !important; }
+      th { background: #0f172a !important; color: #ffffff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px; }
+      tfoot td { background: #f1f5f9 !important; font-weight: 800; color: #0f172a !important; }
 
       .page-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; grid-gap: 6px; width: 100%; min-height: 95vh; padding: 4px; box-sizing: border-box; page-break-after: always; }
       .per-page-6 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; }
-      .slip-card { border: none; border-radius: 8px; display: flex; flex-direction: column; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; position: relative; }
+      .slip-card { border: none; border-radius: 8px; display: flex; flex-direction: column; background: #fff !important; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; position: relative; color: #0f172a !important; }
+      .slip-card * { color: #0f172a !important; }
       .slip-top-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); }
-      .slip-header-area { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%) !important; padding: 7px 10px; display: flex; justify-content: space-between; align-items: center; }
+      .slip-header-area { background: #0f172a !important; padding: 7px 10px; display: flex; justify-content: space-between; align-items: center; }
+      .slip-header-area * { color: #ffffff !important; }
       .company-badge { display: flex; align-items: center; gap: 6px; }
-      .company-icon { width: 26px; height: 26px; background: linear-gradient(135deg, #f59e0b, #ef4444) !important; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #fff; }
+      .company-icon { width: 26px; height: 26px; background: linear-gradient(135deg, #f59e0b, #ef4444) !important; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #fff !important; }
       .company-name { font-size: 12px; font-weight: 800; color: #fff !important; letter-spacing: 0.5px; }
       .company-id { font-size: 9px; color: #94a3b8 !important; font-weight: 500; }
       .slip-body { padding: 7px 10px 4px; flex: 1; }
       .emp-info-row { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 5px; border-bottom: 1.5px solid #e2e8f0; margin-bottom: 5px; }
-      .emp-name { font-size: 11px; font-weight: 800; color: #0f172a; }
-      .emp-pos { font-size: 8px; font-weight: 600; color: #6366f1; background: #eef2ff !important; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; }
+      .emp-name { font-size: 11px; font-weight: 800; color: #0f172a !important; }
+      .emp-pos { font-size: 8px; font-weight: 700; color: #4338ca !important; background: #e0e7ff !important; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; }
       .detail-section { font-size: 9.5px; }
       .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; }
-      .detail-row .amount { font-weight: 700; font-variant-numeric: tabular-nums; }
-      .main-row { color: #334155; font-weight: 500; }
-      .tambahan-label { font-size: 8.5px; font-weight: 700; color: #64748b; text-transform: uppercase; margin: 3px 0 1px; }
+      .detail-row .amount { font-weight: 700; font-variant-numeric: tabular-nums; color: #0f172a !important; }
+      .main-row { color: #0f172a !important; font-weight: 600; }
+      .tambahan-label { font-size: 8.5px; font-weight: 700; color: #475569 !important; text-transform: uppercase; margin: 3px 0 1px; }
       .tambahan-tbl { width: 100%; border-collapse: collapse; font-size: 9px; margin-bottom: 2px; }
-      .tambahan-tbl td { padding: 1px 0 1px 6px; }
-      .subtotal-row { border-top: 1.5px solid #cbd5e1; margin-top: 3px; padding-top: 3px; font-weight: 700; color: #0f172a; font-size: 10px; }
-      .deduction-row { color: #dc2626; font-size: 9px; padding: 2px 0; }
-      .deduction-row .deduction { color: #dc2626; }
+      .tambahan-tbl td { padding: 1px 0 1px 6px; color: #0f172a !important; }
+      .subtotal-row { border-top: 1.5px solid #cbd5e1; margin-top: 3px; padding-top: 3px; font-weight: 800; color: #0f172a !important; font-size: 10px; }
+      .deduction-row { color: #dc2626 !important; font-size: 9px; padding: 2px 0; }
+      .deduction-row * { color: #dc2626 !important; }
       .slip-footer-area { padding: 0 10px 7px; }
-      .net-pay-bar { background: linear-gradient(135deg, #059669, #10b981) !important; border-radius: 5px; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-      .net-label { color: rgba(255,255,255,0.85) !important; font-size: 8.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
-      .net-amount { color: #fff !important; font-size: 13px; font-weight: 900; }
-      .sign-area { text-align: right; font-size: 8px; color: #64748b; line-height: 1.35; }
-      .sign-date { font-weight: 500; }
-      .sign-title { font-weight: 600; color: #475569; margin-top: 2px; }
+      .net-pay-bar { background: #059669 !important; border-radius: 5px; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+      .net-pay-bar * { color: #ffffff !important; }
+      .net-label { color: #ffffff !important; font-size: 8.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+      .net-amount { color: #ffffff !important; font-size: 13px; font-weight: 900; }
+      .sign-area { text-align: right; font-size: 8px; color: #475569 !important; line-height: 1.35; }
+      .sign-date { font-weight: 500; color: #475569 !important; }
+      .sign-title { font-weight: 600; color: #475569 !important; margin-top: 2px; }
       .sign-space { height: 28px; }
-      .sign-name { font-weight: 700; color: #0f172a; text-decoration: underline; font-size: 8.5px; }
+      .sign-name { font-weight: 800; color: #0f172a !important; text-decoration: underline; font-size: 8.5px; }
 
       .toolbar-btn { padding: 8px 18px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-family: 'Inter', sans-serif; transition: all 0.2s; }
       @media print { .no-print { display: none !important; } }
@@ -6275,7 +6280,8 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
     <style>
       @page { size: ${paperSize === 'F4' ? '215mm 330mm' : 'A4'} portrait; margin: 4mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+      body { font-family: 'Inter', sans-serif; color: #0f172a !important; background: #ffffff !important; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+      body, div, p, span, td, th { color: #0f172a !important; }
       
       .page-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; grid-gap: 6px; width: 100%; min-height: 95vh; padding: 4px; box-sizing: border-box; page-break-after: always; }
       .per-page-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
@@ -6604,7 +6610,8 @@ window._printAuditDocuments = () => {
     <style>
       @page { size: A4 landscape; margin: 4mm 6mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; padding: 6px; font-size: 10.5px; -webkit-font-smoothing: antialiased; }
+      body { font-family: 'Inter', sans-serif; color: #0f172a !important; background: #ffffff !important; padding: 6px; font-size: 10.5px; -webkit-font-smoothing: antialiased; }
+      body, div, p, span, td, th { color: #0f172a !important; }
       body.pdf-exporting .no-print { display: none !important; }
       
       .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
@@ -7216,7 +7223,8 @@ window._printSavingsSummary = () => {
     <style>
       @page { size: A4 landscape; margin: 5mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; padding: 6px; font-size: 9px; -webkit-font-smoothing: antialiased; }
+      body { font-family: 'Inter', sans-serif; color: #0f172a !important; background: #ffffff !important; padding: 6px; font-size: 9px; -webkit-font-smoothing: antialiased; }
+      body, div, p, span, td, th { color: #0f172a !important; }
       body.pdf-exporting .no-print { display: none !important; }
       
       .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
