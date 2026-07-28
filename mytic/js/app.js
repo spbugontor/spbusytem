@@ -6261,6 +6261,9 @@ function renderInternalPayrollTab() {
   const rawPwSpvAdmin = (pwInt.total * pctSpv) / g1Count;
   const rawPwOprCs = (pwInt.total * pctOpr) / g2Count;
 
+  const g1IntPosText = getPositionsLabel(settings.pw_int_group1_positions, settings.pw_int_group1_name);
+  const g2IntPosText = getPositionsLabel(settings.pw_int_group2_positions, settings.pw_int_group2_name);
+
   let totalGajiKotorAll = 0;
   let totalTabunganAll = 0;
   let totalGajiBersihAll = 0;
