@@ -3578,7 +3578,7 @@ window._generateRatingPDFHtml = (key) => {
     </div>
     
     <div class="doc-title-box">
-      <div class="doc-title">LEMBAR EVALUASI PENILAIAN ATASAN</div>
+      <div class="doc-title">LEMBAR EVALUASI PENILAIAN KARYAWAN</div>
       <div class="doc-subtitle">PERIODE EVALUASI: ${fmtMonthYear(rating.date).toUpperCase()} | TANGGAL CETAK: ${formattedDate.toUpperCase()}</div>
     </div>
 
@@ -3767,7 +3767,7 @@ window._downloadAllRatingsPDF = () => {
       </div>
       
       <div class="doc-title-box">
-        <div class="doc-title">LEMBAR EVALUASI PENILAIAN ATASAN</div>
+        <div class="doc-title">LEMBAR EVALUASI PENILAIAN KARYAWAN</div>
         <div class="doc-subtitle">PERIODE EVALUASI: ${fmtMonthYear(r.date).toUpperCase()} | TANGGAL CETAK: ${formattedDate.toUpperCase()}</div>
       </div>
 
@@ -6855,7 +6855,7 @@ window._printAllPayrollBundle = () => {
     <div class="page-break"></div>
     <div class="top-accent-bar"></div>
     <div class="header-card">
-      <div class="brand-box"><div><div class="brand-title">SPBU GONTOR 54.634.25</div><div class="brand-sub">Dokumen Perhitungan Pertamina Way Internal</div></div></div>
+      <div class="brand-box"><div><div class="brand-title">SPBU GONTOR 54.634.25</div><div class="brand-sub">Dokumen Perhitungan Pertamina Way</div></div></div>
       <div class="period-badge">BULAN ${monthNameUpper}</div>
     </div>
     <div class="doc-title-bar">
@@ -6922,7 +6922,7 @@ window._printAllPayrollBundle = () => {
     <div class="page-break"></div>
     <div class="top-accent-bar"></div>
     <div class="header-card">
-      <div class="brand-box"><div><div class="brand-title">SPBU GONTOR 54.634.25</div><div class="brand-sub">Daftar Penerimaan Gaji Resmi Audit</div></div></div>
+      <div class="brand-box"><div><div class="brand-title">SPBU GONTOR 54.634.25</div><div class="brand-sub">Daftar Penerimaan Gaji</div></div></div>
       <div class="period-badge">BULAN ${monthNameUpper}</div>
     </div>
     <div class="doc-title-bar">
@@ -7527,7 +7527,7 @@ window._printAuditDocuments = () => {
         <div class="brand-box">
           <div>
             <div class="brand-title">SPBU GONTOR 54.634.25</div>
-            <div class="brand-sub">Dokumen Perhitungan Pertamina Way Internal</div>
+            <div class="brand-sub">Dokumen Perhitungan Pertamina Way</div>
           </div>
         </div>
         <div class="period-badge">BULAN ${monthNameUpper}</div>
@@ -7676,7 +7676,7 @@ window._printAuditDocuments = () => {
           <div class="brand-icon">⛽</div>
           <div>
             <div class="brand-title">SPBU GONTOR 54.634.25</div>
-            <div class="brand-sub">Daftar Penerimaan Gaji Resmi Audit</div>
+            <div class="brand-sub">Daftar Penerimaan Gaji</div>
           </div>
         </div>
         <div class="period-badge">BULAN ${monthNameUpper}</div>
