@@ -5795,7 +5795,7 @@ window._printAllPayrollBundle = () => {
             clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
 
             const opt = {
-              margin: [3, 3, 3, 3],
+              margin: 3,
               filename: 'Laporan_Penggajian_Lengkap_SPBU_Gontor_${month}.pdf',
               image: { type: 'jpeg', quality: 0.98 },
               html2canvas: { scale: 2, useCORS: true, logging: false },
@@ -6228,7 +6228,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
             clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
 
             const opt = {
-              margin: [2, 2, 2, 2],
+              margin: 2,
               filename: 'Slip_Gaji_Amplop_${month}.pdf',
               image: { type: 'jpeg', quality: 0.98 },
               html2canvas: { scale: 2, useCORS: true, logging: false },
@@ -6548,7 +6548,7 @@ window._printAuditDocuments = () => {
             clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
 
             const opt = {
-              margin: [3, 3, 3, 3],
+              margin: 3,
               filename: 'Dokumen_Audit_Pertamina_${month}.pdf',
               image: { type: 'jpeg', quality: 0.98 },
               html2canvas: { scale: 2, useCORS: true, logging: false },
@@ -6966,7 +6966,7 @@ window._printInternalPayrollSummary = () => {
             clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
 
             const opt = {
-              margin: [3, 3, 3, 3],
+              margin: 3,
               filename: 'Rekap_Gaji_Internal_${month}.pdf',
               image: { type: 'jpeg', quality: 0.98 },
               html2canvas: { scale: 2, useCORS: true, logging: false },
@@ -7147,7 +7147,7 @@ window._printSavingsSummary = () => {
           clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
 
           const opt = {
-            margin: [3, 3, 3, 3],
+            margin: 3,
             filename: 'Rekap_Tabungan_Karyawan_${currentYear}.pdf',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, useCORS: true, logging: false },
@@ -7299,7 +7299,7 @@ window._printOvertimeSummary = () => {
           clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
 
           const opt = {
-            margin: [4, 4, 4, 4],
+            margin: 3,
             filename: 'Rekap_Lembur_Karyawan_${month}.pdf',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, useCORS: true, logging: false },
