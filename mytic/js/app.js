@@ -5245,6 +5245,17 @@ function getPayrollSettings() {
     umk_staf: Number(s.umk_staf !== undefined ? s.umk_staf : 2549876),
     umk_manager: Number(s.umk_manager !== undefined ? s.umk_manager : 3059851),
     bpjs_percent: Number(s.bpjs_percent !== undefined ? s.bpjs_percent : 1),
+    pw_percent_internal_spv_admin: Number(s.pw_percent_internal_spv_admin !== undefined ? s.pw_percent_internal_spv_admin : 20),
+    pw_percent_internal_opr_cs: Number(s.pw_percent_internal_opr_cs !== undefined ? s.pw_percent_internal_opr_cs : 80),
+    pw_percent_audit_mgr_admin: Number(s.pw_percent_audit_mgr_admin !== undefined ? s.pw_percent_audit_mgr_admin : 20),
+    pw_percent_audit_staff: Number(s.pw_percent_audit_staff !== undefined ? s.pw_percent_audit_staff : 80),
+    bbm_products: Array.isArray(s.bbm_products) && s.bbm_products.length > 0 ? s.bbm_products : [
+      { id: 'pertalite', name: 'Pertalite', mult_internal: 2, mult_audit: 4 },
+      { id: 'solar', name: 'Solar / Biosolar', mult_internal: 2, mult_audit: 4 },
+      { id: 'turbo', name: 'Pertamax Turbo', mult_internal: 12, mult_audit: 30 },
+      { id: 'px92', name: 'Pertamax 92', mult_internal: 12, mult_audit: 30 },
+      { id: 'dex', name: 'Pertamina Dex', mult_internal: 12, mult_audit: 30 }
+    ],
     name_finance_manager: s.name_finance_manager || 'Hazel Hudaya Bisri',
     name_audit_supervisor: s.name_audit_supervisor || 'Gilang Wahyu Ramadhan',
     name_audit_manager: s.name_audit_manager || 'Pedri Fauzi',
@@ -5256,17 +5267,21 @@ function getPayrollSettings() {
   };
 }
 
+function getBbmProducts() {
+  const settings = getPayrollSettings();
+  return settings.bbm_products;
+}
+
 function getBbmSalesData(month) {
   const p = allData.payroll || {};
   const m = p[month] || {};
   const b = m.bbm_sales || {};
-  return {
-    pertalite: Number(b.pertalite !== undefined ? b.pertalite : 0),
-    solar: Number(b.solar !== undefined ? b.solar : 0),
-    turbo: Number(b.turbo !== undefined ? b.turbo : 0),
-    px92: Number(b.px92 !== undefined ? b.px92 : 0),
-    dex: Number(b.dex !== undefined ? b.dex : 0)
-  };
+  const products = getBbmProducts();
+  const res = {};
+  products.forEach(prod => {
+    res[prod.id] = Number(b[prod.id] !== undefined ? b[prod.id] : 0);
+  });
+  return res;
 }
 
 function getPrevMonthStr(monthStr) {
@@ -5332,23 +5347,31 @@ function getEmployeeSavingsForMonth(empId, monthStr) {
 }
 
 function computePwInternal(bbm) {
-  const pwPertalite = bbm.pertalite * 2;
-  const pwSolar = bbm.solar * 2;
-  const pwTurbo = bbm.turbo * 12;
-  const pwPx92 = bbm.px92 * 12;
-  const pwDex = bbm.dex * 12;
-  const total = pwPertalite + pwSolar + pwTurbo + pwPx92 + pwDex;
-  return { pwPertalite, pwSolar, pwTurbo, pwPx92, pwDex, total };
+  const products = getBbmProducts();
+  const res = { total: 0, items: {} };
+  products.forEach(p => {
+    const qty = Number(bbm[p.id] || 0);
+    const mult = Number(p.mult_internal !== undefined ? p.mult_internal : 0);
+    const amt = qty * mult;
+    res[p.id] = amt;
+    res.items[p.id] = { qty, mult, amt, name: p.name };
+    res.total += amt;
+  });
+  return res;
 }
 
 function computePwAudit(bbm) {
-  const pwPertalite = bbm.pertalite * 4;
-  const pwSolar = bbm.solar * 4;
-  const pwTurbo = bbm.turbo * 30;
-  const pwPx92 = bbm.px92 * 30;
-  const pwDex = bbm.dex * 30;
-  const total = pwPertalite + pwSolar + pwTurbo + pwPx92 + pwDex;
-  return { pwPertalite, pwSolar, pwTurbo, pwPx92, pwDex, total };
+  const products = getBbmProducts();
+  const res = { total: 0, items: {} };
+  products.forEach(p => {
+    const qty = Number(bbm[p.id] || 0);
+    const mult = Number(p.mult_audit !== undefined ? p.mult_audit : 0);
+    const amt = qty * mult;
+    res[p.id] = amt;
+    res.items[p.id] = { qty, mult, amt, name: p.name };
+    res.total += amt;
+  });
+  return res;
 }
 
 function getTenureMonths(joinDateStr, targetMonthStr) {
@@ -5394,11 +5417,6 @@ function getDefaultPositionAllowance(position) {
 }
 window._saveBbmSales = async () => {
   const month = window._payrollMonth || getTodayStr().substring(0, 7);
-  const bbm = {
-    pertalite: Number($('bbm-pertalite').value || 0),
-    solar: Number($('bbm-solar').value || 0),
-    turbo: Number($('bbm-turbo').value || 0),
-    px92: Number($('bbm-px92').value || 0),
     dex: Number($('bbm-dex').value || 0),
     updated_at: Date.now()
   };
@@ -5428,15 +5446,20 @@ window._resetPayrollMonthData = async () => {
 };
 
 window._savePayrollSettings = async () => {
+  const current = getPayrollSettings();
   const settings = {
-    gaji_pokok_internal_staf: Number($('set-gaji-pokok-internal').value || 1000000),
-    umk_staf: Number($('set-umk-staf').value || 2549876),
-    umk_manager: Number($('set-umk-manager').value || 3059851),
-    bpjs_percent: Number($('set-bpjs-percent').value || 1),
-    name_finance_manager: $('set-name-finance').value.trim() || 'Hazel Hudaya Bisri',
-    name_audit_supervisor: $('set-name-spv').value.trim() || 'Gilang Wahyu Ramadhan',
-    name_audit_manager: $('set-name-manager').value.trim() || 'Pedri Fauzi',
-    custom_allowances: getPayrollSettings().custom_allowances,
+    ...current,
+    gaji_pokok_internal_staf: Number($('set-gaji-pokok-internal')?.value || 1000000),
+    umk_staf: Number($('set-umk-staf')?.value || 2549876),
+    umk_manager: Number($('set-umk-manager')?.value || 3059851),
+    bpjs_percent: Number($('set-bpjs-percent')?.value || 1),
+    pw_percent_internal_spv_admin: Number($('set-pw-int-spv')?.value || 20),
+    pw_percent_internal_opr_cs: Number($('set-pw-int-opr')?.value || 80),
+    pw_percent_audit_mgr_admin: Number($('set-pw-aud-mgr')?.value || 20),
+    pw_percent_audit_staff: Number($('set-pw-aud-staf')?.value || 80),
+    name_finance_manager: $('set-name-finance')?.value.trim() || 'Hazel Hudaya Bisri',
+    name_audit_supervisor: $('set-name-spv')?.value.trim() || 'Gilang Wahyu Ramadhan',
+    name_audit_manager: $('set-name-manager')?.value.trim() || 'Pedri Fauzi',
     updated_at: Date.now()
   };
 
@@ -5445,6 +5468,72 @@ window._savePayrollSettings = async () => {
 
   await set(ref(db, 'payroll_settings'), settings);
   showToast('Pengaturan Master Gaji berhasil disimpan!', 'success');
+};
+
+window._addBbmProduct = async () => {
+  const nameInput = $('new-bbm-name');
+  const multIntInput = $('new-bbm-mult-int');
+  const multAudInput = $('new-bbm-mult-aud');
+  if (!nameInput || !nameInput.value.trim()) {
+    showToast('Nama produk BBM tidak boleh kosong!', 'error');
+    return;
+  }
+  const name = nameInput.value.trim();
+  const id = 'bbm_' + Date.now();
+  const multInt = Number(multIntInput.value || 0);
+  const multAud = Number(multAudInput.value || 0);
+  
+  const currentSettings = getPayrollSettings();
+  const list = [...currentSettings.bbm_products, { id, name, mult_internal: multInt, mult_audit: multAud }];
+  
+  const updatedSettings = {
+    ...currentSettings,
+    bbm_products: list,
+    updated_at: Date.now()
+  };
+
+  allData.payroll_settings = updatedSettings;
+  renderCurrentSection();
+
+  await set(ref(db, 'payroll_settings'), updatedSettings);
+  showToast(`Produk BBM "${name}" berhasil ditambahkan!`, 'success');
+};
+
+window._deleteBbmProduct = async (id) => {
+  if (!confirm('Hapus produk BBM ini dari daftar master?')) return;
+  const currentSettings = getPayrollSettings();
+  const list = currentSettings.bbm_products.filter(b => b.id !== id);
+
+  const updatedSettings = {
+    ...currentSettings,
+    bbm_products: list,
+    updated_at: Date.now()
+  };
+
+  allData.payroll_settings = updatedSettings;
+  renderCurrentSection();
+
+  await set(ref(db, 'payroll_settings'), updatedSettings);
+  showToast('Produk BBM dihapus!', 'success');
+};
+
+window._updateBbmProduct = async (id, field, val) => {
+  const currentSettings = getPayrollSettings();
+  const list = currentSettings.bbm_products.map(b => {
+    if (b.id === id) {
+      return { ...b, [field]: field.includes('mult') ? Number(val || 0) : val };
+    }
+    return b;
+  });
+
+  const updatedSettings = {
+    ...currentSettings,
+    bbm_products: list,
+    updated_at: Date.now()
+  };
+
+  allData.payroll_settings = updatedSettings;
+  await set(ref(db, 'payroll_settings'), updatedSettings);
 };
 
 window._addCustomAllowance = async () => {
@@ -6073,8 +6162,10 @@ function renderInternalPayrollTab() {
 
   const oprCsCount = users.length - spvAdminCount || 11;
 
-  const rawPwSpvAdmin = (pwInt.total * 0.20) / Math.max(1, spvAdminCount);
-  const rawPwOprCs = (pwInt.total * 0.80) / Math.max(1, oprCsCount);
+  const pctSpv = (settings.pw_percent_internal_spv_admin || 20) / 100;
+  const pctOpr = (settings.pw_percent_internal_opr_cs || 80) / 100;
+  const rawPwSpvAdmin = (pwInt.total * pctSpv) / Math.max(1, spvAdminCount);
+  const rawPwOprCs = (pwInt.total * pctOpr) / Math.max(1, oprCsCount);
 
   let totalGajiKotorAll = 0;
   let totalTabunganAll = 0;
@@ -6221,15 +6312,16 @@ function renderInternalPayrollTab() {
     <div class="card" style="margin-bottom:1.25rem; background:var(--surface); border:1px solid var(--border);">
       <h4 style="font-size:0.95rem; font-weight:800; color:var(--primary); margin-bottom:0.75rem;">⛽ Input Penjualan Liter BBM (Periode: ${month})</h4>
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:0.75rem;">
-        <div><label class="form-label" style="font-size:0.75rem;">Pertalite (L)</label><input id="bbm-pertalite" type="number" step="0.01" value="${bbm.pertalite}" ${isLocked ? 'disabled' : ''} class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
-        <div><label class="form-label" style="font-size:0.75rem;">Solar / Biosolar (L)</label><input id="bbm-solar" type="number" step="0.01" value="${bbm.solar}" ${isLocked ? 'disabled' : ''} class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
-        <div><label class="form-label" style="font-size:0.75rem;">Pertamax Turbo (L)</label><input id="bbm-turbo" type="number" step="0.01" value="${bbm.turbo}" ${isLocked ? 'disabled' : ''} class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
-        <div><label class="form-label" style="font-size:0.75rem;">Pertamax 92 (L)</label><input id="bbm-px92" type="number" step="0.01" value="${bbm.px92}" ${isLocked ? 'disabled' : ''} class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
-        <div><label class="form-label" style="font-size:0.75rem;">Pertamina Dex (L)</label><input id="bbm-dex" type="number" step="0.01" value="${bbm.dex}" ${isLocked ? 'disabled' : ''} class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
+        ${getBbmProducts().map(p => `
+          <div>
+            <label class="form-label" style="font-size:0.75rem;">${esc(p.name)} (L)</label>
+            <input id="bbm-${p.id}" type="number" step="0.01" value="${bbm[p.id] || 0}" ${isLocked ? 'disabled' : ''} class="form-input" style="padding:0.4rem; font-size:0.85rem;">
+          </div>
+        `).join('')}
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.85rem; flex-wrap:wrap; gap:0.5rem;">
         <div style="font-size:0.8rem; font-weight:700; color:var(--text-main);">
-          Total PW Internal: <span style="color:var(--primary); font-size:0.95rem;">${fmt(pwInt.total)}</span> (SPV+Admin 20%: ${fmt(pwInt.total * 0.2)} | OPR+CS 80%: ${fmt(pwInt.total * 0.8)})
+          Total PW Internal: <span style="color:var(--primary); font-size:0.95rem;">${fmt(pwInt.total)}</span> (SPV+Admin ${settings.pw_percent_internal_spv_admin}%: ${fmt(pwInt.total * pctSpv)} | OPR+CS ${settings.pw_percent_internal_opr_cs}%: ${fmt(pwInt.total * pctOpr)})
         </div>
         <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
           <button class="btn btn-outline-danger" style="padding:0.4rem 0.9rem; font-size:0.8rem;" ${isLocked ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="window._resetPayrollMonthData()">🗑️ Bersihkan Data Bulan Ini</button>
@@ -6298,8 +6390,10 @@ function renderAuditPayrollTab() {
   const staffUsers = users.filter(u => u.emp_id !== managerObj.emp_id);
   const auditUsers = [managerObj, ...staffUsers];
 
-  const pwMgrAdminEach = (pwAudit.total * 0.20) / 2;
-  const pwStaffEach = (pwAudit.total * 0.80) / 13;
+  const pctMgrAud = (settings.pw_percent_audit_mgr_admin || 20) / 100;
+  const pctStafAud = (settings.pw_percent_audit_staff || 80) / 100;
+  const pwMgrAdminEach = (pwAudit.total * pctMgrAud) / 2;
+  const pwStaffEach = (pwAudit.total * pctStafAud) / 13;
 
   let totalGajiPokokAll = 0;
   let totalPwAll = 0;
@@ -6348,8 +6442,8 @@ function renderAuditPayrollTab() {
 
       <div style="background:var(--surface); border:1px solid var(--border); padding:0.75rem; border-radius:var(--radius-md); margin-bottom:1rem; font-size:0.8rem;">
         <strong>Omset Penjualan Liter BBM (Audit):</strong> Total PW Audit = <strong style="color:var(--primary);">${fmt(pwAudit.total)}</strong><br>
-        • Manager & Admin (20%): ${fmt(pwAudit.total * 0.2)} (Per @ ${fmt(pwMgrAdminEach)})<br>
-        • SPV, Operator, & CS (80%): ${fmt(pwAudit.total * 0.8)} (Per @ ${fmt(pwStaffEach)})
+        • Manager & Admin (${settings.pw_percent_audit_mgr_admin}%): ${fmt(pwAudit.total * pctMgrAud)} (Per @ ${fmt(pwMgrAdminEach)})<br>
+        • SPV, Operator, & CS (${settings.pw_percent_audit_staff}%): ${fmt(pwAudit.total * pctStafAud)} (Per @ ${fmt(pwStaffEach)})
       </div>
 
       <div style="overflow-x:auto;">
@@ -6383,6 +6477,31 @@ function renderAuditPayrollTab() {
 
 function renderPayrollSettingsTab() {
   const s = getPayrollSettings();
+
+  const bbmRowsHTML = s.bbm_products.map((b, idx) => {
+    return `<tr>
+      <td style="text-align:center; font-weight:bold; padding:6px;">${idx + 1}</td>
+      <td style="padding:6px;">
+        <input type="text" value="${esc(b.name)}" class="form-input" style="padding:0.25rem 0.4rem; font-size:0.8rem; font-weight:600; width:100%; min-width:120px;" onchange="window._updateBbmProduct('${b.id}', 'name', this.value)">
+      </td>
+      <td style="padding:6px; text-align:center;">
+        <div style="display:flex; align-items:center; justify-content:center; gap:0.2rem;">
+          <span style="font-size:0.75rem;">Rp</span>
+          <input type="number" value="${b.mult_internal}" class="form-input" style="padding:0.25rem 0.4rem; font-size:0.8rem; width:70px; text-align:right;" onchange="window._updateBbmProduct('${b.id}', 'mult_internal', this.value)">
+        </div>
+      </td>
+      <td style="padding:6px; text-align:center;">
+        <div style="display:flex; align-items:center; justify-content:center; gap:0.2rem;">
+          <span style="font-size:0.75rem;">Rp</span>
+          <input type="number" value="${b.mult_audit}" class="form-input" style="padding:0.25rem 0.4rem; font-size:0.8rem; width:70px; text-align:right;" onchange="window._updateBbmProduct('${b.id}', 'mult_audit', this.value)">
+        </div>
+      </td>
+      <td style="text-align:center; padding:6px;">
+        <button class="btn btn-outline-danger" style="padding:0.2rem 0.5rem; font-size:0.7rem;" onclick="window._deleteBbmProduct('${b.id}')">🗑️ Hapus</button>
+      </td>
+    </tr>`;
+  }).join('');
+
   const customListHTML = s.custom_allowances.map(ca => {
     return `<div style="display:flex; justify-content:space-between; align-items:center; background:var(--surface); border:1px solid var(--border); padding:0.5rem 0.75rem; border-radius:var(--radius-sm); margin-bottom:0.4rem;">
       <span style="font-size:0.85rem; font-weight:600; color:var(--text-main);">${esc(ca.name)}</span>
@@ -6392,6 +6511,7 @@ function renderPayrollSettingsTab() {
 
   return `<div class="fade-in">
     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.25rem;">
+      <!-- CARD 1: GAJI POKOK & UMK -->
       <div class="card">
         <h4 style="font-size:1rem; font-weight:800; color:var(--primary); margin-bottom:1rem;">💰 Pengaturan Gaji Pokok & UMK</h4>
         <div class="form-group">
@@ -6413,6 +6533,38 @@ function renderPayrollSettingsTab() {
         <button class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="window._savePayrollSettings()">Simpan Pengaturan Master Gaji</button>
       </div>
 
+      <!-- CARD 2: PERSENTASE PEMBAGIAN PW JABATAN -->
+      <div class="card">
+        <h4 style="font-size:1rem; font-weight:800; color:var(--primary); margin-bottom:1rem;">📊 Persentase Pembagian Pertamina Way (PW)</h4>
+        
+        <h5 style="font-size:0.85rem; font-weight:700; color:var(--text-main); margin-bottom:0.5rem;">Mode Internal (Gaji Asli):</h5>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem; margin-bottom:0.85rem;">
+          <div>
+            <label class="form-label" style="font-size:0.75rem;">SPV & Admin (%)</label>
+            <input id="set-pw-int-spv" type="number" value="${s.pw_percent_internal_spv_admin}" class="form-input">
+          </div>
+          <div>
+            <label class="form-label" style="font-size:0.75rem;">Operator & CS (%)</label>
+            <input id="set-pw-int-opr" type="number" value="${s.pw_percent_internal_opr_cs}" class="form-input">
+          </div>
+        </div>
+
+        <h5 style="font-size:0.85rem; font-weight:700; color:var(--text-main); margin-bottom:0.5rem;">Mode Audit (Dokumen Pertamina):</h5>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem; margin-bottom:1rem;">
+          <div>
+            <label class="form-label" style="font-size:0.75rem;">Manager & Admin (%)</label>
+            <input id="set-pw-aud-mgr" type="number" value="${s.pw_percent_audit_mgr_admin}" class="form-input">
+          </div>
+          <div>
+            <label class="form-label" style="font-size:0.75rem;">SPV, Operator & CS (%)</label>
+            <input id="set-pw-aud-staf" type="number" value="${s.pw_percent_audit_staff}" class="form-input">
+          </div>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;" onclick="window._savePayrollSettings()">Simpan Persentase Pembagian</button>
+      </div>
+
+      <!-- CARD 3: TTD & PENANDATANGAN -->
       <div class="card">
         <h4 style="font-size:1rem; font-weight:800; color:var(--primary); margin-bottom:1rem;">✍️ Penandatangan Dokumen & Manajer</h4>
         <div class="form-group">
@@ -6430,6 +6582,40 @@ function renderPayrollSettingsTab() {
         <button class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="window._savePayrollSettings()">Simpan Nama Penandatangan</button>
       </div>
 
+      <!-- CARD 4: MANAJEMEN PRODUK BBM & MULTIPLIER -->
+      <div class="card" style="grid-column: 1 / -1;">
+        <h4 style="font-size:1rem; font-weight:800; color:var(--primary); margin-bottom:0.5rem;">⛽ Master Produk BBM & Pengali Pertamina Way (PW)</h4>
+        <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:1rem;">Tambah/edit/hapus jenis BBM dan ubah nominal insentif per liter untuk Mode Internal maupun Mode Audit.</p>
+
+        <!-- TABLE PRODUK BBM -->
+        <div class="table-responsive" style="margin-bottom:1rem;">
+          <table class="metric-table" style="width:100%; border-collapse:collapse; font-size:0.78rem;">
+            <thead>
+              <tr>
+                <th style="width:35px; text-align:center;">#</th>
+                <th>Nama Produk BBM</th>
+                <th style="text-align:center; width:130px;">Pengali Internal (Rp/L)</th>
+                <th style="text-align:center; width:130px;">Pengali Audit (Rp/L)</th>
+                <th style="text-align:center; width:90px;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>${bbmRowsHTML}</tbody>
+          </table>
+        </div>
+
+        <!-- FORM TAMBAH PRODUK BBM BARU -->
+        <div style="background:var(--surface); border:1px solid var(--border); padding:0.85rem; border-radius:var(--radius-md);">
+          <strong style="font-size:0.82rem; color:var(--text-main); display:block; margin-bottom:0.5rem;">+ Tambah Produk BBM Baru:</strong>
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+            <input id="new-bbm-name" type="text" class="form-input" placeholder="Nama BBM (misal: Pertamax Green 95)" style="flex:2; min-width:180px; padding:0.4rem 0.6rem; font-size:0.8rem;">
+            <input id="new-bbm-mult-int" type="number" class="form-input" placeholder="Pengali Int (Rp)" style="flex:1; min-width:110px; padding:0.4rem 0.6rem; font-size:0.8rem;">
+            <input id="new-bbm-mult-aud" type="number" class="form-input" placeholder="Pengali Aud (Rp)" style="flex:1; min-width:110px; padding:0.4rem 0.6rem; font-size:0.8rem;">
+            <button class="btn btn-success" style="padding:0.4rem 0.85rem; font-size:0.8rem; font-weight:bold;" onclick="window._addBbmProduct()">+ Tambah BBM</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 5: TUNJANGAN CUSTOM INTERNAL -->
       <div class="card" style="grid-column: 1 / -1;">
         <h4 style="font-size:1rem; font-weight:800; color:var(--primary); margin-bottom:1rem;">🎁 Manajemen Jenis Tunjangan (Internal)</h4>
         <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
