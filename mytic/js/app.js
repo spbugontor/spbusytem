@@ -5881,11 +5881,13 @@ window._printAllPayrollBundle = () => {
     </style>
   </head>
   <body>
-    <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
+    <div class="no-print" style="padding:10px 16px; background:#0f172a; border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
       <button id="btn-dl-direct" onclick="downloadPDFDirect()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;">📥 UNDUH FILE PDF DIRECT</button>
       <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; font-weight:700;">🖨️ CETAK / PRINT</button>
       <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
+
+    <div id="print-area">
 
     <!-- SEKSI 1: SLIP GAJI AMPLOP -->
     ${slipsHTML}
@@ -6048,6 +6050,7 @@ window._printAllPayrollBundle = () => {
     </table>
     <div style="text-align:right; margin-top:20px; font-size:9.5px; color:#475569;">
       Ponorogo, ${formattedPrintDate}<br><div style="height:55px;"></div><strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_supervisor)}</strong><br><span>Supervisor</span>
+    </div>
     </div>
   </body>
   </html>`);
@@ -6257,7 +6260,8 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
     <style>
       @page { size: ${paperSize === 'F4' ? '215mm 330mm' : 'A4'} portrait; margin: 4mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: 'Inter', sans-serif; color: #0f172a !important; background: #ffffff !important; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+      html, body { font-family: 'Inter', sans-serif; color: #0f172a !important; background-color: #ffffff !important; background: #ffffff !important; padding: 0; margin: 0; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+      #print-area { background-color: #ffffff !important; background: #ffffff !important; color: #0f172a !important; padding: 6px; box-sizing: border-box; width: 100%; min-height: 100vh; }
       body, div, p, span, td, th { color: #0f172a !important; }
       
       .page-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; grid-gap: 6px; width: 100%; min-height: 95vh; padding: 4px; box-sizing: border-box; page-break-after: always; }
@@ -6265,14 +6269,16 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       .per-page-6 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; }
 
       .slip-card {
-        border: none;
+        border: 1px solid #e2e8f0 !important;
         border-radius: 8px;
         display: flex;
         flex-direction: column;
-        background: #fff;
+        background-color: #ffffff !important;
+        background: #ffffff !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         overflow: hidden;
         position: relative;
+        color: #0f172a !important;
       }
 
       .slip-top-bar {
@@ -6281,11 +6287,16 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       }
 
       .slip-header-area {
-        background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%) !important;
+        background-color: #0f172a !important;
+        background: #0f172a !important;
         padding: 7px 10px;
         display: flex;
         justify-content: space-between;
         align-items: center;
+      }
+
+      .slip-header-area * {
+        color: #ffffff !important;
       }
 
       .company-badge {
@@ -6303,7 +6314,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
         align-items: center;
         justify-content: center;
         font-size: 13px;
-        color: #fff;
+        color: #ffffff !important;
       }
 
       .company-name {
@@ -6334,6 +6345,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       .slip-body {
         padding: 7px 10px 4px;
         flex: 1;
+        background-color: #ffffff !important;
       }
 
       .emp-info-row {
@@ -6348,14 +6360,15 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       .emp-name {
         font-size: 11px;
         font-weight: 800;
-        color: #0f172a;
+        color: #0f172a !important;
       }
 
       .emp-pos {
         font-size: 8px;
         font-weight: 600;
-        color: #6366f1;
-        background: #eef2ff !important;
+        color: #4338ca !important;
+        background-color: #e0e7ff !important;
+        background: #e0e7ff !important;
         padding: 2px 6px;
         border-radius: 3px;
         text-transform: uppercase;
@@ -6376,17 +6389,18 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       .detail-row .amount {
         font-weight: 700;
         font-variant-numeric: tabular-nums;
+        color: #0f172a !important;
       }
 
       .main-row {
-        color: #334155;
-        font-weight: 500;
+        color: #0f172a !important;
+        font-weight: 600;
       }
 
       .tambahan-label {
         font-size: 8.5px;
         font-weight: 700;
-        color: #64748b;
+        color: #475569 !important;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin: 3px 0 1px;
@@ -6401,33 +6415,37 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
 
       .tambahan-tbl td {
         padding: 1px 0 1px 6px;
+        color: #0f172a !important;
+        background-color: #ffffff !important;
       }
 
       .subtotal-row {
         border-top: 1.5px solid #cbd5e1;
         margin-top: 3px;
         padding-top: 3px;
-        font-weight: 700;
-        color: #0f172a;
+        font-weight: 800;
+        color: #0f172a !important;
         font-size: 10px;
       }
 
       .deduction-row {
-        color: #dc2626;
+        color: #dc2626 !important;
         font-size: 9px;
         padding: 2px 0;
       }
 
-      .deduction-row .deduction {
-        color: #dc2626;
+      .deduction-row * {
+        color: #dc2626 !important;
       }
 
       .slip-footer-area {
         padding: 0 10px 7px;
+        background-color: #ffffff !important;
       }
 
       .net-pay-bar {
-        background: linear-gradient(135deg, #059669, #10b981) !important;
+        background-color: #059669 !important;
+        background: #059669 !important;
         border-radius: 5px;
         padding: 5px 10px;
         display: flex;
@@ -6436,8 +6454,12 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
         margin-bottom: 5px;
       }
 
+      .net-pay-bar * {
+        color: #ffffff !important;
+      }
+
       .net-label {
-        color: rgba(255,255,255,0.85) !important;
+        color: #ffffff !important;
         font-size: 8.5px;
         font-weight: 700;
         letter-spacing: 1px;
@@ -6445,7 +6467,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       }
 
       .net-amount {
-        color: #fff !important;
+        color: #ffffff !important;
         font-size: 13px;
         font-weight: 900;
         letter-spacing: 0.3px;
@@ -6454,14 +6476,14 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       .sign-area {
         text-align: right;
         font-size: 8px;
-        color: #64748b;
+        color: #475569 !important;
         line-height: 1.35;
       }
 
-      .sign-date { font-weight: 500; }
-      .sign-title { font-weight: 600; color: #475569; margin-top: 2px; }
+      .sign-date { font-weight: 500; color: #475569 !important; }
+      .sign-title { font-weight: 600; color: #475569 !important; margin-top: 2px; }
       .sign-space { height: 28px; }
-      .sign-name { font-weight: 700; color: #0f172a; text-decoration: underline; font-size: 8.5px; }
+      .sign-name { font-weight: 800; color: #0f172a !important; text-decoration: underline; font-size: 8.5px; }
 
       .toolbar-btn {
         padding: 8px 18px;
@@ -6488,6 +6510,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
 
     <div id="print-area">
     ${slipsHTML}
+    </div>
   </body>
   </html>`);
   win.document.close();
@@ -6578,24 +6601,25 @@ window._printAuditDocuments = () => {
     <style>
       @page { size: A4 landscape; margin: 4mm 6mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: 'Inter', sans-serif; color: #0f172a !important; background: #ffffff !important; padding: 6px; font-size: 10.5px; -webkit-font-smoothing: antialiased; }
+      html, body { font-family: 'Inter', sans-serif; color: #0f172a !important; background-color: #ffffff !important; background: #ffffff !important; padding: 0; margin: 0; -webkit-font-smoothing: antialiased; }
+      #print-area { background-color: #ffffff !important; background: #ffffff !important; color: #0f172a !important; padding: 6px; box-sizing: border-box; width: 100%; min-height: 100vh; }
       body, div, p, span, td, th { color: #0f172a !important; }
-      body.pdf-exporting .no-print { display: none !important; }
       
       .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
-      .header-card { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%) !important; color: #fff; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .header-card { background: #0f172a !important; color: #ffffff !important; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .header-card * { color: #ffffff !important; }
       .brand-box { display: flex; align-items: center; gap: 8px; }
-      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #f59e0b, #ef4444); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
-      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #fff !important; }
+      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ffffff !important; }
+      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #ffffff !important; }
       .brand-sub { font-size: 9.5px; color: #94a3b8 !important; }
-      .period-badge { background: rgba(255,255,255,0.12) !important; color: #e2e8f0 !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.18); text-transform: uppercase; letter-spacing: 0.5px; }
+      .period-badge { background: rgba(255,255,255,0.18) !important; color: #ffffff !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.5px; }
 
-      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
+      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a !important; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
 
-      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10px; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-      th, td { border: 1px solid #cbd5e1; padding: 5px 7px; }
-      th { background: #0f172a !important; color: #fff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.3px; }
-      tfoot td { background: #f1f5f9 !important; font-weight: 800; color: #0f172a; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10px; background-color: #ffffff !important; background: #ffffff !important; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+      th, td { border: 1px solid #cbd5e1; padding: 5px 7px; color: #0f172a !important; background-color: #ffffff !important; }
+      th { background-color: #0f172a !important; background: #0f172a !important; color: #ffffff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.3px; }
+      tfoot td { background-color: #f1f5f9 !important; background: #f1f5f9 !important; font-weight: 800; color: #0f172a !important; }
       
       .toolbar-btn { padding: 7px 16px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; }
       @media print { .no-print { display: none !important; } }
@@ -6997,23 +7021,25 @@ window._printInternalPayrollSummary = () => {
     <style>
       @page { size: A4 landscape; margin: 5mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; padding: 6px; font-size: 9.5px; -webkit-font-smoothing: antialiased; }
-      body.pdf-exporting .no-print { display: none !important; }
+      html, body { font-family: 'Inter', sans-serif; color: #0f172a !important; background-color: #ffffff !important; background: #ffffff !important; padding: 0; margin: 0; -webkit-font-smoothing: antialiased; }
+      #print-area { background-color: #ffffff !important; background: #ffffff !important; color: #0f172a !important; padding: 6px; box-sizing: border-box; width: 100%; min-height: 100vh; }
+      body, div, p, span, td, th { color: #0f172a !important; }
       
       .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
-      .header-card { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%) !important; color: #fff; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .header-card { background: #0f172a !important; color: #ffffff !important; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .header-card * { color: #ffffff !important; }
       .brand-box { display: flex; align-items: center; gap: 8px; }
-      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #f59e0b, #ef4444); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
-      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #fff !important; }
+      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ffffff !important; }
+      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #ffffff !important; }
       .brand-sub { font-size: 9.5px; color: #94a3b8 !important; }
-      .period-badge { background: rgba(255,255,255,0.12) !important; color: #e2e8f0 !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.18); text-transform: uppercase; letter-spacing: 0.5px; }
+      .period-badge { background: rgba(255,255,255,0.18) !important; color: #ffffff !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.5px; }
 
-      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
+      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a !important; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
 
-      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9px; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-      th, td { border: 1px solid #cbd5e1; padding: 5px 6px; }
-      th { background: #0f172a !important; color: #fff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px; }
-      tfoot td { background: #f1f5f9 !important; font-weight: 800; color: #0f172a; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5px; background-color: #ffffff !important; background: #ffffff !important; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+      th, td { border: 1px solid #cbd5e1; padding: 5px 6px; color: #0f172a !important; background-color: #ffffff !important; }
+      th { background-color: #0f172a !important; background: #0f172a !important; color: #ffffff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px; }
+      tfoot td { background-color: #f1f5f9 !important; background: #f1f5f9 !important; font-weight: 800; color: #0f172a !important; }
       
       .toolbar-btn { padding: 7px 16px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; }
       @media print { .no-print { display: none !important; } }
@@ -7088,6 +7114,7 @@ window._printInternalPayrollSummary = () => {
         <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_finance_manager)}</strong><br>
         <span>Manajer Keuangan</span>
       </div>
+    </div>
     </div>
   </body>
   </html>`);
@@ -7172,24 +7199,25 @@ window._printSavingsSummary = () => {
     <style>
       @page { size: A4 landscape; margin: 5mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: 'Inter', sans-serif; color: #0f172a !important; background: #ffffff !important; padding: 6px; font-size: 9px; -webkit-font-smoothing: antialiased; }
+      html, body { font-family: 'Inter', sans-serif; color: #0f172a !important; background-color: #ffffff !important; background: #ffffff !important; padding: 0; margin: 0; -webkit-font-smoothing: antialiased; }
+      #print-area { background-color: #ffffff !important; background: #ffffff !important; color: #0f172a !important; padding: 6px; box-sizing: border-box; width: 100%; min-height: 100vh; }
       body, div, p, span, td, th { color: #0f172a !important; }
-      body.pdf-exporting .no-print { display: none !important; }
       
       .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
-      .header-card { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%) !important; color: #fff; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .header-card { background: #0f172a !important; color: #ffffff !important; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .header-card * { color: #ffffff !important; }
       .brand-box { display: flex; align-items: center; gap: 8px; }
-      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #059669, #10b981); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
-      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #fff !important; }
+      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ffffff !important; }
+      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #ffffff !important; }
       .brand-sub { font-size: 9.5px; color: #94a3b8 !important; }
-      .period-badge { background: rgba(255,255,255,0.12) !important; color: #e2e8f0 !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.18); text-transform: uppercase; letter-spacing: 0.5px; }
+      .period-badge { background: rgba(255,255,255,0.18) !important; color: #ffffff !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.5px; }
 
-      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
+      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a !important; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
 
-      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9px; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-      th, td { border: 1px solid #cbd5e1; padding: 4.5px 5px; }
-      th { background: #0f172a !important; color: #fff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px; }
-      tfoot td { background: #f1f5f9 !important; font-weight: 800; color: #0f172a; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9px; background-color: #ffffff !important; background: #ffffff !important; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+      th, td { border: 1px solid #cbd5e1; padding: 4.5px 5px; color: #0f172a !important; background-color: #ffffff !important; }
+      th { background-color: #0f172a !important; background: #0f172a !important; color: #ffffff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px; }
+      tfoot td { background-color: #f1f5f9 !important; background: #f1f5f9 !important; font-weight: 800; color: #0f172a !important; }
       
       .toolbar-btn { padding: 7px 16px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; }
       @media print { .no-print { display: none !important; } }
@@ -7240,6 +7268,7 @@ window._printSavingsSummary = () => {
       <div style="height:55px;"></div>
       <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_finance_manager)}</strong><br>
       <span>Manajer Keuangan</span>
+    </div>
     </div>
   </body>
   </html>`);
@@ -7324,23 +7353,25 @@ window._printOvertimeSummary = () => {
     <style>
       @page { size: A4 landscape; margin: 4mm 6mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; padding: 6px; font-size: 10.5px; -webkit-font-smoothing: antialiased; }
-      body.pdf-exporting .no-print { display: none !important; }
+      html, body { font-family: 'Inter', sans-serif; color: #0f172a !important; background-color: #ffffff !important; background: #ffffff !important; padding: 0; margin: 0; -webkit-font-smoothing: antialiased; }
+      #print-area { background-color: #ffffff !important; background: #ffffff !important; color: #0f172a !important; padding: 6px; box-sizing: border-box; width: 100%; min-height: 100vh; }
+      body, div, p, span, td, th { color: #0f172a !important; }
       
       .top-accent-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); border-radius: 4px 4px 0 0; }
-      .header-card { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%) !important; color: #fff; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .header-card { background: #0f172a !important; color: #ffffff !important; padding: 10px 14px; border-radius: 0 0 8px 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .header-card * { color: #ffffff !important; }
       .brand-box { display: flex; align-items: center; gap: 8px; }
-      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #3b82f6, #6366f1); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
-      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #fff !important; }
+      .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ffffff !important; }
+      .brand-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #ffffff !important; }
       .brand-sub { font-size: 9.5px; color: #94a3b8 !important; }
-      .period-badge { background: rgba(255,255,255,0.12) !important; color: #e2e8f0 !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.18); text-transform: uppercase; letter-spacing: 0.5px; }
+      .period-badge { background: rgba(255,255,255,0.18) !important; color: #ffffff !important; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.5px; }
 
-      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
+      .doc-title-bar { text-align: center; font-size: 12px; font-weight: 800; color: #0f172a !important; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
 
-      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10px; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-      th, td { border: 1px solid #cbd5e1; padding: 5.5px 7px; }
-      th { background: #0f172a !important; color: #fff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.3px; }
-      tfoot td { background: #f1f5f9 !important; font-weight: 800; color: #0f172a; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10px; background-color: #ffffff !important; background: #ffffff !important; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+      th, td { border: 1px solid #cbd5e1; padding: 5.5px 7px; color: #0f172a !important; background-color: #ffffff !important; }
+      th { background-color: #0f172a !important; background: #0f172a !important; color: #ffffff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.3px; }
+      tfoot td { background-color: #f1f5f9 !important; background: #f1f5f9 !important; font-weight: 800; color: #0f172a !important; }
       
       .toolbar-btn { padding: 7px 16px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; }
       @media print { .no-print { display: none !important; } }
@@ -7394,6 +7425,7 @@ window._printOvertimeSummary = () => {
       <div style="height:55px;"></div>
       <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_finance_manager)}</strong><br>
       <span>Manajer Keuangan</span>
+    </div>
     </div>
   </body>
   </html>`);
