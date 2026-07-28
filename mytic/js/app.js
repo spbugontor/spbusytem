@@ -5785,33 +5785,40 @@ window._printAllPayrollBundle = () => {
           }
         }
 
-        const pdfLib = (window.opener && window.opener.html2pdf) ? window.opener.html2pdf : window.html2pdf;
+        let attempts = 0;
+        function runGen() {
+          attempts++;
+          const pdfLib = window.html2pdf || (window.opener && window.opener.html2pdf);
+          if (typeof pdfLib !== 'undefined') {
+            const clone = document.createElement('div');
+            clone.innerHTML = document.body.innerHTML;
+            clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
 
-        if (typeof pdfLib !== 'undefined') {
-          const clone = document.createElement('div');
-          clone.innerHTML = document.body.innerHTML;
-          clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
+            const opt = {
+              margin: [3, 3, 3, 3],
+              filename: 'Laporan_Penggajian_Lengkap_SPBU_Gontor_${month}.pdf',
+              image: { type: 'jpeg', quality: 0.98 },
+              html2canvas: { scale: 2, useCORS: true, logging: false },
+              jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
+              pagebreak: { mode: ['css', 'legacy'] }
+            };
 
-          const opt = {
-            margin: [3, 3, 3, 3],
-            filename: 'Laporan_Penggajian_Lengkap_SPBU_Gontor_${month}.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
-            pagebreak: { mode: ['css', 'legacy'] }
-          };
-
-          pdfLib().set(opt).from(clone).save().then(function() {
-            restoreUI('✅ PDF Terunduh!');
-          }).catch(function(err) {
-            console.error(err);
+            pdfLib().set(opt).from(clone).save().then(function() {
+              restoreUI('✅ PDF Terunduh!');
+            }).catch(function(err) {
+              console.error(err);
+              restoreUI();
+              window.print();
+            });
+          } else if (attempts < 10) {
+            setTimeout(runGen, 300);
+          } else {
             restoreUI();
-            alert('Perangkat Anda memblokir unduhan otomatis. Silakan gunakan tombol CETAK / PRINT.');
-          });
-        } else {
-          restoreUI();
-          alert('Pustaka PDF belum dimuat. Silakan muat ulang halaman utama.');
+            window.print();
+          }
         }
+
+        runGen();
       }
     </script>
     <style>
@@ -6211,33 +6218,40 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
           }
         }
 
-        const pdfLib = (window.opener && window.opener.html2pdf) ? window.opener.html2pdf : window.html2pdf;
+        let attempts = 0;
+        function runGen() {
+          attempts++;
+          const pdfLib = window.html2pdf || (window.opener && window.opener.html2pdf);
+          if (typeof pdfLib !== 'undefined') {
+            const clone = document.createElement('div');
+            clone.innerHTML = document.body.innerHTML;
+            clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
 
-        if (typeof pdfLib !== 'undefined') {
-          const clone = document.createElement('div');
-          clone.innerHTML = document.body.innerHTML;
-          clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
+            const opt = {
+              margin: [2, 2, 2, 2],
+              filename: 'Slip_Gaji_Amplop_${month}.pdf',
+              image: { type: 'jpeg', quality: 0.98 },
+              html2canvas: { scale: 2, useCORS: true, logging: false },
+              jsPDF: { unit: 'mm', format: ${paperSize === 'F4' ? "[215, 330]" : "'a4'"}, orientation: 'portrait', compress: true },
+              pagebreak: { mode: ['css', 'legacy'] }
+            };
 
-          const opt = {
-            margin: [2, 2, 2, 2],
-            filename: 'Slip_Gaji_Amplop_${month}.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
-            jsPDF: { unit: 'mm', format: ${paperSize === 'F4' ? "[215, 330]" : "'a4'"}, orientation: 'portrait', compress: true },
-            pagebreak: { mode: ['css', 'legacy'] }
-          };
-
-          pdfLib().set(opt).from(clone).save().then(function() {
-            restoreUI('✅ PDF Terunduh!');
-          }).catch(function(err) {
-            console.error(err);
+            pdfLib().set(opt).from(clone).save().then(function() {
+              restoreUI('✅ PDF Terunduh!');
+            }).catch(function(err) {
+              console.error(err);
+              restoreUI();
+              window.print();
+            });
+          } else if (attempts < 10) {
+            setTimeout(runGen, 300);
+          } else {
             restoreUI();
-            alert('Perangkat Anda memblokir unduhan otomatis. Silakan gunakan tombol CETAK / PRINT.');
-          });
-        } else {
-          restoreUI();
-          alert('Pustaka PDF belum dimuat. Silakan muat ulang halaman utama.');
+            window.print();
+          }
         }
+
+        runGen();
       }
     </script>
     <style>
@@ -6524,33 +6538,40 @@ window._printAuditDocuments = () => {
           }
         }
 
-        const pdfLib = (window.opener && window.opener.html2pdf) ? window.opener.html2pdf : window.html2pdf;
+        let attempts = 0;
+        function runGen() {
+          attempts++;
+          const pdfLib = window.html2pdf || (window.opener && window.opener.html2pdf);
+          if (typeof pdfLib !== 'undefined') {
+            const clone = document.createElement('div');
+            clone.innerHTML = document.body.innerHTML;
+            clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
 
-        if (typeof pdfLib !== 'undefined') {
-          const clone = document.createElement('div');
-          clone.innerHTML = document.body.innerHTML;
-          clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
+            const opt = {
+              margin: [3, 3, 3, 3],
+              filename: 'Dokumen_Audit_Pertamina_${month}.pdf',
+              image: { type: 'jpeg', quality: 0.98 },
+              html2canvas: { scale: 2, useCORS: true, logging: false },
+              jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
+              pagebreak: { mode: ['css', 'legacy'] }
+            };
 
-          const opt = {
-            margin: [3, 3, 3, 3],
-            filename: 'Dokumen_Audit_Pertamina_${month}.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
-            pagebreak: { mode: ['css', 'legacy'] }
-          };
-
-          pdfLib().set(opt).from(clone).save().then(function() {
-            restoreUI('✅ PDF Terunduh!');
-          }).catch(function(err) {
-            console.error(err);
+            pdfLib().set(opt).from(clone).save().then(function() {
+              restoreUI('✅ PDF Terunduh!');
+            }).catch(function(err) {
+              console.error(err);
+              restoreUI();
+              window.print();
+            });
+          } else if (attempts < 10) {
+            setTimeout(runGen, 300);
+          } else {
             restoreUI();
-            alert('Perangkat Anda memblokir unduhan otomatis. Silakan gunakan tombol CETAK / PRINT.');
-          });
-        } else {
-          restoreUI();
-          alert('Pustaka PDF belum dimuat. Silakan muat ulang halaman utama.');
+            window.print();
+          }
         }
+
+        runGen();
       }
     </script>
     <style>
@@ -6935,33 +6956,40 @@ window._printInternalPayrollSummary = () => {
           }
         }
 
-        const pdfLib = (window.opener && window.opener.html2pdf) ? window.opener.html2pdf : window.html2pdf;
+        let attempts = 0;
+        function runGen() {
+          attempts++;
+          const pdfLib = window.html2pdf || (window.opener && window.opener.html2pdf);
+          if (typeof pdfLib !== 'undefined') {
+            const clone = document.createElement('div');
+            clone.innerHTML = document.body.innerHTML;
+            clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
 
-        if (typeof pdfLib !== 'undefined') {
-          const clone = document.createElement('div');
-          clone.innerHTML = document.body.innerHTML;
-          clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
+            const opt = {
+              margin: [3, 3, 3, 3],
+              filename: 'Rekap_Gaji_Internal_${month}.pdf',
+              image: { type: 'jpeg', quality: 0.98 },
+              html2canvas: { scale: 2, useCORS: true, logging: false },
+              jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
+              pagebreak: { mode: ['css', 'legacy'] }
+            };
 
-          const opt = {
-            margin: [3, 3, 3, 3],
-            filename: 'Rekap_Gaji_Internal_${month}.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
-            pagebreak: { mode: ['css', 'legacy'] }
-          };
-
-          pdfLib().set(opt).from(clone).save().then(function() {
-            restoreUI('✅ PDF Terunduh!');
-          }).catch(function(err) {
-            console.error(err);
+            pdfLib().set(opt).from(clone).save().then(function() {
+              restoreUI('✅ PDF Terunduh!');
+            }).catch(function(err) {
+              console.error(err);
+              restoreUI();
+              window.print();
+            });
+          } else if (attempts < 10) {
+            setTimeout(runGen, 300);
+          } else {
             restoreUI();
-            alert('Perangkat Anda memblokir unduhan otomatis. Silakan gunakan tombol CETAK / PRINT.');
-          });
-        } else {
-          restoreUI();
-          alert('Pustaka PDF belum dimuat. Silakan muat ulang halaman utama.');
+            window.print();
+          }
         }
+
+        runGen();
       }
     </script>
     <style>
@@ -7098,23 +7126,26 @@ window._printSavingsSummary = () => {
     <title>Rekapitulasi Tabungan Karyawan - SPBU Gontor</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
       function downloadPDFDirect() {
         const btn = document.getElementById('btn-dl-direct');
         const origText = btn ? btn.innerHTML : '📥 UNDUH FILE PDF DIRECT';
         if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
         
-        function restoreUI() {
-          if (btn) { btn.innerHTML = origText; btn.disabled = false; }
+        function restoreUI(msg) {
+          if (btn) {
+            btn.innerHTML = msg || origText;
+            setTimeout(function() { btn.innerHTML = origText; btn.disabled = false; }, 2500);
+          }
         }
 
-        const safetyTimer = setTimeout(function() {
-          restoreUI();
-          window.print();
-        }, 3000);
+        const pdfLib = window.html2pdf || (window.opener && window.opener.html2pdf);
 
-        function runGen() {
+        if (typeof pdfLib !== 'undefined') {
+          const clone = document.createElement('div');
+          clone.innerHTML = document.body.innerHTML;
+          clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
+
           const opt = {
             margin: [3, 3, 3, 3],
             filename: 'Rekap_Tabungan_Karyawan_${currentYear}.pdf',
@@ -7124,24 +7155,17 @@ window._printSavingsSummary = () => {
             pagebreak: { mode: ['css', 'legacy'] }
           };
 
-          if (typeof html2pdf !== 'undefined') {
-            html2pdf().set(opt).from(document.body).save().then(function() {
-              clearTimeout(safetyTimer);
-              restoreUI();
-            }).catch(function(err) {
-              console.error(err);
-              clearTimeout(safetyTimer);
-              restoreUI();
-              window.print();
-            });
-          } else {
-            clearTimeout(safetyTimer);
+          pdfLib().set(opt).from(clone).save().then(function() {
+            restoreUI('✅ PDF Terunduh!');
+          }).catch(function(err) {
+            console.error(err);
             restoreUI();
             window.print();
-          }
+          });
+        } else {
+          restoreUI();
+          window.print();
         }
-
-        setTimeout(runGen, 100);
       }
     </script>
     <style>
@@ -7254,23 +7278,26 @@ window._printOvertimeSummary = () => {
     <title>Rekapitulasi Lemburan Karyawan - SPBU Gontor</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
       function downloadPDFDirect() {
         const btn = document.getElementById('btn-dl-direct');
         const origText = btn ? btn.innerHTML : '📥 UNDUH FILE PDF DIRECT';
         if (btn) { btn.innerHTML = '⏳ Mengunduh PDF...'; btn.disabled = true; }
         
-        function restoreUI() {
-          if (btn) { btn.innerHTML = origText; btn.disabled = false; }
+        function restoreUI(msg) {
+          if (btn) {
+            btn.innerHTML = msg || origText;
+            setTimeout(function() { btn.innerHTML = origText; btn.disabled = false; }, 2500);
+          }
         }
 
-        const safetyTimer = setTimeout(function() {
-          restoreUI();
-          window.print();
-        }, 3000);
+        const pdfLib = window.html2pdf || (window.opener && window.opener.html2pdf);
 
-        function runGen() {
+        if (typeof pdfLib !== 'undefined') {
+          const clone = document.createElement('div');
+          clone.innerHTML = document.body.innerHTML;
+          clone.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
+
           const opt = {
             margin: [4, 4, 4, 4],
             filename: 'Rekap_Lembur_Karyawan_${month}.pdf',
@@ -7280,24 +7307,17 @@ window._printOvertimeSummary = () => {
             pagebreak: { mode: ['css', 'legacy'] }
           };
 
-          if (typeof html2pdf !== 'undefined') {
-            html2pdf().set(opt).from(document.body).save().then(function() {
-              clearTimeout(safetyTimer);
-              restoreUI();
-            }).catch(function(err) {
-              console.error(err);
-              clearTimeout(safetyTimer);
-              restoreUI();
-              window.print();
-            });
-          } else {
-            clearTimeout(safetyTimer);
+          pdfLib().set(opt).from(clone).save().then(function() {
+            restoreUI('✅ PDF Terunduh!');
+          }).catch(function(err) {
+            console.error(err);
             restoreUI();
             window.print();
-          }
+          });
+        } else {
+          restoreUI();
+          window.print();
         }
-
-        setTimeout(runGen, 100);
       }
     </script>
     <style>
