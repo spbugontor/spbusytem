@@ -1874,32 +1874,32 @@ window._printAllKpiRapors = () => {
   </style>
   <style>
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; margin: 0; padding: 10px; background: #e2e8f0; font-size: 10.5px; line-height: 1.25; }
-    .rapor-container { background: #fff; max-width: 210mm; margin: 0 auto; padding: 12px 18px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; page-break-inside: avoid; }
-    .no-print-bar { display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 6px 14px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 210mm; margin-left: auto; margin-right: auto; }
-    .no-print-bar button { padding: 5px 12px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 11px; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; margin: 0; padding: 10px; background: #e2e8f0; font-size: 12px; line-height: 1.35; }
+    .rapor-container { background: #fff; max-width: 210mm; min-height: 265mm; margin: 0 auto; padding: 22px 28px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; }
+    .no-print-bar { display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 8px 16px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 210mm; margin-left: auto; margin-right: auto; }
+    .no-print-bar button { padding: 6px 14px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 11.5px; }
     .btn-print { background: #1d4ed8; color: #fff; }
     .btn-close { background: #64748b; color: #fff; margin-left: 8px; }
-    .kop-header { text-align: center; border-bottom: 2.5px double #1d4ed8; padding-bottom: 4px; margin-bottom: 6px; width: 100%; }
-    .kop-title { font-family: 'Times New Roman', Times, serif; font-weight: 900; font-size: 26px; color: #1e40af; letter-spacing: 1.2px; line-height: 1.05; margin-bottom: 1px; }
-    .kop-subtitle { font-family: 'Times New Roman', Times, serif; font-weight: 800; font-size: 15px; color: #1d4ed8; margin-top: 1px; letter-spacing: 0.5px; line-height: 1.05; margin-bottom: 2px; }
-    .kop-address { font-size: 9.5px; color: #1e3a8a; margin-top: 1px; line-height: 1.2; }
-    .doc-title-box { text-align: center; margin-bottom: 6px; }
-    .doc-title { font-size: 13px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 1.5px solid #0f172a; display: inline-block; padding-bottom: 1px; }
-    .doc-subtitle { font-size: 9px; color: #64748b; margin-top: 2px; font-weight: 600; }
-    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; }
-    .info-table td { padding: 4px 8px; font-size: 10px; vertical-align: top; border-bottom: 1px solid #e2e8f0; color: #0f172a !important; }
-    .info-table td.label { font-weight: 700; color: #475569 !important; width: 120px; background: #f1f5f9; }
-    .metric-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-    .metric-table th, .metric-table td { border: 1px solid #cbd5e1; padding: 4px 8px; font-size: 9.5px; }
-    .metric-table th { background: #1e40af; color: #ffffff !important; font-weight: 700; text-align: left; }
+    .kop-header { text-align: center; border-bottom: 2.5px double #1d4ed8; padding-bottom: 6px; margin-bottom: 12px; width: 100%; }
+    .kop-title { font-family: 'Times New Roman', Times, serif; font-weight: 900; font-size: 28px; color: #1e40af; letter-spacing: 1.2px; line-height: 1.05; margin-bottom: 2px; }
+    .kop-subtitle { font-family: 'Times New Roman', Times, serif; font-weight: 800; font-size: 16px; color: #1d4ed8; margin-top: 1px; letter-spacing: 0.5px; line-height: 1.05; margin-bottom: 3px; }
+    .kop-address { font-size: 10.5px; color: #1e3a8a; margin-top: 1px; line-height: 1.3; }
+    .doc-title-box { text-align: center; margin-bottom: 12px; }
+    .doc-title { font-size: 15px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 1.5px solid #0f172a; display: inline-block; padding-bottom: 2px; }
+    .doc-subtitle { font-size: 10px; color: #64748b; margin-top: 3px; font-weight: 700; }
+    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; }
+    .info-table td { padding: 6px 12px; font-size: 11px; vertical-align: top; border-bottom: 1px solid #e2e8f0; color: #0f172a !important; }
+    .info-table td.label { font-weight: 700; color: #475569 !important; width: 140px; background: #f1f5f9; }
+    .metric-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+    .metric-table th, .metric-table td { border: 1px solid #cbd5e1; padding: 7px 12px; font-size: 11px; }
+    .metric-table th { background: #1e40af; color: #ffffff !important; font-weight: 700; text-align: left; padding: 8px 12px; }
     tr { page-break-inside: avoid !important; }
-    .signature-area { margin-top: 10px; display: flex; justify-content: space-between; align-items: flex-end; page-break-inside: avoid; }
-    .sig-box { width: 200px; text-align: center; font-size: 9.5px; color: #0f172a !important; }
-    .sig-space { height: 65px; }
+    .signature-area { margin-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; page-break-inside: avoid; }
+    .sig-box { width: 220px; text-align: center; font-size: 11px; color: #0f172a !important; }
+    .sig-space { height: 80px; }
     @media print {
       html, body { background: #fff; padding: 0; margin: 0; }
-      .rapor-container { box-shadow: none; padding: 0; max-width: 100% !important; border-radius: 0; }
+      .rapor-container { box-shadow: none; padding: 0; max-width: 100% !important; border-radius: 0; min-height: 265mm; }
       .no-print { display: none !important; }
     }
   </style>
@@ -3511,33 +3511,32 @@ window._generateRatingPDFHtml = (key) => {
     @page { size: A4 portrait; margin: 6mm 10mm; }
   </style>
   <style>
-    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; margin: 0; padding: 10px; background: #e2e8f0; font-size: 10.5px; line-height: 1.25; }
-    .rapor-container { background: #fff; max-width: 210mm; margin: 0 auto; padding: 12px 18px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; page-break-inside: avoid; page-break-after: avoid; }
-    .no-print-bar { display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 6px 14px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 210mm; margin-left: auto; margin-right: auto; }
-    .no-print-bar button { padding: 5px 12px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 11px; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; margin: 0; padding: 10px; background: #e2e8f0; font-size: 12px; line-height: 1.35; }
+    .rapor-container { background: #fff; max-width: 210mm; min-height: 265mm; margin: 0 auto; padding: 22px 28px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; }
+    .no-print-bar { display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 8px 16px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 210mm; margin-left: auto; margin-right: auto; }
+    .no-print-bar button { padding: 6px 14px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 11.5px; }
     .btn-print { background: #1d4ed8; color: #fff; }
     .btn-close { background: #64748b; color: #fff; margin-left: 8px; }
-    .kop-header { text-align: center; border-bottom: 2.5px double #1d4ed8; padding-bottom: 4px; margin-bottom: 6px; width: 100%; }
-    .kop-title { font-family: 'Times New Roman', Times, serif; font-weight: 900; font-size: 26px; color: #1e40af; letter-spacing: 1.2px; line-height: 1.05; margin-bottom: 1px; }
-    .kop-subtitle { font-family: 'Times New Roman', Times, serif; font-weight: 800; font-size: 15px; color: #1d4ed8; margin-top: 1px; letter-spacing: 0.5px; line-height: 1.05; margin-bottom: 2px; }
-    .kop-address { font-size: 9.5px; color: #1e3a8a; margin-top: 1px; line-height: 1.2; }
-    .doc-title-box { text-align: center; margin-bottom: 6px; }
-    .doc-title { font-size: 13px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 1.5px solid #0f172a; display: inline-block; padding-bottom: 1px; }
-    .doc-subtitle { font-size: 9px; color: #64748b; margin-top: 2px; font-weight: 600; }
-    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; }
-    .info-table td { padding: 4px 8px; font-size: 10px; vertical-align: top; border-bottom: 1px solid #e2e8f0; color: #0f172a !important; }
-    .info-table td.label { font-weight: 700; color: #475569 !important; width: 120px; background: #f1f5f9; }
-    .metric-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-    .metric-table th, .metric-table td { border: 1px solid #cbd5e1; padding: 4px 8px; font-size: 9.5px; }
-    .metric-table th { background: #1e40af; color: #ffffff !important; font-weight: 700; text-align: left; }
+    .kop-header { text-align: center; border-bottom: 2.5px double #1d4ed8; padding-bottom: 6px; margin-bottom: 12px; width: 100%; }
+    .kop-title { font-family: 'Times New Roman', Times, serif; font-weight: 900; font-size: 28px; color: #1e40af; letter-spacing: 1.2px; line-height: 1.05; margin-bottom: 2px; }
+    .kop-subtitle { font-family: 'Times New Roman', Times, serif; font-weight: 800; font-size: 16px; color: #1d4ed8; margin-top: 1px; letter-spacing: 0.5px; line-height: 1.05; margin-bottom: 3px; }
+    .kop-address { font-size: 10.5px; color: #1e3a8a; margin-top: 1px; line-height: 1.3; }
+    .doc-title-box { text-align: center; margin-bottom: 12px; }
+    .doc-title { font-size: 15px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 1.5px solid #0f172a; display: inline-block; padding-bottom: 2px; }
+    .doc-subtitle { font-size: 10px; color: #64748b; margin-top: 3px; font-weight: 700; }
+    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; }
+    .info-table td { padding: 6px 12px; font-size: 11px; vertical-align: top; border-bottom: 1px solid #e2e8f0; color: #0f172a !important; }
+    .info-table td.label { font-weight: 700; color: #475569 !important; width: 140px; background: #f1f5f9; }
+    .metric-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+    .metric-table th, .metric-table td { border: 1px solid #cbd5e1; padding: 7px 12px; font-size: 11px; }
+    .metric-table th { background: #1e40af; color: #ffffff !important; font-weight: 700; text-align: left; padding: 8px 12px; }
     tr { page-break-inside: avoid !important; page-break-after: auto !important; }
-    .signature-area { margin-top: 10px; display: flex; justify-content: space-between; align-items: flex-end; page-break-inside: avoid; }
-    .sig-box { width: 200px; text-align: center; font-size: 9.5px; color: #0f172a !important; }
-    .sig-space { height: 65px; }
+    .signature-area { margin-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; page-break-inside: avoid; }
+    .sig-box { width: 220px; text-align: center; font-size: 11px; color: #0f172a !important; }
+    .sig-space { height: 80px; }
     @media print {
       html, body { background: #fff; padding: 0; margin: 0; }
-      .rapor-container { box-shadow: none; padding: 0; max-width: 100% !important; border-radius: 0; }
+      .rapor-container { box-shadow: none; padding: 0; max-width: 100% !important; border-radius: 0; min-height: 265mm; }
       .no-print { display: none !important; }
     }
   </style>
@@ -3836,32 +3835,32 @@ window._downloadAllRatingsPDF = () => {
   </style>
   <style>
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; margin: 0; padding: 10px; background: #e2e8f0; font-size: 10.5px; line-height: 1.25; }
-    .rapor-container { background: #fff; max-width: 210mm; margin: 0 auto; padding: 12px 18px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; page-break-inside: avoid; }
-    .no-print-bar { display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 6px 14px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 210mm; margin-left: auto; margin-right: auto; }
-    .no-print-bar button { padding: 5px 12px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 11px; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; margin: 0; padding: 10px; background: #e2e8f0; font-size: 12px; line-height: 1.35; }
+    .rapor-container { background: #fff; max-width: 210mm; min-height: 265mm; margin: 0 auto; padding: 22px 28px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; }
+    .no-print-bar { display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 8px 16px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 210mm; margin-left: auto; margin-right: auto; }
+    .no-print-bar button { padding: 6px 14px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 11.5px; }
     .btn-print { background: #1d4ed8; color: #fff; }
     .btn-close { background: #64748b; color: #fff; margin-left: 8px; }
-    .kop-header { text-align: center; border-bottom: 2.5px double #1d4ed8; padding-bottom: 4px; margin-bottom: 6px; width: 100%; }
-    .kop-title { font-family: 'Times New Roman', Times, serif; font-weight: 900; font-size: 26px; color: #1e40af; letter-spacing: 1.2px; line-height: 1.05; margin-bottom: 1px; }
-    .kop-subtitle { font-family: 'Times New Roman', Times, serif; font-weight: 800; font-size: 15px; color: #1d4ed8; margin-top: 1px; letter-spacing: 0.5px; line-height: 1.05; margin-bottom: 2px; }
-    .kop-address { font-size: 9.5px; color: #1e3a8a; margin-top: 1px; line-height: 1.2; }
-    .doc-title-box { text-align: center; margin-bottom: 6px; }
-    .doc-title { font-size: 13px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 1.5px solid #0f172a; display: inline-block; padding-bottom: 1px; }
-    .doc-subtitle { font-size: 9px; color: #64748b; margin-top: 2px; font-weight: 600; }
-    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; }
-    .info-table td { padding: 4px 8px; font-size: 10px; vertical-align: top; border-bottom: 1px solid #e2e8f0; color: #0f172a !important; }
-    .info-table td.label { font-weight: 700; color: #475569 !important; width: 120px; background: #f1f5f9; }
-    .metric-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-    .metric-table th, .metric-table td { border: 1px solid #cbd5e1; padding: 4px 8px; font-size: 9.5px; }
-    .metric-table th { background: #1e40af; color: #ffffff !important; font-weight: 700; text-align: left; }
+    .kop-header { text-align: center; border-bottom: 2.5px double #1d4ed8; padding-bottom: 6px; margin-bottom: 12px; width: 100%; }
+    .kop-title { font-family: 'Times New Roman', Times, serif; font-weight: 900; font-size: 28px; color: #1e40af; letter-spacing: 1.2px; line-height: 1.05; margin-bottom: 2px; }
+    .kop-subtitle { font-family: 'Times New Roman', Times, serif; font-weight: 800; font-size: 16px; color: #1d4ed8; margin-top: 1px; letter-spacing: 0.5px; line-height: 1.05; margin-bottom: 3px; }
+    .kop-address { font-size: 10.5px; color: #1e3a8a; margin-top: 1px; line-height: 1.3; }
+    .doc-title-box { text-align: center; margin-bottom: 12px; }
+    .doc-title { font-size: 15px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 1.5px solid #0f172a; display: inline-block; padding-bottom: 2px; }
+    .doc-subtitle { font-size: 10px; color: #64748b; margin-top: 3px; font-weight: 700; }
+    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; }
+    .info-table td { padding: 6px 12px; font-size: 11px; vertical-align: top; border-bottom: 1px solid #e2e8f0; color: #0f172a !important; }
+    .info-table td.label { font-weight: 700; color: #475569 !important; width: 140px; background: #f1f5f9; }
+    .metric-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+    .metric-table th, .metric-table td { border: 1px solid #cbd5e1; padding: 7px 12px; font-size: 11px; }
+    .metric-table th { background: #1e40af; color: #ffffff !important; font-weight: 700; text-align: left; padding: 8px 12px; }
     tr { page-break-inside: avoid !important; }
-    .signature-area { margin-top: 10px; display: flex; justify-content: space-between; align-items: flex-end; page-break-inside: avoid; }
-    .sig-box { width: 200px; text-align: center; font-size: 9.5px; color: #0f172a !important; }
-    .sig-space { height: 65px; }
+    .signature-area { margin-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; page-break-inside: avoid; }
+    .sig-box { width: 220px; text-align: center; font-size: 11px; color: #0f172a !important; }
+    .sig-space { height: 80px; }
     @media print {
       html, body { background: #fff; padding: 0; margin: 0; }
-      .rapor-container { box-shadow: none; padding: 0; max-width: 100% !important; border-radius: 0; }
+      .rapor-container { box-shadow: none; padding: 0; max-width: 100% !important; border-radius: 0; min-height: 265mm; }
       .no-print { display: none !important; }
     }
   </style>
