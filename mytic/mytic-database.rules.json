@@ -5,7 +5,7 @@
     // ==========================================
     "settings": {
       ".read": true,
-      ".write": "auth != null"
+      ".write": true
     },
     "orders": {
       ".read": true,
@@ -38,6 +38,7 @@
     "violations": { ".read": true, ".write": true },
     "ratings": { ".read": true, ".write": true },
     "pin_history": { ".read": true, ".write": true },
+    "internal_chats": { ".read": true, ".write": true },
     "payroll": { ".read": true, ".write": true },
     "payroll_settings": { ".read": true, ".write": true },
 
