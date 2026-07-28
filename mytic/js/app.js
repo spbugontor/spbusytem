@@ -5776,18 +5776,44 @@ window._printAllPayrollBundle = () => {
     <script>
       function downloadPDF() {
         const btnBar = document.querySelector('.no-print');
-        if (btnBar) btnBar.style.display = 'none';
-        if (window.html2pdf) {
+        const btn = document.querySelector('.toolbar-btn-dl');
+        const oldText = btn ? btn.innerHTML : '';
+        if (btn) { btn.innerHTML = '⏳ Menyiapkan File PDF...'; btn.disabled = true; }
+        
+        function runGen() {
+          if (btnBar) btnBar.style.display = 'none';
           const opt = {
             margin: [3, 3, 3, 3],
             filename: 'Laporan_Penggajian_Lengkap_SPBU_Gontor_${month}.pdf',
-            image: { type: 'jpeg', quality: 1.0 },
-            html2canvas: { scale: 3.5, useCORS: true, logging: false, letterRendering: true },
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
             pagebreak: { mode: ['css', 'legacy'] }
           };
-          html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
-        } else { if (btnBar) btnBar.style.display = 'flex'; window.print(); }
+          html2pdf().set(opt).from(document.body).save().then(function() {
+            if (btnBar) btnBar.style.display = 'flex';
+            if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
+          }).catch(function(err) {
+            console.error(err);
+            if (btnBar) btnBar.style.display = 'flex';
+            if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
+            window.print();
+          });
+        }
+
+        if (typeof html2pdf !== 'undefined') {
+          runGen();
+        } else {
+          var s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+          s.onload = runGen;
+          s.onerror = function() {
+            if (btnBar) btnBar.style.display = 'flex';
+            if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
+            window.print();
+          };
+          document.head.appendChild(s);
+        }
       }
     </script>
     <style>
@@ -5849,7 +5875,7 @@ window._printAllPayrollBundle = () => {
   </head>
   <body>
     <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
-      <button onclick="downloadPDF()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff;">📦 UNDUH SEMUA FILE GAJI (1 PDF BUNDEL LENGKAP)</button>
+      <button onclick="downloadPDF()" class="toolbar-btn toolbar-btn-dl" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff;">📦 UNDUH SEMUA FILE GAJI (1 PDF BUNDEL LENGKAP)</button>
       <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff;">🖨️ Cetak Seluruh Paket (Printer)</button>
       <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
@@ -6178,17 +6204,43 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
     <script>
       function downloadPDF() {
         const btnBar = document.querySelector('.no-print');
-        if (btnBar) btnBar.style.display = 'none';
-        if (window.html2pdf) {
+        const btn = document.querySelector('.toolbar-btn-dl');
+        const oldText = btn ? btn.innerHTML : '';
+        if (btn) { btn.innerHTML = '⏳ Menyiapkan File PDF...'; btn.disabled = true; }
+        
+        function runGen() {
+          if (btnBar) btnBar.style.display = 'none';
           const opt = {
             margin: [2, 2, 2, 2],
             filename: 'Slip_Gaji_Amplop_${month}.pdf',
-            image: { type: 'jpeg', quality: 1.0 },
-            html2canvas: { scale: 4, useCORS: true, logging: false, letterRendering: true },
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
             jsPDF: { unit: 'mm', format: paperSize === 'F4' ? [215, 330] : 'a4', orientation: 'portrait', compress: true }
           };
-          html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
-        } else { if (btnBar) btnBar.style.display = 'flex'; window.print(); }
+          html2pdf().set(opt).from(document.body).save().then(function() {
+            if (btnBar) btnBar.style.display = 'flex';
+            if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
+          }).catch(function(err) {
+            console.error(err);
+            if (btnBar) btnBar.style.display = 'flex';
+            if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
+            window.print();
+          });
+        }
+
+        if (typeof html2pdf !== 'undefined') {
+          runGen();
+        } else {
+          var s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+          s.onload = runGen;
+          s.onerror = function() {
+            if (btnBar) btnBar.style.display = 'flex';
+            if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
+            window.print();
+          };
+          document.head.appendChild(s);
+        }
       }
     </script>
     <style>
@@ -6417,7 +6469,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
   </head>
   <body>
     <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; display:flex; justify-content:flex-end; gap:10px; align-items:center;">
-      <button onclick="downloadPDF()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff;">📥 UNDUH FILE / SIMPAN PDF (Super HD)</button>
+      <button onclick="downloadPDF()" class="toolbar-btn toolbar-btn-dl" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff;">📥 UNDUH FILE / SIMPAN PDF (Super HD)</button>
       <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff;">🖨️ Cetak Slip Amplop (Printer)</button>
       <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
@@ -6466,17 +6518,43 @@ window._printAuditDocuments = () => {
     <script>
       function downloadPDF() {
         const btnBar = document.querySelector('.no-print');
-        if (btnBar) btnBar.style.display = 'none';
-        if (window.html2pdf) {
+        const btn = document.querySelector('.toolbar-btn-dl');
+        const oldText = btn ? btn.innerHTML : '';
+        if (btn) { btn.innerHTML = '⏳ Menyiapkan File PDF...'; btn.disabled = true; }
+        
+        function runGen() {
+          if (btnBar) btnBar.style.display = 'none';
           const opt = {
             margin: [3, 3, 3, 3],
             filename: 'Dokumen_Audit_Pertamina_${month}.pdf',
-            image: { type: 'jpeg', quality: 1.0 },
-            html2canvas: { scale: 4, useCORS: true, logging: false, letterRendering: true },
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }
           };
-          html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
-        } else { if (btnBar) btnBar.style.display = 'flex'; window.print(); }
+          html2pdf().set(opt).from(document.body).save().then(function() {
+            if (btnBar) btnBar.style.display = 'flex';
+            if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
+          }).catch(function(err) {
+            console.error(err);
+            if (btnBar) btnBar.style.display = 'flex';
+            if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
+            window.print();
+          });
+        }
+
+        if (typeof html2pdf !== 'undefined') {
+          runGen();
+        } else {
+          var s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+          s.onload = runGen;
+          s.onerror = function() {
+            if (btnBar) btnBar.style.display = 'flex';
+            if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
+            window.print();
+          };
+          document.head.appendChild(s);
+        }
       }
     </script>
     <style>
@@ -6505,7 +6583,7 @@ window._printAuditDocuments = () => {
   </head>
   <body>
     <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
-      <button onclick="downloadPDF()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff;">📥 UNDUH PDF (Super HD)</button>
+      <button onclick="downloadPDF()" class="toolbar-btn toolbar-btn-dl" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff;">📥 UNDUH PDF (Super HD)</button>
       <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff;">🖨️ Cetak Dokumen Audit (3 Halaman)</button>
       <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
@@ -6890,7 +6968,7 @@ window._printInternalPayrollSummary = () => {
   </head>
   <body>
     <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
-      <button onclick="downloadPDF()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff;">📥 UNDUH PDF (Super HD)</button>
+      <button onclick="downloadPDF()" class="toolbar-btn toolbar-btn-dl" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff;">📥 UNDUH PDF (Super HD)</button>
       <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff;">🖨️ Cetak Rekapitulasi Gaji Internal</button>
       <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
@@ -7001,17 +7079,43 @@ window._printSavingsSummary = () => {
     <script>
       function downloadPDF() {
         const btnBar = document.querySelector('.no-print');
-        if (btnBar) btnBar.style.display = 'none';
-        if (window.html2pdf) {
+        const btn = document.querySelector('.toolbar-btn-dl');
+        const oldText = btn ? btn.innerHTML : '';
+        if (btn) { btn.innerHTML = '⏳ Menyiapkan File PDF...'; btn.disabled = true; }
+        
+        function runGen() {
+          if (btnBar) btnBar.style.display = 'none';
           const opt = {
             margin: [3, 3, 3, 3],
             filename: 'Rekap_Tabungan_Karyawan_${currentYear}.pdf',
-            image: { type: 'jpeg', quality: 1.0 },
-            html2canvas: { scale: 4, useCORS: true, logging: false, letterRendering: true },
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }
           };
-          html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
-        } else { if (btnBar) btnBar.style.display = 'flex'; window.print(); }
+          html2pdf().set(opt).from(document.body).save().then(function() {
+            if (btnBar) btnBar.style.display = 'flex';
+            if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
+          }).catch(function(err) {
+            console.error(err);
+            if (btnBar) btnBar.style.display = 'flex';
+            if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
+            window.print();
+          });
+        }
+
+        if (typeof html2pdf !== 'undefined') {
+          runGen();
+        } else {
+          var s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+          s.onload = runGen;
+          s.onerror = function() {
+            if (btnBar) btnBar.style.display = 'flex';
+            if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
+            window.print();
+          };
+          document.head.appendChild(s);
+        }
       }
     </script>
     <style>
@@ -7040,7 +7144,7 @@ window._printSavingsSummary = () => {
   </head>
   <body>
     <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
-      <button onclick="downloadPDF()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff;">📥 UNDUH PDF (Super HD)</button>
+      <button onclick="downloadPDF()" class="toolbar-btn toolbar-btn-dl" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff;">📥 UNDUH PDF (Super HD)</button>
       <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff;">🖨️ Cetak Rekap Tabungan (Printer)</button>
       <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
@@ -7127,17 +7231,43 @@ window._printOvertimeSummary = () => {
     <script>
       function downloadPDF() {
         const btnBar = document.querySelector('.no-print');
-        if (btnBar) btnBar.style.display = 'none';
-        if (window.html2pdf) {
+        const btn = document.querySelector('.toolbar-btn-dl');
+        const oldText = btn ? btn.innerHTML : '';
+        if (btn) { btn.innerHTML = '⏳ Menyiapkan File PDF...'; btn.disabled = true; }
+        
+        function runGen() {
+          if (btnBar) btnBar.style.display = 'none';
           const opt = {
             margin: [4, 4, 4, 4],
             filename: 'Rekap_Lembur_Karyawan_${month}.pdf',
-            image: { type: 'jpeg', quality: 1.0 },
-            html2canvas: { scale: 4, useCORS: true, logging: false, letterRendering: true },
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }
           };
-          html2pdf().set(opt).from(document.body).save().then(() => { if (btnBar) btnBar.style.display = 'flex'; }).catch(() => { if (btnBar) btnBar.style.display = 'flex'; window.print(); });
-        } else { if (btnBar) btnBar.style.display = 'flex'; window.print(); }
+          html2pdf().set(opt).from(document.body).save().then(function() {
+            if (btnBar) btnBar.style.display = 'flex';
+            if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
+          }).catch(function(err) {
+            console.error(err);
+            if (btnBar) btnBar.style.display = 'flex';
+            if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
+            window.print();
+          });
+        }
+
+        if (typeof html2pdf !== 'undefined') {
+          runGen();
+        } else {
+          var s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+          s.onload = runGen;
+          s.onerror = function() {
+            if (btnBar) btnBar.style.display = 'flex';
+            if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
+            window.print();
+          };
+          document.head.appendChild(s);
+        }
       }
     </script>
     <style>
@@ -7166,7 +7296,7 @@ window._printOvertimeSummary = () => {
   </head>
   <body>
     <div class="no-print" style="padding:10px 16px; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:3px solid #6366f1; margin-bottom:12px; display:flex; justify-content:flex-end; gap:10px; align-items:center; border-radius:6px;">
-      <button onclick="downloadPDF()" class="toolbar-btn" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff;">📥 UNDUH PDF (Super HD)</button>
+      <button onclick="downloadPDF()" class="toolbar-btn toolbar-btn-dl" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff;">📥 UNDUH PDF (Super HD)</button>
       <button onclick="window.print()" class="toolbar-btn" style="background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff;">🖨️ Cetak Rekap Lemburan (Printer)</button>
       <button onclick="window.close()" class="toolbar-btn" style="background:#334155; color:#cbd5e1;">✕ Tutup</button>
     </div>
