@@ -5402,6 +5402,11 @@ function computePwInternal(bbm) {
     res.items[p.id] = { qty, mult, amt, name: p.name };
     res.total += amt;
   });
+  res.pwPertalite = res.pertalite || 0;
+  res.pwSolar = res.solar || 0;
+  res.pwTurbo = res.turbo || 0;
+  res.pwPx92 = res.px92 || 0;
+  res.pwDex = res.dex || 0;
   return res;
 }
 
@@ -5416,6 +5421,11 @@ function computePwAudit(bbm) {
     res.items[p.id] = { qty, mult, amt, name: p.name };
     res.total += amt;
   });
+  res.pwPertalite = res.pertalite || 0;
+  res.pwSolar = res.solar || 0;
+  res.pwTurbo = res.turbo || 0;
+  res.pwPx92 = res.px92 || 0;
+  res.pwDex = res.dex || 0;
   return res;
 }
 
@@ -7215,11 +7225,12 @@ window._printAllPayrollBundle = () => {
         <tr><th>PENGALI INTERNAL</th><th>NOMINAL / LITER</th></tr>
       </thead>
       <tbody>
-        <tr><td>PERTALITE</td><td style="text-align:right;">${fmtNum(bbm.pertalite)}</td><td style="text-align:center;">Rp 2</td><td style="text-align:right;">Rp 2</td><td style="text-align:right; font-weight:600;">${fmt(pwInt.pwPertalite)}</td></tr>
-        <tr><td>SOLAR (BIOSOLAR)</td><td style="text-align:right;">${fmtNum(bbm.solar)}</td><td style="text-align:center;">Rp 2</td><td style="text-align:right;">Rp 2</td><td style="text-align:right; font-weight:600;">${fmt(pwInt.pwSolar)}</td></tr>
-        <tr><td>PERTAMAX TURBO</td><td style="text-align:right;">${fmtNum(bbm.turbo)}</td><td style="text-align:center;">Rp 12</td><td style="text-align:right;">Rp 12</td><td style="text-align:right; font-weight:600;">${fmt(pwInt.pwTurbo)}</td></tr>
-        <tr><td>PERTAMAX 92</td><td style="text-align:right;">${fmtNum(bbm.px92)}</td><td style="text-align:center;">Rp 12</td><td style="text-align:right;">Rp 12</td><td style="text-align:right; font-weight:600;">${fmt(pwInt.pwPx92)}</td></tr>
-        <tr><td>PERTAMINA DEX</td><td style="text-align:right;">${fmtNum(bbm.dex)}</td><td style="text-align:center;">Rp 12</td><td style="text-align:right;">Rp 12</td><td style="text-align:right; font-weight:600;">${fmt(pwInt.pwDex)}</td></tr>
+        ${getBbmProducts().map(p => {
+          const qty = Number(bbm[p.id] || 0);
+          const mult = Number(p.mult_internal !== undefined ? p.mult_internal : 0);
+          const amt = qty * mult;
+          return \`<tr><td>\${esc(p.name.toUpperCase())}</td><td style="text-align:right;">\${fmtNum(qty)}</td><td style="text-align:center;">Rp \${mult}</td><td style="text-align:right;">Rp \${mult}</td><td style="text-align:right; font-weight:600;">\${fmt(amt)}</td></tr>\`;
+        }).join('')}
       </tbody>
       <tfoot><tr><td colspan="4" style="text-align:right;">TOTAL PW INTERNAL</td><td style="text-align:right; color:#059669; font-size:11px; font-weight:800;">${fmt(pwInt.total)}</td></tr></tfoot>
     </table>
@@ -7227,8 +7238,8 @@ window._printAllPayrollBundle = () => {
     <table>
       <thead><tr><th>RINCIAN KELOMPOK PEMBAGIAN</th><th>ALOKASI (%)</th><th>TOTAL ALOKASI</th><th>ESTIMASI PER INDIVIDU (@)</th></tr></thead>
       <tbody>
-        <tr><td>SUPERVISOR & ADMIN (${spvAdminCount} Orang)</td><td style="text-align:center;">20%</td><td style="text-align:right;">${fmt(pwInt.total * 0.2)}</td><td style="text-align:right; font-weight:600;">${fmt(rawPwSpvAdmin)}</td></tr>
-        <tr><td>OPERATOR & CLEANING SERVICE (${oprCsCount} Orang)</td><td style="text-align:center;">80%</td><td style="text-align:right;">${fmt(pwInt.total * 0.8)}</td><td style="text-align:right; font-weight:600;">${fmt(rawPwOprCs)}</td></tr>
+        <tr><td>${esc(settings.pw_int_group1_name.toUpperCase())} (${g1Count} Orang)</td><td style="text-align:center;">${settings.pw_int_group1_percent}%</td><td style="text-align:right;">${fmt(pwInt.total * (settings.pw_int_group1_percent / 100))}</td><td style="text-align:right; font-weight:600;">${fmt(rawPwSpvAdmin)}</td></tr>
+        <tr><td>${esc(settings.pw_int_group2_name.toUpperCase())} (${g2Count} Orang)</td><td style="text-align:center;">${settings.pw_int_group2_percent}%</td><td style="text-align:right;">${fmt(pwInt.total * (settings.pw_int_group2_percent / 100))}</td><td style="text-align:right; font-weight:600;">${fmt(rawPwOprCs)}</td></tr>
       </tbody>
       <tfoot><tr><td>TOTAL</td><td style="text-align:center;">100%</td><td style="text-align:right; color:#059669; font-size:11px;">${fmt(pwInt.total)}</td><td></td></tr></tfoot>
     </table>
@@ -7253,13 +7264,20 @@ window._printAllPayrollBundle = () => {
         <tr><th>PERUSAHAAN</th><th>KARYAWAN</th></tr>
       </thead>
       <tbody>
-        <tr><td>PERTALITE</td><td style="text-align:right;">${fmtNum(bbm.pertalite)}</td><td></td><td style="text-align:right;">Rp 4</td><td style="text-align:right;">Rp -</td><td style="text-align:right; font-weight:600;">${fmt(pwAudit.pwPertalite)}</td></tr>
-        <tr><td>SOLAR (BIOSOLAR)</td><td style="text-align:right;">${fmtNum(bbm.solar)}</td><td></td><td style="text-align:right;">Rp 4</td><td style="text-align:right;">Rp -</td><td style="text-align:right; font-weight:600;">${fmt(pwAudit.pwSolar)}</td></tr>
-        <tr><td>PERTAMAX TURBO</td><td style="text-align:right;">${fmtNum(bbm.turbo)}</td><td></td><td style="text-align:right;">Rp 30</td><td style="text-align:right;">Rp -</td><td style="text-align:right; font-weight:600;">${fmt(pwAudit.pwTurbo)}</td></tr>
-        <tr><td>PERTAMAX 92</td><td style="text-align:right;">${fmtNum(bbm.px92)}</td><td></td><td style="text-align:right;">Rp 30</td><td style="text-align:right;">Rp -</td><td style="text-align:right; font-weight:600;">${fmt(pwAudit.pwPx92)}</td></tr>
-        <tr><td>PERTAMINA DEX</td><td style="text-align:right;">${fmtNum(bbm.dex)}</td><td></td><td style="text-align:right;">Rp 30</td><td style="text-align:right;">Rp -</td><td style="text-align:right; font-weight:600;">${fmt(pwAudit.pwDex)}</td></tr>
+        ${getBbmProducts().map(p => {
+          const qty = Number(bbm[p.id] || 0);
+          const mult = Number(p.mult_audit !== undefined ? p.mult_audit : 0);
+          const amt = qty * mult;
+          return \`<tr><td>\${esc(p.name.toUpperCase())}</td><td style="text-align:right;">\${fmtNum(qty)}</td><td></td><td style="text-align:right;">Rp \${mult}</td><td style="text-align:right;">Rp -</td><td style="text-align:right; font-weight:600;">\${fmt(amt)}</td></tr>\`;
+        }).join('')}
       </tbody>
-      <tfoot><tr><td colspan="4" style="text-align:right;">TOTAL</td><td style="text-align:right;">Rp -</td><td style="text-align:right; color:#059669; font-size:11px;">${fmt(pwAudit.total)}</td></tr></tfoot>
+      <tfoot>
+        <tr>
+          <td colspan="4" style="text-align:right;">TOTAL</td>
+          <td style="text-align:right;">Rp -</td>
+          <td style="text-align:right; color:#059669; font-size:11px;">${fmt(pwAudit.total)}</td>
+        </tr>
+      </tfoot>
     </table>
     <div style="font-weight:700; color:#0f172a; margin-bottom:4px; font-size:11px;">TOTAL PENERIMAAN PERTAMINA WAY</div>
     <table style="width:320px;">
@@ -7271,8 +7289,8 @@ window._printAllPayrollBundle = () => {
     <table>
       <thead><tr><th>RINCIAN PEMBAGIAN</th><th>PRESENTASE (%)</th><th>JUMLAH</th><th>PW PER @</th></tr></thead>
       <tbody>
-        <tr><td>MANAGER & ADMIN</td><td style="text-align:center;">20%</td><td style="text-align:right;">${fmt(pwAudit.total * 0.2)}</td><td style="text-align:right; font-weight:600;">${fmt(pwMgrAdminEach)}</td></tr>
-        <tr><td>PENGAWAS + OPERATOR + CS</td><td style="text-align:center;">80%</td><td style="text-align:right;">${fmt(pwAudit.total * 0.8)}</td><td style="text-align:right; font-weight:600;">${fmt(pwStaffEach)}</td></tr>
+        <tr><td>${esc(settings.pw_aud_group1_name.toUpperCase())}</td><td style="text-align:center;">${settings.pw_aud_group1_percent}%</td><td style="text-align:right;">${fmt(pwAudit.total * pctMgrAud)}</td><td style="text-align:right; font-weight:600;">${fmt(pwMgrAdminEach)}</td></tr>
+        <tr><td>${esc(settings.pw_aud_group2_name.toUpperCase())}</td><td style="text-align:center;">${settings.pw_aud_group2_percent}%</td><td style="text-align:right;">${fmt(pwAudit.total * pctStafAud)}</td><td style="text-align:right; font-weight:600;">${fmt(pwStaffEach)}</td></tr>
       </tbody>
       <tfoot><tr><td>TOTAL</td><td style="text-align:center;">100%</td><td style="text-align:right; color:#059669; font-size:11px;">${fmt(pwAudit.total)}</td><td></td></tr></tfoot>
     </table>
@@ -7295,7 +7313,7 @@ window._printAllPayrollBundle = () => {
     <table>
       <thead><tr><th style="width:30px;">NO</th><th>NAMA KARYAWAN</th><th>JABATAN</th><th style="text-align:right; width:150px;">INSENTIF (PW)</th></tr></thead>
       <tbody>
-        ${auditUsers.map((u, idx) => `<tr><td style="text-align:center;">${idx + 1}</td><td><strong>${esc(u.name)}</strong></td><td style="text-align:center;">${esc(u.position || '-')}</td><td style="text-align:right; font-weight:600;">${fmt((u.position || '').toLowerCase().includes('manager') || (u.position || '').toLowerCase().includes('admin') ? pwMgrAdminEach : pwStaffEach)}</td></tr>`).join('')}
+        ${auditUsers.map((u, idx) => \`<tr><td style="text-align:center;">\${idx + 1}</td><td><strong>\${esc(u.name)}</strong></td><td style="text-align:center;">\${esc(u.position || '-')}</td><td style="text-align:right; font-weight:600;">\${fmt(isPositionMatch(u.position, settings.pw_aud_group1_positions) ? pwMgrAdminEach : pwStaffEach)}</td></tr>\`).join('')}
       </tbody>
       <tfoot><tr><td colspan="3" style="text-align:right;">TOTAL</td><td style="text-align:right; color:#059669; font-size:11px;">${fmt(pwAudit.total)}</td></tr></tfoot>
     </table>
