@@ -4742,6 +4742,16 @@ function _generateEmployeeKpiPDFHtml(empId) {
   const u = users.find(x => x.emp_id === empId);
   const empName = u ? u.name : empId;
 
+  const period = window._leaderboardPeriod || 'month';
+  const periodTitles = {
+    'month': 'Bulan_Ini',
+    'last_month': 'Bulan_Lalu',
+    'quarter': 'Triwulan',
+    'year': 'Tahun_' + new Date().getFullYear()
+  };
+  const periodTitleStr = periodTitles[period] || 'Bulan_Ini';
+  const safeName = esc(empName).replace(/[^a-zA-Z0-9]/g, '_');
+
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -4792,10 +4802,7 @@ function _generateEmployeeKpiPDFHtml(empId) {
     </div>
   </div>
 
-      <div style="font-size:8.5px; color:#64748b !important;">PT. ESTAFET DWI MASA</div>
-    </div>
-  </div>
-  </div>
+  ${containerHtml}
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script>
@@ -4804,35 +4811,22 @@ function _generateEmployeeKpiPDFHtml(empId) {
         setTimeout(() => downloadPdfDirect(autoClose), 150);
         return;
       }
-
       const btn = document.getElementById('btn-dl-pdf');
       const noPrintBar = document.querySelector('.no-print-bar');
       const oldText = btn ? btn.innerHTML : '';
       if (btn) { btn.innerHTML = '⏳ Mengunduh...'; btn.disabled = true; }
-
       const paperSize = document.getElementById('paper-size-select') ? document.getElementById('paper-size-select').value : 'A4';
-      
-      if (noPrintBar) {
-        noPrintBar.style.setProperty('display', 'none', 'important');
-      }
-
+      if (noPrintBar) noPrintBar.style.setProperty('display', 'none', 'important');
       const element = document.querySelector('.rapor-container');
-      const safeName = '${esc(u.name).replace(/[^a-zA-Z0-9]/g, '_')}';
-      const safePeriod = '${periodTitle.replace(/[^a-zA-Z0-9]/g, '_')}';
-
+      const safeName = '${safeName}';
+      const safePeriod = '${periodTitleStr}';
       const opt = {
         margin: [4, 6, 4, 6],
         filename: 'Rapor_Kinerja_' + safeName + '_' + safePeriod + '.pdf',
         image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: {
-          scale: 2.2,
-          useCORS: true,
-          logging: false,
-          ignoreElements: (node) => node.classList && (node.classList.contains('no-print') || node.classList.contains('no-print-bar'))
-        },
+        html2canvas: { scale: 2.2, useCORS: true, logging: false },
         jsPDF: { unit: 'mm', format: paperSize === 'F4' ? [215, 330] : 'a4', orientation: 'portrait' }
       };
-
       html2pdf().set(opt).from(element).save().then(() => {
         if (noPrintBar) noPrintBar.style.setProperty('display', 'flex');
         if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
