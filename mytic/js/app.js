@@ -5906,8 +5906,8 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 4) => {
       }
 
       .sign-date { font-weight: 500; }
-      .sign-title { font-weight: 600; color: #475569; margin-top: 1px; }
-      .sign-space { height: 20px; }
+      .sign-title { font-weight: 600; color: #475569; margin-top: 2px; }
+      .sign-space { height: 42px; }
       .sign-name { font-weight: 700; color: #0f172a; text-decoration: underline; font-size: 8.5px; }
 
       .toolbar-btn {
@@ -6098,17 +6098,17 @@ window._printAuditDocuments = () => {
         </tfoot>
       </table>
 
-      <div style="display:flex; justify-content:space-between; margin-top:15px; font-size:9.5px; color:#475569;">
+      <div style="display:flex; justify-content:space-between; margin-top:20px; font-size:9.5px; color:#475569;">
         <div>
           Mengetahui,<br>
           <strong style="color:#0f172a;">SPBU 54.634.25 MLARAK</strong><br>
-          <div style="height:30px;"></div>
+          <div style="height:55px;"></div>
           <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_manager)}</strong><br>
           <span>Manager</span>
         </div>
         <div style="text-align:right;">
           Ponorogo, ${formattedPrintDate}<br>
-          <div style="height:30px;"></div>
+          <div style="height:55px;"></div>
           <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_supervisor)}</strong><br>
           <span>Supervisor</span>
         </div>
@@ -6157,7 +6157,7 @@ window._printAuditDocuments = () => {
 
       <div style="text-align:right; margin-top:20px; font-size:9.5px; color:#475569;">
         Ponorogo, ${formattedPrintDate}<br>
-        <div style="height:35px;"></div>
+        <div style="height:55px;"></div>
         <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_supervisor)}</strong><br>
         <span>Supervisor</span>
       </div>
@@ -6188,7 +6188,7 @@ window._printAuditDocuments = () => {
             <th>PERTAMINA WAY</th>
             <th>BPJS</th>
             <th rowspan="2">JUMLAH (THP)</th>
-            <th rowspan="2" colspan="2" style="width:90px;">TANDA TANGAN</th>
+            <th rowspan="2" colspan="2" style="width:140px;">TANDA TANGAN</th>
           </tr>
           <tr>
             <th>PX/PL/PXT/PTD</th>
@@ -6211,8 +6211,8 @@ window._printAuditDocuments = () => {
             totalBpjsAll += bpjsVal;
             totalThpAll += thpVal;
 
-            const ttdLeft = (idx % 2 === 0) ? `${idx + 1}` : '';
-            const ttdRight = (idx % 2 === 1) ? `${idx + 1}` : '';
+            const isLeft = (idx % 2 === 0);
+            const ttdCellLeft = isLeft ? `<td style="width:70px; vertical-align:top; padding:4px 6px; border-right:1px solid #cbd5e1; font-weight:700; color:#334155; font-size:9.5px; height:32px;">${idx + 1}.</td><td style="width:70px; height:32px;"></td>` : `<td style="width:70px; border-right:1px solid #cbd5e1; height:32px;"></td><td style="width:70px; vertical-align:top; padding:4px 6px; font-weight:700; color:#334155; font-size:9.5px; height:32px;">${idx + 1}.</td>`;
 
             return `<tr>
               <td style="text-align:center;">${idx + 1}</td>
@@ -6222,8 +6222,7 @@ window._printAuditDocuments = () => {
               <td style="text-align:right;">${fmt(pwVal)}</td>
               <td style="text-align:right;">${fmt(bpjsVal)}</td>
               <td style="text-align:right; font-weight:800; color:#0f172a;">${fmt(thpVal)}</td>
-              <td style="width:40px; font-size:9px; vertical-align:top; border-right:none;">${ttdLeft}</td>
-              <td style="width:40px; font-size:9px; vertical-align:bottom; text-align:right; border-left:none;">${ttdRight}</td>
+              ${ttdCellLeft}
             </tr>`;
           }).join('')}
         </tbody>
@@ -6239,9 +6238,9 @@ window._printAuditDocuments = () => {
         </tfoot>
       </table>
 
-      <div style="text-align:right; margin-top:15px; font-size:9.5px; color:#475569;">
+      <div style="text-align:right; margin-top:20px; font-size:9.5px; color:#475569;">
         Ponorogo, ${formattedPrintDate}<br>
-        <div style="height:35px;"></div>
+        <div style="height:55px;"></div>
         <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_audit_supervisor)}</strong><br>
         <span>Supervisor</span>
       </div>
@@ -6433,17 +6432,17 @@ window._printInternalPayrollSummary = () => {
       </tfoot>
     </table>
 
-    <div style="display:flex; justify-content:space-between; margin-top:20px; font-size:10px;">
+    <div style="display:flex; justify-content:space-between; margin-top:20px; font-size:9.5px; color:#475569;">
       <div>
-        <strong>TOTAL PENGELUARAN GAJI UNTUK KARYAWAN:</strong>
-        <span style="font-size:12px; font-weight:bold; background:#facc15; padding:3px 8px; border:1px solid #000; margin-left:10px;">
+        <strong style="color:#0f172a;">TOTAL PENGELUARAN GAJI UNTUK KARYAWAN:</strong>
+        <span style="font-size:12px; font-weight:bold; background:#facc15; color:#0f172a; padding:3px 8px; border-radius:4px; margin-left:10px;">
           ${fmt(totalBersih + totalTabungan)}
         </span>
       </div>
       <div style="text-align:right;">
         Ponorogo, ${formattedPrintDate}<br>
-        <div style="height:35px;"></div>
-        <strong style="text-decoration:underline;">${esc(settings.name_finance_manager)}</strong><br>
+        <div style="height:55px;"></div>
+        <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_finance_manager)}</strong><br>
         <span>Manajer Keuangan</span>
       </div>
     </div>
@@ -6559,10 +6558,17 @@ window._printSavingsSummary = () => {
       <tfoot>
         <tr style="font-weight:bold; background:#e5e7eb;">
           <td colspan="14" style="text-align:right;">Total</td>
-          <td style="text-align:right; background:#facc15;">${fmt(totalAllSavings)}</td>
+          <td style="text-align:right; background:#facc15; font-weight:800; color:#0f172a;">${fmt(totalAllSavings)}</td>
         </tr>
       </tfoot>
     </table>
+
+    <div style="text-align:right; margin-top:20px; font-size:9.5px; color:#475569;">
+      Ponorogo, ${formattedPrintDate}<br>
+      <div style="height:55px;"></div>
+      <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_finance_manager)}</strong><br>
+      <span>Manajer Keuangan</span>
+    </div>
   </body>
   </html>`);
   win.document.close();
@@ -6571,10 +6577,12 @@ window._printSavingsSummary = () => {
 window._printOvertimeSummary = () => {
   const month = window._payrollMonth || getTodayStr().substring(0, 7);
   const printDate = window._payrollPrintDate || getTodayStr();
+  const settings = getPayrollSettings();
   const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
   const monthData = (allData.payroll && allData.payroll[month] && allData.payroll[month].internal_data) || {};
   
   const monthNameUpper = new Date(month + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }).toUpperCase();
+  const formattedPrintDate = new Date(printDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
   let totalOtAmtAll = 0;
   const rows = users.map((u, idx) => {
@@ -6679,10 +6687,17 @@ window._printOvertimeSummary = () => {
       <tfoot>
         <tr style="font-weight:bold; background:#e5e7eb;">
           <td colspan="5" style="text-align:right;">TOTAL</td>
-          <td style="text-align:right;">Rp ${fmt(totalOtAmtAll)}</td>
+          <td style="text-align:right; color:#059669; font-size:11px;">Rp ${fmt(totalOtAmtAll)}</td>
         </tr>
       </tfoot>
     </table>
+
+    <div style="text-align:right; margin-top:20px; font-size:9.5px; color:#475569;">
+      Ponorogo, ${formattedPrintDate}<br>
+      <div style="height:55px;"></div>
+      <strong style="text-decoration:underline; color:#0f172a;">${esc(settings.name_finance_manager)}</strong><br>
+      <span>Manajer Keuangan</span>
+    </div>
   </body>
   </html>`);
   win.document.close();
