@@ -2966,7 +2966,8 @@ window._showRatingForm = () => {
   showModal(`<div class="modal-header"><h3 class="modal-title">Tambah Penilaian</h3><button class="modal-close" onclick="window._hideModal()">✕</button></div>
     <div class="modal-body">
       <div class="form-group"><label class="form-label">Pilih Karyawan</label><select id="rf-emp" class="form-input form-select" onchange="window._updateRatingCriteria()">${users.map(u => `<option value="${u.emp_id}" data-pos="${esc(u.position)}">${esc(u.name)} (${esc(u.position)})</option>`).join('')}</select></div>
-      <div class="form-group"><label class="form-label">Bulan Penilaian</label><input id="rf-date" type="month" value="${today().substring(0, 7)}" class="form-input"></div>
+      <div class="form-group"><label class="form-label">Bulan Penilaian</label><input id="rf-date" type="month" value="${today().substring(0, 7)}" class="form-input" onchange="window._updateRatingCriteria()"></div>
+      <div id="rf-dup-warning"></div>
       <div id="rf-criteria-container"></div>
       <div class="form-group mt-4"><label class="form-label">Catatan</label><textarea id="rf-note" class="form-input" rows="2" placeholder="Catatan tambahan..."></textarea></div>
     </div>
@@ -2982,6 +2983,18 @@ window._updateRatingCriteria = () => {
   const selectedOption = empSelect.options[empSelect.selectedIndex];
   if (!selectedOption) return;
   const pos = selectedOption.getAttribute('data-pos');
+
+  const empId = empSelect.value;
+  const dateVal = $('rf-date') ? $('rf-date').value.substring(0, 7) : '';
+  const warnContainer = $('rf-dup-warning');
+  if (warnContainer) {
+    const existing = getRatings().filter(r => r.emp_id === empId && (r.date || '').substring(0, 7) === dateVal);
+    if (existing.length > 0) {
+      warnContainer.innerHTML = `<div style="background:#fee2e2; border:1px solid #ef4444; color:#991b1b; padding:0.6rem 0.8rem; border-radius:6px; font-size:0.8rem; font-weight:700; margin-bottom:1rem;">⚠️ PERHATIAN: Karyawan ini sudah memiliki penilaian di periode ${dateVal}. Penilaian baru akan ditolak otomatis.</div>`;
+    } else {
+      warnContainer.innerHTML = '';
+    }
+  }
 
   // Get criteria filtered by this position
   const posCriteria = getCriteria(pos);
@@ -3044,6 +3057,21 @@ window._saveRating = async () => {
   const empId = $('rf-emp').value;
   const date = $('rf-date').value;
   const note = $('rf-note').value.trim();
+
+  if (!empId || !date) {
+    showToast('Pilih karyawan dan bulan penilaian!', 'error');
+    return;
+  }
+
+  const targetMonth = date.substring(0, 7);
+  const existing = getRatings().filter(r => r.emp_id === empId && (r.date || '').substring(0, 7) === targetMonth);
+  if (existing.length > 0) {
+    const emp = getUserByEmpId(empId);
+    const empName = emp ? emp.name : empId;
+    showToast(`DITOLAK: ${empName} sudah dinilai untuk periode ${targetMonth}! Penilaian hanya bisa 1x per bulan.`, 'error');
+    return;
+  }
+
   const scores = {};
   document.querySelectorAll('.rf-score').forEach(el => { scores[el.dataset.key] = Math.min(5, Math.max(1, parseInt(el.value) || 1)); });
   await set(push(ref(db, 'ratings')), { emp_id: empId, date, scores, note, timestamp: Date.now() });
