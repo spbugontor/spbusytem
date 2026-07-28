@@ -1452,18 +1452,54 @@ function renderSavings() {
 // RATINGS (ADMIN)
 // ==========================================
 function renderRatings() {
-  const ratings = getRatings();
+  let ratings = getRatings();
   const users = getUsers();
+
+  const empFilter = (window._ratingSearchEmp || '').toLowerCase().trim();
+  const monthFilter = (window._ratingSearchMonth || '').trim();
+
+  const filteredRatings = ratings.filter(r => {
+    const emp = getUserByEmpId(r.emp_id);
+    const empName = (emp ? emp.name : r.emp_id).toLowerCase();
+    const matchEmp = !empFilter || empName.includes(empFilter) || r.emp_id.toLowerCase().includes(empFilter);
+    const matchMonth = !monthFilter || (r.date || '').startsWith(monthFilter);
+    return matchEmp && matchMonth;
+  });
+
   return `<div class="fade-in">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:0.5rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem">
       <h3 class="text-xl font-bold">Penilaian Kinerja</h3>
       <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-        ${ratings.length > 0 ? `<button class="btn btn-primary" style="font-weight:bold; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; border:none; box-shadow:0 2px 8px rgba(99,102,241,0.3);" onclick="window._downloadAllRatingsPDF()">👁️ Pratinjau & Cetak Semua Penilaian (PDF)</button>` : ''}
+        ${filteredRatings.length > 0 ? `<button class="btn btn-primary" style="font-weight:bold; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; border:none; box-shadow:0 2px 8px rgba(99,102,241,0.3);" onclick="window._downloadAllRatingsPDF()">👁️ Pratinjau & Cetak Penilaian (${filteredRatings.length} PDF)</button>` : ''}
         <button class="btn btn-primary" onclick="window._showRatingForm()">+ Tambah Penilaian</button>
       </div>
     </div>
-    ${ratings.length === 0 ? '<div class="card"><p class="text-muted">Belum ada penilaian.</p></div>' :
-      ratings.map(r => {
+
+    <!-- FILTER BAR -->
+    <div class="card" style="margin-bottom:1.25rem; background:var(--surface); border:1px solid var(--border); padding:0.85rem 1rem;">
+      <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end; justify-content:space-between;">
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap; flex:1; align-items:flex-end;">
+          <div style="min-width:200px; flex:1;">
+            <label class="form-label" style="font-size:0.75rem; font-weight:700; margin-bottom:0.25rem;">🔍 Cari Nama / ID Karyawan</label>
+            <input type="text" id="rating-search-name" class="form-input" style="padding:0.4rem 0.6rem; font-size:0.82rem;" placeholder="Ketik nama karyawan..." value="${esc(window._ratingSearchEmp || '')}" oninput="window._filterRatings()">
+          </div>
+          <div style="width:160px;">
+            <label class="form-label" style="font-size:0.75rem; font-weight:700; margin-bottom:0.25rem;">📅 Periode Bulan</label>
+            <input type="month" id="rating-search-month" class="form-input" style="padding:0.4rem 0.6rem; font-size:0.82rem;" value="${window._ratingSearchMonth || ''}" onchange="window._filterRatings()">
+          </div>
+          ${(window._ratingSearchEmp || window._ratingSearchMonth) ? `
+          <div>
+            <button class="btn btn-outline-danger" style="padding:0.4rem 0.75rem; font-size:0.75rem; font-weight:700;" onclick="window._clearRatingFilters()">✕ Reset Filter</button>
+          </div>` : ''}
+        </div>
+        <div style="font-size:0.8rem; font-weight:700; color:var(--text-muted);">
+          Ditemukan: <span style="color:var(--primary); font-weight:900;">${filteredRatings.length}</span> / ${ratings.length} Data
+        </div>
+      </div>
+    </div>
+
+    ${filteredRatings.length === 0 ? `<div class="card"><p class="text-muted">${ratings.length === 0 ? 'Belum ada penilaian.' : 'Tidak ada data penilaian yang sesuai dengan filter.'}</p></div>` :
+      filteredRatings.map(r => {
         const emp = getUserByEmpId(r.emp_id);
         const avg = r.scores ? (Object.values(r.scores).reduce((s, v) => s + v, 0) / Object.values(r.scores).length).toFixed(1) : '0';
         const color = avg >= 4.5 ? 'var(--success)' : avg >= 3.5 ? 'var(--info)' : avg >= 2.5 ? 'var(--warning)' : 'var(--danger)';
@@ -1482,6 +1518,20 @@ function renderRatings() {
       }).join('')}
   </div>`;
 }
+
+window._filterRatings = () => {
+  const nameEl = $('rating-search-name');
+  const monthEl = $('rating-search-month');
+  if (nameEl) window._ratingSearchEmp = nameEl.value;
+  if (monthEl) window._ratingSearchMonth = monthEl.value;
+  renderCurrentSection();
+};
+
+window._clearRatingFilters = () => {
+  window._ratingSearchEmp = '';
+  window._ratingSearchMonth = '';
+  renderCurrentSection();
+};
 
 // ==========================================
 // CRITERIA (ADMIN)
@@ -3348,9 +3398,23 @@ window._downloadSingleRatingPDF = (key) => {
 };
 
 window._downloadAllRatingsPDF = () => {
-  const ratings = getRatings();
+  let ratings = getRatings();
+
+  const empFilter = (window._ratingSearchEmp || '').toLowerCase().trim();
+  const monthFilter = (window._ratingSearchMonth || '').trim();
+
+  if (empFilter || monthFilter) {
+    ratings = ratings.filter(r => {
+      const emp = getUserByEmpId(r.emp_id);
+      const empName = (emp ? emp.name : r.emp_id).toLowerCase();
+      const matchEmp = !empFilter || empName.includes(empFilter) || r.emp_id.toLowerCase().includes(empFilter);
+      const matchMonth = !monthFilter || (r.date || '').startsWith(monthFilter);
+      return matchEmp && matchMonth;
+    });
+  }
+
   if (ratings.length === 0) {
-    showToast('Belum ada data penilaian', 'warning');
+    showToast('Tidak ada data penilaian yang sesuai dengan filter', 'warning');
     return;
   }
 
