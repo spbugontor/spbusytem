@@ -5810,8 +5810,8 @@ window._printAllPayrollBundle = () => {
       th { background: #0f172a !important; color: #fff !important; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px; }
       tfoot td { background: #f1f5f9 !important; font-weight: 800; color: #0f172a; }
 
-      .page-grid { display: grid; grid-template-columns: 1fr 1fr; grid-gap: 6px; page-break-after: always; width: 100%; min-height: 96vh; padding: 3px; }
-      .per-page-6 { grid-template-rows: 1fr 1fr 1fr; }
+      .page-grid { display: grid; grid-gap: 6px; page-break-after: always; width: 100%; min-height: 96vh; padding: 3px; }
+      .per-page-6 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
       .slip-card { border: none; border-radius: 8px; display: flex; flex-direction: column; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; position: relative; }
       .slip-top-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); }
       .slip-header-area { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%) !important; padding: 7px 10px; display: flex; justify-content: space-between; align-items: center; }
@@ -6196,9 +6196,9 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
       
-      .page-grid { display: grid; grid-template-columns: 1fr 1fr; grid-gap: 6px; page-break-after: always; width: 100%; min-height: 96vh; padding: 3px; }
-      .per-page-4 { grid-template-rows: 1fr 1fr; }
-      .per-page-6 { grid-template-rows: 1fr 1fr 1fr; }
+      .page-grid { display: grid; grid-gap: 6px; page-break-after: always; width: 100%; min-height: 96vh; padding: 3px; }
+      .per-page-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+      .per-page-6 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
 
       .slip-card {
         border: none;
