@@ -6035,7 +6035,10 @@ window._printAuditDocuments = () => {
         <div class="period-badge">BULAN ${monthNameUpper}</div>
       </div>
 
-      <div class="doc-title-bar">PERHITUNGAN PERTAMINA WAY BULAN ${monthNameUpper}</div>
+      <div class="doc-title-bar">
+        <div style="font-size:13.5px; font-weight:900; letter-spacing:0.5px;">PERHITUNGAN PERTAMINA WAY BULAN ${monthNameUpper}</div>
+        <div style="font-size:10.5px; font-weight:700; color:#475569; margin-top:2px; letter-spacing:0.3px;">KARYAWAN SPBU 5463425 GONTOR</div>
+      </div>
 
       <table>
         <thead>
@@ -6129,7 +6132,10 @@ window._printAuditDocuments = () => {
         <div class="period-badge">BULAN ${monthNameUpper}</div>
       </div>
 
-      <div class="doc-title-bar">DAFTAR PENERIMAAN PERTAMINA WAY</div>
+      <div class="doc-title-bar">
+        <div style="font-size:13.5px; font-weight:900; letter-spacing:0.5px;">DAFTAR PENERIMAAN PERTAMINA WAY</div>
+        <div style="font-size:10.5px; font-weight:700; color:#475569; margin-top:2px; letter-spacing:0.3px;">KARYAWAN SPBU 5463425 GONTOR</div>
+      </div>
       <table>
         <thead>
           <tr>
@@ -6177,7 +6183,10 @@ window._printAuditDocuments = () => {
         <div class="period-badge">BULAN ${monthNameUpper}</div>
       </div>
 
-      <div class="doc-title-bar">PENERIMAAN GAJI KARYAWAN AUDIT PERTAMINA</div>
+      <div class="doc-title-bar">
+        <div style="font-size:14px; font-weight:900; letter-spacing:0.5px;">TANDA TERIMA GAJI DAN PERTAMINA WAY</div>
+        <div style="font-size:10.5px; font-weight:700; color:#475569; margin-top:2px; letter-spacing:0.3px;">KARYAWAN SPBU 5463425 GONTOR</div>
+      </div>
       <table>
         <thead>
           <tr>
