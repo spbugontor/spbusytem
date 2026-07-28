@@ -2174,6 +2174,7 @@ window._showEmpForm = (key) => {
       <div class="form-group"><label class="form-label">Jenis Kelamin</label><select id="ef-gender" class="form-input form-select"><option value="Laki-Laki" ${emp?.gender === 'Laki-Laki' ? 'selected' : ''}>Laki-Laki</option><option value="Perempuan" ${emp?.gender === 'Perempuan' ? 'selected' : ''}>Perempuan</option></select></div>
       <div class="form-group"><label class="form-label">Jabatan</label><select id="ef-pos" class="form-input form-select">${positions.map(p => `<option ${emp?.position === p ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
       <div class="form-group"><label class="form-label">PIN (6 digit)</label><div class="password-wrapper"><input id="ef-pin" type="password" inputmode="numeric" maxlength="6" class="form-input" value="${esc(emp?.pin || '')}" placeholder="••••••"><button type="button" class="password-toggle" onclick="window._togglePassword(this)">👁️</button></div></div>
+      <div class="form-group"><label class="form-label">Tanggal Mulai Kerja</label><input id="ef-jdate" type="date" class="form-input" value="${emp?.join_date || emp?.contract_start || ''}"></div>
       <div class="form-group"><label class="form-label">Jenis Kontrak</label><select id="ef-ctype" class="form-input form-select"><option value="Training" ${emp?.contract_type === 'Training' ? 'selected' : ''}>Training (3 Bulan)</option><option value="Tetap" ${emp?.contract_type === 'Tetap' ? 'selected' : ''}>Tetap (1 Tahun)</option></select></div>
       <div class="form-group"><label class="form-label">Mulai Kontrak</label><input id="ef-cstart" type="date" class="form-input" value="${emp?.contract_start || ''}"></div>
       <div class="form-group"><label class="form-label">Telepon</label><input id="ef-phone" class="form-input" value="${esc(emp?.phone || '')}"></div>
@@ -2204,8 +2205,9 @@ window._saveEmp = async (key) => {
   const others = getUsers().filter(u => u._key !== key);
   const emp_id = key ? getUserByKey(key)?.emp_id : genEmpId(position, others);
   const username = genUsername(name, emp_id);
+  const join_date = $('ef-jdate') ? $('ef-jdate').value : (cstart || '');
 
-  const data = { name, gender: $('ef-gender').value, position, pin, emp_id, username, contract_type: $('ef-ctype').value, contract_start: cstart, contract_end: cend, phone: $('ef-phone').value.trim(), email: $('ef-email').value.trim(), date_of_birth: $('ef-dob').value };
+  const data = { name, gender: $('ef-gender').value, position, pin, emp_id, username, join_date, contract_type: $('ef-ctype').value, contract_start: cstart, contract_end: cend, phone: $('ef-phone').value.trim(), email: $('ef-email').value.trim(), date_of_birth: $('ef-dob').value };
 
   if (key) await update(ref(db, 'users/' + key), data);
   else await set(push(ref(db, 'users')), data);
@@ -2269,6 +2271,7 @@ window._showEmpDetail = (key) => {
         <div><p class="form-label">Username</p><p class="font-semibold text-sm">${esc(emp.username)}</p></div>
         <div><p class="form-label">Kelamin</p><p class="font-semibold text-sm">${esc(emp.gender || '-')}</p></div>
         <div><p class="form-label">Kontrak</p><p class="font-semibold text-sm">${esc(emp.contract_type || '-')}</p></div>
+        <div><p class="form-label">Mulai Kerja</p><p class="font-semibold text-sm">${fmtDate(emp.join_date || emp.contract_start)}</p></div>
         <div><p class="form-label">Berakhir</p><p class="font-semibold text-sm">${fmtDate(emp.contract_end)}</p></div>
         <div><p class="form-label">Tunggakan</p><p class="font-semibold text-sm" style="color:${bal > 0 ? 'var(--danger)' : 'var(--success)'}">${fmt(bal)}</p></div>
         <div><p class="form-label">Telepon</p><p class="font-semibold text-sm">${esc(emp.phone || '-')}</p></div>
@@ -4745,12 +4748,31 @@ function computePwAudit(bbm) {
   return { pwPertalite, pwSolar, pwTurbo, pwPx92, pwDex, total };
 }
 
-function getTenureMonths(joinDateStr) {
-  if (!joinDateStr) return 12;
+function getTenureMonths(joinDateStr, targetMonthStr) {
+  if (!joinDateStr) return 0;
   const join = new Date(joinDateStr);
-  const now = new Date();
-  if (isNaN(join.getTime())) return 12;
-  return Math.max(1, (now.getFullYear() - join.getFullYear()) * 12 + (now.getMonth() - join.getMonth()));
+  if (isNaN(join.getTime())) return 0;
+
+  let targetDate = new Date();
+  if (targetMonthStr && targetMonthStr.includes('-')) {
+    const parts = targetMonthStr.split('-');
+    targetDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, 1);
+  }
+
+  const yearsDiff = targetDate.getFullYear() - join.getFullYear();
+  const monthsDiff = targetDate.getMonth() - join.getMonth();
+  const totalMonths = yearsDiff * 12 + monthsDiff;
+  return Math.max(0, totalMonths);
+}
+
+function fmtTenureText(months) {
+  const m = Math.max(0, Number(months) || 0);
+  if (m === 0) return '0 Bln';
+  if (m < 12) return `${m} Bln`;
+  const y = Math.floor(m / 12);
+  const remM = m % 12;
+  if (remM === 0) return `${y} Thn`;
+  return `${y} Thn ${remM} Bln`;
 }
 
 function getDefaultTenureAllowance(months) {
@@ -5207,7 +5229,8 @@ function renderInternalPayrollTab() {
     const pwEnabled = empData.pw_enabled !== undefined ? empData.pw_enabled : false;
     const pwAmount = Number(empData.pw_amount !== undefined ? empData.pw_amount : 0);
 
-    const tenureMonths = getTenureMonths(u.join_date || u.created_at);
+    const tenureMonths = getTenureMonths(u.join_date || u.contract_start || u.created_at, month);
+    const tenureText = fmtTenureText(tenureMonths);
 
     // Allowances
     const tunjData = empData.tunjangan || {};
@@ -6299,7 +6322,8 @@ window._printInternalPayrollSummary = () => {
     
     const pwEnabled = empData.pw_enabled !== undefined ? empData.pw_enabled : false;
     const pwAmount = Number(empData.pw_amount !== undefined ? empData.pw_amount : 0);
-    const tenureMonths = getTenureMonths(u.join_date || u.created_at);
+    const tenureMonths = getTenureMonths(u.join_date || u.contract_start || u.created_at, month);
+    const tenureText = fmtTenureText(tenureMonths);
 
     const tunjData = empData.tunjangan || {};
     const tunjJabatanEnabled = tunjData['tunj_jabatan'] ? tunjData['tunj_jabatan'].enabled : false;
@@ -6337,7 +6361,7 @@ window._printInternalPayrollSummary = () => {
       <td style="text-align:center;">${idx + 1}</td>
       <td><strong>${esc(u.name)}</strong></td>
       <td style="text-align:center;">UMK 100%</td>
-      <td style="text-align:center;">${tenureMonths} Bulan</td>
+      <td style="text-align:center;">${tenureText}</td>
       <td style="text-align:right;">${fmt(gajiPokok)}</td>
       <td style="text-align:right;">${fmt(jAmt)}</td>
       <td style="text-align:right;">${fmt(kAmt)}</td>
