@@ -5877,7 +5877,7 @@ window._printAllPayrollBundle = () => {
       .sign-name { font-weight: 800; color: #0f172a ; text-decoration: underline; font-size: 8.5px; }
 
       .toolbar-btn { padding: 8px 18px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-family: 'Inter', sans-serif; transition: all 0.2s; }
-      @media print { .no-print { display: none ; } }
+      @media print { .no-print { display: none !important; } }
     </style>
   </head>
   <body>
@@ -6498,7 +6498,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
 
       .toolbar-btn:hover { opacity: 0.9; transform: translateY(-1px); }
 
-      @media print { .no-print { display: none ; } }
+      @media print { .no-print { display: none !important; } }
     </style>
   </head>
   <body>
@@ -6622,7 +6622,7 @@ window._printAuditDocuments = () => {
       tfoot td { background-color: #f1f5f9 ; background: #f1f5f9 ; font-weight: 800; color: #0f172a ; }
       
       .toolbar-btn { padding: 7px 16px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; }
-      @media print { .no-print { display: none ; } }
+      @media print { .no-print { display: none !important; } }
     </style>
   </head>
   <body>
@@ -7042,7 +7042,7 @@ window._printInternalPayrollSummary = () => {
       tfoot td { background-color: #f1f5f9 ; background: #f1f5f9 ; font-weight: 800; color: #0f172a ; }
       
       .toolbar-btn { padding: 7px 16px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; }
-      @media print { .no-print { display: none ; } }
+      @media print { .no-print { display: none !important; } }
     </style>
   </head>
   <body>
@@ -7220,7 +7220,7 @@ window._printSavingsSummary = () => {
       tfoot td { background-color: #f1f5f9 ; background: #f1f5f9 ; font-weight: 800; color: #0f172a ; }
       
       .toolbar-btn { padding: 7px 16px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; }
-      @media print { .no-print { display: none ; } }
+      @media print { .no-print { display: none !important; } }
     </style>
   </head>
   <body>
@@ -7374,7 +7374,7 @@ window._printOvertimeSummary = () => {
       tfoot td { background-color: #f1f5f9 ; background: #f1f5f9 ; font-weight: 800; color: #0f172a ; }
       
       .toolbar-btn { padding: 7px 16px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; }
-      @media print { .no-print { display: none ; } }
+      @media print { .no-print { display: none !important; } }
     </style>
   </head>
   <body>
