@@ -6223,7 +6223,7 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
             filename: 'Slip_Gaji_Amplop_${month}.pdf',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, useCORS: true, logging: false },
-            jsPDF: { unit: 'mm', format: paperSize === 'F4' ? [215, 330] : 'a4', orientation: 'portrait', compress: true },
+            jsPDF: { unit: 'mm', format: ${paperSize === 'F4' ? "[215, 330]" : "'a4'"}, orientation: 'portrait', compress: true },
             pagebreak: { mode: ['css', 'legacy'] }
           };
 
