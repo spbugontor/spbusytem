@@ -5794,10 +5794,58 @@ window._exportToExcel = (reportType) => {
   showToast(`File Excel (${reportType.toUpperCase()}) berhasil diunduh!`, 'success');
 };
 
+window._setPayrollMonthStatus = async (month, newStatus) => {
+  allData.payroll = allData.payroll || {};
+  allData.payroll[month] = allData.payroll[month] || {};
+  allData.payroll[month].status = newStatus;
+
+  renderCurrentSection();
+
+  const path = `payroll/${month}/status`;
+  await set(ref(db, path), newStatus);
+  showToast(`Status Penggajian bulan ${month} berhasil diubah ke: ${newStatus === 'FINAL' ? '🔒 TERKUNCI (FINAL)' : '📝 REVISI (DRAFT)'}`, 'success');
+};
+
+window._copyPreviousMonthPayroll = async (targetMonth) => {
+  const [y, m] = targetMonth.split('-').map(Number);
+  const prevDate = new Date(y, m - 2, 1);
+  const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
+
+  const prevMonthData = (allData.payroll && allData.payroll[prevMonth] && allData.payroll[prevMonth].internal_data) || null;
+
+  if (!prevMonthData || Object.keys(prevMonthData).length === 0) {
+    showToast(`Tidak ada data gaji pada bulan sebelumnya (${prevMonth}) untuk disalin.`, 'warning');
+    return;
+  }
+
+  const prevMonthName = new Date(prevMonth + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+  const targetMonthName = new Date(targetMonth + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+
+  if (!confirm(`Apakah Anda yakin ingin menyalin seluruh data komponen gaji dari ${prevMonthName} ke ${targetMonthName}?\n\nData gaji bulan ini yang ada sekarang akan diperbarui dengan data dari bulan lalu.`)) {
+    return;
+  }
+
+  const copiedData = JSON.parse(JSON.stringify(prevMonthData));
+
+  allData.payroll = allData.payroll || {};
+  allData.payroll[targetMonth] = allData.payroll[targetMonth] || {};
+  allData.payroll[targetMonth].internal_data = copiedData;
+
+  renderCurrentSection();
+
+  const dbUpdates = {};
+  dbUpdates[`payroll/${targetMonth}/internal_data`] = copiedData;
+
+  await update(ref(db), dbUpdates).catch(err => console.error('Firebase copy error:', err));
+  showToast(`Berhasil menyalin data gaji dari ${prevMonthName} ke ${targetMonthName}!`, 'success');
+};
+
 function renderInternalPayrollTab() {
   const month = window._payrollMonth || getTodayStr().substring(0, 7);
   const printDate = window._payrollPrintDate || getTodayStr();
   const settings = getPayrollSettings();
+  const monthStatus = (allData.payroll && allData.payroll[month] && allData.payroll[month].status) || 'DRAFT';
+  const isLocked = monthStatus === 'FINAL';
   const bbm = getBbmSalesData(month);
   const pwInt = computePwInternal(bbm);
   const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
@@ -5876,49 +5924,49 @@ function renderInternalPayrollTab() {
     totalTabunganAll += tabunganAmt;
     totalGajiBersihAll += gajiBersih;
 
-    return `<tr>
+    return `<tr style="${isLocked ? 'background:rgba(241, 245, 249, 0.4);' : ''}">
       <td style="text-align:center; font-weight:bold; padding:4px 6px;">${idx + 1}</td>
       <td style="padding:4px 6px;"><strong>${esc(u.name)}</strong><br><span class="text-xs text-muted">ID: ${esc(u.emp_id)} | Masa: ${tenureMonths} Bln</span></td>
       <td style="padding:4px 6px;"><span class="badge" style="background:var(--bg-color); color:var(--text-main); font-size:0.7rem; padding:2px 5px;">${esc(pos)}</span></td>
       <td style="font-size:0.75rem; padding:4px 6px;">
-        <input type="number" value="${gajiPokok}" class="form-input" style="width:100%; max-width:92px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.75rem; font-weight:600; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'gaji_pokok', Number(this.value))">
+        <input type="number" value="${gajiPokok}" ${isLocked ? 'disabled' : ''} class="form-input" style="width:100%; max-width:92px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.75rem; font-weight:600; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'gaji_pokok', Number(this.value))">
         <div class="text-xs text-muted" style="margin-top:0.1rem; font-size:0.65rem;">${fmt(gajiPokok)}</div>
       </td>
       <td style="font-size:0.75rem; padding:4px 6px;">
         <div style="display:flex; align-items:center; gap:0.25rem;">
-          <input type="checkbox" ${tunjJabatanEnabled ? 'checked' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_jabatan', this.checked)">
+          <input type="checkbox" ${tunjJabatanEnabled ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_jabatan', this.checked)">
           <span style="font-size:0.7rem; min-width:48px;">Jabatan:</span>
-          <input type="number" value="${tunjJabatanAmt}" class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_jabatan', this.value)">
+          <input type="number" value="${tunjJabatanAmt}" ${isLocked ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_jabatan', this.value)">
         </div>
         <div style="display:flex; align-items:center; gap:0.25rem; margin-top:0.2rem;">
-          <input type="checkbox" ${tunjKinerjaEnabled ? 'checked' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_kinerja', this.checked)">
+          <input type="checkbox" ${tunjKinerjaEnabled ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_kinerja', this.checked)">
           <span style="font-size:0.7rem; min-width:48px;">Kinerja:</span>
-          <input type="number" value="${tunjKinerjaAmt}" class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_kinerja', this.value)">
+          <input type="number" value="${tunjKinerjaAmt}" ${isLocked ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_kinerja', this.value)">
         </div>
         <div style="display:flex; align-items:center; gap:0.25rem; margin-top:0.2rem;">
-          <input type="checkbox" ${tunjMasaKerjaEnabled ? 'checked' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_masa_kerja', this.checked)">
+          <input type="checkbox" ${tunjMasaKerjaEnabled ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_masa_kerja', this.checked)">
           <span style="font-size:0.7rem; min-width:48px;">Masa:</span>
-          <input type="number" value="${tunjMasaKerjaAmt}" class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_masa_kerja', this.value)">
+          <input type="number" value="${tunjMasaKerjaAmt}" ${isLocked ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_masa_kerja', this.value)">
         </div>
         ${customTunjHTML}
       </td>
       <td style="font-size:0.75rem; padding:4px 6px;">
         <div style="display:flex; align-items:center; gap:0.25rem;">
-          <input type="checkbox" ${pwEnabled ? 'checked' : ''} onchange="window._saveInternalPayrollItem('${empId}', 'pw_enabled', this.checked)">
+          <input type="checkbox" ${pwEnabled ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="window._saveInternalPayrollItem('${empId}', 'pw_enabled', this.checked)">
           <span style="font-size:0.7rem;">PW:</span>
-          <input type="number" value="${pwAmount}" class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'pw_amount', Number(this.value))">
+          <input type="number" value="${pwAmount}" ${isLocked ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'pw_amount', Number(this.value))">
         </div>
         <div class="text-xs text-muted" style="margin-top:0.15rem; font-size:0.65rem;">Est: ${fmt(isSpvAdmin ? rawPwSpvAdmin : rawPwOprCs)}</div>
       </td>
       <td style="font-size:0.75rem; padding:4px 6px;">
         <div style="display:flex; align-items:center; gap:0.2rem;">
-          <input type="number" value="${otShifts}" class="form-input" style="width:100%; max-width:48px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:center;" min="0" onchange="window._saveInternalPayrollItem('${empId}', 'overtime_shifts', Number(this.value))">
+          <input type="number" value="${otShifts}" ${isLocked ? 'disabled' : ''} class="form-input" style="width:100%; max-width:48px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:center;" min="0" onchange="window._saveInternalPayrollItem('${empId}', 'overtime_shifts', Number(this.value))">
           <span style="font-size:0.7rem;">Shf</span>
         </div>
         <strong style="color:var(--primary); font-size:0.75rem;">${fmt(otAmt)}</strong>
       </td>
       <td style="font-size:0.75rem; padding:4px 6px;">
-        <input type="number" value="${tabunganAmt}" class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'savings_deduction', Number(this.value))">
+        <input type="number" value="${tabunganAmt}" ${isLocked ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'savings_deduction', Number(this.value))">
       </td>
       <td style="text-align:right; padding:4px 6px;">
         <div style="font-size:0.68rem; color:var(--text-muted);">Kotor: ${fmt(gajiKotor)}</div>
@@ -5928,23 +5976,50 @@ function renderInternalPayrollTab() {
   }).join('');
 
   return `<div class="fade-in">
+    <!-- STATUS LOCK / DRAFT BANNER & REVISION CONTROLS -->
+    <div style="background:${isLocked ? '#fef2f2' : '#eff6ff'}; border:1.5px solid ${isLocked ? '#ef4444' : '#3b82f6'}; border-radius:8px; padding:0.75rem 1rem; margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+      <div style="display:flex; align-items:center; gap:0.6rem;">
+        <span style="font-size:1.4rem;">${isLocked ? '🔒' : '📝'}</span>
+        <div>
+          <strong style="font-size:0.9rem; color:${isLocked ? '#991b1b' : '#1e40af'}; display:block;">
+            Status Periode Penggajian (${month}): ${isLocked ? 'TERKUNCI (FINAL)' : 'REVISI / DRAFT (DAPAT DIEDIT)'}
+          </strong>
+          <span style="font-size:0.75rem; color:${isLocked ? '#b91c1c' : '#2563eb'};">
+            ${isLocked ? 'Data gaji bulan ini sudah final & dikunci agar tidak sengaja terubah. Buka kunci jika ingin melakukan revisi.' : 'Mode revisi aktif. Anda dapat mengubah nominal, menyalin dari bulan lalu, atau mengunci gaji jika sudah final.'}
+          </span>
+        </div>
+      </div>
+      <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+        ${!isLocked ? `
+        <button class="btn btn-outline-primary" style="font-weight:700; font-size:0.78rem; background:#fff;" onclick="window._copyPreviousMonthPayroll('${month}')" title="Salin seluruh komponen gaji dari bulan lalu ke bulan ini">
+          📋 Salin Gaji dari Bulan Lalu
+        </button>
+        <button class="btn btn-success" style="font-weight:800; font-size:0.78rem;" onclick="window._setPayrollMonthStatus('${month}', 'FINAL')" title="Kunci data gaji agar tidak dapat diubah lagi">
+          🔒 Kunci & Finalkan Gaji
+        </button>` : `
+        <button class="btn btn-outline-danger" style="font-weight:800; font-size:0.78rem; background:#fff;" onclick="window._setPayrollMonthStatus('${month}', 'DRAFT')" title="Buka kunci untuk mengedit / merevisi data gaji">
+          🔓 Buka Kunci untuk Revisi
+        </button>`}
+      </div>
+    </div>
+
     <!-- INPUT PENJUALAN LITER BBM -->
     <div class="card" style="margin-bottom:1.25rem; background:var(--surface); border:1px solid var(--border);">
       <h4 style="font-size:0.95rem; font-weight:800; color:var(--primary); margin-bottom:0.75rem;">⛽ Input Penjualan Liter BBM (Periode: ${month})</h4>
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:0.75rem;">
-        <div><label class="form-label" style="font-size:0.75rem;">Pertalite (L)</label><input id="bbm-pertalite" type="number" step="0.01" value="${bbm.pertalite}" class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
-        <div><label class="form-label" style="font-size:0.75rem;">Solar / Biosolar (L)</label><input id="bbm-solar" type="number" step="0.01" value="${bbm.solar}" class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
-        <div><label class="form-label" style="font-size:0.75rem;">Pertamax Turbo (L)</label><input id="bbm-turbo" type="number" step="0.01" value="${bbm.turbo}" class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
-        <div><label class="form-label" style="font-size:0.75rem;">Pertamax 92 (L)</label><input id="bbm-px92" type="number" step="0.01" value="${bbm.px92}" class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
-        <div><label class="form-label" style="font-size:0.75rem;">Pertamina Dex (L)</label><input id="bbm-dex" type="number" step="0.01" value="${bbm.dex}" class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
+        <div><label class="form-label" style="font-size:0.75rem;">Pertalite (L)</label><input id="bbm-pertalite" type="number" step="0.01" value="${bbm.pertalite}" ${isLocked ? 'disabled' : ''} class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
+        <div><label class="form-label" style="font-size:0.75rem;">Solar / Biosolar (L)</label><input id="bbm-solar" type="number" step="0.01" value="${bbm.solar}" ${isLocked ? 'disabled' : ''} class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
+        <div><label class="form-label" style="font-size:0.75rem;">Pertamax Turbo (L)</label><input id="bbm-turbo" type="number" step="0.01" value="${bbm.turbo}" ${isLocked ? 'disabled' : ''} class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
+        <div><label class="form-label" style="font-size:0.75rem;">Pertamax 92 (L)</label><input id="bbm-px92" type="number" step="0.01" value="${bbm.px92}" ${isLocked ? 'disabled' : ''} class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
+        <div><label class="form-label" style="font-size:0.75rem;">Pertamina Dex (L)</label><input id="bbm-dex" type="number" step="0.01" value="${bbm.dex}" ${isLocked ? 'disabled' : ''} class="form-input" style="padding:0.4rem; font-size:0.85rem;"></div>
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.85rem; flex-wrap:wrap; gap:0.5rem;">
         <div style="font-size:0.8rem; font-weight:700; color:var(--text-main);">
           Total PW Internal: <span style="color:var(--primary); font-size:0.95rem;">${fmt(pwInt.total)}</span> (SPV+Admin 20%: ${fmt(pwInt.total * 0.2)} | OPR+CS 80%: ${fmt(pwInt.total * 0.8)})
         </div>
         <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
-          <button class="btn btn-outline-danger" style="padding:0.4rem 0.9rem; font-size:0.8rem;" onclick="window._resetPayrollMonthData()">🗑️ Bersihkan Data Bulan Ini</button>
-          <button class="btn btn-primary" style="padding:0.4rem 0.9rem; font-size:0.8rem;" onclick="window._saveBbmSales()">Simpan Penjualan BBM</button>
+          <button class="btn btn-outline-danger" style="padding:0.4rem 0.9rem; font-size:0.8rem;" ${isLocked ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="window._resetPayrollMonthData()">🗑️ Bersihkan Data Bulan Ini</button>
+          <button class="btn btn-primary" style="padding:0.4rem 0.9rem; font-size:0.8rem;" ${isLocked ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="window._saveBbmSales()">Simpan Penjualan BBM</button>
         </div>
       </div>
     </div>
@@ -5954,7 +6029,7 @@ function renderInternalPayrollTab() {
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
         <h4 style="font-size:1rem; font-weight:800; color:var(--text-main); margin:0;">📋 Daftar Gaji Internal Karyawan (${users.length} Karyawan)</h4>
         <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
-          <button class="btn btn-warning" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._openMassAllowanceModal()">⚡ Input Massal Gaji & Tunjangan</button>
+          <button class="btn btn-warning" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" ${isLocked ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="window._openMassAllowanceModal()">⚡ Input Massal Gaji & Tunjangan</button>
           <label style="font-size:0.75rem; font-weight:700;">Tgl Cetak:</label>
           <input type="date" value="${printDate}" class="form-input" style="padding:0.3rem 0.5rem; font-size:0.75rem; width:135px;" onchange="window._setPayrollPrintDate(this.value)">
           <button class="btn btn-primary" style="padding:0.4rem 0.9rem; font-size:0.78rem; font-weight:900; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; border:none; box-shadow:0 2px 8px rgba(99,102,241,0.3);" onclick="window._printAllPayrollBundle()">👁️ Pratinjau & Cetak Bundel Gaji (PDF)</button>
