@@ -1586,19 +1586,58 @@ function renderCriteriaPage() {
 // ==========================================
 // LEADERBOARD (ADMIN)
 // ==========================================
-function renderLeaderboard() {
-  const monthVal = window._leaderboardMonth || '';
-  const users = getUsers();
-  let allRatings = getRatings();
+function getRatingsForPeriod(period) {
+  const allRatings = getRatings();
+  const now = new Date();
+  const curYear = now.getFullYear();
+  const curMonth = String(now.getMonth() + 1).padStart(2, '0');
+  const curYearMonth = `${curYear}-${curMonth}`;
 
-  if (monthVal) {
-    allRatings = allRatings.filter(r => (r.date || '').startsWith(monthVal));
-  }
+  const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastYearMonth = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, '0')}`;
+
+  const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+  const threeMonthsAgoStr = `${threeMonthsAgo.getFullYear()}-${String(threeMonthsAgo.getMonth() + 1).padStart(2, '0')}`;
+
+  return allRatings.filter(r => {
+    if (!r.date) return false;
+    const rYm = r.date.substring(0, 7);
+    if (!period || period === 'this_month') {
+      return rYm === curYearMonth;
+    } else if (period === 'last_month') {
+      return rYm === lastYearMonth;
+    } else if (period === 'quarter') {
+      return rYm >= threeMonthsAgoStr && rYm <= curYearMonth;
+    } else if (period === 'this_year') {
+      return r.date.startsWith(String(curYear));
+    } else if (period === 'all') {
+      return true;
+    } else if (period.length === 7) {
+      return rYm === period;
+    }
+    return true;
+  });
+}
+
+function renderLeaderboard() {
+  window._kpiPeriod = window._kpiPeriod || 'this_month';
+  const period = window._kpiPeriod;
+  const users = getUsers();
+  const periodRatings = getRatingsForPeriod(period);
+
+  const periodLabels = {
+    this_month: 'Bulan Ini',
+    last_month: 'Bulan Lalu',
+    quarter: 'Triwulan (3 Bulan)',
+    this_year: 'Tahun Ini',
+    all: 'Semua Periode'
+  };
+  const labelPeriodStr = periodLabels[period] || period;
 
   if (users.length === 0) return '<div class="fade-in"><div class="card"><p class="text-muted">Tambahkan karyawan terlebih dahulu.</p></div></div>';
 
   const scores = users.map(u => {
-    const r = allRatings.filter(x => x.emp_id === u.emp_id);
+    const r = periodRatings.filter(x => x.emp_id === u.emp_id);
     let avg = 0;
     if (r.length > 0) {
       let totalScores = 0; let totalCount = 0;
@@ -1611,14 +1650,29 @@ function renderLeaderboard() {
       });
       if (totalCount > 0) avg = totalScores / totalCount;
     }
-    return { ...u, avg: parseFloat(avg.toFixed(2)), evalCount: r.length };
-  }).filter(u => u.evalCount > 0 || !monthVal) // Hide employees with 0 evals in specific month, but show all if no filter
+    return { ...u, avg: parseFloat(avg.toFixed(2)), evalCount: r.length, periodRatingsList: r };
+  }).filter(u => u.evalCount > 0 || period === 'all')
     .sort((a, b) => b.avg - a.avg);
 
   return `<div class="fade-in">
-    <div style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
-      <h3 class="text-xl font-bold">Peringkat Kinerja Karyawan</h3>
-      <input type="month" class="input-field" style="width: auto; padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--border);" value="${monthVal}" onchange="window._filterLeaderboard(this.value)">
+    <div style="display:flex;flex-wrap:wrap;gap:0.75rem;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <div>
+        <h3 class="text-xl font-bold">Peringkat & KPI Kinerja Karyawan</h3>
+        <span class="text-xs text-muted">Periode Aktif: <strong>${labelPeriodStr}</strong></span>
+      </div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;">
+        <select id="kpi-period-select" class="form-input form-select" style="padding:0.45rem 0.8rem; font-size:0.8rem; font-weight:700; width:auto; border-radius:var(--radius-md);" onchange="window._onKpiPeriodChange(this.value)">
+          <option value="this_month" ${period === 'this_month' ? 'selected' : ''}>📅 Bulan Ini</option>
+          <option value="last_month" ${period === 'last_month' ? 'selected' : ''}>⏪ Bulan Lalu</option>
+          <option value="quarter" ${period === 'quarter' ? 'selected' : ''}>📊 Triwulan (3 Bulan)</option>
+          <option value="this_year" ${period === 'this_year' ? 'selected' : ''}>📆 Tahun Ini</option>
+          <option value="all" ${period === 'all' ? 'selected' : ''}>🌐 Semua Periode</option>
+        </select>
+        ${scores.length > 0 ? `
+        <button class="btn btn-primary" style="font-weight:bold; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; border:none; box-shadow:0 2px 8px rgba(99,102,241,0.3);" onclick="window._printAllKpiRapors()">
+          👁️ Pratinjau & Cetak semua rapor KPI (${scores.filter(s => s.evalCount > 0).length} PDF)
+        </button>` : ''}
+      </div>
     </div>
     ${scores.length === 0 ? '<div class="card"><p class="text-muted">Belum ada data penilaian pada periode ini.</p></div>' :
       scores.map((s, idx) => {
@@ -1630,16 +1684,263 @@ function renderLeaderboard() {
           <div><strong style="font-size:1.1rem">${esc(s.name)}</strong><br><span class="text-xs text-muted">${esc(s.position)} • ${s.evalCount} evaluasi</span></div>
         </div>
         <div style="text-align:right">
-          <span style="font-size:1.8rem;font-weight:800;color:${color}">${s.avg}</span><span class="text-xs text-muted">/5</span>
+          <span style="font-size:1.8rem;font-weight:800;color:${color}">${s.avg}</span><span class="text-xs text-muted">/5</span><br>
+          ${s.evalCount > 0 ? `<button class="btn btn-outline-primary" style="padding:0.2rem 0.5rem;font-size:0.65rem;margin-top:0.25rem;" onclick="window._printSingleKpiRapor('${s.emp_id}')">🖨️ Cetak Rapor KPI</button>` : ''}
         </div>
       </div>`;
       }).join('')}
   </div>`;
 }
 
-window._filterLeaderboard = (val) => {
-  window._leaderboardMonth = val;
+window._onKpiPeriodChange = (val) => {
+  window._kpiPeriod = val;
   renderCurrentSection();
+};
+
+window._filterLeaderboard = (val) => {
+  window._kpiPeriod = val;
+  renderCurrentSection();
+};
+
+window._printSingleKpiRapor = (empId) => {
+  window._kpiSingleEmp = empId;
+  window._printAllKpiRapors();
+  window._kpiSingleEmp = null;
+};
+
+window._printAllKpiRapors = () => {
+  window._kpiPeriod = window._kpiPeriod || 'this_month';
+  const period = window._kpiPeriod;
+  const users = getUsers();
+  const periodRatings = getRatingsForPeriod(period);
+
+  const periodLabels = {
+    this_month: 'BULAN INI',
+    last_month: 'BULAN LALU',
+    quarter: 'TRIWULAN (3 BULAN)',
+    this_year: 'TAHUN INI',
+    all: 'SEMUA PERIODE'
+  };
+  const labelPeriodStr = periodLabels[period] || period.toUpperCase();
+
+  let scores = users.map(u => {
+    const r = periodRatings.filter(x => x.emp_id === u.emp_id);
+    let avg = 0;
+    if (r.length > 0) {
+      let totalScores = 0; let totalCount = 0;
+      r.forEach(rt => {
+        if (rt.scores) {
+          const vals = Object.values(rt.scores);
+          totalScores += vals.reduce((a, b) => a + b, 0);
+          totalCount += vals.length;
+        }
+      });
+      if (totalCount > 0) avg = totalScores / totalCount;
+    }
+    return { ...u, avg: parseFloat(avg.toFixed(2)), evalCount: r.length, periodRatingsList: r };
+  }).filter(u => u.evalCount > 0)
+    .sort((a, b) => b.avg - a.avg);
+
+  if (window._kpiSingleEmp) {
+    scores = scores.filter(s => s.emp_id === window._kpiSingleEmp);
+  }
+
+  if (scores.length === 0) {
+    showToast(`Belum ada data penilaian pada periode ${labelPeriodStr}`, 'warning');
+    return;
+  }
+
+  const formattedDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  let combinedContainers = '';
+  scores.forEach((s, idx) => {
+    const rank = idx + 1;
+    const empName = s.name;
+    const empPos = s.position || '-';
+    const empId = s.emp_id;
+    const avgScore = s.avg.toFixed(1);
+
+    let criteriaRows = '';
+    const allCrits = getCriteria();
+    const groupedScores = {};
+
+    s.periodRatingsList.forEach(r => {
+      if (r.scores) {
+        Object.entries(r.scores).forEach(([critKey, score]) => {
+          const cDef = allCrits.find(c => c._key === critKey || c.name === critKey);
+          const actualName = cDef ? cDef.name : critKey;
+          const ind = cDef && cDef.indicator ? cDef.indicator : 'Umum';
+          if (!groupedScores[ind]) groupedScores[ind] = [];
+          groupedScores[ind].push({ name: actualName, score });
+        });
+      }
+    });
+
+    Object.keys(groupedScores).forEach(ind => {
+      criteriaRows += `<tr><td colspan="2" style="border:1px solid #cbd5e1;padding:6px 10px;background:#e2e8f0;font-weight:bold;text-transform:uppercase;font-size:11px;color:#0f172a !important;">${esc(ind)}</td></tr>`;
+      groupedScores[ind].forEach(item => {
+        criteriaRows += `
+          <tr>
+            <td style="border:1px solid #cbd5e1;padding:6px 10px;padding-left:16px;font-size:11px;color:#0f172a !important;font-weight:600;">${esc(item.name)}</td>
+            <td style="border:1px solid #cbd5e1;padding:6px 10px;text-align:center;font-weight:bold;font-size:11px;color:#1e40af !important;">${item.score} / 5</td>
+          </tr>
+        `;
+      });
+    });
+
+    const notes = s.periodRatingsList.map(r => r.note).filter(Boolean).join('; ') || 'Tidak ada catatan khusus.';
+
+    if (idx > 0) {
+      combinedContainers += `<div style="page-break-before:always; height:1px;"></div>`;
+    }
+
+    combinedContainers += `
+    <div class="rapor-container" style="margin-bottom:20px;">
+      <div class="kop-header">
+        <div class="kop-title">PT. ESTAFET DWI MASA</div>
+        <div class="kop-subtitle">SPBU 54.634.25 GONTOR MLARAK</div>
+        <div class="kop-address">
+          Kantor Pusat : Ds. Gontor, Kec. Mlarak, Kab. Ponorogo - Jawa Timur 63472<br>
+          Kantor Cabang : Jalan Mayjend Bambang Sugeng Km. 01 Sidojoyo Wonosobo<br>
+          Email: estafetdwimasa@gmail.com
+        </div>
+      </div>
+      
+      <div class="doc-title-box">
+        <div class="doc-title">LEMBAR EVALUASI & RAPOR KPI KINERJA KARYAWAN</div>
+        <div class="doc-subtitle">PERIODE: ${labelPeriodStr} | PERINGKAT: KE-${rank} DARI ${scores.length} KARYAWAN | TANGGAL CETAK: ${formattedDate.toUpperCase()}</div>
+      </div>
+
+      <table class="info-table">
+        <tr>
+          <td class="label">Nama Karyawan</td>
+          <td><strong>${esc(empName)}</strong></td>
+          <td class="label">ID Karyawan</td>
+          <td><strong>${esc(empId)}</strong></td>
+        </tr>
+        <tr>
+          <td class="label">Jabatan / Posisi</td>
+          <td>${esc(empPos)}</td>
+          <td class="label">Skor KPI & Peringkat</td>
+          <td><strong style="color:#1d4ed8; font-size:12px;">⭐ ${avgScore} / 5.0 (Peringkat #${rank})</strong></td>
+        </tr>
+      </table>
+
+      <h4 style="margin:6px 0 4px 0; color:#1e40af; font-size:10.5px; border-bottom:1px solid #cbd5e1; padding-bottom:2px;">A. PENILAIAN KRITERIA & CAPAIAN KPI</h4>
+      <table class="metric-table">
+        <thead>
+          <tr>
+            <th style="border:1px solid #cbd5e1;padding:4px 8px;text-align:left;background:#1e40af;color:#fff !important;">Indikator / Sub-Indikator Kriteria</th>
+            <th style="border:1px solid #cbd5e1;padding:4px 8px;text-align:center;width:90px;background:#1e40af;color:#fff !important;">Skor (1-5)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${criteriaRows || '<tr><td colspan="2" style="padding:6px;text-align:center;">Data kriteria tidak tersedia</td></tr>'}
+          <tr>
+            <td style="border:1px solid #cbd5e1;padding:4px 8px;text-align:right;color:#0f172a !important;"><strong>Rata-Rata Skor KPI:</strong></td>
+            <td style="border:1px solid #cbd5e1;padding:4px 8px;text-align:center;font-size:11px;font-weight:bold;color:#1d4ed8 !important;">⭐ ${avgScore} / 5.0</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div style="border:1px solid #cbd5e1; border-radius:4px; padding:6px 10px; background:#f8fafc !important; color:#0f172a !important; margin-bottom:8px;">
+        <div style="font-weight:bold; font-size:9.5px; color:#1e40af !important; margin-bottom:2px; text-transform:uppercase;">💬 CATATAN EVALUASI KPI:</div>
+        <div style="font-size:10px; color:#0f172a !important; font-style:italic; line-height:1.2;">${esc(notes)}</div>
+      </div>
+
+      <div class="signature-area">
+        <div class="sig-box">
+          <div>Penerima Evaluasi (Karyawan),<br>&nbsp;</div>
+          <div class="sig-space"></div>
+          <div><strong>( ${esc(empName)} )</strong></div>
+          <div style="font-size:8.5px; color:#64748b;">ID: ${esc(empId)}</div>
+        </div>
+        <div class="sig-box">
+          <div>Gontor, ${formattedDate}<br><strong>Manager SPBU Gontor Mlarak</strong>,</div>
+          <div class="sig-space"></div>
+          <div><strong>( ______________________ )</strong></div>
+          <div style="font-size:8.5px; color:#64748b;">PT. ESTAFET DWI MASA</div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  const fullHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Bundel Rapor KPI Karyawan (${labelPeriodStr}) - SPBU Gontor</title>
+  <style id="page-style">
+    @page { size: A4 portrait; margin: 6mm 10mm; }
+  </style>
+  <style>
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; margin: 0; padding: 10px; background: #e2e8f0; font-size: 10.5px; line-height: 1.25; }
+    .rapor-container { background: #fff; max-width: 210mm; margin: 0 auto; padding: 12px 18px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; page-break-inside: avoid; }
+    .no-print-bar { display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 6px 14px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 210mm; margin-left: auto; margin-right: auto; }
+    .no-print-bar button { padding: 5px 12px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 11px; }
+    .btn-print { background: #1d4ed8; color: #fff; }
+    .btn-close { background: #64748b; color: #fff; margin-left: 8px; }
+    .kop-header { text-align: center; border-bottom: 2.5px double #1d4ed8; padding-bottom: 4px; margin-bottom: 6px; width: 100%; }
+    .kop-title { font-family: 'Times New Roman', Times, serif; font-weight: 900; font-size: 26px; color: #1e40af; letter-spacing: 1.2px; line-height: 1.05; margin-bottom: 1px; }
+    .kop-subtitle { font-family: 'Times New Roman', Times, serif; font-weight: 800; font-size: 15px; color: #1d4ed8; margin-top: 1px; letter-spacing: 0.5px; line-height: 1.05; margin-bottom: 2px; }
+    .kop-address { font-size: 9.5px; color: #1e3a8a; margin-top: 1px; line-height: 1.2; }
+    .doc-title-box { text-align: center; margin-bottom: 6px; }
+    .doc-title { font-size: 13px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 1.5px solid #0f172a; display: inline-block; padding-bottom: 1px; }
+    .doc-subtitle { font-size: 9px; color: #64748b; margin-top: 2px; font-weight: 600; }
+    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; }
+    .info-table td { padding: 4px 8px; font-size: 10px; vertical-align: top; border-bottom: 1px solid #e2e8f0; color: #0f172a !important; }
+    .info-table td.label { font-weight: 700; color: #475569 !important; width: 120px; background: #f1f5f9; }
+    .metric-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+    .metric-table th, .metric-table td { border: 1px solid #cbd5e1; padding: 4px 8px; font-size: 9.5px; }
+    .metric-table th { background: #1e40af; color: #ffffff !important; font-weight: 700; text-align: left; }
+    tr { page-break-inside: avoid !important; }
+    .signature-area { margin-top: 10px; display: flex; justify-content: space-between; align-items: flex-end; page-break-inside: avoid; }
+    .sig-box { width: 200px; text-align: center; font-size: 9.5px; color: #0f172a !important; }
+    .sig-space { height: 65px; }
+    @media print {
+      html, body { background: #fff; padding: 0; margin: 0; }
+      .rapor-container { box-shadow: none; padding: 0; max-width: 100% !important; border-radius: 0; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print no-print-bar">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <label style="font-weight:bold; font-size:11.5px; color:#334155;">📐 Ukuran Kertas:</label>
+      <select id="paper-size-select" style="padding:4px 8px; font-size:11px; border-radius:4px; border:1px solid #94a3b8; font-weight:600; cursor:pointer;" onchange="
+        const styleEl = document.getElementById('page-style');
+        const containers = document.querySelectorAll('.rapor-container, .no-print-bar');
+        if (this.value === 'F4') {
+          styleEl.innerHTML = '@page { size: 215mm 330mm portrait; margin: 6mm 10mm; }';
+          containers.forEach(c => c.style.maxWidth = '215mm');
+        } else {
+          styleEl.innerHTML = '@page { size: A4 portrait; margin: 6mm 10mm; }';
+          containers.forEach(c => c.style.maxWidth = '210mm');
+        }
+      ">
+        <option value="A4" selected>A4 (210 x 297 mm)</option>
+        <option value="F4">F4 / Folio (215 x 330 mm)</option>
+      </select>
+    </div>
+    <div>
+      <button class="btn-print" onclick="window.print()">🖨️ Cetak PDF / Print</button>
+      <button class="btn-close" onclick="window.close()">✕ Tutup</button>
+    </div>
+  </div>
+
+  ${combinedContainers}
+</body>
+</html>`;
+
+  const win = window.open('', '_blank');
+  if (win) {
+    win.document.write(fullHtml);
+    win.document.close();
+  } else {
+    showToast('Izinkan pop-up di browser untuk mencetak PDF Rapor KPI.', 'error');
+  }
 };
 
 // ==========================================
