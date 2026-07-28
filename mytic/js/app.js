@@ -4842,6 +4842,103 @@ function _generateEmployeeKpiPDFHtml(empId) {
 </html>`;
 }
 
+window._printAllKpiBundle = () => {
+  const users = getUsers();
+  const period = window._leaderboardPeriod || 'month';
+  const selectedMetric = window._leaderboardMetric || 'composite';
+  const selectedPos = window._leaderboardPos || 'Semua';
+
+  let filteredUsers = users;
+  if (selectedPos !== 'Semua') {
+    filteredUsers = users.filter(u => u.position === selectedPos);
+  }
+
+  const rankedUsers = filteredUsers.map(u => {
+    const kpi = calculateEmployeeKpi(u, period);
+    let targetValue = kpi.compositeScore;
+    if (selectedMetric === 'attendance') targetValue = kpi.attendanceRate;
+    else if (selectedMetric === 'sop') targetValue = kpi.isOperator ? (kpi.sopRate || 0) : 0;
+    else if (selectedMetric === 'rating') targetValue = kpi.ratingScore;
+    else if (selectedMetric === 'debit') targetValue = kpi.debitScore;
+    return { user: u, kpi, targetValue };
+  }).sort((a, b) => b.targetValue - a.targetValue || a.kpi.totalSecLate - b.kpi.totalSecLate);
+
+  if (rankedUsers.length === 0) {
+    showToast('Tidak ada data karyawan untuk dicetak.', 'warning');
+    return;
+  }
+
+  let combinedContainers = '';
+  rankedUsers.forEach((item, idx) => {
+    const u = item.user;
+    if (idx > 0) {
+      combinedContainers += `<div style="page-break-before:always; height:1px;"></div>`;
+    }
+    combinedContainers += _generateEmployeeKpiRaporContainerHtml(u.emp_id, idx + 1, rankedUsers.length, period);
+  });
+
+  const fullHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Bundel Rapor KPI Seluruh Karyawan - SPBU Gontor</title>
+  <style id="page-style">
+    @page { size: A4 portrait; margin: 6mm 10mm; }
+  </style>
+  <style>
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #0f172a !important; margin: 0; padding: 10px; background: #e2e8f0 !important; font-size: 12px; line-height: 1.35; }
+    .rapor-container { background: #ffffff !important; color: #0f172a !important; max-width: 210mm; min-height: 265mm; margin: 0 auto; padding: 22px 28px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; }
+    .no-print-bar { display: flex; justify-content: space-between; align-items: center; background: #ffffff !important; padding: 8px 16px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 210mm; margin-left: auto; margin-right: auto; }
+    .no-print-bar button { padding: 6px 14px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 11.5px; }
+    .btn-print { background: #1d4ed8; color: #fff; }
+    .btn-close { background: #64748b; color: #fff; margin-left: 8px; }
+    tr { page-break-inside: avoid !important; }
+    @media print {
+      html, body { background: #fff !important; padding: 0; margin: 0; }
+      .rapor-container { box-shadow: none; padding: 0; max-width: 100% !important; border-radius: 0; min-height: 265mm; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print no-print-bar">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <label style="font-weight:bold; font-size:11.5px; color:#334155;">📐 Ukuran Kertas:</label>
+      <select id="paper-size-select" style="padding:4px 8px; font-size:11px; border-radius:4px; border:1px solid #94a3b8; font-weight:600; cursor:pointer;" onchange="
+        const styleEl = document.getElementById('page-style');
+        const containers = document.querySelectorAll('.rapor-container, .no-print-bar');
+        if (this.value === 'F4') {
+          styleEl.innerHTML = '@page { size: 215mm 330mm portrait; margin: 6mm 10mm; }';
+          containers.forEach(c => c.style.maxWidth = '215mm');
+        } else {
+          styleEl.innerHTML = '@page { size: A4 portrait; margin: 6mm 10mm; }';
+          containers.forEach(c => c.style.maxWidth = '210mm');
+        }
+      ">
+        <option value="A4" selected>A4 (210 x 297 mm)</option>
+        <option value="F4">F4 / Folio (215 x 330 mm)</option>
+      </select>
+    </div>
+    <div>
+      <button class="btn-print" onclick="window.print()">🖨️ Cetak PDF / Print</button>
+      <button class="btn-close" onclick="window.close()">✕ Tutup</button>
+    </div>
+  </div>
+
+  ${combinedContainers}
+</body>
+</html>`;
+
+  const win = window.open('', '_blank');
+  if (win) {
+    win.document.write(fullHtml);
+    win.document.close();
+  } else {
+    showToast('Izinkan pop-up di browser untuk mencetak PDF Rapor.', 'error');
+  }
+};
+
 window._printEmployeeKpiPDF = (empId) => {
   const pdfHtml = _generateEmployeeKpiPDFHtml(empId);
   if (!pdfHtml) { showToast('Karyawan tidak ditemukan', 'error'); return; }
