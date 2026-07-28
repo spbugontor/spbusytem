@@ -7229,7 +7229,7 @@ window._printAllPayrollBundle = () => {
           const qty = Number(bbm[p.id] || 0);
           const mult = Number(p.mult_internal !== undefined ? p.mult_internal : 0);
           const amt = qty * mult;
-          return \`<tr><td>\${esc(p.name.toUpperCase())}</td><td style="text-align:right;">\${fmtNum(qty)}</td><td style="text-align:center;">Rp \${mult}</td><td style="text-align:right;">Rp \${mult}</td><td style="text-align:right; font-weight:600;">\${fmt(amt)}</td></tr>\`;
+          return `<tr><td>${esc(p.name.toUpperCase())}</td><td style="text-align:right;">${fmtNum(qty)}</td><td style="text-align:center;">Rp ${mult}</td><td style="text-align:right;">Rp ${mult}</td><td style="text-align:right; font-weight:600;">${fmt(amt)}</td></tr>`;
         }).join('')}
       </tbody>
       <tfoot><tr><td colspan="4" style="text-align:right;">TOTAL PW INTERNAL</td><td style="text-align:right; color:#059669; font-size:11px; font-weight:800;">${fmt(pwInt.total)}</td></tr></tfoot>
@@ -7268,7 +7268,7 @@ window._printAllPayrollBundle = () => {
           const qty = Number(bbm[p.id] || 0);
           const mult = Number(p.mult_audit !== undefined ? p.mult_audit : 0);
           const amt = qty * mult;
-          return \`<tr><td>\${esc(p.name.toUpperCase())}</td><td style="text-align:right;">\${fmtNum(qty)}</td><td></td><td style="text-align:right;">Rp \${mult}</td><td style="text-align:right;">Rp -</td><td style="text-align:right; font-weight:600;">\${fmt(amt)}</td></tr>\`;
+          return `<tr><td>${esc(p.name.toUpperCase())}</td><td style="text-align:right;">${fmtNum(qty)}</td><td></td><td style="text-align:right;">Rp ${mult}</td><td style="text-align:right;">Rp -</td><td style="text-align:right; font-weight:600;">${fmt(amt)}</td></tr>`;
         }).join('')}
       </tbody>
       <tfoot>
@@ -7313,7 +7313,7 @@ window._printAllPayrollBundle = () => {
     <table>
       <thead><tr><th style="width:30px;">NO</th><th>NAMA KARYAWAN</th><th>JABATAN</th><th style="text-align:right; width:150px;">INSENTIF (PW)</th></tr></thead>
       <tbody>
-        ${auditUsers.map((u, idx) => \`<tr><td style="text-align:center;">\${idx + 1}</td><td><strong>\${esc(u.name)}</strong></td><td style="text-align:center;">\${esc(u.position || '-')}</td><td style="text-align:right; font-weight:600;">\${fmt(isPositionMatch(u.position, settings.pw_aud_group1_positions) ? pwMgrAdminEach : pwStaffEach)}</td></tr>\`).join('')}
+        ${auditUsers.map((u, idx) => `<tr><td style="text-align:center;">${idx + 1}</td><td><strong>${esc(u.name)}</strong></td><td style="text-align:center;">${esc(u.position || '-')}</td><td style="text-align:right; font-weight:600;">${fmt(isPositionMatch(u.position, settings.pw_aud_group1_positions) ? pwMgrAdminEach : pwStaffEach)}</td></tr>`).join('')}
       </tbody>
       <tfoot><tr><td colspan="3" style="text-align:right;">TOTAL</td><td style="text-align:right; color:#059669; font-size:11px;">${fmt(pwAudit.total)}</td></tr></tfoot>
     </table>
