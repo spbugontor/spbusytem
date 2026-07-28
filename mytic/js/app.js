@@ -5338,7 +5338,7 @@ function renderInternalPayrollTab() {
           <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printInternalPayrollSummary()">🖨️ Rekap Gaji (1 Hal)</button>
           <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printOvertimeSummary()">⏰ Rekap Lemburan</button>
           <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printSavingsSummary()">🏦 Rekap Tabungan</button>
-          <button class="btn btn-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._printEnvelopeSlips('A4', 4)">✂️ Cetak 4 Slip / A4</button>
+          <button class="btn btn-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._printEnvelopeSlips('A4', 6)">✂️ Cetak 6 Slip / A4</button>
           <button class="btn btn-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._printEnvelopeSlips('F4', 6)">✂️ Cetak 6 Slip / F4</button>
         </div>
       </div>
@@ -5532,7 +5532,7 @@ function renderPayrollSettingsTab() {
 // PRINT ROUTINES FOR PAYROLL MODULE
 // ==========================================
 
-window._printEnvelopeSlips = (paperSize = 'A4', perPage = 4) => {
+window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
   const month = window._payrollMonth || getTodayStr().substring(0, 7);
   const printDate = window._payrollPrintDate || getTodayStr();
   const settings = getPayrollSettings();
