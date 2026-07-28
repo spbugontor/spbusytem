@@ -6933,6 +6933,7 @@ window._printAllPayrollBundle = () => {
   let managerObj = allUsers.find(u => (u.position || '').toLowerCase() === 'manager' || (u.name || '').toLowerCase().includes('pedri'));
   if (!managerObj) managerObj = { emp_id: 'M1', name: settings.name_audit_manager, position: 'Manager' };
   const staffUsers = allUsers.filter(u => u.emp_id !== managerObj.emp_id);
+  const auditUsers = [managerObj, ...staffUsers];
   const group1AuditUsers = auditUsers.filter(u => isPositionMatch(u.position, settings.pw_aud_group1_positions));
   const group2AuditUsers = auditUsers.filter(u => !isPositionMatch(u.position, settings.pw_aud_group1_positions));
 
