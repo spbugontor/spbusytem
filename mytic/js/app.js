@@ -5642,8 +5642,8 @@ window._printAllPayrollBundle = () => {
     </div>`;
 
     currentPageSlips.push(slipHTML);
-    if (currentPageSlips.length === 6 || idx === users.length - 1) {
-      slipsHTML += `<div class="page-grid per-page-6">${currentPageSlips.join('')}</div>`;
+    if (currentPageSlips.length === 4 || idx === users.length - 1) {
+      slipsHTML += `<div class="page-grid per-page-4">${currentPageSlips.join('')}</div>`;
       currentPageSlips = [];
     }
   });
@@ -5841,7 +5841,8 @@ window._printAllPayrollBundle = () => {
       th { background-color: #0f172a ; background: #0f172a ; color: #ffffff ; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 9px; letter-spacing: 0.3px; }
       tfoot td { background-color: #f1f5f9 ; background: #f1f5f9 ; font-weight: 800; color: #0f172a ; }
 
-      .page-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; grid-gap: 6px; width: 100%; min-height: 95vh; padding: 4px; box-sizing: border-box; page-break-after: always; }
+      .page-grid { display: grid; grid-template-columns: 1fr 1fr; grid-gap: 6px; width: 100%; min-height: 95vh; padding: 4px; box-sizing: border-box; page-break-after: always; }
+      .per-page-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
       .per-page-6 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; }
       .slip-card { border: 1px solid #e2e8f0 ; border-radius: 8px; display: flex; flex-direction: column; background-color: #ffffff ; background: #ffffff ; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; position: relative; color: #0f172a ; }
       .slip-top-bar { height: 4px; background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7); }
