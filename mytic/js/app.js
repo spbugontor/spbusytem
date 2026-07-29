@@ -5,7 +5,7 @@ import { db, auth, ref, onValue, set, push, remove, update, get, child, signInWi
 // ==========================================
 let currentUser = null;
 let currentSection = 'dashboard';
-let allData = { users: {}, transactions: {}, leaves: {}, savings: {}, violations: {}, ratings: {}, criteria: {}, leave_types: {}, settings: {}, pin_history: {}, payroll: {}, payroll_settings: {} };
+let allData = { users: {}, transactions: {}, leaves: {}, savings: {}, violations: {}, ratings: {}, criteria: {}, leave_types: {}, settings: {}, pin_history: {}, payroll: {}, payroll_settings: {}, certificates: {} };
 
 // ==========================================
 // THEME
@@ -8895,7 +8895,7 @@ window._certEmpChanged = () => {
   }
 };
 
-window._printCertificate = () => {
+window._printCertificate = async () => {
   const name = ($('cert-name') || {}).value || 'Nama Karyawan';
   const position = ($('cert-position') || {}).value || 'Jabatan';
   const regNo = ($('cert-regno') || {}).value || '';
@@ -8914,13 +8914,15 @@ window._printCertificate = () => {
 
   // Save certificate to database
   const certId = 'cert_' + Date.now();
-  if (!allData.certificates) allData.certificates = {};
-  allData.certificates[certId] = {
-    reg_no: regNo, emp_name: name, position, title, description: desc,
-    period, issue_date: dateStr, sign1_name: sign1Name, sign1_title: sign1Title,
-    sign2_name: sign2Name, sign2_title: sign2Title, theme, created_at: new Date().toISOString()
-  };
-  saveData();
+  try {
+    await set(ref(db, 'certificates/' + certId), {
+      reg_no: regNo, emp_name: name, position, title, description: desc,
+      period, issue_date: dateStr, sign1_name: sign1Name, sign1_title: sign1Title,
+      sign2_name: sign2Name, sign2_title: sign2Title, theme, created_at: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('Failed to save certificate to Firebase:', err);
+  }
 
   // Theme color palettes
   const themes = {
