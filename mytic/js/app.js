@@ -9019,17 +9019,10 @@ window._printCertificate = async () => {
 
       .cert-page {
         width: 297mm; height: 210mm; position: relative; overflow: hidden;
-        background: ${t.bodyBg};
+        background: radial-gradient(circle, #ffffff 40%, ${t.bodyBg} 100%);
         display: flex; align-items: center; justify-content: center;
       }
 
-      /* Watermark pattern */
-      .cert-page::before {
-        content: ''; position: absolute; inset: 0; z-index: 0;
-        background-image:
-          repeating-linear-gradient(45deg, ${t.guillocheLine} 0px, ${t.guillocheLine} 1px, transparent 1px, transparent 18px),
-          repeating-linear-gradient(-45deg, ${t.guillocheLine} 0px, ${t.guillocheLine} 1px, transparent 1px, transparent 18px);
-      }
       .cert-page::after {
         content: 'SPBU GONTOR'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg);
         font-family: 'Cinzel', serif; font-size: 110px; font-weight: 900; letter-spacing: 15px;
