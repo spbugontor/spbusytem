@@ -9058,8 +9058,8 @@ window._printCertificate = async () => {
       }
 
       .cert-content {
-        text-align: center; padding: 20px 50px; position: relative; z-index: 2;
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        text-align: center; padding: 40px 60px; position: relative; z-index: 2;
+        display: flex; flex-direction: column; align-items: center; justify-content: space-between;
         height: 100%; width: 100%;
       }
 
@@ -9091,81 +9091,87 @@ window._printCertificate = async () => {
         <div class="cert-content">
 
           <!-- Reg Number Top Right -->
-          <div style="position:absolute;top:20px;right:30px;font-family:'Inter',sans-serif;font-size:9px;color:#94a3b8;letter-spacing:0.5px;">
+          <div style="position:absolute;top:24px;right:36px;font-family:'Inter',sans-serif;font-size:10px;color:#94a3b8;letter-spacing:0.5px;">
             No. ${esc(regNo)}
           </div>
 
-          <!-- Header -->
-          <div style="margin-bottom:8px;">
-            <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:${t.headerColor};letter-spacing:3px;text-transform:uppercase;">SPBU Gontor 54.634.25 Mlarak</div>
+          <!-- Top section container -->
+          <div style="display:flex; flex-direction:column; align-items:center; width:100%;">
+            <!-- Header -->
+            <div style="margin-top:10px; margin-bottom:10px;">
+              <div style="font-family:'Cinzel',serif;font-size:15px;font-weight:700;color:${t.headerColor};letter-spacing:3.5px;text-transform:uppercase;">SPBU Gontor 54.634.25 Mlarak</div>
+            </div>
+
+            <!-- Decorative line -->
+            <svg width="400" height="12" style="margin-bottom:15px;">
+              <defs><linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:transparent"/><stop offset="20%" style="stop-color:${t.borderGrad1}"/><stop offset="50%" style="stop-color:${t.borderGrad2}"/><stop offset="80%" style="stop-color:${t.borderGrad1}"/><stop offset="100%" style="stop-color:transparent"/></linearGradient></defs>
+              <line x1="0" y1="5" x2="400" y2="5" stroke="url(#lineGrad)" stroke-width="1.5"/>
+              <circle cx="200" cy="5" r="3" fill="${t.borderGrad1}"/>
+              <line x1="0" y1="9" x2="400" y2="9" stroke="url(#lineGrad)" stroke-width="0.8"/>
+            </svg>
+
+            <!-- Title -->
+            <div style="font-family:'Cinzel Decorative',serif;font-size:40px;font-weight:900;color:${t.headerColor};letter-spacing:5px;line-height:1.2;margin-bottom:6px;background:linear-gradient(135deg,${t.borderGrad1},${t.borderGrad2},${t.borderGrad3});-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+              SERTIFIKAT PENGHARGAAN
+            </div>
+            <div style="font-family:'Cinzel',serif;font-size:16px;font-weight:500;color:${t.headerColor};letter-spacing:6px;margin-bottom:20px;opacity:0.7;">
+              CERTIFICATE OF EXCELLENCE
+            </div>
+
+            <!-- Subtitle -->
+            <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#475569;font-style:italic;margin-bottom:15px;">
+              Diberikan dengan bangga dan penghargaan setinggi-tingginya kepada:
+            </div>
           </div>
 
-          <!-- Decorative line -->
-          <svg width="350" height="12" style="margin-bottom:12px;">
-            <defs><linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:transparent"/><stop offset="20%" style="stop-color:${t.borderGrad1}"/><stop offset="50%" style="stop-color:${t.borderGrad2}"/><stop offset="80%" style="stop-color:${t.borderGrad1}"/><stop offset="100%" style="stop-color:transparent"/></linearGradient></defs>
-            <line x1="0" y1="5" x2="350" y2="5" stroke="url(#lineGrad)" stroke-width="1.5"/>
-            <circle cx="175" cy="5" r="3" fill="${t.borderGrad1}"/>
-            <line x1="0" y1="9" x2="350" y2="9" stroke="url(#lineGrad)" stroke-width="0.8"/>
-          </svg>
+          <!-- Middle recipient section -->
+          <div style="display:flex; flex-direction:column; align-items:center; width:100%; margin: 10px 0;">
+            <!-- Recipient Name -->
+            <div style="font-family:'Great Vibes',cursive;font-size:62px;color:${t.nameColor};margin-bottom:4px;line-height:1.1;">
+              ${esc(name)}
+            </div>
+            <div style="font-family:'Cinzel',serif;font-size:15px;font-weight:600;color:${t.headerColor};letter-spacing:3.5px;text-transform:uppercase;margin-bottom:16px;">
+              ${esc(position)}
+            </div>
 
-          <!-- Title -->
-          <div style="font-family:'Cinzel Decorative',serif;font-size:32px;font-weight:900;color:${t.headerColor};letter-spacing:4px;line-height:1.2;margin-bottom:4px;background:linear-gradient(135deg,${t.borderGrad1},${t.borderGrad2},${t.borderGrad3});-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
-            SERTIFIKAT PENGHARGAAN
-          </div>
-          <div style="font-family:'Cinzel',serif;font-size:14px;font-weight:500;color:${t.headerColor};letter-spacing:5px;margin-bottom:16px;opacity:0.7;">
-            CERTIFICATE OF EXCELLENCE
-          </div>
+            <!-- Award decorative line -->
+            <svg width="320" height="8" style="margin-bottom:15px;">
+              <defs><linearGradient id="lineGrad2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:transparent"/><stop offset="30%" style="stop-color:${t.borderGrad1}"/><stop offset="50%" style="stop-color:${t.borderGrad2}"/><stop offset="70%" style="stop-color:${t.borderGrad1}"/><stop offset="100%" style="stop-color:transparent"/></linearGradient></defs>
+              <line x1="0" y1="4" x2="320" y2="4" stroke="url(#lineGrad2)" stroke-width="1"/>
+            </svg>
 
-          <!-- Subtitle -->
-          <div style="font-family:'Cormorant Garamond',serif;font-size:15px;color:#475569;font-style:italic;margin-bottom:12px;">
-            Diberikan dengan bangga dan penghargaan setinggi-tingginya kepada:
-          </div>
+            <!-- Award Title -->
+            <div style="font-family:'Cinzel',serif;font-size:18px;font-weight:800;color:${t.titleColor};letter-spacing:2px;margin-bottom:15px;padding:8px 30px;border:1.5px solid ${t.borderGrad1}44;border-radius:4px;background:linear-gradient(135deg,${t.borderGrad1}08,${t.borderGrad2}15,${t.borderGrad1}08);">
+              " ${esc(title)} "
+            </div>
 
-          <!-- Recipient Name -->
-          <div style="font-family:'Great Vibes',cursive;font-size:48px;color:${t.nameColor};margin-bottom:2px;line-height:1.2;">
-            ${esc(name)}
-          </div>
-          <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:600;color:${t.headerColor};letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;">
-            ${esc(position)}
-          </div>
+            <!-- Description -->
+            <div style="font-family:'Cormorant Garamond',serif;font-size:16px;color:#27272a;max-width:760px;line-height:1.75;margin-bottom:12px;font-weight:400;">
+              ${esc(desc)}
+            </div>
 
-          <!-- Award decorative line -->
-          <svg width="280" height="8" style="margin-bottom:10px;">
-            <defs><linearGradient id="lineGrad2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:transparent"/><stop offset="30%" style="stop-color:${t.borderGrad1}"/><stop offset="50%" style="stop-color:${t.borderGrad2}"/><stop offset="70%" style="stop-color:${t.borderGrad1}"/><stop offset="100%" style="stop-color:transparent"/></linearGradient></defs>
-            <line x1="0" y1="4" x2="280" y2="4" stroke="url(#lineGrad2)" stroke-width="1"/>
-          </svg>
-
-          <!-- Award Title -->
-          <div style="font-family:'Cinzel',serif;font-size:16px;font-weight:800;color:${t.titleColor};letter-spacing:2px;margin-bottom:8px;padding:6px 24px;border:1.5px solid ${t.borderGrad1}44;border-radius:4px;background:linear-gradient(135deg,${t.borderGrad1}08,${t.borderGrad2}15,${t.borderGrad1}08);">
-            " ${esc(title)} "
-          </div>
-
-          <!-- Description -->
-          <div style="font-family:'Cormorant Garamond',serif;font-size:13.5px;color:#334155;max-width:650px;line-height:1.65;margin-bottom:10px;">
-            ${esc(desc)}
-          </div>
-
-          <!-- Period -->
-          <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:600;color:${t.headerColor};letter-spacing:2px;margin-bottom:16px;">
-            ${esc(period)}
+            <!-- Period -->
+            <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:600;color:${t.headerColor};letter-spacing:2px;margin-bottom:10px;">
+              ${esc(period)}
+            </div>
           </div>
 
           <!-- Seal + Signatures Row -->
-          <div style="display:flex;align-items:flex-end;justify-content:center;gap:60px;width:100%;margin-top:auto;">
+          <div style="display:flex;align-items:flex-end;justify-content:center;gap:80px;width:100%;margin-top:auto;padding-bottom:10px;">
             <!-- Seal -->
             <div style="display:flex;flex-direction:column;align-items:center;">
               ${sealSVG}
             </div>
 
             <!-- Signatures -->
-            <div style="display:flex;gap:80px;">
+            <div style="display:flex;gap:100px;">
               ${sign1Block}
               ${sign2Block}
             </div>
           </div>
 
           <!-- Bottom date -->
-          <div style="position:absolute;bottom:18px;right:30px;font-family:'Cormorant Garamond',serif;font-size:11px;color:#64748b;">
+          <div style="position:absolute;bottom:24px;right:36px;font-family:'Cormorant Garamond',serif;font-size:12px;color:#64748b;">
             Ponorogo, ${formattedDate}
           </div>
 
