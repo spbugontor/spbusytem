@@ -6426,8 +6426,15 @@ function renderInternalPayrollTab() {
         <h4 style="font-size:1rem; font-weight:800; color:var(--text-main); margin:0;">📋 Daftar Gaji Internal Karyawan (${users.length} Karyawan)</h4>
         <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
           <button class="btn btn-warning" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" ${isLocked ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="window._openMassAllowanceModal()">⚡ Input Massal Gaji & Tunjangan</button>
+          <label style="font-size:0.75rem; font-weight:700;">Tgl Cetak:</label>
           <input type="date" value="${printDate}" class="form-input" style="padding:0.3rem 0.5rem; font-size:0.75rem; width:135px;" onchange="window._setPayrollPrintDate(this.value)">
           <button class="btn btn-primary" style="padding:0.4rem 0.9rem; font-size:0.78rem; font-weight:900; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; border:none; box-shadow:0 2px 8px rgba(99,102,241,0.3);" onclick="window._printAllPayrollBundle()">👁️ Pratinjau & Cetak Bundel Gaji (PDF)</button>
+          <button class="btn btn-outline-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._exportToExcel('internal')">📊 Export Excel</button>
+          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printInternalPayrollSummary()">🖨️ Rekap Gaji (1 Hal)</button>
+          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printOvertimeSummary()">⏰ Rekap Lemburan</button>
+          <button class="btn btn-outline-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="window._printSavingsSummary()">🏦 Rekap Tabungan</button>
+          <button class="btn btn-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._printEnvelopeSlips('A4', 6)">✂️ Cetak 6 Slip / A4</button>
+          <button class="btn btn-success" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" onclick="window._printEnvelopeSlips('F4', 6)">✂️ Cetak 6 Slip / F4</button>
         </div>
       </div>
 
@@ -6795,6 +6802,11 @@ window._printAllPayrollBundle = () => {
   const pctOpr = (settings.pw_int_group2_percent || 80) / 100;
   const rawPwSpvAdmin = (pwInt.total * pctSpv) / g1Count;
   const rawPwOprCs = (pwInt.total * pctOpr) / g2Count;
+
+  const g1IntPosText = getPositionsLabel(settings.pw_int_group1_positions, settings.pw_int_group1_name);
+  const g2IntPosText = getPositionsLabel(settings.pw_int_group2_positions, settings.pw_int_group2_name);
+  const g1AudPosText = getPositionsLabel(settings.pw_aud_group1_positions, settings.pw_aud_group1_name);
+  const g2AudPosText = getPositionsLabel(settings.pw_aud_group2_positions, settings.pw_aud_group2_name);
 
   // --- 1. SLIP GAJI AMPLOP (6 SLIP / PAGE) ---
   let slipsHTML = '';
