@@ -945,6 +945,22 @@ function renderAdminDashboard() {
       </button>
     </div>
 
+    <!-- CERTIFICATE GENERATOR QUICK BANNER -->
+    <div class="card mb-6" style="padding:1.25rem; background:var(--surface); border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; cursor:pointer;" onclick="window._openCertificateModal()">
+      <div style="display:flex; align-items:center; gap:1rem;">
+        <div style="width:46px; height:46px; border-radius:12px; background:linear-gradient(135deg, #bf953f, #fcf6ba); display:flex; align-items:center; justify-content:center; font-size:1.4rem; box-shadow:0 4px 12px rgba(191,149,63,0.4);">
+          🎖️
+        </div>
+        <div>
+          <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-main);">Sertifikat Penghargaan Karyawan</h3>
+          <p class="text-xs text-muted">Buat & cetak sertifikat penghargaan premium untuk karyawan berprestasi</p>
+        </div>
+      </div>
+      <button class="btn" style="padding:0.5rem 1.25rem; font-size:0.85rem; font-weight:800; background:linear-gradient(135deg,#b38728,#fcf6ba,#bf953f); color:#1a1a2e; border:none; border-radius:8px; box-shadow:0 4px 12px rgba(179,135,40,0.3);" onclick="event.stopPropagation(); window._openCertificateModal()">
+        Buat Sertifikat ➔
+      </button>
+    </div>
+
     <!-- GRAPHICS GRID -->
     <div class="graphics-grid">
       <div class="card chart-card-wide" style="padding:1.25rem;">
@@ -8720,6 +8736,458 @@ window._printOvertimeSummary = () => {
   </html>`);
   win.document.close();
 };
+
+// ==========================================
+// CERTIFICATE GENERATOR (SERTIFIKAT PENGHARGAAN)
+// ==========================================
+
+function getNextCertNumber(month) {
+  const certs = allData.certificates || {};
+  const prefix = `CERT/SPBU-5463425/${month.replace('-', '/')}`;
+  let maxNum = 0;
+  Object.values(certs).forEach(c => {
+    if (c.reg_no && c.reg_no.startsWith(prefix)) {
+      const parts = c.reg_no.split('/');
+      const num = parseInt(parts[parts.length - 1]) || 0;
+      if (num > maxNum) maxNum = num;
+    }
+  });
+  return String(maxNum + 1).padStart(3, '0');
+}
+
+function generateCertRegNo(month) {
+  const [y, m] = month.split('-');
+  const seq = getNextCertNumber(month);
+  return `CERT/SPBU-5463425/${y}/${m}/${seq}`;
+}
+
+window._openCertificateModal = (empId) => {
+  const users = getUsers();
+  const settings = getPayrollSettings();
+  const now = new Date();
+  const currentMonth = now.toISOString().substring(0, 7);
+  const todayStr = now.toISOString().substring(0, 10);
+  const regNo = generateCertRegNo(currentMonth);
+
+  let selectedUser = empId ? users.find(u => u.emp_id === empId) : null;
+
+  const titlePresets = [
+    'KARYAWAN TERBAIK (EMPLOYEE OF THE MONTH)',
+    'PENGHARGAAN KEDISIPLINAN & KEPATUHAN SOP',
+    'OPERATOR TERDISIPLIN',
+    'OPERATOR TELITI & JUJUR',
+    'KARYAWAN PALING BERDEDIKASI',
+    'PENGHARGAAN LOYALITAS KERJA'
+  ];
+
+  const descPresets = [
+    'Atas dedikasi luar biasa, kedisiplinan tinggi, serta kepatuhan penuh terhadap standar operasional dan pelayanan prima di SPBU Gontor 54.634.25 Mlarak.',
+    'Atas integritas, kejujuran, dan kontribusi nyata dalam menjaga kualitas pelayanan SPBU Gontor 54.634.25 Mlarak.',
+    'Atas konsistensi kehadiran, ketepatan waktu, dan profesionalisme kerja yang patut menjadi teladan bagi seluruh karyawan SPBU Gontor 54.634.25 Mlarak.'
+  ];
+
+  const periodMonth = now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+
+  const modal = document.createElement('div');
+  modal.id = 'cert-modal-overlay';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px);';
+  modal.innerHTML = `
+  <div style="background:var(--surface,#1e293b);border-radius:16px;max-width:680px;width:100%;max-height:90vh;overflow-y:auto;padding:1.75rem;box-shadow:0 25px 50px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.08);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+      <h3 style="margin:0;font-size:1.15rem;font-weight:800;color:var(--text-main,#f1f5f9);">🎖️ Buat Sertifikat Penghargaan</h3>
+      <button onclick="document.getElementById('cert-modal-overlay').remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-muted,#94a3b8);">✕</button>
+    </div>
+
+    <div style="display:grid;gap:0.85rem;">
+      <div>
+        <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted,#94a3b8);display:block;margin-bottom:0.3rem;">Pilih Karyawan</label>
+        <select id="cert-emp" class="form-input" style="width:100%;padding:0.5rem;font-size:0.85rem;" onchange="window._certEmpChanged()">
+          <option value="">-- Pilih Karyawan atau Input Manual --</option>
+          ${users.map(u => `<option value="${u.emp_id}" ${selectedUser && u.emp_id === selectedUser.emp_id ? 'selected' : ''}>${esc(u.name)} — ${esc(u.position || '-')}</option>`).join('')}
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+        <div>
+          <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted,#94a3b8);display:block;margin-bottom:0.3rem;">Nama Penerima</label>
+          <input id="cert-name" class="form-input" style="width:100%;padding:0.5rem;font-size:0.85rem;box-sizing:border-box;" value="${selectedUser ? esc(selectedUser.name) : ''}" placeholder="Nama Lengkap Karyawan">
+        </div>
+        <div>
+          <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted,#94a3b8);display:block;margin-bottom:0.3rem;">Jabatan</label>
+          <input id="cert-position" class="form-input" style="width:100%;padding:0.5rem;font-size:0.85rem;box-sizing:border-box;" value="${selectedUser ? esc(selectedUser.position || '') : ''}" placeholder="Jabatan">
+        </div>
+      </div>
+      <div>
+        <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted,#94a3b8);display:block;margin-bottom:0.3rem;">No. Registrasi Sertifikat</label>
+        <input id="cert-regno" class="form-input" style="width:100%;padding:0.5rem;font-size:0.85rem;box-sizing:border-box;" value="${regNo}">
+      </div>
+      <div>
+        <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted,#94a3b8);display:block;margin-bottom:0.3rem;">Judul Penghargaan</label>
+        <select id="cert-title-preset" class="form-input" style="width:100%;padding:0.5rem;font-size:0.85rem;margin-bottom:0.4rem;" onchange="if(this.value)document.getElementById('cert-title').value=this.value;">
+          <option value="">-- Pilih Preset atau Ketik Sendiri --</option>
+          ${titlePresets.map(t => `<option value="${t}">${t}</option>`).join('')}
+        </select>
+        <input id="cert-title" class="form-input" style="width:100%;padding:0.5rem;font-size:0.85rem;box-sizing:border-box;" value="${titlePresets[0]}" placeholder="Judul Penghargaan Kustom">
+      </div>
+      <div>
+        <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted,#94a3b8);display:block;margin-bottom:0.3rem;">Keterangan / Narasi Penghargaan</label>
+        <select id="cert-desc-preset" class="form-input" style="width:100%;padding:0.5rem;font-size:0.85rem;margin-bottom:0.4rem;" onchange="if(this.value)document.getElementById('cert-desc').value=this.value;">
+          <option value="">-- Pilih Preset atau Ketik Sendiri --</option>
+          ${descPresets.map(d => `<option value="${d}">${d.substring(0, 80)}...</option>`).join('')}
+        </select>
+        <textarea id="cert-desc" class="form-input" rows="3" style="width:100%;padding:0.5rem;font-size:0.85rem;box-sizing:border-box;resize:vertical;">${descPresets[0]}</textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+        <div>
+          <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted,#94a3b8);display:block;margin-bottom:0.3rem;">Periode Penghargaan</label>
+          <input id="cert-period" class="form-input" style="width:100%;padding:0.5rem;font-size:0.85rem;box-sizing:border-box;" value="Periode ${periodMonth}">
+        </div>
+        <div>
+          <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted,#94a3b8);display:block;margin-bottom:0.3rem;">Tanggal Terbit</label>
+          <input id="cert-date" type="date" class="form-input" style="width:100%;padding:0.5rem;font-size:0.85rem;box-sizing:border-box;" value="${todayStr}">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+        <div>
+          <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted,#94a3b8);display:block;margin-bottom:0.3rem;">Penandatangan 1 (Nama)</label>
+          <input id="cert-sign1-name" class="form-input" style="width:100%;padding:0.5rem;font-size:0.85rem;box-sizing:border-box;" value="${esc(settings.name_finance_manager || 'Pedri Fauzi')}">
+          <input id="cert-sign1-title" class="form-input" style="width:100%;padding:0.5rem;font-size:0.8rem;box-sizing:border-box;margin-top:0.3rem;" value="Manager" placeholder="Jabatan">
+        </div>
+        <div>
+          <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted,#94a3b8);display:block;margin-bottom:0.3rem;">Penandatangan 2 (Opsional)</label>
+          <input id="cert-sign2-name" class="form-input" style="width:100%;padding:0.5rem;font-size:0.85rem;box-sizing:border-box;" value="" placeholder="Nama Direktur / Supervisor">
+          <input id="cert-sign2-title" class="form-input" style="width:100%;padding:0.5rem;font-size:0.8rem;box-sizing:border-box;margin-top:0.3rem;" value="" placeholder="Jabatan">
+        </div>
+      </div>
+      <div>
+        <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted,#94a3b8);display:block;margin-bottom:0.3rem;">Tema Desain Sertifikat</label>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.82rem;color:var(--text-main,#f1f5f9);">
+            <input type="radio" name="cert-theme" value="gold" checked> 🏆 Royal Gold Classic
+          </label>
+          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.82rem;color:var(--text-main,#f1f5f9);">
+            <input type="radio" name="cert-theme" value="navy"> 🔷 Navy Gold Executive
+          </label>
+          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.82rem;color:var(--text-main,#f1f5f9);">
+            <input type="radio" name="cert-theme" value="emerald"> 💎 Emerald Leadership
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1.25rem;flex-wrap:wrap;">
+      <button class="btn" style="padding:0.5rem 1.25rem;font-size:0.85rem;background:#334155;color:#cbd5e1;border:none;border-radius:8px;cursor:pointer;font-weight:700;" onclick="document.getElementById('cert-modal-overlay').remove()">Batal</button>
+      <button class="btn" style="padding:0.5rem 1.25rem;font-size:0.85rem;background:linear-gradient(135deg,#b38728,#fcf6ba,#bf953f);color:#1a1a2e;border:none;border-radius:8px;cursor:pointer;font-weight:900;box-shadow:0 4px 15px rgba(179,135,40,0.4);" onclick="window._printCertificate()">🎖️ Pratinjau & Cetak Sertifikat</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+};
+
+window._certEmpChanged = () => {
+  const sel = $('cert-emp');
+  if (!sel || !sel.value) return;
+  const users = getUsers();
+  const u = users.find(x => x.emp_id === sel.value);
+  if (u) {
+    const nameInp = $('cert-name');
+    const posInp = $('cert-position');
+    if (nameInp) nameInp.value = u.name || '';
+    if (posInp) posInp.value = u.position || '';
+  }
+};
+
+window._printCertificate = () => {
+  const name = ($('cert-name') || {}).value || 'Nama Karyawan';
+  const position = ($('cert-position') || {}).value || 'Jabatan';
+  const regNo = ($('cert-regno') || {}).value || '';
+  const title = ($('cert-title') || {}).value || 'KARYAWAN TERBAIK';
+  const desc = ($('cert-desc') || {}).value || '';
+  const period = ($('cert-period') || {}).value || '';
+  const dateStr = ($('cert-date') || {}).value || '';
+  const sign1Name = ($('cert-sign1-name') || {}).value || '';
+  const sign1Title = ($('cert-sign1-title') || {}).value || '';
+  const sign2Name = ($('cert-sign2-name') || {}).value || '';
+  const sign2Title = ($('cert-sign2-title') || {}).value || '';
+  const themeRadio = document.querySelector('input[name="cert-theme"]:checked');
+  const theme = themeRadio ? themeRadio.value : 'gold';
+
+  const formattedDate = dateStr ? new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+
+  // Save certificate to database
+  const certId = 'cert_' + Date.now();
+  if (!allData.certificates) allData.certificates = {};
+  allData.certificates[certId] = {
+    reg_no: regNo, emp_name: name, position, title, description: desc,
+    period, issue_date: dateStr, sign1_name: sign1Name, sign1_title: sign1Title,
+    sign2_name: sign2Name, sign2_title: sign2Title, theme, created_at: new Date().toISOString()
+  };
+  saveData();
+
+  // Theme color palettes
+  const themes = {
+    gold: {
+      borderGrad1: '#bf953f', borderGrad2: '#fcf6ba', borderGrad3: '#b38728', borderGrad4: '#aa771c',
+      headerColor: '#8B6914', titleColor: '#1a1a2e', nameColor: '#8B6914', bodyBg: '#fffef7',
+      sealColor1: '#bf953f', sealColor2: '#fcf6ba', cornerAccent: '#d4a843',
+      guillocheLine: 'rgba(191,149,63,0.12)', watermarkColor: 'rgba(191,149,63,0.04)'
+    },
+    navy: {
+      borderGrad1: '#1e3a5f', borderGrad2: '#2c5282', borderGrad3: '#bf953f', borderGrad4: '#aa771c',
+      headerColor: '#1e3a5f', titleColor: '#1a1a2e', nameColor: '#1e3a5f', bodyBg: '#fafbff',
+      sealColor1: '#bf953f', sealColor2: '#fcf6ba', cornerAccent: '#2c5282',
+      guillocheLine: 'rgba(30,58,95,0.1)', watermarkColor: 'rgba(30,58,95,0.03)'
+    },
+    emerald: {
+      borderGrad1: '#065f46', borderGrad2: '#059669', borderGrad3: '#bf953f', borderGrad4: '#aa771c',
+      headerColor: '#065f46', titleColor: '#1a1a2e', nameColor: '#065f46', bodyBg: '#f7fdfb',
+      sealColor1: '#bf953f', sealColor2: '#fcf6ba', cornerAccent: '#059669',
+      guillocheLine: 'rgba(6,95,70,0.1)', watermarkColor: 'rgba(6,95,70,0.03)'
+    }
+  };
+  const t = themes[theme] || themes.gold;
+
+  // Build guilloche SVG pattern
+  const guillocheCornerSVG = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style="position:absolute;width:200px;height:200px;opacity:0.6;">
+      <defs>
+        <linearGradient id="gc1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:${t.borderGrad1};stop-opacity:0.5"/>
+          <stop offset="100%" style="stop-color:${t.borderGrad3};stop-opacity:0.2"/>
+        </linearGradient>
+      </defs>
+      ${Array.from({length: 12}, (_, i) => {
+        const angle = i * 7.5;
+        return `<ellipse cx="0" cy="0" rx="${80 + i * 5}" ry="${30 + i * 3}" fill="none" stroke="url(#gc1)" stroke-width="0.5" transform="rotate(${angle})"/>`;
+      }).join('')}
+    </svg>`;
+
+  // Build gold seal SVG
+  const sealSVG = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" style="width:140px;height:140px;">
+      <defs>
+        <linearGradient id="sealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:${t.sealColor1}"/>
+          <stop offset="30%" style="stop-color:${t.sealColor2}"/>
+          <stop offset="60%" style="stop-color:${t.sealColor1}"/>
+          <stop offset="100%" style="stop-color:#aa771c"/>
+        </linearGradient>
+        <filter id="sealShadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.25)"/></filter>
+      </defs>
+      <g filter="url(#sealShadow)">
+        <path d="${generateStarPath(90, 90, 75, 60, 24)}" fill="url(#sealGrad)" stroke="#aa771c" stroke-width="1"/>
+        <circle cx="90" cy="90" r="52" fill="none" stroke="#aa771c" stroke-width="1.5"/>
+        <circle cx="90" cy="90" r="48" fill="none" stroke="${t.sealColor2}" stroke-width="0.8"/>
+        <circle cx="90" cy="90" r="44" fill="none" stroke="#aa771c" stroke-width="0.5" stroke-dasharray="3 2"/>
+      </g>
+      <text x="90" y="72" text-anchor="middle" fill="#1a1a2e" font-family="Cinzel,serif" font-size="8" font-weight="700" letter-spacing="1.5">EXCELLENCE</text>
+      <text x="90" y="86" text-anchor="middle" fill="#1a1a2e" font-family="Cinzel,serif" font-size="7" font-weight="600" letter-spacing="1">AWARD</text>
+      <line x1="60" y1="92" x2="120" y2="92" stroke="#aa771c" stroke-width="0.8"/>
+      <text x="90" y="104" text-anchor="middle" fill="#1a1a2e" font-family="Cinzel,serif" font-size="6" font-weight="600" letter-spacing="0.8">SPBU GONTOR</text>
+      <text x="90" y="115" text-anchor="middle" fill="#1a1a2e" font-family="Cinzel,serif" font-size="5.5" letter-spacing="0.5">54.634.25</text>
+    </svg>`;
+
+  // Signature block
+  const sign1Block = sign1Name ? `
+    <div style="text-align:center;min-width:220px;">
+      <div style="height:80px;"></div>
+      <div style="border-bottom:2px solid ${t.headerColor};width:200px;margin:0 auto;"></div>
+      <div style="font-family:'Cinzel',serif;font-weight:700;font-size:13px;color:${t.titleColor};margin-top:6px;">${esc(sign1Name)}</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:11px;color:#64748b;margin-top:2px;">${esc(sign1Title)}</div>
+    </div>` : '';
+
+  const sign2Block = sign2Name ? `
+    <div style="text-align:center;min-width:220px;">
+      <div style="height:80px;"></div>
+      <div style="border-bottom:2px solid ${t.headerColor};width:200px;margin:0 auto;"></div>
+      <div style="font-family:'Cinzel',serif;font-weight:700;font-size:13px;color:${t.titleColor};margin-top:6px;">${esc(sign2Name)}</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:11px;color:#64748b;margin-top:2px;">${esc(sign2Title)}</div>
+    </div>` : '';
+
+  const win = window.open('', '_blank');
+  if (!win) { alert('Popup diblokir. Izinkan popup untuk mencetak sertifikat.'); return; }
+  win.document.write(`<!DOCTYPE html>
+  <html lang="id">
+  <head>
+    <meta charset="UTF-8">
+    <title>Sertifikat Penghargaan - ${esc(name)}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700;800;900&family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      @page { size: A4 landscape; margin: 0; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { width: 297mm; height: 210mm; overflow: hidden; background: #fff; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+
+      .cert-page {
+        width: 297mm; height: 210mm; position: relative; overflow: hidden;
+        background: ${t.bodyBg};
+        display: flex; align-items: center; justify-content: center;
+      }
+
+      /* Watermark pattern */
+      .cert-page::before {
+        content: ''; position: absolute; inset: 0; z-index: 0;
+        background-image:
+          repeating-linear-gradient(45deg, ${t.guillocheLine} 0px, ${t.guillocheLine} 1px, transparent 1px, transparent 18px),
+          repeating-linear-gradient(-45deg, ${t.guillocheLine} 0px, ${t.guillocheLine} 1px, transparent 1px, transparent 18px);
+      }
+      .cert-page::after {
+        content: 'SPBU GONTOR'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg);
+        font-family: 'Cinzel', serif; font-size: 110px; font-weight: 900; letter-spacing: 15px;
+        color: ${t.watermarkColor}; z-index: 0; white-space: nowrap; pointer-events: none;
+      }
+
+      .cert-frame {
+        position: relative; z-index: 1;
+        width: calc(297mm - 24mm); height: calc(210mm - 24mm);
+        border: 4px solid ${t.borderGrad1};
+        border-image: linear-gradient(135deg, ${t.borderGrad1}, ${t.borderGrad2}, ${t.borderGrad3}, ${t.borderGrad2}, ${t.borderGrad4}) 1;
+        padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      }
+
+      /* Inner decorative border */
+      .cert-inner {
+        position: absolute; inset: 6px;
+        border: 1.5px solid ${t.borderGrad3};
+        border-image: linear-gradient(135deg, ${t.borderGrad3}66, ${t.borderGrad2}88, ${t.borderGrad1}66) 1;
+        pointer-events: none;
+      }
+      .cert-inner::after {
+        content: ''; position: absolute; inset: 4px;
+        border: 0.8px solid ${t.borderGrad3}44;
+        pointer-events: none;
+      }
+
+      .cert-content {
+        text-align: center; padding: 20px 50px; position: relative; z-index: 2;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        height: 100%; width: 100%;
+      }
+
+      .corner-tl { position: absolute; top: -5px; left: -5px; transform: rotate(0deg); }
+      .corner-tr { position: absolute; top: -5px; right: -5px; transform: rotate(90deg); }
+      .corner-bl { position: absolute; bottom: -5px; left: -5px; transform: rotate(270deg); }
+      .corner-br { position: absolute; bottom: -5px; right: -5px; transform: rotate(180deg); }
+
+      .no-print { display: block; }
+      @media print { .no-print { display: none !important; } }
+    </style>
+  </head>
+  <body>
+    <div class="no-print" style="padding:10px 16px;background:#0f172a;border-bottom:3px solid #bf953f;display:flex;justify-content:flex-end;gap:10px;align-items:center;">
+      <button onclick="window.print()" style="padding:8px 20px;background:linear-gradient(135deg,#b38728,#fcf6ba,#bf953f);color:#1a1a2e;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:900;font-family:'Inter',sans-serif;">🖨️ CETAK / PRINT PDF</button>
+      <button onclick="window.close()" style="padding:8px 20px;background:#334155;color:#cbd5e1;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-family:'Inter',sans-serif;">✕ Tutup</button>
+    </div>
+
+    <div class="cert-page">
+      <div class="cert-frame">
+        <div class="cert-inner"></div>
+
+        <!-- Corner Ornaments -->
+        <div class="corner-tl">${guillocheCornerSVG}</div>
+        <div class="corner-tr">${guillocheCornerSVG}</div>
+        <div class="corner-bl">${guillocheCornerSVG}</div>
+        <div class="corner-br">${guillocheCornerSVG}</div>
+
+        <div class="cert-content">
+
+          <!-- Reg Number Top Right -->
+          <div style="position:absolute;top:20px;right:30px;font-family:'Inter',sans-serif;font-size:9px;color:#94a3b8;letter-spacing:0.5px;">
+            No. ${esc(regNo)}
+          </div>
+
+          <!-- Header -->
+          <div style="margin-bottom:8px;">
+            <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:${t.headerColor};letter-spacing:3px;text-transform:uppercase;">SPBU Gontor 54.634.25 Mlarak</div>
+          </div>
+
+          <!-- Decorative line -->
+          <svg width="350" height="12" style="margin-bottom:12px;">
+            <defs><linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:transparent"/><stop offset="20%" style="stop-color:${t.borderGrad1}"/><stop offset="50%" style="stop-color:${t.borderGrad2}"/><stop offset="80%" style="stop-color:${t.borderGrad1}"/><stop offset="100%" style="stop-color:transparent"/></linearGradient></defs>
+            <line x1="0" y1="5" x2="350" y2="5" stroke="url(#lineGrad)" stroke-width="1.5"/>
+            <circle cx="175" cy="5" r="3" fill="${t.borderGrad1}"/>
+            <line x1="0" y1="9" x2="350" y2="9" stroke="url(#lineGrad)" stroke-width="0.8"/>
+          </svg>
+
+          <!-- Title -->
+          <div style="font-family:'Cinzel Decorative',serif;font-size:32px;font-weight:900;color:${t.headerColor};letter-spacing:4px;line-height:1.2;margin-bottom:4px;background:linear-gradient(135deg,${t.borderGrad1},${t.borderGrad2},${t.borderGrad3});-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+            SERTIFIKAT PENGHARGAAN
+          </div>
+          <div style="font-family:'Cinzel',serif;font-size:14px;font-weight:500;color:${t.headerColor};letter-spacing:5px;margin-bottom:16px;opacity:0.7;">
+            CERTIFICATE OF EXCELLENCE
+          </div>
+
+          <!-- Subtitle -->
+          <div style="font-family:'Cormorant Garamond',serif;font-size:15px;color:#475569;font-style:italic;margin-bottom:12px;">
+            Diberikan dengan bangga dan penghargaan setinggi-tingginya kepada:
+          </div>
+
+          <!-- Recipient Name -->
+          <div style="font-family:'Great Vibes',cursive;font-size:48px;color:${t.nameColor};margin-bottom:2px;line-height:1.2;">
+            ${esc(name)}
+          </div>
+          <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:600;color:${t.headerColor};letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;">
+            ${esc(position)}
+          </div>
+
+          <!-- Award decorative line -->
+          <svg width="280" height="8" style="margin-bottom:10px;">
+            <defs><linearGradient id="lineGrad2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:transparent"/><stop offset="30%" style="stop-color:${t.borderGrad1}"/><stop offset="50%" style="stop-color:${t.borderGrad2}"/><stop offset="70%" style="stop-color:${t.borderGrad1}"/><stop offset="100%" style="stop-color:transparent"/></linearGradient></defs>
+            <line x1="0" y1="4" x2="280" y2="4" stroke="url(#lineGrad2)" stroke-width="1"/>
+          </svg>
+
+          <!-- Award Title -->
+          <div style="font-family:'Cinzel',serif;font-size:16px;font-weight:800;color:${t.titleColor};letter-spacing:2px;margin-bottom:8px;padding:6px 24px;border:1.5px solid ${t.borderGrad1}44;border-radius:4px;background:linear-gradient(135deg,${t.borderGrad1}08,${t.borderGrad2}15,${t.borderGrad1}08);">
+            " ${esc(title)} "
+          </div>
+
+          <!-- Description -->
+          <div style="font-family:'Cormorant Garamond',serif;font-size:13.5px;color:#334155;max-width:650px;line-height:1.65;margin-bottom:10px;">
+            ${esc(desc)}
+          </div>
+
+          <!-- Period -->
+          <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:600;color:${t.headerColor};letter-spacing:2px;margin-bottom:16px;">
+            ${esc(period)}
+          </div>
+
+          <!-- Seal + Signatures Row -->
+          <div style="display:flex;align-items:flex-end;justify-content:center;gap:60px;width:100%;margin-top:auto;">
+            <!-- Seal -->
+            <div style="display:flex;flex-direction:column;align-items:center;">
+              ${sealSVG}
+            </div>
+
+            <!-- Signatures -->
+            <div style="display:flex;gap:80px;">
+              ${sign1Block}
+              ${sign2Block}
+            </div>
+          </div>
+
+          <!-- Bottom date -->
+          <div style="position:absolute;bottom:18px;right:30px;font-family:'Cormorant Garamond',serif;font-size:11px;color:#64748b;">
+            Ponorogo, ${formattedDate}
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </body>
+  </html>`);
+  win.document.close();
+};
+
+// Helper: generate star/seal path for SVG
+function generateStarPath(cx, cy, outerR, innerR, points) {
+  let path = '';
+  for (let i = 0; i < points * 2; i++) {
+    const angle = (i * Math.PI) / points - Math.PI / 2;
+    const r = i % 2 === 0 ? outerR : innerR;
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+    path += (i === 0 ? 'M' : 'L') + x.toFixed(2) + ',' + y.toFixed(2);
+  }
+  return path + 'Z';
+}
 
 // ==========================================
 // START
