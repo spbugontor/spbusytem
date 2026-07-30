@@ -4351,21 +4351,58 @@ function calculateEmployeeKpi(emp, period) {
   const startMonthStr = startStr.slice(0, 7);
   const endMonthStr = endStr.slice(0, 7);
 
-  const isRecordInPeriod = (dateVal) => {
-    if (!dateVal) return true;
-    const dStr = dateVal.toString().trim();
-    if (/^\d{4}-\d{2}$/.test(dStr)) {
-      return dStr >= startMonthStr && dStr <= endMonthStr;
+  const parseDateToISO = (val) => {
+    if (val === null || val === undefined || val === '') return '';
+    if (typeof val === 'number') {
+      try {
+        const d = new Date(val);
+        if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+      } catch { return ''; }
     }
-    const dMonth = dStr.slice(0, 7);
-    return (dStr >= startStr && dStr <= endStr) || (dMonth >= startMonthStr && dMonth <= endMonthStr);
+    const str = val.toString().trim();
+    if (!str) return '';
+    if (/^\d{10,13}$/.test(str)) {
+      try {
+        const num = Number(str);
+        const d = new Date(num > 1e11 ? num : num * 1000);
+        if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+      } catch { return ''; }
+    }
+    if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+      return str.slice(0, 10);
+    }
+    if (/^\d{4}-\d{2}$/.test(str)) {
+      return str + '-01';
+    }
+    const ddmmyyyy = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if (ddmmyyyy) {
+      const d = ddmmyyyy[1].padStart(2, '0');
+      const m = ddmmyyyy[2].padStart(2, '0');
+      const y = ddmmyyyy[3];
+      return `${y}-${m}-${d}`;
+    }
+    try {
+      const d = new Date(str);
+      if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+    } catch {}
+    return '';
+  };
+
+  const isRecordInPeriod = (...dateCandidates) => {
+    for (const val of dateCandidates) {
+      const iso = parseDateToISO(val);
+      if (iso) {
+        return iso >= startStr && iso <= endStr;
+      }
+    }
+    return false;
   };
 
   const isOperator = (emp.position || '').toString().toLowerCase() === 'operator';
 
   // 1. Attendance Punctuality Score (0 - 100)
   const absensiRecords = Object.values(allData.absensi_records || {}).filter(r => {
-    return isRecordForUser(r, emp) && isRecordInPeriod(r.date || r.tanggal);
+    return isRecordForUser(r, emp) && isRecordInPeriod(r.date, r.tanggal, r.timestamp);
   });
 
   let onTimeCount = 0;
@@ -4421,7 +4458,7 @@ function calculateEmployeeKpi(emp, period) {
   let sopRate = null;
   if (isOperator) {
     const sopRecords = Object.values(allData.sop_checklists || allData.ceklis_sop || {}).filter(s => {
-      return isRecordForUser(s, emp) && isRecordInPeriod(s.date || s.tanggal || s.created_at);
+      return isRecordForUser(s, emp) && isRecordInPeriod(s.date, s.tanggal, s.created_at, s.timestamp);
     });
 
     let completedSop = 0;
@@ -4435,7 +4472,7 @@ function calculateEmployeeKpi(emp, period) {
 
   // 3. Performance Appraisal Rating (0 - 100)
   const ratingRecords = Object.values(allData.ratings || allData.penilaian_kinerja || {}).filter(rt => {
-    return isRecordForUser(rt, emp) && isRecordInPeriod(rt.date || rt.tanggal || rt.created_at);
+    return isRecordForUser(rt, emp) && isRecordInPeriod(rt.date, rt.tanggal, rt.created_at, rt.timestamp);
   });
 
   let sumRating = 0;
@@ -4468,7 +4505,7 @@ function calculateEmployeeKpi(emp, period) {
 
   // 4. Violation Penalty / Track Record (0 - 100)
   const violationRecords = Object.values(allData.violations || allData.pelanggaran || {}).filter(v => {
-    return isRecordForUser(v, emp) && v.status !== 'Dibatalkan' && isRecordInPeriod(v.date || v.tanggal || v.start_date || v.created_at);
+    return isRecordForUser(v, emp) && v.status !== 'Dibatalkan' && isRecordInPeriod(v.date, v.tanggal, v.start_date, v.created_at, v.timestamp);
   });
 
   let penalty = 0;
@@ -4486,7 +4523,7 @@ function calculateEmployeeKpi(emp, period) {
   // 5. Debit / Tunggakan Akuntabilitas Keuangan (0 - 100)
   const totalDebitAmt = Math.max(0, calcBalance(emp.emp_id));
   const allTxns = getTxns(emp.emp_id);
-  const periodTxns = allTxns.filter(t => isRecordInPeriod(t.date || t.tanggal || t.timestamp));
+  const periodTxns = allTxns.filter(t => isRecordInPeriod(t.date, t.tanggal, t.timestamp, t.created_at));
   const periodTxCount = periodTxns.length;
   const allDebitTxns = allTxns.filter(t => t.type === 'debit');
 
@@ -4691,7 +4728,7 @@ function _generateEmployeeKpiRaporContainerHtml(empId, forcedRank, forcedTotalUs
           <tr>
             <td style="text-align:center; font-weight:bold; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">3</td>
             <td style="color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">
-              <strong style="color:#0f172a !important;">⭐ Rating Evaluasi Kinerja Atasan (Per Criteria)</strong><br>
+              <strong style="color:#0f172a !important;">⭐ Rating Evaluasi Kinerja</strong><br>
               <span style="font-size:9.5px; color:#475569 !important;">Rating rata-rata: ${kpi.avgRating} dari 5.0 Bintang</span>
             </td>
             <td style="text-align:center; font-weight:bold; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.avgRating} / 5.0</td>
