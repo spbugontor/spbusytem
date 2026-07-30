@@ -4369,7 +4369,9 @@ function calculateEmployeeKpi(emp, period) {
   });
 
   let onTimeCount = 0;
+  let totalLateMinutes = 0;
   let totalSecLate = 0;
+  let lateCount = 0;
   let totalWorkDays = absensiRecords.length;
 
   const ABSENSI_SHIFTS = {
@@ -4382,9 +4384,17 @@ function calculateEmployeeKpi(emp, period) {
   absensiRecords.forEach(r => {
     const st = (r.status || r.type || '').toString().toLowerCase();
     if (r.clock_in && r.clock_in !== '-' && !['sakit', 'izin', 'cuti', 'libur', 'off'].includes(st)) {
-      if ((r.late_minutes || 0) <= 0 && st !== 'terlambat') {
+      const lateMins = Number(r.late_minutes || 0);
+      const isLate = lateMins > 0 || st === 'terlambat';
+
+      if (!isLate) {
         onTimeCount++;
+      } else {
+        lateCount++;
+        totalLateMinutes += Math.max(lateMins, 0);
       }
+
+      // Calculate raw clock-in diff for tie-breaker ranking only
       let parts = (r.clock_in || '').split(':').map(Number);
       if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
         let h = parts[0], m = parts[1], s = parts[2] || 0;
@@ -4475,8 +4485,11 @@ function calculateEmployeeKpi(emp, period) {
 
   // 5. Debit / Tunggakan Akuntabilitas Keuangan (0 - 100)
   const totalDebitAmt = Math.max(0, calcBalance(emp.emp_id));
-  const debitTxns = getTxns(emp.emp_id).filter(t => t.type === 'debit' && isRecordInPeriod(t.date || t.tanggal || t.timestamp));
-  const debitTxCount = debitTxns.length;
+  const allDebitTxns = getTxns(emp.emp_id).filter(t => t.type === 'debit');
+  const periodDebitTxns = allDebitTxns.filter(t => isRecordInPeriod(t.date || t.tanggal || t.timestamp));
+  const debitTxCount = allDebitTxns.length;
+  const periodDebitTxCount = periodDebitTxns.length;
+  const periodDebitAmt = periodDebitTxns.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
 
   const nominalPenalty = Math.floor(totalDebitAmt / 50000) * 5;
   const frequencyPenalty = debitTxCount * 5;
@@ -4507,11 +4520,17 @@ function calculateEmployeeKpi(emp, period) {
     isOperator,
     attendanceRate,
     totalSecLate,
+    totalLateMinutes,
+    lateCount,
+    onTimeCount,
+    totalWorkDays,
     sopRate,
     avgRating: avgRatingNum.toFixed(1),
     ratingScore,
     totalDebitAmt,
     debitTxCount,
+    periodDebitTxCount,
+    periodDebitAmt,
     debitScore,
     trackRecordScore,
     violationCount: violationRecords.length,
@@ -4656,7 +4675,7 @@ function _generateEmployeeKpiRaporContainerHtml(empId, forcedRank, forcedTotalUs
             <td style="text-align:center; font-weight:bold; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">1</td>
             <td style="color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">
               <strong style="color:#0f172a !important;">⏱️ Kedisiplinan Kehadiran (Sistem Absensi)</strong><br>
-              <span style="font-size:9.5px; color:#475569 !important;">Hadir tepat waktu: ${kpi.attendanceRate}% | Total Keterlambatan: ${Math.round(kpi.totalSecLate / 60)} Menit</span>
+              <span style="font-size:9.5px; color:#475569 !important;">Tepat Waktu: ${kpi.onTimeCount}x | Terlambat: ${kpi.lateCount}x (${kpi.totalLateMinutes} Menit) | Total Hari Kerja: ${kpi.totalWorkDays}</span>
             </td>
             <td style="text-align:center; font-weight:bold; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.attendanceRate}%</td>
             <td style="text-align:center; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.isOperator ? '30%' : '45%'}</td>
@@ -4686,7 +4705,7 @@ function _generateEmployeeKpiRaporContainerHtml(empId, forcedRank, forcedTotalUs
             <td style="text-align:center; font-weight:bold; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">4</td>
             <td style="color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">
               <strong style="color:#0f172a !important;">💳 Akuntabilitas Keuangan (Tunggakan & Tabungan)</strong><br>
-              <span style="font-size:9.5px; color:#475569 !important;">Total Tunggakan: ${fmt(kpi.totalDebitAmt)} (${kpi.debitTxCount} Catatan Transaksi)</span>
+              <span style="font-size:9.5px; color:#475569 !important;">Saldo Tunggakan: ${fmt(kpi.totalDebitAmt)} (${kpi.debitTxCount} Total Transaksi) | Periode Ini: ${fmt(kpi.periodDebitAmt)} (${kpi.periodDebitTxCount} Transaksi)</span>
             </td>
             <td style="text-align:center; font-weight:bold; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.totalDebitAmt > 0 ? fmt(kpi.totalDebitAmt) : 'Clean (Rp 0)'}</td>
             <td style="text-align:center; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.isOperator ? '15%' : '5%'}</td>
