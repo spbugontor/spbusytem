@@ -4485,14 +4485,13 @@ function calculateEmployeeKpi(emp, period) {
 
   // 5. Debit / Tunggakan Akuntabilitas Keuangan (0 - 100)
   const totalDebitAmt = Math.max(0, calcBalance(emp.emp_id));
-  const allDebitTxns = getTxns(emp.emp_id).filter(t => t.type === 'debit');
-  const periodDebitTxns = allDebitTxns.filter(t => isRecordInPeriod(t.date || t.tanggal || t.timestamp));
-  const debitTxCount = allDebitTxns.length;
-  const periodDebitTxCount = periodDebitTxns.length;
-  const periodDebitAmt = periodDebitTxns.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+  const allTxns = getTxns(emp.emp_id);
+  const periodTxns = allTxns.filter(t => isRecordInPeriod(t.date || t.tanggal || t.timestamp));
+  const periodTxCount = periodTxns.length;
+  const allDebitTxns = allTxns.filter(t => t.type === 'debit');
 
   const nominalPenalty = Math.floor(totalDebitAmt / 50000) * 5;
-  const frequencyPenalty = debitTxCount * 5;
+  const frequencyPenalty = allDebitTxns.length * 5;
   const debitScore = Math.max(0, 100 - (nominalPenalty + frequencyPenalty));
 
   // 6. FAIR Composite KPI Score Calculation:
@@ -4528,9 +4527,7 @@ function calculateEmployeeKpi(emp, period) {
     avgRating: avgRatingNum.toFixed(1),
     ratingScore,
     totalDebitAmt,
-    debitTxCount,
-    periodDebitTxCount,
-    periodDebitAmt,
+    periodTxCount,
     debitScore,
     trackRecordScore,
     violationCount: violationRecords.length,
@@ -4705,7 +4702,7 @@ function _generateEmployeeKpiRaporContainerHtml(empId, forcedRank, forcedTotalUs
             <td style="text-align:center; font-weight:bold; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">4</td>
             <td style="color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">
               <strong style="color:#0f172a !important;">💳 Akuntabilitas Keuangan (Tunggakan & Tabungan)</strong><br>
-              <span style="font-size:9.5px; color:#475569 !important;">Saldo Tunggakan: ${fmt(kpi.totalDebitAmt)} (${kpi.debitTxCount} Total Transaksi) | Periode Ini: ${fmt(kpi.periodDebitAmt)} (${kpi.periodDebitTxCount} Transaksi)</span>
+              <span style="font-size:9.5px; color:#475569 !important;">Saldo Tunggakan: ${fmt(kpi.totalDebitAmt)} (${kpi.periodTxCount} Transaksi)</span>
             </td>
             <td style="text-align:center; font-weight:bold; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.totalDebitAmt > 0 ? fmt(kpi.totalDebitAmt) : 'Clean (Rp 0)'}</td>
             <td style="text-align:center; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.isOperator ? '15%' : '5%'}</td>
