@@ -7898,6 +7898,9 @@ window._printAuditDocuments = () => {
   const g1AudCount = Math.max(1, group1AuditUsers.length);
   const g2AudCount = Math.max(1, group2AuditUsers.length);
 
+  const g1AudPosText = getPositionsLabel(settings.pw_aud_group1_positions, settings.pw_aud_group1_name);
+  const g2AudPosText = getPositionsLabel(settings.pw_aud_group2_positions, settings.pw_aud_group2_name);
+
   const pctMgrAud = (settings.pw_aud_group1_percent || 20) / 100;
   const pctStafAud = (settings.pw_aud_group2_percent || 80) / 100;
   const pwMgrAdminEach = (pwAudit.total * pctMgrAud) / g1AudCount;
