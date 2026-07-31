@@ -9015,9 +9015,9 @@ window._printCertificate = async () => {
   };
   const t = themes[theme] || themes.gold;
 
-  // Build Islamic corner SVG pattern with 8-pointed Rub el Hizb geometric star
+  // Build clean corner SVG pattern without square boxes
   const islamicCornerSVG = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" style="position:absolute;width:150px;height:150px;opacity:0.85;pointer-events:none;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" style="position:absolute;width:140px;height:140px;opacity:0.8;pointer-events:none;">
       <defs>
         <linearGradient id="isGrad" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" style="stop-color:${t.borderGrad1}"/>
@@ -9025,43 +9025,34 @@ window._printCertificate = async () => {
           <stop offset="100%" style="stop-color:${t.borderGrad4}"/>
         </linearGradient>
       </defs>
-      <path d="M 8 8 L 140 8 L 140 18 L 18 18 L 18 140 L 8 140 Z" fill="url(#isGrad)" opacity="0.25"/>
-      <g transform="translate(42, 42)">
-        <rect x="-18" y="-18" width="36" height="36" fill="none" stroke="url(#isGrad)" stroke-width="1.4" transform="rotate(0)"/>
-        <rect x="-18" y="-18" width="36" height="36" fill="none" stroke="url(#isGrad)" stroke-width="1.4" transform="rotate(45)"/>
-        <rect x="-12" y="-12" width="24" height="24" fill="none" stroke="${t.borderGrad1}" stroke-width="1" transform="rotate(22.5)"/>
-        <circle cx="0" cy="0" r="5" fill="url(#isGrad)"/>
-        <line x1="18" y1="0" x2="85" y2="0" stroke="url(#isGrad)" stroke-width="1.2"/>
-        <line x1="0" y1="18" x2="0" y2="85" stroke="url(#isGrad)" stroke-width="1.2"/>
-      </g>
-      <path d="M 18 90 Q 50 50 90 18" fill="none" stroke="url(#isGrad)" stroke-width="1.2"/>
-      <path d="M 18 105 Q 65 65 105 18" fill="none" stroke="url(#isGrad)" stroke-width="0.7" stroke-dasharray="3 3"/>
+      <path d="M 8 8 L 130 8 L 130 16 L 16 16 L 16 130 L 8 130 Z" fill="url(#isGrad)" opacity="0.3"/>
+      <path d="M 22 22 L 95 22 L 95 25 L 25 25 L 25 95 L 22 95 Z" fill="url(#isGrad)" opacity="0.5"/>
+      <path d="M 22 80 Q 45 45 80 22" fill="none" stroke="url(#isGrad)" stroke-width="1.2"/>
+      <path d="M 22 95 Q 60 60 95 22" fill="none" stroke="url(#isGrad)" stroke-width="0.8" stroke-dasharray="3 3"/>
     </svg>`;
 
-  // Build Islamic gold seal SVG
+  // Build Gold Seal SVG with large, bold, high-contrast SPBU GONTOR 54.634.25 text
   const sealSVG = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" style="width:140px;height:140px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style="width:150px;height:150px;">
       <defs>
         <linearGradient id="sealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" style="stop-color:${t.sealColor1}"/>
-          <stop offset="30%" style="stop-color:${t.sealColor2}"/>
-          <stop offset="60%" style="stop-color:${t.sealColor1}"/>
+          <stop offset="35%" style="stop-color:${t.sealColor2}"/>
+          <stop offset="70%" style="stop-color:${t.sealColor1}"/>
           <stop offset="100%" style="stop-color:${t.borderGrad4}"/>
         </linearGradient>
-        <filter id="sealShadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.25)"/></filter>
+        <filter id="sealShadow"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="rgba(0,0,0,0.3)"/></filter>
       </defs>
       <g filter="url(#sealShadow)">
-        <path d="${generateStarPath(90, 90, 76, 62, 16)}" fill="url(#sealGrad)" stroke="${t.borderGrad4}" stroke-width="1.2"/>
-        <rect x="52" y="52" width="76" height="76" fill="none" stroke="${t.borderGrad4}" stroke-width="1.2" transform="rotate(0 90 90)"/>
-        <rect x="52" y="52" width="76" height="76" fill="none" stroke="${t.borderGrad4}" stroke-width="1.2" transform="rotate(45 90 90)"/>
-        <circle cx="90" cy="90" r="48" fill="${t.bodyBg}" stroke="${t.borderGrad4}" stroke-width="1"/>
-        <circle cx="90" cy="90" r="44" fill="none" stroke="${t.sealColor1}" stroke-width="0.8" stroke-dasharray="3 2"/>
+        <path d="${generateStarPath(100, 100, 88, 70, 20)}" fill="url(#sealGrad)" stroke="${t.borderGrad4}" stroke-width="1.5"/>
+        <circle cx="100" cy="100" r="62" fill="${t.bodyBg}" stroke="${t.borderGrad4}" stroke-width="1.5"/>
+        <circle cx="100" cy="100" r="56" fill="none" stroke="${t.borderGrad1}" stroke-width="1" stroke-dasharray="4 2"/>
       </g>
-      <text x="90" y="70" text-anchor="middle" fill="${t.titleColor}" font-family="Cinzel,serif" font-size="8" font-weight="700" letter-spacing="1.5">EXCELLENCE</text>
-      <text x="90" y="84" text-anchor="middle" fill="${t.titleColor}" font-family="Cinzel,serif" font-size="7" font-weight="600" letter-spacing="1">AWARD</text>
-      <line x1="60" y1="90" x2="120" y2="90" stroke="${t.borderGrad4}" stroke-width="0.8"/>
-      <text x="90" y="102" text-anchor="middle" fill="${t.titleColor}" font-family="Cinzel,serif" font-size="6" font-weight="700" letter-spacing="0.8">SPBU GONTOR</text>
-      <text x="90" y="113" text-anchor="middle" fill="${t.titleColor}" font-family="Cinzel,serif" font-size="5.5" letter-spacing="0.5">54.634.25</text>
+      <text x="100" y="70" text-anchor="middle" fill="${t.headerColor}" font-family="Cinzel,serif" font-size="9.5" font-weight="900" letter-spacing="1.8">EXCELLENCE</text>
+      <text x="100" y="85" text-anchor="middle" fill="${t.headerColor}" font-family="Cinzel,serif" font-size="8.5" font-weight="800" letter-spacing="1.2">AWARD</text>
+      <line x1="55" y1="92" x2="145" y2="92" stroke="${t.borderGrad4}" stroke-width="1"/>
+      <text x="100" y="108" text-anchor="middle" fill="#0f172a" font-family="Cinzel,serif" font-size="10.5" font-weight="900" letter-spacing="1.2">SPBU GONTOR</text>
+      <text x="100" y="123" text-anchor="middle" fill="#78350f" font-family="Cinzel,sans-serif" font-size="9.5" font-weight="900" letter-spacing="0.8">54.634.25</text>
     </svg>`;
 
   // Signature block
@@ -9098,17 +9089,6 @@ window._printCertificate = async () => {
         width: 297mm; height: 210mm; position: relative; overflow: hidden;
         background: radial-gradient(circle, #ffffff 30%, ${t.bodyBg} 100%);
         display: flex; align-items: center; justify-content: center;
-      }
-
-      /* Fading gridlines toward center */
-      .cert-gridlines {
-        position: absolute; inset: 0; pointer-events: none; z-index: 0;
-        background-size: 28px 28px;
-        background-image:
-          linear-gradient(to right, ${t.borderGrad1}22 1px, transparent 1px),
-          linear-gradient(to bottom, ${t.borderGrad1}22 1px, transparent 1px);
-        -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent 22%, rgba(0, 0, 0, 0.85) 85%);
-        mask-image: radial-gradient(circle at 50% 50%, transparent 22%, rgba(0, 0, 0, 0.85) 85%);
       }
 
       .cert-page::after {
@@ -9160,13 +9140,10 @@ window._printCertificate = async () => {
     </div>
 
     <div class="cert-page">
-      <!-- Fading Gridlines overlay -->
-      <div class="cert-gridlines"></div>
-
       <div class="cert-frame">
         <div class="cert-inner"></div>
 
-        <!-- Islamic Geometric Corner Ornaments -->
+        <!-- Corner Ornaments -->
         <div class="corner-tl">${islamicCornerSVG}</div>
         <div class="corner-tr">${islamicCornerSVG}</div>
         <div class="corner-bl">${islamicCornerSVG}</div>
