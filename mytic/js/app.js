@@ -8992,42 +8992,53 @@ window._printCertificate = async () => {
   // Theme color palettes
   const themes = {
     gold: {
-      borderGrad1: '#bf953f', borderGrad2: '#fcf6ba', borderGrad3: '#b38728', borderGrad4: '#aa771c',
-      headerColor: '#8B6914', titleColor: '#1a1a2e', nameColor: '#8B6914', bodyBg: '#fffef7',
-      sealColor1: '#bf953f', sealColor2: '#fcf6ba', cornerAccent: '#d4a843',
-      guillocheLine: 'rgba(191,149,63,0.12)', watermarkColor: 'rgba(191,149,63,0.04)'
+      borderGrad1: '#b45309', borderGrad2: '#d97706', borderGrad3: '#92400e', borderGrad4: '#78350f',
+      headerColor: '#78350f', titleColor: '#1e293b', nameColor: '#92400e', bodyBg: '#fffdf5',
+      titleGrad1: '#78350f', titleGrad2: '#b45309', titleGrad3: '#92400e',
+      sealColor1: '#d97706', sealColor2: '#fef3c7', cornerAccent: '#b45309',
+      guillocheLine: 'rgba(180,83,9,0.15)', watermarkColor: 'rgba(120,53,15,0.095)'
     },
     navy: {
-      borderGrad1: '#1e3a5f', borderGrad2: '#2c5282', borderGrad3: '#bf953f', borderGrad4: '#aa771c',
-      headerColor: '#1e3a5f', titleColor: '#1a1a2e', nameColor: '#1e3a5f', bodyBg: '#fafbff',
-      sealColor1: '#bf953f', sealColor2: '#fcf6ba', cornerAccent: '#2c5282',
-      guillocheLine: 'rgba(30,58,95,0.1)', watermarkColor: 'rgba(30,58,95,0.03)'
+      borderGrad1: '#1e3a8a', borderGrad2: '#2563eb', borderGrad3: '#b45309', borderGrad4: '#78350f',
+      headerColor: '#1e3a8a', titleColor: '#0f172a', nameColor: '#1e3a8a', bodyBg: '#f8fafc',
+      titleGrad1: '#1e3a8a', titleGrad2: '#2563eb', titleGrad3: '#1e3a8a',
+      sealColor1: '#b45309', sealColor2: '#fef3c7', cornerAccent: '#1d4ed8',
+      guillocheLine: 'rgba(30,58,138,0.15)', watermarkColor: 'rgba(30,58,138,0.095)'
     },
     emerald: {
-      borderGrad1: '#065f46', borderGrad2: '#059669', borderGrad3: '#bf953f', borderGrad4: '#aa771c',
-      headerColor: '#065f46', titleColor: '#1a1a2e', nameColor: '#065f46', bodyBg: '#f7fdfb',
-      sealColor1: '#bf953f', sealColor2: '#fcf6ba', cornerAccent: '#059669',
-      guillocheLine: 'rgba(6,95,70,0.1)', watermarkColor: 'rgba(6,95,70,0.03)'
+      borderGrad1: '#065f46', borderGrad2: '#059669', borderGrad3: '#b45309', borderGrad4: '#78350f',
+      headerColor: '#065f46', titleColor: '#0f172a', nameColor: '#065f46', bodyBg: '#f0fdf4',
+      titleGrad1: '#065f46', titleGrad2: '#059669', titleGrad3: '#065f46',
+      sealColor1: '#059669', sealColor2: '#ecfdf5', cornerAccent: '#047857',
+      guillocheLine: 'rgba(6,95,70,0.15)', watermarkColor: 'rgba(6,95,70,0.095)'
     }
   };
   const t = themes[theme] || themes.gold;
 
-  // Build guilloche SVG pattern
-  const guillocheCornerSVG = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style="position:absolute;width:200px;height:200px;opacity:0.6;">
+  // Build Islamic corner SVG pattern with 8-pointed Rub el Hizb geometric star
+  const islamicCornerSVG = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" style="position:absolute;width:150px;height:150px;opacity:0.85;pointer-events:none;">
       <defs>
-        <linearGradient id="gc1" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style="stop-color:${t.borderGrad1};stop-opacity:0.5"/>
-          <stop offset="100%" style="stop-color:${t.borderGrad3};stop-opacity:0.2"/>
+        <linearGradient id="isGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:${t.borderGrad1}"/>
+          <stop offset="50%" style="stop-color:${t.borderGrad3}"/>
+          <stop offset="100%" style="stop-color:${t.borderGrad4}"/>
         </linearGradient>
       </defs>
-      ${Array.from({length: 12}, (_, i) => {
-        const angle = i * 7.5;
-        return `<ellipse cx="0" cy="0" rx="${80 + i * 5}" ry="${30 + i * 3}" fill="none" stroke="url(#gc1)" stroke-width="0.5" transform="rotate(${angle})"/>`;
-      }).join('')}
+      <path d="M 8 8 L 140 8 L 140 18 L 18 18 L 18 140 L 8 140 Z" fill="url(#isGrad)" opacity="0.25"/>
+      <g transform="translate(42, 42)">
+        <rect x="-18" y="-18" width="36" height="36" fill="none" stroke="url(#isGrad)" stroke-width="1.4" transform="rotate(0)"/>
+        <rect x="-18" y="-18" width="36" height="36" fill="none" stroke="url(#isGrad)" stroke-width="1.4" transform="rotate(45)"/>
+        <rect x="-12" y="-12" width="24" height="24" fill="none" stroke="${t.borderGrad1}" stroke-width="1" transform="rotate(22.5)"/>
+        <circle cx="0" cy="0" r="5" fill="url(#isGrad)"/>
+        <line x1="18" y1="0" x2="85" y2="0" stroke="url(#isGrad)" stroke-width="1.2"/>
+        <line x1="0" y1="18" x2="0" y2="85" stroke="url(#isGrad)" stroke-width="1.2"/>
+      </g>
+      <path d="M 18 90 Q 50 50 90 18" fill="none" stroke="url(#isGrad)" stroke-width="1.2"/>
+      <path d="M 18 105 Q 65 65 105 18" fill="none" stroke="url(#isGrad)" stroke-width="0.7" stroke-dasharray="3 3"/>
     </svg>`;
 
-  // Build gold seal SVG
+  // Build Islamic gold seal SVG
   const sealSVG = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" style="width:140px;height:140px;">
       <defs>
@@ -9035,21 +9046,22 @@ window._printCertificate = async () => {
           <stop offset="0%" style="stop-color:${t.sealColor1}"/>
           <stop offset="30%" style="stop-color:${t.sealColor2}"/>
           <stop offset="60%" style="stop-color:${t.sealColor1}"/>
-          <stop offset="100%" style="stop-color:#aa771c"/>
+          <stop offset="100%" style="stop-color:${t.borderGrad4}"/>
         </linearGradient>
         <filter id="sealShadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.25)"/></filter>
       </defs>
       <g filter="url(#sealShadow)">
-        <path d="${generateStarPath(90, 90, 75, 60, 24)}" fill="url(#sealGrad)" stroke="#aa771c" stroke-width="1"/>
-        <circle cx="90" cy="90" r="52" fill="none" stroke="#aa771c" stroke-width="1.5"/>
-        <circle cx="90" cy="90" r="48" fill="none" stroke="${t.sealColor2}" stroke-width="0.8"/>
-        <circle cx="90" cy="90" r="44" fill="none" stroke="#aa771c" stroke-width="0.5" stroke-dasharray="3 2"/>
+        <path d="${generateStarPath(90, 90, 76, 62, 16)}" fill="url(#sealGrad)" stroke="${t.borderGrad4}" stroke-width="1.2"/>
+        <rect x="52" y="52" width="76" height="76" fill="none" stroke="${t.borderGrad4}" stroke-width="1.2" transform="rotate(0 90 90)"/>
+        <rect x="52" y="52" width="76" height="76" fill="none" stroke="${t.borderGrad4}" stroke-width="1.2" transform="rotate(45 90 90)"/>
+        <circle cx="90" cy="90" r="48" fill="${t.bodyBg}" stroke="${t.borderGrad4}" stroke-width="1"/>
+        <circle cx="90" cy="90" r="44" fill="none" stroke="${t.sealColor1}" stroke-width="0.8" stroke-dasharray="3 2"/>
       </g>
-      <text x="90" y="72" text-anchor="middle" fill="#1a1a2e" font-family="Cinzel,serif" font-size="8" font-weight="700" letter-spacing="1.5">EXCELLENCE</text>
-      <text x="90" y="86" text-anchor="middle" fill="#1a1a2e" font-family="Cinzel,serif" font-size="7" font-weight="600" letter-spacing="1">AWARD</text>
-      <line x1="60" y1="92" x2="120" y2="92" stroke="#aa771c" stroke-width="0.8"/>
-      <text x="90" y="104" text-anchor="middle" fill="#1a1a2e" font-family="Cinzel,serif" font-size="6" font-weight="600" letter-spacing="0.8">SPBU GONTOR</text>
-      <text x="90" y="115" text-anchor="middle" fill="#1a1a2e" font-family="Cinzel,serif" font-size="5.5" letter-spacing="0.5">54.634.25</text>
+      <text x="90" y="70" text-anchor="middle" fill="${t.titleColor}" font-family="Cinzel,serif" font-size="8" font-weight="700" letter-spacing="1.5">EXCELLENCE</text>
+      <text x="90" y="84" text-anchor="middle" fill="${t.titleColor}" font-family="Cinzel,serif" font-size="7" font-weight="600" letter-spacing="1">AWARD</text>
+      <line x1="60" y1="90" x2="120" y2="90" stroke="${t.borderGrad4}" stroke-width="0.8"/>
+      <text x="90" y="102" text-anchor="middle" fill="${t.titleColor}" font-family="Cinzel,serif" font-size="6" font-weight="700" letter-spacing="0.8">SPBU GONTOR</text>
+      <text x="90" y="113" text-anchor="middle" fill="${t.titleColor}" font-family="Cinzel,serif" font-size="5.5" letter-spacing="0.5">54.634.25</text>
     </svg>`;
 
   // Signature block
@@ -9084,8 +9096,19 @@ window._printCertificate = async () => {
 
       .cert-page {
         width: 297mm; height: 210mm; position: relative; overflow: hidden;
-        background: radial-gradient(circle, #ffffff 40%, ${t.bodyBg} 100%);
+        background: radial-gradient(circle, #ffffff 30%, ${t.bodyBg} 100%);
         display: flex; align-items: center; justify-content: center;
+      }
+
+      /* Fading gridlines toward center */
+      .cert-gridlines {
+        position: absolute; inset: 0; pointer-events: none; z-index: 0;
+        background-size: 28px 28px;
+        background-image:
+          linear-gradient(to right, ${t.borderGrad1}22 1px, transparent 1px),
+          linear-gradient(to bottom, ${t.borderGrad1}22 1px, transparent 1px);
+        -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent 22%, rgba(0, 0, 0, 0.85) 85%);
+        mask-image: radial-gradient(circle at 50% 50%, transparent 22%, rgba(0, 0, 0, 0.85) 85%);
       }
 
       .cert-page::after {
@@ -9106,12 +9129,12 @@ window._printCertificate = async () => {
       .cert-inner {
         position: absolute; inset: 6px;
         border: 1.5px solid ${t.borderGrad3};
-        border-image: linear-gradient(135deg, ${t.borderGrad3}66, ${t.borderGrad2}88, ${t.borderGrad1}66) 1;
+        border-image: linear-gradient(135deg, ${t.borderGrad3}aa, ${t.borderGrad2}dd, ${t.borderGrad1}aa) 1;
         pointer-events: none;
       }
       .cert-inner::after {
         content: ''; position: absolute; inset: 4px;
-        border: 0.8px solid ${t.borderGrad3}44;
+        border: 0.8px solid ${t.borderGrad3}66;
         pointer-events: none;
       }
 
@@ -9137,85 +9160,99 @@ window._printCertificate = async () => {
     </div>
 
     <div class="cert-page">
+      <!-- Fading Gridlines overlay -->
+      <div class="cert-gridlines"></div>
+
       <div class="cert-frame">
         <div class="cert-inner"></div>
 
-        <!-- Corner Ornaments -->
-        <div class="corner-tl">${guillocheCornerSVG}</div>
-        <div class="corner-tr">${guillocheCornerSVG}</div>
-        <div class="corner-bl">${guillocheCornerSVG}</div>
-        <div class="corner-br">${guillocheCornerSVG}</div>
+        <!-- Islamic Geometric Corner Ornaments -->
+        <div class="corner-tl">${islamicCornerSVG}</div>
+        <div class="corner-tr">${islamicCornerSVG}</div>
+        <div class="corner-bl">${islamicCornerSVG}</div>
+        <div class="corner-br">${islamicCornerSVG}</div>
 
         <div class="cert-content">
 
           <!-- Reg Number Top Right -->
-          <div style="position:absolute;top:24px;right:36px;font-family:'Inter',sans-serif;font-size:10px;color:#94a3b8;letter-spacing:0.5px;">
+          <div style="position:absolute;top:24px;right:36px;font-family:'Inter',sans-serif;font-size:10px;color:#64748b;letter-spacing:0.5px;font-weight:600;">
             No. ${esc(regNo)}
           </div>
 
           <!-- Top section container -->
           <div style="display:flex; flex-direction:column; align-items:center; width:100%;">
             <!-- Header -->
-            <div style="margin-top:10px; margin-bottom:10px;">
-              <div style="font-family:'Cinzel',serif;font-size:15px;font-weight:700;color:${t.headerColor};letter-spacing:3.5px;text-transform:uppercase;">SPBU Gontor 54.634.25 Mlarak</div>
+            <div style="margin-top:8px; margin-bottom:6px;">
+              <div style="font-family:'Cinzel',serif;font-size:15px;font-weight:800;color:${t.headerColor};letter-spacing:3.5px;text-transform:uppercase;">SPBU GONTOR 54.634.25 MLARAK</div>
             </div>
 
-            <!-- Decorative line -->
-            <svg width="400" height="12" style="margin-bottom:15px;">
-              <defs><linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:transparent"/><stop offset="20%" style="stop-color:${t.borderGrad1}"/><stop offset="50%" style="stop-color:${t.borderGrad2}"/><stop offset="80%" style="stop-color:${t.borderGrad1}"/><stop offset="100%" style="stop-color:transparent"/></linearGradient></defs>
-              <line x1="0" y1="5" x2="400" y2="5" stroke="url(#lineGrad)" stroke-width="1.5"/>
-              <circle cx="200" cy="5" r="3" fill="${t.borderGrad1}"/>
-              <line x1="0" y1="9" x2="400" y2="9" stroke="url(#lineGrad)" stroke-width="0.8"/>
+            <!-- Islamic Header Line with Rub el Hizb Emblem -->
+            <svg width="420" height="18" style="margin-bottom:12px;">
+              <defs>
+                <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" style="stop-color:transparent"/>
+                  <stop offset="25%" style="stop-color:${t.borderGrad1}"/>
+                  <stop offset="50%" style="stop-color:${t.borderGrad3}"/>
+                  <stop offset="75%" style="stop-color:${t.borderGrad1}"/>
+                  <stop offset="100%" style="stop-color:transparent"/>
+                </linearGradient>
+              </defs>
+              <line x1="0" y1="9" x2="420" y2="9" stroke="url(#lineGrad)" stroke-width="1.2"/>
+              <g transform="translate(210, 9)">
+                <rect x="-7" y="-7" width="14" height="14" fill="${t.bodyBg}" stroke="${t.borderGrad1}" stroke-width="1.2" transform="rotate(0)"/>
+                <rect x="-7" y="-7" width="14" height="14" fill="none" stroke="${t.borderGrad1}" stroke-width="1.2" transform="rotate(45)"/>
+                <circle cx="0" cy="0" r="2.5" fill="${t.borderGrad3}"/>
+              </g>
             </svg>
 
-            <!-- Title -->
-            <div style="font-family:'Cinzel Decorative',serif;font-size:40px;font-weight:900;color:${t.headerColor};letter-spacing:5px;line-height:1.2;margin-bottom:6px;background:linear-gradient(135deg,${t.borderGrad1},${t.borderGrad2},${t.borderGrad3});-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+            <!-- Title (Deep Crisp Metallic Gradient) -->
+            <div style="font-family:'Cinzel Decorative',serif;font-size:38px;font-weight:900;color:${t.headerColor};letter-spacing:4px;line-height:1.2;margin-bottom:4px;background:linear-gradient(135deg, ${t.titleGrad1}, ${t.titleGrad2}, ${t.titleGrad3});-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 1px 2px rgba(0,0,0,0.1);">
               SERTIFIKAT PENGHARGAAN
             </div>
-            <div style="font-family:'Cinzel',serif;font-size:16px;font-weight:500;color:${t.headerColor};letter-spacing:6px;margin-bottom:20px;opacity:0.7;">
+            <div style="font-family:'Cinzel',serif;font-size:15px;font-weight:700;color:${t.headerColor};letter-spacing:5px;margin-bottom:16px;opacity:0.9;">
               CERTIFICATE OF EXCELLENCE
             </div>
 
             <!-- Subtitle -->
-            <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#475569;font-style:italic;margin-bottom:15px;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#334155;font-style:italic;margin-bottom:12px;font-weight:500;">
               Diberikan dengan bangga dan penghargaan setinggi-tingginya kepada:
             </div>
           </div>
 
           <!-- Middle recipient section -->
-          <div style="display:flex; flex-direction:column; align-items:center; width:100%; margin: 10px 0;">
+          <div style="display:flex; flex-direction:column; align-items:center; width:100%; margin: 6px 0;">
             <!-- Recipient Name -->
-            <div style="font-family:'Great Vibes',cursive;font-size:62px;color:${t.nameColor};margin-bottom:4px;line-height:1.1;">
+            <div style="font-family:'Great Vibes',cursive;font-size:60px;color:${t.nameColor};margin-bottom:2px;line-height:1.1;font-weight:600;">
               ${esc(name)}
             </div>
-            <div style="font-family:'Cinzel',serif;font-size:15px;font-weight:600;color:${t.headerColor};letter-spacing:3.5px;text-transform:uppercase;margin-bottom:16px;">
+            <div style="font-family:'Cinzel',serif;font-size:15px;font-weight:700;color:${t.headerColor};letter-spacing:3.5px;text-transform:uppercase;margin-bottom:14px;">
               ${esc(position)}
             </div>
 
             <!-- Award decorative line -->
-            <svg width="320" height="8" style="margin-bottom:15px;">
+            <svg width="320" height="8" style="margin-bottom:12px;">
               <defs><linearGradient id="lineGrad2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:transparent"/><stop offset="30%" style="stop-color:${t.borderGrad1}"/><stop offset="50%" style="stop-color:${t.borderGrad2}"/><stop offset="70%" style="stop-color:${t.borderGrad1}"/><stop offset="100%" style="stop-color:transparent"/></linearGradient></defs>
               <line x1="0" y1="4" x2="320" y2="4" stroke="url(#lineGrad2)" stroke-width="1"/>
             </svg>
 
             <!-- Award Title -->
-            <div style="font-family:'Cinzel',serif;font-size:18px;font-weight:800;color:${t.titleColor};letter-spacing:2px;margin-bottom:15px;padding:8px 30px;border:1.5px solid ${t.borderGrad1}44;border-radius:4px;background:linear-gradient(135deg,${t.borderGrad1}08,${t.borderGrad2}15,${t.borderGrad1}08);">
+            <div style="font-family:'Cinzel',serif;font-size:17px;font-weight:800;color:${t.titleColor};letter-spacing:2px;margin-bottom:12px;padding:7px 28px;border:1.5px solid ${t.borderGrad1}66;border-radius:4px;background:linear-gradient(135deg,${t.borderGrad1}10,${t.borderGrad2}20,${t.borderGrad1}10);box-shadow:0 2px 6px rgba(0,0,0,0.03);">
               " ${esc(title)} "
             </div>
 
             <!-- Description -->
-            <div style="font-family:'Cormorant Garamond',serif;font-size:16px;color:#27272a;max-width:760px;line-height:1.75;margin-bottom:12px;font-weight:400;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:16.5px;color:#1e293b;max-width:760px;line-height:1.7;margin-bottom:10px;font-weight:500;">
               ${esc(desc)}
             </div>
 
             <!-- Period -->
-            <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:600;color:${t.headerColor};letter-spacing:2px;margin-bottom:10px;">
+            <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:${t.headerColor};letter-spacing:2px;margin-bottom:8px;">
               ${esc(period)}
             </div>
           </div>
 
           <!-- Seal + Signatures Row -->
-          <div style="display:flex;align-items:flex-end;justify-content:center;gap:80px;width:100%;margin-top:auto;padding-bottom:10px;">
+          <div style="display:flex;align-items:flex-end;justify-content:center;gap:80px;width:100%;margin-top:auto;padding-bottom:6px;">
             <!-- Seal -->
             <div style="display:flex;flex-direction:column;align-items:center;">
               ${sealSVG}
@@ -9229,7 +9266,7 @@ window._printCertificate = async () => {
           </div>
 
           <!-- Bottom date -->
-          <div style="position:absolute;bottom:24px;right:36px;font-family:'Cormorant Garamond',serif;font-size:12px;color:#64748b;">
+          <div style="position:absolute;bottom:22px;right:36px;font-family:'Cormorant Garamond',serif;font-size:12px;color:#475569;font-weight:600;">
             Ponorogo, ${formattedDate}
           </div>
 
