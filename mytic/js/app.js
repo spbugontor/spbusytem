@@ -4409,6 +4409,7 @@ function calculateEmployeeKpi(emp, period) {
   let totalLateMinutes = 0;
   let totalSecLate = 0;
   let lateCount = 0;
+  let excusedCount = 0;
   let totalWorkDays = absensiRecords.length;
 
   const ABSENSI_SHIFTS = {
@@ -4420,7 +4421,13 @@ function calculateEmployeeKpi(emp, period) {
 
   absensiRecords.forEach(r => {
     const st = (r.status || r.type || '').toString().toLowerCase();
-    if (r.clock_in && r.clock_in !== '-' && !['sakit', 'izin', 'cuti', 'libur', 'off'].includes(st)) {
+    const ket = (r.keterangan || r.note || '').toString().toLowerCase();
+    const isExcused = ['sakit', 'izin', 'cuti', 'libur', 'off', 'dinas', 'tugas'].includes(st) ||
+                      ['sakit', 'izin', 'cuti', 'libur', 'off', 'dinas', 'tugas'].some(k => ket.includes(k));
+
+    if (isExcused) {
+      excusedCount++;
+    } else if (r.clock_in && r.clock_in !== '-') {
       const lateMins = Number(r.late_minutes || 0);
       const isLate = lateMins > 0 || st === 'terlambat';
 
@@ -4452,7 +4459,8 @@ function calculateEmployeeKpi(emp, period) {
     }
   });
 
-  const attendanceRate = totalWorkDays > 0 ? Math.round((onTimeCount / totalWorkDays) * 100) : 100;
+  const validAttendanceCount = onTimeCount + excusedCount;
+  const attendanceRate = totalWorkDays > 0 ? Math.min(100, Math.round((validAttendanceCount / totalWorkDays) * 100)) : 100;
 
   // 2. SOP Checklist Compliance Score (0 - 100) - ONLY FOR OPERATOR
   let sopRate = null;
@@ -4532,15 +4540,15 @@ function calculateEmployeeKpi(emp, period) {
   const debitScore = Math.max(0, 100 - (nominalPenalty + frequencyPenalty));
 
   // 6. FAIR Composite KPI Score Calculation:
-  // For Operator: 30% Attendance + 20% SOP + 25% Rating + 15% Debit + 10% Track Record = 100%
+  // For Operator: 15% Attendance + 25% SOP + 30% Rating + 20% Debit + 10% Track Record = 100%
   // For Non-Operator (Admin/Supervisor/Cleaning Service): 45% Attendance + 40% Rating + 5% Debit + 10% Track Record = 100%
   let compositeScore = 0;
   if (isOperator) {
     compositeScore = Math.round(
-      (attendanceRate * 0.30) +
-      ((sopRate || 0) * 0.20) +
-      (ratingScore * 0.25) +
-      (debitScore * 0.15) +
+      (attendanceRate * 0.15) +
+      ((sopRate || 0) * 0.25) +
+      (ratingScore * 0.30) +
+      (debitScore * 0.20) +
       (trackRecordScore * 0.10)
     );
   } else {
@@ -4559,6 +4567,7 @@ function calculateEmployeeKpi(emp, period) {
     totalLateMinutes,
     lateCount,
     onTimeCount,
+    excusedCount,
     totalWorkDays,
     sopRate,
     avgRating: avgRatingNum.toFixed(1),
@@ -4709,10 +4718,10 @@ function _generateEmployeeKpiRaporContainerHtml(empId, forcedRank, forcedTotalUs
             <td style="text-align:center; font-weight:bold; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">1</td>
             <td style="color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">
               <strong style="color:#0f172a !important;">⏱️ Kedisiplinan Kehadiran (Sistem Absensi)</strong><br>
-              <span style="font-size:9.5px; color:#475569 !important;">Tepat Waktu: ${kpi.onTimeCount}x | Terlambat: ${kpi.lateCount}x (${kpi.totalLateMinutes} Menit) | Total Hari Kerja: ${kpi.totalWorkDays}</span>
+              <span style="font-size:9.5px; color:#475569 !important;">Tepat Waktu: ${kpi.onTimeCount}x | Terlambat: ${kpi.lateCount}x (${kpi.totalLateMinutes} Menit)${kpi.excusedCount > 0 ? ` | Izin/Cuti/Libur: ${kpi.excusedCount}x` : ''} | Total Hari Kerja: ${kpi.totalWorkDays}</span>
             </td>
             <td style="text-align:center; font-weight:bold; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.attendanceRate}%</td>
-            <td style="text-align:center; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.isOperator ? '30%' : '45%'}</td>
+            <td style="text-align:center; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.isOperator ? '15%' : '45%'}</td>
             <td style="text-align:center; font-weight:bold; color:#1d4ed8 !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.attendanceRate} / 100</td>
           </tr>
           <tr>
@@ -4722,7 +4731,7 @@ function _generateEmployeeKpiRaporContainerHtml(empId, forcedRank, forcedTotalUs
               <span style="font-size:9.5px; color:#475569 !important;">${kpi.isOperator ? `Kepatuhan pengisian SOP shift kerja: ${kpi.sopRate}%` : 'Metrik SOP khusus untuk Jabatan Operator (Non-Operator N/A)'}</span>
             </td>
             <td style="text-align:center; font-weight:bold; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.isOperator ? `${kpi.sopRate}%` : 'N/A'}</td>
-            <td style="text-align:center; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.isOperator ? '20%' : '0%'}</td>
+            <td style="text-align:center; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.isOperator ? '25%' : '0%'}</td>
             <td style="text-align:center; font-weight:bold; color:#1d4ed8 !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.isOperator ? `${kpi.sopRate} / 100` : 'N/A'}</td>
           </tr>
           <tr>
@@ -4732,7 +4741,7 @@ function _generateEmployeeKpiRaporContainerHtml(empId, forcedRank, forcedTotalUs
               <span style="font-size:9.5px; color:#475569 !important;">Rating rata-rata: ${kpi.avgRating} dari 5.0 Bintang</span>
             </td>
             <td style="text-align:center; font-weight:bold; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.avgRating} / 5.0</td>
-            <td style="text-align:center; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.isOperator ? '25%' : '40%'}</td>
+            <td style="text-align:center; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.isOperator ? '30%' : '40%'}</td>
             <td style="text-align:center; font-weight:bold; color:#1d4ed8 !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.ratingScore} / 100</td>
           </tr>
           <tr>
@@ -4742,7 +4751,7 @@ function _generateEmployeeKpiRaporContainerHtml(empId, forcedRank, forcedTotalUs
               <span style="font-size:9.5px; color:#475569 !important;">Saldo Tunggakan: ${fmt(kpi.totalDebitAmt)} (${kpi.periodTxCount} Transaksi)</span>
             </td>
             <td style="text-align:center; font-weight:bold; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.totalDebitAmt > 0 ? fmt(kpi.totalDebitAmt) : 'Clean (Rp 0)'}</td>
-            <td style="text-align:center; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.isOperator ? '15%' : '5%'}</td>
+            <td style="text-align:center; color:#0f172a !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.isOperator ? '20%' : '5%'}</td>
             <td style="text-align:center; font-weight:bold; color:#1d4ed8 !important; padding:7px 12px; font-size:11px; border:1px solid #cbd5e1;">${kpi.debitScore} / 100</td>
           </tr>
           <tr>
