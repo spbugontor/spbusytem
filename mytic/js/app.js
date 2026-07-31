@@ -9160,7 +9160,7 @@ window._printCertificate = async () => {
           <div style="display:flex; flex-direction:column; align-items:center; width:100%;">
             <!-- Header -->
             <div style="margin-top:8px; margin-bottom:6px;">
-              <div style="font-family:'Cinzel',serif;font-size:15px;font-weight:800;color:${t.headerColor};letter-spacing:3.5px;text-transform:uppercase;">SPBU GONTOR 54.634.25 MLARAK</div>
+              <div style="font-family:'Cinzel',serif;font-size:15px;font-weight:800;color:${t.headerColor};letter-spacing:3.5px;text-transform:uppercase;">PT. ESTAFET DWI MASA</div>
             </div>
 
             <!-- Islamic Header Line with Rub el Hizb Emblem -->
