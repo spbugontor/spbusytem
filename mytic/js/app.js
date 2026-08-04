@@ -6018,6 +6018,18 @@ window._deleteCustomAllowance = async (id) => {
   showToast('Tunjangan dihapus!', 'success');
 };
 
+window._fmtCur = (val) => {
+  if (val === null || val === undefined || val === '' || val === 0 || val === '0') return '';
+  const num = String(val).replace(/\D/g, '');
+  if (!num || Number(num) === 0) return '';
+  return new Intl.NumberFormat('id-ID').format(Number(num));
+};
+
+window._parseCur = (val) => {
+  if (!val) return 0;
+  return Number(String(val).replace(/\D/g, '')) || 0;
+};
+
 window._saveInternalPayrollItem = async (empId, field, value) => {
   const month = window._payrollMonth || getTodayStr().substring(0, 7);
   allData.payroll = allData.payroll || {};
@@ -6651,7 +6663,7 @@ function renderInternalPayrollTab() {
       return `<div style="display:flex; align-items:center; gap:0.4rem; font-size:0.75rem; margin-top:0.2rem;">
         <input type="checkbox" ${cEn ? 'checked' : ''} onchange="window._toggleEmpAllowance('${empId}', '${ca.id}', this.checked)">
         <span>${esc(ca.name)}:</span>
-        <input type="number" value="${cAmt}" style="min-width:110px; width:100%; max-width:125px; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', '${ca.id}', this.value)">
+        <input type="text" inputmode="numeric" placeholder="0" value="${window._fmtCur(cAmt)}" style="min-width:110px; width:100%; max-width:125px; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:right;" oninput="this.value = window._fmtCur(this.value)" onchange="window._updateEmpAllowanceAmt('${empId}', '${ca.id}', window._parseCur(this.value))">
       </div>`;
     }).join('');
 
@@ -6693,24 +6705,24 @@ function renderInternalPayrollTab() {
       </td>
       <td style="padding:4px 6px;"><span class="badge" style="background:var(--bg-color); color:var(--text-main); font-size:0.7rem; padding:2px 5px;">${esc(pos)}</span></td>
       <td style="font-size:0.75rem; padding:4px 6px;">
-        <input type="number" value="${gajiPokok}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:125px; max-width:145px; box-sizing:border-box; padding:0.25rem 0.4rem; font-size:0.82rem; font-weight:700; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'gaji_pokok', Number(this.value))">
+        <input type="text" inputmode="numeric" placeholder="0" value="${window._fmtCur(gajiPokok)}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:125px; max-width:145px; box-sizing:border-box; padding:0.25rem 0.4rem; font-size:0.82rem; font-weight:700; text-align:right;" oninput="this.value = window._fmtCur(this.value)" onchange="window._saveInternalPayrollItem('${empId}', 'gaji_pokok', window._parseCur(this.value))">
         <div class="text-xs text-muted" style="margin-top:0.1rem; font-size:0.65rem;">${fmt(gajiPokok)}</div>
       </td>
       <td style="font-size:0.75rem; padding:4px 6px;">
         <div style="display:flex; align-items:center; gap:0.25rem;">
           <input type="checkbox" ${tunjJabatanEnabled ? 'checked' : ''} ${isLocked || isExcluded ? 'disabled' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_jabatan', this.checked)">
           <span style="font-size:0.7rem; min-width:48px;">Jabatan:</span>
-          <input type="number" value="${tunjJabatanAmt}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:110px; max-width:125px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_jabatan', this.value)">
+          <input type="text" inputmode="numeric" placeholder="0" value="${window._fmtCur(tunjJabatanAmt)}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:110px; max-width:125px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:right;" oninput="this.value = window._fmtCur(this.value)" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_jabatan', window._parseCur(this.value))">
         </div>
         <div style="display:flex; align-items:center; gap:0.25rem; margin-top:0.2rem;">
           <input type="checkbox" ${tunjKinerjaEnabled ? 'checked' : ''} ${isLocked || isExcluded ? 'disabled' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_kinerja', this.checked)">
           <span style="font-size:0.7rem; min-width:48px;">Kinerja:</span>
-          <input type="number" value="${tunjKinerjaAmt}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:110px; max-width:125px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_kinerja', this.value)">
+          <input type="text" inputmode="numeric" placeholder="0" value="${window._fmtCur(tunjKinerjaAmt)}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:110px; max-width:125px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:right;" oninput="this.value = window._fmtCur(this.value)" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_kinerja', window._parseCur(this.value))">
         </div>
         <div style="display:flex; align-items:center; gap:0.25rem; margin-top:0.2rem;">
           <input type="checkbox" ${tunjMasaKerjaEnabled ? 'checked' : ''} ${isLocked || isExcluded ? 'disabled' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_masa_kerja', this.checked)">
           <span style="font-size:0.7rem; min-width:48px;">Masa:</span>
-          <input type="number" value="${tunjMasaKerjaAmt}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:110px; max-width:125px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_masa_kerja', this.value)">
+          <input type="text" inputmode="numeric" placeholder="0" value="${window._fmtCur(tunjMasaKerjaAmt)}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:110px; max-width:125px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:right;" oninput="this.value = window._fmtCur(this.value)" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_masa_kerja', window._parseCur(this.value))">
         </div>
         ${customTunjHTML}
       </td>
@@ -6718,19 +6730,19 @@ function renderInternalPayrollTab() {
         <div style="display:flex; align-items:center; gap:0.25rem;">
           <input type="checkbox" ${pwEnabled ? 'checked' : ''} ${isLocked || isExcluded ? 'disabled' : ''} onchange="window._saveInternalPayrollItem('${empId}', 'pw_enabled', this.checked)">
           <span style="font-size:0.7rem;">PW:</span>
-          <input type="number" value="${pwAmount}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:110px; max-width:125px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'pw_amount', Number(this.value))">
+          <input type="text" inputmode="numeric" placeholder="0" value="${window._fmtCur(pwAmount)}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:110px; max-width:125px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:right;" oninput="this.value = window._fmtCur(this.value)" onchange="window._saveInternalPayrollItem('${empId}', 'pw_amount', window._parseCur(this.value))">
         </div>
         <div class="text-xs text-muted" style="margin-top:0.15rem; font-size:0.65rem;">Est: ${fmt(isSpvAdmin ? rawPwSpvAdmin : rawPwOprCs)}</div>
       </td>
       <td style="font-size:0.75rem; padding:4px 6px;">
         <div style="display:flex; align-items:center; gap:0.2rem;">
-          <input type="number" value="${otShifts}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:55px; max-width:65px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:center;" min="0" onchange="window._saveInternalPayrollItem('${empId}', 'overtime_shifts', Number(this.value))">
+          <input type="number" placeholder="0" value="${otShifts || ''}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:55px; max-width:65px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:center;" min="0" onchange="window._saveInternalPayrollItem('${empId}', 'overtime_shifts', Number(this.value))">
           <span style="font-size:0.7rem;">Shf</span>
         </div>
         <strong style="color:var(--primary); font-size:0.75rem;">${fmt(otAmt)}</strong>
       </td>
       <td style="font-size:0.75rem; padding:4px 6px;">
-        <input type="number" value="${tabunganAmt}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:110px; max-width:125px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'savings_deduction', Number(this.value))">
+        <input type="text" inputmode="numeric" placeholder="0" value="${window._fmtCur(tabunganAmt)}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:110px; max-width:125px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:right;" oninput="this.value = window._fmtCur(this.value)" onchange="window._saveInternalPayrollItem('${empId}', 'savings_deduction', window._parseCur(this.value))">
       </td>
       <td style="text-align:right; padding:4px 6px;">
         <div style="font-size:0.68rem; color:var(--text-muted);">Kotor: ${fmt(gajiKotor)}</div>
