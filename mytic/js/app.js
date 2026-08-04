@@ -5078,6 +5078,19 @@ function renderLeaderboardPage() {
   const selectedMetric = window._leaderboardMetric || 'composite';
   const selectedPos = window._leaderboardPos || 'Semua';
 
+  const now = new Date();
+  const thisMonthName = now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+  const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastMonthName = lastMonthDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+
+  const pastMonthOptions = [];
+  for (let i = 2; i < 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const val = d.toISOString().slice(0, 7);
+    const label = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    pastMonthOptions.push({ val, label });
+  }
+
   // Filter users by position
   let filteredUsers = users;
   if (selectedPos !== 'Semua') {
@@ -5125,10 +5138,11 @@ function renderLeaderboardPage() {
           <div>
             <label class="form-label" style="margin-bottom:0.25rem;">Periode</label>
             <select id="lb-filter-period" class="form-input form-select" onchange="window._onLeaderboardFilterChange()" style="padding:0.45rem 0.8rem; font-size:0.8rem;">
-              <option value="month" ${period === 'month' ? 'selected' : ''}>Bulan Ini</option>
-              <option value="last_month" ${period === 'last_month' ? 'selected' : ''}>Bulan Lalu</option>
+              <option value="month" ${period === 'month' ? 'selected' : ''}>Bulan Ini (${thisMonthName})</option>
+              <option value="last_month" ${period === 'last_month' ? 'selected' : ''}>Bulan Lalu (${lastMonthName})</option>
+              ${pastMonthOptions.map(m => `<option value="${m.val}" ${period === m.val ? 'selected' : ''}>${m.label}</option>`).join('')}
               <option value="quarter" ${period === 'quarter' ? 'selected' : ''}>Triwulan (3 Bulan)</option>
-              <option value="year" ${period === 'year' ? 'selected' : ''}>Tahun Ini</option>
+              <option value="year" ${period === 'year' ? 'selected' : ''}>Tahun Ini (${now.getFullYear()})</option>
             </select>
           </div>
           <div>
