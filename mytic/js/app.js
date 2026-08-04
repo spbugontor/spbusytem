@@ -4748,6 +4748,10 @@ function _generateEmployeeKpiRaporContainerHtml(empId, forcedRank, forcedTotalUs
 
   const formattedDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
+  const settings = getPayrollSettings();
+  let managerObj = users.find(uItem => (uItem.position || '').toLowerCase() === 'manager' || (uItem.name || '').toLowerCase().includes('pedri'));
+  const managerName = managerObj ? managerObj.name : (settings.name_audit_manager || 'Pedri Fauzi');
+
   const ratings = getRatings(empId);
   const latestRating = ratings.length > 0 ? ratings[0] : null;
   const empNote = latestRating ? latestRating.note : '';
@@ -4924,14 +4928,15 @@ function _generateEmployeeKpiRaporContainerHtml(empId, forcedRank, forcedTotalUs
       <div class="sig-box" style="width:220px; text-align:center; font-size:11px; color:#0f172a !important;">
         <div style="color:#0f172a !important;">Penerima Rapor (Karyawan),<br>&nbsp;</div>
         <div class="sig-space" style="height:80px;"></div>
-        <div><strong style="color:#0f172a !important;">( ${esc(u.name)} )</strong></div>
+        <div><strong style="color:#0f172a !important;">( ______________________ )</strong></div>
+        <div style="font-size:10px; font-weight:bold; color:#0f172a !important; margin-top:2px;">${esc(u.name)}</div>
         <div style="font-size:9.5px; color:#64748b !important;">ID: ${esc(u.emp_id)}</div>
       </div>
       <div class="sig-box" style="width:220px; text-align:center; font-size:11px; color:#0f172a !important;">
-        <div style="color:#0f172a !important;">Gontor, ${formattedDate}<br><strong style="color:#0f172a !important;">Manager SPBU Gontor Mlarak</strong>,</div>
+        <div style="color:#0f172a !important;">Gontor, ${formattedDate}<br><strong style="color:#0f172a !important;">Manager SPBU Gontor</strong>,</div>
         <div class="sig-space" style="height:80px;"></div>
         <div><strong style="color:#0f172a !important;">( ______________________ )</strong></div>
-        <div style="font-size:9.5px; color:#64748b !important;">PT. ESTAFET DWI MASA</div>
+        <div style="font-size:10px; font-weight:bold; color:#0f172a !important; margin-top:2px;">${esc(managerName)}</div>
       </div>
     </div>
   </div>`;
