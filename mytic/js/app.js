@@ -961,6 +961,29 @@ function renderAdminDashboard() {
       </button>
     </div>
 
+    <!-- GRAPHICS GRID HEADER WITH PERIOD FILTER -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem;">
+      <h3 style="font-size:1.1rem; font-weight:800; color:var(--text-main); display:flex; align-items:center; gap:0.5rem; margin:0;">
+        📊 Grafik & Analisis Operasional SPBU
+      </h3>
+      <div style="display:flex; align-items:center; gap:0.5rem;">
+        <label class="form-label" style="margin:0; font-weight:700; font-size:0.8rem; color:var(--text-muted);">Periode Grafik:</label>
+        <select id="admin-chart-period" class="form-input form-select" onchange="window._onAdminChartPeriodChange()" style="padding:0.4rem 0.8rem; font-size:0.8rem; min-width:180px;">
+          <option value="month" ${(window._adminChartPeriod || 'month') === 'month' ? 'selected' : ''}>Bulan Ini (${new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })})</option>
+          <option value="last_month" ${(window._adminChartPeriod || 'month') === 'last_month' ? 'selected' : ''}>Bulan Lalu (${new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })})</option>
+          ${Array.from({length: 10}, (_, i) => {
+            const d = new Date(new Date().getFullYear(), new Date().getMonth() - (i + 2), 1);
+            const val = d.toISOString().slice(0, 7);
+            const label = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+            return `<option value="${val}" ${(window._adminChartPeriod || 'month') === val ? 'selected' : ''}>${label}</option>`;
+          }).join('')}
+          <option value="quarter" ${(window._adminChartPeriod || 'month') === 'quarter' ? 'selected' : ''}>Triwulan (3 Bulan)</option>
+          <option value="year" ${(window._adminChartPeriod || 'month') === 'year' ? 'selected' : ''}>Tahun Ini (${new Date().getFullYear()})</option>
+          <option value="all" ${(window._adminChartPeriod || 'month') === 'all' ? 'selected' : ''}>Semua Periode</option>
+        </select>
+      </div>
+    </div>
+
     <!-- GRAPHICS GRID -->
     <div class="graphics-grid">
       <div class="card chart-card-wide" style="padding:1.25rem;">
@@ -1013,11 +1036,97 @@ function renderAdminDashboard() {
   </div>`;
 }
 
+window._onAdminChartPeriodChange = () => {
+  const sel = document.getElementById('admin-chart-period');
+  if (sel) {
+    window._adminChartPeriod = sel.value;
+    initAdminDashboardCharts();
+  }
+};
+
+function getAdminChartPeriodRange(period) {
+  const now = new Date();
+  let startDate = new Date();
+  let endDate = new Date();
+  let mode = 'days';
+
+  if (period === 'last_month') {
+    startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+  } else if (period === 'quarter') {
+    startDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+  } else if (period === 'year') {
+    startDate = new Date(now.getFullYear(), 0, 1);
+    endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+    mode = 'months';
+  } else if (period === 'all') {
+    startDate = new Date(2020, 0, 1);
+    endDate = new Date(2030, 11, 31, 23, 59, 59);
+    mode = 'all';
+  } else if (typeof period === 'string' && /^\d{4}-\d{2}$/.test(period)) {
+    const [y, m] = period.split('-').map(Number);
+    startDate = new Date(y, m - 1, 1);
+    endDate = new Date(y, m, 0, 23, 59, 59);
+  } else {
+    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+  }
+
+  const startStr = startDate.toISOString().slice(0, 10);
+  const endStr = endDate.toISOString().slice(0, 10);
+
+  return { startDate, endDate, startStr, endStr, mode };
+}
+
 function initAdminDashboardCharts() {
   if (typeof Chart === 'undefined') return;
   const colors = getChartColors();
+  const periodKey = window._adminChartPeriod || 'month';
+  const range = getAdminChartPeriodRange(periodKey);
 
-  // 1. Attendance Trend (Last 14 days with Sakit / Izin / Cuti / Libur / Lainnya breakdown)
+  const parseToISO = (val) => {
+    if (val === null || val === undefined || val === '') return '';
+    if (typeof val === 'number') {
+      try {
+        const d = new Date(val);
+        if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+      } catch { return ''; }
+    }
+    const str = val.toString().trim();
+    if (!str) return '';
+    if (/^\d{10,13}$/.test(str)) {
+      try {
+        const num = Number(str);
+        const d = new Date(num > 1e11 ? num : num * 1000);
+        if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+      } catch { return ''; }
+    }
+    if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0, 10);
+    if (/^\d{4}-\d{2}$/.test(str)) return str + '-01';
+    const ddmmyyyy = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if (ddmmyyyy) {
+      return `${ddmmyyyy[3]}-${ddmmyyyy[2].padStart(2, '0')}-${ddmmyyyy[1].padStart(2, '0')}`;
+    }
+    try {
+      const d = new Date(str);
+      if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+    } catch {}
+    return '';
+  };
+
+  const isRecordInChartPeriod = (...dateCandidates) => {
+    if (range.mode === 'all') return true;
+    for (const val of dateCandidates) {
+      const iso = parseToISO(val);
+      if (iso) {
+        return iso >= range.startStr && iso <= range.endStr;
+      }
+    }
+    return false;
+  };
+
+  // 1. Attendance Trend
   const attCanvas = document.getElementById('chart-admin-attendance');
   if (attCanvas) {
     destroyChart('admin-attendance');
@@ -1033,13 +1142,14 @@ function initAdminDashboardCharts() {
     const allLeaves = Object.values(allData.leaves || {}).filter(l => l.status === 'Disetujui');
     const allAbsensi = Object.values(allData.absensi_records || {});
 
-    for (let i = 13; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
-      days.push(d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
+    const cur = new Date(range.startDate);
+    const endLimit = new Date(Math.min(range.endDate.getTime(), Date.now()));
 
-      const recs = allAbsensi.filter(r => r.date === dateStr);
+    while (cur <= endLimit) {
+      const dateStr = cur.toISOString().split('T')[0];
+      days.push(cur.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
+
+      const recs = allAbsensi.filter(r => parseToISO(r.date || r.tanggal) === dateStr);
       let onTime = 0, late = 0, sakit = 0, izin = 0, cuti = 0, libur = 0, other = 0;
 
       recs.forEach(r => {
@@ -1079,12 +1189,14 @@ function initAdminDashboardCharts() {
       cutiData.push(cuti);
       liburData.push(libur);
       otherData.push(other);
+
+      cur.setDate(cur.getDate() + 1);
     }
 
     window._myTicCharts['admin-attendance'] = new Chart(attCanvas, {
       type: 'line',
       data: {
-        labels: days,
+        labels: days.length ? days : ['Belum Ada Data'],
         datasets: [
           { label: 'Tepat Waktu', data: onTimeData, borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.1)', fill: false, tension: 0.3 },
           { label: 'Terlambat', data: lateData, borderColor: '#EF4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: false, tension: 0.3 },
@@ -1119,7 +1231,7 @@ function initAdminDashboardCharts() {
   const leaveCanvas = document.getElementById('chart-admin-leaves');
   if (leaveCanvas) {
     destroyChart('admin-leaves');
-    const leaves = Object.values(allData.leaves || {});
+    const leaves = Object.values(allData.leaves || {}).filter(l => isRecordInChartPeriod(l.start_date, l.created_at));
     const approved = leaves.filter(l => l.status === 'Disetujui').length;
     const pending = leaves.filter(l => l.status === 'Menunggu').length;
     const rejected = leaves.filter(l => l.status === 'Ditolak').length;
@@ -1147,7 +1259,7 @@ function initAdminDashboardCharts() {
   const sopCanvas = document.getElementById('chart-admin-sop');
   if (sopCanvas) {
     destroyChart('admin-sop');
-    const sopRecords = Object.values(allData.ceklissop_records || {});
+    const sopRecords = Object.values(allData.ceklissop_records || allData.sop_checklists || {}).filter(r => isRecordInChartPeriod(r.date, r.tanggal, r.created_at));
     const catScores = {};
     sopRecords.forEach(r => {
       const cat = r.category || 'Umum';
@@ -1186,7 +1298,7 @@ function initAdminDashboardCharts() {
   const viosCanvas = document.getElementById('chart-admin-violations');
   if (viosCanvas) {
     destroyChart('admin-violations');
-    const vios = Object.values(allData.violations || {});
+    const vios = Object.values(allData.violations || {}).filter(v => isRecordInChartPeriod(v.date, v.tanggal, v.created_at, v.start_date));
     const sp1 = vios.filter(v => v.level === 'SP1').length;
     const sp2 = vios.filter(v => v.level === 'SP2').length;
     const sp3 = vios.filter(v => v.level === 'SP3').length;
