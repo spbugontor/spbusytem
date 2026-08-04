@@ -6651,7 +6651,7 @@ function renderInternalPayrollTab() {
       return `<div style="display:flex; align-items:center; gap:0.4rem; font-size:0.75rem; margin-top:0.2rem;">
         <input type="checkbox" ${cEn ? 'checked' : ''} onchange="window._toggleEmpAllowance('${empId}', '${ca.id}', this.checked)">
         <span>${esc(ca.name)}:</span>
-        <input type="number" value="${cAmt}" style="width:90px; padding:0.2rem 0.4rem; font-size:0.75rem;" onchange="window._updateEmpAllowanceAmt('${empId}', '${ca.id}', this.value)">
+        <input type="number" value="${cAmt}" style="min-width:110px; width:100%; max-width:125px; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', '${ca.id}', this.value)">
       </div>`;
     }).join('');
 
@@ -6693,24 +6693,24 @@ function renderInternalPayrollTab() {
       </td>
       <td style="padding:4px 6px;"><span class="badge" style="background:var(--bg-color); color:var(--text-main); font-size:0.7rem; padding:2px 5px;">${esc(pos)}</span></td>
       <td style="font-size:0.75rem; padding:4px 6px;">
-        <input type="number" value="${gajiPokok}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; max-width:92px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.75rem; font-weight:600; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'gaji_pokok', Number(this.value))">
+        <input type="number" value="${gajiPokok}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:125px; max-width:145px; box-sizing:border-box; padding:0.25rem 0.4rem; font-size:0.82rem; font-weight:700; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'gaji_pokok', Number(this.value))">
         <div class="text-xs text-muted" style="margin-top:0.1rem; font-size:0.65rem;">${fmt(gajiPokok)}</div>
       </td>
       <td style="font-size:0.75rem; padding:4px 6px;">
         <div style="display:flex; align-items:center; gap:0.25rem;">
           <input type="checkbox" ${tunjJabatanEnabled ? 'checked' : ''} ${isLocked || isExcluded ? 'disabled' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_jabatan', this.checked)">
           <span style="font-size:0.7rem; min-width:48px;">Jabatan:</span>
-          <input type="number" value="${tunjJabatanAmt}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_jabatan', this.value)">
+          <input type="number" value="${tunjJabatanAmt}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:110px; max-width:125px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_jabatan', this.value)">
         </div>
         <div style="display:flex; align-items:center; gap:0.25rem; margin-top:0.2rem;">
           <input type="checkbox" ${tunjKinerjaEnabled ? 'checked' : ''} ${isLocked || isExcluded ? 'disabled' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_kinerja', this.checked)">
           <span style="font-size:0.7rem; min-width:48px;">Kinerja:</span>
-          <input type="number" value="${tunjKinerjaAmt}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_kinerja', this.value)">
+          <input type="number" value="${tunjKinerjaAmt}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:110px; max-width:125px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_kinerja', this.value)">
         </div>
         <div style="display:flex; align-items:center; gap:0.25rem; margin-top:0.2rem;">
           <input type="checkbox" ${tunjMasaKerjaEnabled ? 'checked' : ''} ${isLocked || isExcluded ? 'disabled' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_masa_kerja', this.checked)">
           <span style="font-size:0.7rem; min-width:48px;">Masa:</span>
-          <input type="number" value="${tunjMasaKerjaAmt}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_masa_kerja', this.value)">
+          <input type="number" value="${tunjMasaKerjaAmt}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:110px; max-width:125px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_masa_kerja', this.value)">
         </div>
         ${customTunjHTML}
       </td>
@@ -6718,19 +6718,19 @@ function renderInternalPayrollTab() {
         <div style="display:flex; align-items:center; gap:0.25rem;">
           <input type="checkbox" ${pwEnabled ? 'checked' : ''} ${isLocked || isExcluded ? 'disabled' : ''} onchange="window._saveInternalPayrollItem('${empId}', 'pw_enabled', this.checked)">
           <span style="font-size:0.7rem;">PW:</span>
-          <input type="number" value="${pwAmount}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'pw_amount', Number(this.value))">
+          <input type="number" value="${pwAmount}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:110px; max-width:125px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'pw_amount', Number(this.value))">
         </div>
         <div class="text-xs text-muted" style="margin-top:0.15rem; font-size:0.65rem;">Est: ${fmt(isSpvAdmin ? rawPwSpvAdmin : rawPwOprCs)}</div>
       </td>
       <td style="font-size:0.75rem; padding:4px 6px;">
         <div style="display:flex; align-items:center; gap:0.2rem;">
-          <input type="number" value="${otShifts}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; max-width:48px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:center;" min="0" onchange="window._saveInternalPayrollItem('${empId}', 'overtime_shifts', Number(this.value))">
+          <input type="number" value="${otShifts}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:55px; max-width:65px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:center;" min="0" onchange="window._saveInternalPayrollItem('${empId}', 'overtime_shifts', Number(this.value))">
           <span style="font-size:0.7rem;">Shf</span>
         </div>
         <strong style="color:var(--primary); font-size:0.75rem;">${fmt(otAmt)}</strong>
       </td>
       <td style="font-size:0.75rem; padding:4px 6px;">
-        <input type="number" value="${tabunganAmt}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'savings_deduction', Number(this.value))">
+        <input type="number" value="${tabunganAmt}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; min-width:110px; max-width:125px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.78rem; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'savings_deduction', Number(this.value))">
       </td>
       <td style="text-align:right; padding:4px 6px;">
         <div style="font-size:0.68rem; color:var(--text-muted);">Kotor: ${fmt(gajiKotor)}</div>
@@ -6810,12 +6810,12 @@ function renderInternalPayrollTab() {
             <th style="width:25px; text-align:center; padding:4px 6px;">#</th>
             <th style="padding:4px 6px;">Nama & Masa Kerja</th>
             <th style="padding:4px 6px;">Jabatan</th>
-            <th style="width:95px; text-align:right; padding:4px 6px;">Gaji Pokok</th>
-            <th style="min-width:175px; padding:4px 6px;">Tunjangan & Nominal</th>
-            <th style="width:115px; padding:4px 6px;">PW Internal</th>
-            <th style="width:75px; padding:4px 6px;">Lembur</th>
-            <th style="width:80px; padding:4px 6px;">Tabungan</th>
-            <th style="width:110px; text-align:right; padding:4px 6px;">Gaji Bersih (THP)</th>
+            <th style="width:145px; min-width:135px; text-align:right; padding:4px 6px;">Gaji Pokok</th>
+            <th style="min-width:210px; padding:4px 6px;">Tunjangan & Nominal</th>
+            <th style="width:145px; min-width:135px; padding:4px 6px;">PW Internal</th>
+            <th style="width:90px; padding:4px 6px;">Lembur</th>
+            <th style="width:135px; min-width:125px; padding:4px 6px;">Tabungan</th>
+            <th style="width:145px; min-width:135px; text-align:right; padding:4px 6px;">Gaji Bersih (THP)</th>
           </tr>
         </thead>
         <tbody>${empRows}</tbody>
