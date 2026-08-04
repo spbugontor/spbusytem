@@ -6549,6 +6549,9 @@ function renderInternalPayrollTab() {
   const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
   const monthData = (allData.payroll && allData.payroll[month] && allData.payroll[month].internal_data) || {};
 
+  const excludedUsersCount = users.filter(u => (monthData[u.emp_id] || {}).excluded === true).length;
+  const activeUsersCount = users.length - excludedUsersCount;
+
   // Count non-manager employees for PW distribution based on configured positions
   const group1Users = users.filter(u => isPositionMatch(u.position, settings.pw_int_group1_positions));
   const group2Users = users.filter(u => !isPositionMatch(u.position, settings.pw_int_group1_positions));
@@ -6608,9 +6611,10 @@ function renderInternalPayrollTab() {
       </div>`;
     }).join('');
 
+    const isExcluded = empData.excluded === true;
+
     const otShifts = Number(empData.overtime_shifts || 0);
     const otAmt = otShifts * 50000;
-    totalLemburAll += otAmt;
 
     const gajiPokok = Number(empData.gaji_pokok !== undefined ? empData.gaji_pokok : 0);
     const totalTambahan = (tunjJabatanEnabled ? tunjJabatanAmt : 0) +
@@ -6622,57 +6626,71 @@ function renderInternalPayrollTab() {
     const tabunganAmt = Number(empData.savings_deduction || 0);
     const gajiBersih = gajiKotor - tabunganAmt;
 
-    totalGajiKotorAll += gajiKotor;
-    totalTabunganAll += tabunganAmt;
-    totalGajiBersihAll += gajiBersih;
+    if (!isExcluded) {
+      totalLemburAll += otAmt;
+      totalGajiKotorAll += gajiKotor;
+      totalTabunganAll += tabunganAmt;
+      totalGajiBersihAll += gajiBersih;
+    }
 
-    return `<tr style="${isLocked ? 'background:rgba(241, 245, 249, 0.4);' : ''}">
+    if (window._hideExcludedPayrollEmps && isExcluded) return '';
+
+    return `<tr style="${isExcluded ? 'background:rgba(239, 68, 68, 0.08); opacity:0.75;' : (isLocked ? 'background:rgba(241, 245, 249, 0.4);' : '')}">
       <td style="text-align:center; font-weight:bold; padding:4px 6px;">${idx + 1}</td>
-      <td style="padding:4px 6px;"><strong>${esc(u.name)}</strong><br><span class="text-xs text-muted">ID: ${esc(u.emp_id)} | Masa: ${tenureMonths} Bln</span></td>
+      <td style="padding:4px 6px;">
+        <div style="display:flex; align-items:flex-start; gap:0.35rem;">
+          <input type="checkbox" title="${isExcluded ? 'Klik untuk sertakan kembali di penggajian' : 'Klik untuk keluarkan/sembunyikan dari penggajian'}" ${!isExcluded ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="window._saveInternalPayrollItem('${empId}', 'excluded', !this.checked)">
+          <div>
+            <strong style="${isExcluded ? 'text-decoration:line-through; color:var(--danger); opacity:0.75;' : ''}">${esc(u.name)}</strong>
+            ${isExcluded ? '<br><span class="badge badge-warning" style="font-size:0.6rem; padding:1px 4px; margin-top:2px; display:inline-block;">🙈 Disembunyikan (0 Dihitung)</span>' : ''}
+            <br><span class="text-xs text-muted" style="${isExcluded ? 'opacity:0.55;' : ''}">ID: ${esc(u.emp_id)} | Masa: ${tenureMonths} Bln</span>
+          </div>
+        </div>
+      </td>
       <td style="padding:4px 6px;"><span class="badge" style="background:var(--bg-color); color:var(--text-main); font-size:0.7rem; padding:2px 5px;">${esc(pos)}</span></td>
       <td style="font-size:0.75rem; padding:4px 6px;">
-        <input type="number" value="${gajiPokok}" ${isLocked ? 'disabled' : ''} class="form-input" style="width:100%; max-width:92px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.75rem; font-weight:600; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'gaji_pokok', Number(this.value))">
+        <input type="number" value="${gajiPokok}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; max-width:92px; box-sizing:border-box; padding:0.2rem 0.35rem; font-size:0.75rem; font-weight:600; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'gaji_pokok', Number(this.value))">
         <div class="text-xs text-muted" style="margin-top:0.1rem; font-size:0.65rem;">${fmt(gajiPokok)}</div>
       </td>
       <td style="font-size:0.75rem; padding:4px 6px;">
         <div style="display:flex; align-items:center; gap:0.25rem;">
-          <input type="checkbox" ${tunjJabatanEnabled ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_jabatan', this.checked)">
+          <input type="checkbox" ${tunjJabatanEnabled ? 'checked' : ''} ${isLocked || isExcluded ? 'disabled' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_jabatan', this.checked)">
           <span style="font-size:0.7rem; min-width:48px;">Jabatan:</span>
-          <input type="number" value="${tunjJabatanAmt}" ${isLocked ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_jabatan', this.value)">
+          <input type="number" value="${tunjJabatanAmt}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_jabatan', this.value)">
         </div>
         <div style="display:flex; align-items:center; gap:0.25rem; margin-top:0.2rem;">
-          <input type="checkbox" ${tunjKinerjaEnabled ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_kinerja', this.checked)">
+          <input type="checkbox" ${tunjKinerjaEnabled ? 'checked' : ''} ${isLocked || isExcluded ? 'disabled' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_kinerja', this.checked)">
           <span style="font-size:0.7rem; min-width:48px;">Kinerja:</span>
-          <input type="number" value="${tunjKinerjaAmt}" ${isLocked ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_kinerja', this.value)">
+          <input type="number" value="${tunjKinerjaAmt}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_kinerja', this.value)">
         </div>
         <div style="display:flex; align-items:center; gap:0.25rem; margin-top:0.2rem;">
-          <input type="checkbox" ${tunjMasaKerjaEnabled ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_masa_kerja', this.checked)">
+          <input type="checkbox" ${tunjMasaKerjaEnabled ? 'checked' : ''} ${isLocked || isExcluded ? 'disabled' : ''} onchange="window._toggleEmpAllowance('${empId}', 'tunj_masa_kerja', this.checked)">
           <span style="font-size:0.7rem; min-width:48px;">Masa:</span>
-          <input type="number" value="${tunjMasaKerjaAmt}" ${isLocked ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_masa_kerja', this.value)">
+          <input type="number" value="${tunjMasaKerjaAmt}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._updateEmpAllowanceAmt('${empId}', 'tunj_masa_kerja', this.value)">
         </div>
         ${customTunjHTML}
       </td>
       <td style="font-size:0.75rem; padding:4px 6px;">
         <div style="display:flex; align-items:center; gap:0.25rem;">
-          <input type="checkbox" ${pwEnabled ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="window._saveInternalPayrollItem('${empId}', 'pw_enabled', this.checked)">
+          <input type="checkbox" ${pwEnabled ? 'checked' : ''} ${isLocked || isExcluded ? 'disabled' : ''} onchange="window._saveInternalPayrollItem('${empId}', 'pw_enabled', this.checked)">
           <span style="font-size:0.7rem;">PW:</span>
-          <input type="number" value="${pwAmount}" ${isLocked ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'pw_amount', Number(this.value))">
+          <input type="number" value="${pwAmount}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'pw_amount', Number(this.value))">
         </div>
         <div class="text-xs text-muted" style="margin-top:0.15rem; font-size:0.65rem;">Est: ${fmt(isSpvAdmin ? rawPwSpvAdmin : rawPwOprCs)}</div>
       </td>
       <td style="font-size:0.75rem; padding:4px 6px;">
         <div style="display:flex; align-items:center; gap:0.2rem;">
-          <input type="number" value="${otShifts}" ${isLocked ? 'disabled' : ''} class="form-input" style="width:100%; max-width:48px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:center;" min="0" onchange="window._saveInternalPayrollItem('${empId}', 'overtime_shifts', Number(this.value))">
+          <input type="number" value="${otShifts}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; max-width:48px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:center;" min="0" onchange="window._saveInternalPayrollItem('${empId}', 'overtime_shifts', Number(this.value))">
           <span style="font-size:0.7rem;">Shf</span>
         </div>
         <strong style="color:var(--primary); font-size:0.75rem;">${fmt(otAmt)}</strong>
       </td>
       <td style="font-size:0.75rem; padding:4px 6px;">
-        <input type="number" value="${tabunganAmt}" ${isLocked ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'savings_deduction', Number(this.value))">
+        <input type="number" value="${tabunganAmt}" ${isLocked || isExcluded ? 'disabled' : ''} class="form-input" style="width:100%; max-width:80px; box-sizing:border-box; padding:0.18rem 0.3rem; font-size:0.72rem; text-align:right;" onchange="window._saveInternalPayrollItem('${empId}', 'savings_deduction', Number(this.value))">
       </td>
       <td style="text-align:right; padding:4px 6px;">
         <div style="font-size:0.68rem; color:var(--text-muted);">Kotor: ${fmt(gajiKotor)}</div>
-        <strong style="font-size:0.85rem; color:#16a34a;">${fmt(gajiBersih)}</strong>
+        <strong style="font-size:0.85rem; color:${isExcluded ? 'var(--danger)' : '#16a34a'};">${isExcluded ? 'Rp 0 (Disembunyikan)' : fmt(gajiBersih)}</strong>
       </td>
     </tr>`;
   }).join('');
@@ -6723,8 +6741,12 @@ function renderInternalPayrollTab() {
     <!-- MAIN PAYROLL TABLE -->
     <div class="card" style="margin-bottom:1.25rem; overflow-x:auto;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
-        <h4 style="font-size:1rem; font-weight:800; color:var(--text-main); margin:0;">📋 Daftar Gaji Internal Karyawan (${users.length} Karyawan)</h4>
+        <h4 style="font-size:1rem; font-weight:800; color:var(--text-main); margin:0;">📋 Daftar Gaji Internal Karyawan (${activeUsersCount} Aktif${excludedUsersCount > 0 ? ` | ${excludedUsersCount} Disembunyikan` : ''})</h4>
         <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+          ${excludedUsersCount > 0 ? `
+          <label style="font-size:0.75rem; font-weight:700; display:flex; align-items:center; gap:0.35rem; cursor:pointer; background:var(--surface); padding:0.25rem 0.6rem; border-radius:4px; border:1px solid var(--border);">
+            <input type="checkbox" ${window._hideExcludedPayrollEmps ? 'checked' : ''} onchange="window._hideExcludedPayrollEmps = this.checked; renderCurrentSection();"> 🙈 Sembunyikan Karyawan Non-Gaji (${excludedUsersCount})
+          </label>` : ''}
           <button class="btn btn-warning" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:bold;" ${isLocked ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="window._openMassAllowanceModal()">⚡ Input Massal Gaji & Tunjangan</button>
           <label style="font-size:0.75rem; font-weight:700;">Tgl Cetak:</label>
           <input type="date" value="${printDate}" class="form-input" style="padding:0.3rem 0.5rem; font-size:0.75rem; width:135px;" onchange="window._setPayrollPrintDate(this.value)">
@@ -7081,8 +7103,12 @@ window._printAllPayrollBundle = () => {
   const month = window._payrollMonth || getTodayStr().substring(0, 7);
   const printDate = window._payrollPrintDate || getTodayStr();
   const settings = getPayrollSettings();
-  const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
   const monthData = (allData.payroll && allData.payroll[month] && allData.payroll[month].internal_data) || {};
+  const users = getUsers().filter(u => {
+    if ((u.position || '').toLowerCase() === 'manager') return false;
+    const empData = monthData[u.emp_id] || {};
+    return !empData.excluded;
+  });
   const bbm = getBbmSalesData(month);
   const pwInt = computePwInternal(bbm);
   const pwAudit = computePwAudit(bbm);
@@ -7652,8 +7678,12 @@ window._printEnvelopeSlips = (paperSize = 'A4', perPage = 6) => {
   const month = window._payrollMonth || getTodayStr().substring(0, 7);
   const printDate = window._payrollPrintDate || getTodayStr();
   const settings = getPayrollSettings();
-  const users = getUsers().filter(u => (u.position || '').toLowerCase() !== 'manager');
   const monthData = (allData.payroll && allData.payroll[month] && allData.payroll[month].internal_data) || {};
+  const users = getUsers().filter(u => {
+    if ((u.position || '').toLowerCase() === 'manager') return false;
+    const empData = monthData[u.emp_id] || {};
+    return !empData.excluded;
+  });
   const bbm = getBbmSalesData(month);
   const pwInt = computePwInternal(bbm);
 
