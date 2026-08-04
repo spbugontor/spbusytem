@@ -1596,7 +1596,6 @@ function renderRatings() {
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem">
       <h3 class="text-xl font-bold">Penilaian Kinerja</h3>
       <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-        ${filteredRatings.length > 0 ? `<button class="btn btn-primary" style="font-weight:bold; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; border:none; box-shadow:0 2px 8px rgba(99,102,241,0.3);" onclick="window._downloadAllRatingsPDF()">👁️ Pratinjau & Cetak Penilaian (${filteredRatings.length} PDF)</button>` : ''}
         <button class="btn btn-primary" onclick="window._showRatingForm()">+ Tambah Penilaian</button>
       </div>
     </div>
@@ -1639,7 +1638,6 @@ function renderRatings() {
           <div style="display:flex;gap:0.4rem;justify-content:flex-end;margin-top:0.35rem;flex-wrap:wrap;">
             <button class="btn btn-outline-info" style="padding:0.25rem 0.55rem;font-size:0.7rem;font-weight:700;" onclick="window._viewRatingDetail('${r._key}')">👁️ Lihat Detail</button>
             <button class="btn btn-outline-primary" style="padding:0.25rem 0.55rem;font-size:0.7rem;font-weight:700;" onclick="window._editRating('${r._key}')">✏️ Edit</button>
-            <button class="btn btn-outline-primary" style="padding:0.25rem 0.55rem;font-size:0.7rem;font-weight:700;" onclick="window._exportSingleRatingPDF('${r._key}')">🖨️ Cetak / Pratinjau PDF</button>
             <button class="btn btn-outline-danger" style="padding:0.25rem 0.55rem;font-size:0.7rem;font-weight:700;" onclick="window._deleteRating('${r._key}')">Hapus</button>
           </div>
           </div>
@@ -3668,9 +3666,8 @@ window._viewRatingDetail = (key) => {
     </div>
     <div class="modal-footer">
       ${isAdminOrMgr ? `<button class="btn btn-primary" onclick="window._hideModal(); window._editRating('${key}')">✏️ Edit Penilaian</button>` : ''}
-      <button class="btn btn-outline-primary" onclick="window._exportSingleRatingPDF('${key}')">🖨️ Pratinjau PDF</button>
       <button class="btn btn-secondary" onclick="window._hideModal()">Tutup</button>
-    </div>`, 'modal-lg');
+    </div>`,StartLine:3668,TargetContent:`, 'modal-lg');
 };
 
 window._editRating = (key) => {
