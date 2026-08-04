@@ -1636,9 +1636,11 @@ function renderRatings() {
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div><strong>${esc(emp ? emp.name : r.emp_id)}</strong><br><span class="text-xs text-muted">Periode: ${fmtMonthYear(r.date)}</span></div>
           <div style="text-align:right"><span style="font-size:1.5rem;font-weight:800;color:${color}">${avg}</span><span class="text-xs text-muted">/5</span><br>
-          <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.25rem;flex-wrap:wrap;">
-            <button class="btn btn-outline-primary" style="padding:0.2rem 0.5rem;font-size:0.65rem;" onclick="window._exportSingleRatingPDF('${r._key}')">🖨️ Cetak / Pratinjau PDF</button>
-            <button class="btn btn-outline-danger" style="padding:0.2rem 0.5rem;font-size:0.65rem;" onclick="window._deleteRating('${r._key}')">Hapus</button>
+          <div style="display:flex;gap:0.4rem;justify-content:flex-end;margin-top:0.35rem;flex-wrap:wrap;">
+            <button class="btn btn-outline-info" style="padding:0.25rem 0.55rem;font-size:0.7rem;font-weight:700;" onclick="window._viewRatingDetail('${r._key}')">👁️ Lihat Detail</button>
+            <button class="btn btn-outline-primary" style="padding:0.25rem 0.55rem;font-size:0.7rem;font-weight:700;" onclick="window._editRating('${r._key}')">✏️ Edit</button>
+            <button class="btn btn-outline-primary" style="padding:0.25rem 0.55rem;font-size:0.7rem;font-weight:700;" onclick="window._exportSingleRatingPDF('${r._key}')">🖨️ Cetak / Pratinjau PDF</button>
+            <button class="btn btn-outline-danger" style="padding:0.25rem 0.55rem;font-size:0.7rem;font-weight:700;" onclick="window._deleteRating('${r._key}')">Hapus</button>
           </div>
           </div>
         </div>
@@ -3436,27 +3438,33 @@ window._saveMassSaving = async () => {
 window._deleteSaving = async (key) => { if (confirm('Hapus?')) { await remove(ref(db, 'savings/' + key)); showToast('Dihapus!', 'success'); } };
 
 // --- RATING CRUD ---
-window._showRatingForm = () => {
+window._showRatingForm = (editKey = null) => {
+  window._editingRatingKey = editKey;
   const users = getUsers();
-  const criteria = getCriteria(); // Used just for checking if any exist
+  const criteria = getCriteria();
   if (users.length === 0) { showToast('Tambahkan karyawan dulu!', 'warning'); return; }
   if (criteria.length === 0) { showToast('Buat kriteria penilaian dulu!', 'warning'); return; }
 
-  showModal(`<div class="modal-header"><h3 class="modal-title">Tambah Penilaian</h3><button class="modal-close" onclick="window._hideModal()">✕</button></div>
+  const rating = editKey ? (allData.ratings[editKey] || null) : null;
+  const modalTitle = rating ? 'Edit Penilaian Kinerja' : 'Tambah Penilaian Kinerja';
+  const selectedEmpId = rating ? rating.emp_id : (users[0] ? users[0].emp_id : '');
+  const selectedDate = rating ? rating.date : today().substring(0, 7);
+  const noteVal = rating ? (rating.note || '') : '';
+
+  showModal(`<div class="modal-header"><h3 class="modal-title">${modalTitle}</h3><button class="modal-close" onclick="window._hideModal()">✕</button></div>
     <div class="modal-body">
-      <div class="form-group"><label class="form-label">Pilih Karyawan</label><select id="rf-emp" class="form-input form-select" onchange="window._updateRatingCriteria()">${users.map(u => `<option value="${u.emp_id}" data-pos="${esc(u.position)}">${esc(u.name)} (${esc(u.position)})</option>`).join('')}</select></div>
-      <div class="form-group"><label class="form-label">Bulan Penilaian</label><input id="rf-date" type="month" value="${today().substring(0, 7)}" class="form-input" onchange="window._updateRatingCriteria()"></div>
+      <div class="form-group"><label class="form-label">Pilih Karyawan</label><select id="rf-emp" class="form-input form-select" onchange="window._updateRatingCriteria()">${users.map(u => `<option value="${u.emp_id}" data-pos="${esc(u.position)}" ${u.emp_id === selectedEmpId ? 'selected' : ''}>${esc(u.name)} (${esc(u.position)})</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Bulan Penilaian</label><input id="rf-date" type="month" value="${selectedDate}" class="form-input" onchange="window._updateRatingCriteria()"></div>
       <div id="rf-dup-warning"></div>
       <div id="rf-criteria-container"></div>
-      <div class="form-group mt-4"><label class="form-label">Catatan</label><textarea id="rf-note" class="form-input" rows="2" placeholder="Catatan tambahan..."></textarea></div>
+      <div class="form-group mt-4"><label class="form-label">Catatan & Evaluasi Manajemen</label><textarea id="rf-note" class="form-input" rows="2" placeholder="Catatan tambahan...">${esc(noteVal)}</textarea></div>
     </div>
-    <div class="modal-footer"><button class="btn btn-primary" onclick="window._saveRating()">Simpan Penilaian</button><button class="btn btn-secondary" onclick="window._hideModal()">Batal</button></div>`, 'modal-lg');
+    <div class="modal-footer"><button class="btn btn-primary" onclick="window._saveRating()">${rating ? 'Simpan Perubahan' : 'Simpan Penilaian'}</button><button class="btn btn-secondary" onclick="window._hideModal()">Batal</button></div>`, 'modal-lg');
 
-  // Initialize criteria list for the first selected employee
-  window._updateRatingCriteria();
+  window._updateRatingCriteria(rating ? rating.scores : null);
 };
 
-window._updateRatingCriteria = () => {
+window._updateRatingCriteria = (existingScores = null) => {
   const empSelect = $('rf-emp');
   if (!empSelect) return;
   const selectedOption = empSelect.options[empSelect.selectedIndex];
@@ -3467,18 +3475,15 @@ window._updateRatingCriteria = () => {
   const dateVal = $('rf-date') ? $('rf-date').value.substring(0, 7) : '';
   const warnContainer = $('rf-dup-warning');
   if (warnContainer) {
-    const existing = getRatings().filter(r => r.emp_id === empId && (r.date || '').substring(0, 7) === dateVal);
+    const existing = getRatings().filter(r => r.emp_id === empId && (r.date || '').substring(0, 7) === dateVal && r._key !== window._editingRatingKey);
     if (existing.length > 0) {
-      warnContainer.innerHTML = `<div style="background:#fee2e2; border:1px solid #ef4444; color:#991b1b; padding:0.6rem 0.8rem; border-radius:6px; font-size:0.8rem; font-weight:700; margin-bottom:1rem;">⚠️ PERHATIAN: Karyawan ini sudah memiliki penilaian di periode ${dateVal}. Penilaian baru akan ditolak otomatis.</div>`;
+      warnContainer.innerHTML = `<div style="background:#fee2e2; border:1px solid #ef4444; color:#991b1b; padding:0.6rem 0.8rem; border-radius:6px; font-size:0.8rem; font-weight:700; margin-bottom:1rem;">⚠️ PERHATIAN: Karyawan ini sudah memiliki penilaian lain di periode ${dateVal}.</div>`;
     } else {
       warnContainer.innerHTML = '';
     }
   }
 
-  // Get criteria filtered by this position
   const posCriteria = getCriteria(pos);
-
-  // Group by indicator
   const grouped = {};
   posCriteria.forEach(c => {
     const ind = c.indicator || 'Umum';
@@ -3500,12 +3505,12 @@ window._updateRatingCriteria = () => {
       <h5 style="font-size:0.85rem;font-weight:700;color:var(--primary);margin-bottom:0.75rem;text-transform:uppercase">${esc(ind)}</h5>`;
 
     grouped[ind].forEach(c => {
-      const defaultVal = 3;
+      const savedVal = existingScores ? (existingScores[c._key] || 3) : 3;
       html += `<div style="display:flex;flex-direction:column;gap:0.6rem;padding:0.6rem 0;border-bottom:1px solid var(--border)">
         <span class="text-sm font-semibold" style="flex:1;color:var(--text-main);">${esc(c.name)}</span>
-        <input type="hidden" class="rf-score" data-key="${c._key}" id="score-${c._key}" value="${defaultVal}">
+        <input type="hidden" class="rf-score" data-key="${c._key}" id="score-${c._key}" value="${savedVal}">
         <div style="display:flex;gap:0.6rem;justify-content:flex-end;margin-top:0.2rem;" id="rating-group-${c._key}">
-          ${[1, 2, 3, 4, 5].map(n => `<button type="button" class="rating-btn rating-btn-${n} ${n === defaultVal ? 'active' : ''}" onclick="_setRating('${c._key}', ${n})">${n}</button>`).join('')}
+          ${[1, 2, 3, 4, 5].map(n => `<button type="button" class="rating-btn rating-btn-${n} ${n === savedVal ? 'active' : ''}" onclick="_setRating('${c._key}', ${n})">${n}</button>`).join('')}
         </div>
       </div>`;
     });
@@ -3532,6 +3537,7 @@ window._setRating = (key, val) => {
     });
   }
 };
+
 window._saveRating = async () => {
   const empId = $('rf-emp').value;
   const date = $('rf-date').value;
@@ -3543,19 +3549,90 @@ window._saveRating = async () => {
   }
 
   const targetMonth = date.substring(0, 7);
-  const existing = getRatings().filter(r => r.emp_id === empId && (r.date || '').substring(0, 7) === targetMonth);
+  const existing = getRatings().filter(r => r.emp_id === empId && (r.date || '').substring(0, 7) === targetMonth && r._key !== window._editingRatingKey);
   if (existing.length > 0) {
     const emp = getUserByEmpId(empId);
     const empName = emp ? emp.name : empId;
-    showToast(`DITOLAK: ${empName} sudah dinilai untuk periode ${targetMonth}! Penilaian hanya bisa 1x per bulan.`, 'error');
+    showToast(`DITOLAK: ${empName} sudah memiliki penilaian lain untuk periode ${targetMonth}!`, 'error');
     return;
   }
 
   const scores = {};
   document.querySelectorAll('.rf-score').forEach(el => { scores[el.dataset.key] = Math.min(5, Math.max(1, parseInt(el.value) || 1)); });
-  await set(push(ref(db, 'ratings')), { emp_id: empId, date, scores, note, timestamp: Date.now() });
-  showToast('Penilaian disimpan!', 'success');
+
+  if (window._editingRatingKey) {
+    await set(ref(db, 'ratings/' + window._editingRatingKey), { emp_id: empId, date, scores, note, timestamp: Date.now() });
+    showToast('Penilaian berhasil diperbarui!', 'success');
+    window._editingRatingKey = null;
+  } else {
+    await set(push(ref(db, 'ratings')), { emp_id: empId, date, scores, note, timestamp: Date.now() });
+    showToast('Penilaian disimpan!', 'success');
+  }
   hideModal();
+};
+
+window._viewRatingDetail = (key) => {
+  const rating = allData.ratings[key];
+  if (!rating) {
+    showToast('Data penilaian tidak ditemukan!', 'error');
+    return;
+  }
+  const emp = getUserByEmpId(rating.emp_id);
+  const empName = emp ? emp.name : rating.emp_id;
+  const empPos = emp ? emp.position : '-';
+  const avg = rating.scores ? (Object.values(rating.scores).reduce((s, v) => s + v, 0) / Object.values(rating.scores).length).toFixed(1) : '0';
+  const color = avg >= 4.5 ? 'var(--success)' : avg >= 3.5 ? 'var(--info)' : avg >= 2.5 ? 'var(--warning)' : 'var(--danger)';
+
+  const posCriteria = getCriteria(empPos);
+  const grouped = {};
+  posCriteria.forEach(c => {
+    const ind = c.indicator || 'Umum';
+    if (!grouped[ind]) grouped[ind] = [];
+    grouped[ind].push(c);
+  });
+
+  let scoresHtml = '';
+  Object.keys(grouped).forEach(ind => {
+    scoresHtml += `<div style="margin-top:0.75rem; background:var(--surface); padding:0.85rem; border-radius:var(--radius-md); border:1px solid var(--border);">
+      <h5 style="font-size:0.8rem; font-weight:800; color:var(--primary); margin-bottom:0.5rem; text-transform:uppercase;">${esc(ind)}</h5>`;
+    grouped[ind].forEach(c => {
+      const val = rating.scores ? (rating.scores[c._key] || '-') : '-';
+      const stars = typeof val === 'number' ? '⭐'.repeat(val) : '';
+      scoresHtml += `<div style="display:flex; justify-content:space-between; align-items:center; padding:0.4rem 0; border-bottom:1px solid var(--border); font-size:0.85rem;">
+        <span>${esc(c.name)}</span>
+        <span style="font-weight:700; color:var(--primary);">${val} / 5 <span style="font-size:0.75rem;">${stars}</span></span>
+      </div>`;
+    });
+    scoresHtml += `</div>`;
+  });
+
+  showModal(`<div class="modal-header"><h3 class="modal-title">👁️ Detail Penilaian Kinerja</h3><button class="modal-close" onclick="window._hideModal()">✕</button></div>
+    <div class="modal-body">
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:1rem; background:var(--surface); border-radius:8px; border:1px solid var(--border); margin-bottom:1rem;">
+        <div>
+          <h4 style="font-size:1.1rem; font-weight:800; color:var(--text-main); margin:0;">${esc(empName)}</h4>
+          <span style="font-size:0.8rem; color:var(--text-muted);">${esc(empPos)} • Periode: <strong>${fmtMonthYear(rating.date)}</strong></span>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:1.8rem; font-weight:900; color:${color}; line-height:1;">${avg} <span style="font-size:0.9rem; color:var(--text-muted); font-weight:normal;">/ 5.0</span></div>
+          <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Skor Rata-rata</span>
+        </div>
+      </div>
+      ${scoresHtml}
+      ${rating.note ? `<div style="margin-top:1rem; padding:0.85rem; background:var(--surface); border-radius:8px; border:1px solid var(--border);">
+        <div style="font-size:0.75rem; font-weight:700; color:var(--primary); text-transform:uppercase; margin-bottom:0.25rem;">💬 Catatan & Evaluasi Manajemen:</div>
+        <div style="font-size:0.85rem; font-style:italic; color:var(--text-main);">"${esc(rating.note)}"</div>
+      </div>` : ''}
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="window._hideModal(); window._editRating('${key}')">✏️ Edit Penilaian</button>
+      <button class="btn btn-outline-primary" onclick="window._exportSingleRatingPDF('${key}')">🖨️ Pratinjau PDF</button>
+      <button class="btn btn-secondary" onclick="window._hideModal()">Tutup</button>
+    </div>`, 'modal-lg');
+};
+
+window._editRating = (key) => {
+  window._showRatingForm(key);
 };
 window._deleteRating = async (key) => { if (confirm('Hapus penilaian?')) { await remove(ref(db, 'ratings/' + key)); showToast('Dihapus!', 'success'); } };
 
