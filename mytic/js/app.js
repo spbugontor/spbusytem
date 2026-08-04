@@ -4645,10 +4645,10 @@ function calculateEmployeeKpi(emp, period) {
   const allTxns = getTxns(emp.emp_id);
   const periodTxns = allTxns.filter(t => isRecordInPeriod(t.date, t.tanggal, t.timestamp, t.created_at));
   const periodTxCount = periodTxns.length;
-  const allDebitTxns = allTxns.filter(t => t.type === 'debit');
+  const periodDebitTxns = periodTxns.filter(t => t.type === 'debit');
 
   const nominalPenalty = Math.floor(totalDebitAmt / 50000) * 5;
-  const frequencyPenalty = allDebitTxns.length * 5;
+  const frequencyPenalty = periodDebitTxns.length * 5;
   const debitScore = Math.max(0, 100 - (nominalPenalty + frequencyPenalty));
 
   // 6. FAIR Composite KPI Score Calculation:
