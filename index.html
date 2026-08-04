@@ -13,7 +13,7 @@
     rel="stylesheet">
 
   <!-- CSS -->
-  <link rel="stylesheet" href="css/style.css?v=4">
+  <link rel="stylesheet" href="css/style.css?v=6">
 
   <!-- html2pdf.js library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -510,6 +510,29 @@
     </div>
   </div>
 
+  <!-- Underage Modal (Pemesanan Ditolak Usia < 17 Tahun) -->
+  <div id="modal-underage" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Pemesanan Ditolak</h3>
+        <button class="modal-close" data-close-modal>×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-alert modal-alert-error">
+          <strong>Usia Di Bawah 17 Tahun!</strong><br>
+          Berdasarkan NIK KTP yang Anda masukkan, pemesan terdeteksi berusia di bawah 17 tahun.
+        </div>
+        <ul class="help-list mt-3">
+          <li>Pemesanan LPG 3 KG hanya diperuntukkan bagi pemesan berusia minimal 17 tahun (memiliki KTP).</li>
+          <li>Silakan gunakan NIK anggota keluarga lain yang sudah berusia 17 tahun ke atas.</li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-underage-ok" class="btn btn-danger" data-close-modal>Saya Mengerti</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Success Modal -->
   <div id="modal-success" class="modal-overlay">
     <div class="modal">
@@ -561,6 +584,17 @@
             <span class="modal-data-label">NIK</span>
             <span id="verify-nik" class="modal-data-value">-</span>
           </div>
+        </div>
+        <div class="mt-3 p-3" style="background: var(--bg); border: 1px dashed var(--primary); border-radius: var(--radius-sm); font-size: 13px;">
+          <div style="font-weight: 700; margin-bottom: 6px; color: var(--primary);">📋 Checklist Verifikasi Fisik Dokumen:</div>
+          <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; cursor: pointer;">
+            <input type="checkbox" id="chk-verify-kk" checked style="accent-color: var(--primary);">
+            <span>Bukti fisik KK/KTP telah diperiksa & cocok dengan NIK/KK</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="chk-verify-money" checked style="accent-color: var(--primary);">
+            <span>Uang pembayaran telah diterima</span>
+          </label>
         </div>
       </div>
       <div class="modal-footer">

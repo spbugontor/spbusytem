@@ -295,16 +295,21 @@ function renderAdminList() {
     return;
   }
 
-  container.innerHTML = filtered.map(o =>
-    '<div class="admin-order-card item-enter">' +
+  container.innerHTML = filtered.map(o => {
+    const parsed = parseNIK(o.nik || '');
+    const gender = o.jenis_kelamin || (parsed.isValid ? parsed.gender : '');
+    const age = o.umur || (parsed.isValid ? parsed.age : '');
+    const badgeHtml = gender ? `<span class="nik-badge ${gender === 'Pria' ? 'nik-badge-male' : 'nik-badge-female'}">${gender === 'Pria' ? '👨 Pria' : '👩 Wanita'}${age ? `, ${age}th` : ''}</span>` : '';
+
+    return '<div class="admin-order-card item-enter">' +
     '<div class="admin-order-header">' +
-    '<span class="admin-order-name">' + esc(o.nama) + '</span>' +
+    '<span class="admin-order-name">' + esc(o.nama) + ' ' + badgeHtml + '</span>' +
     '<span class="badge ' + (o.sudah_bayar ? 'badge-success' : 'badge-warning') + '">' +
     (o.sudah_bayar ? '✓ Lunas' : 'Belum') +
     '</span></div>' +
     '<div class="admin-order-details">' +
     '<span class="admin-order-detail"><strong>KK:</strong> ' + esc(o.kk) + '</span>' +
-    '<span class="admin-order-detail"><strong>NIK:</strong> ' + esc(o.nik) + '</span>' +
+    '<span class="admin-order-detail"><strong>NIK:</strong> ' + esc(o.nik) + (o.tanggal_lahir ? ` (${o.tanggal_lahir})` : (parsed.isValid ? ` (${parsed.tglFormatted})` : '')) + '</span>' +
     '</div>' +
     '<div class="admin-order-actions">' +
     (o.sudah_bayar
@@ -312,8 +317,8 @@ function renderAdminList() {
       : '<button class="btn btn-warning-sm" onclick="onMarkPaid(\'' + o.id + '\', \'' + esc(o.nama) + '\', \'' + esc(o.kk) + '\', \'' + esc(o.nik) + '\', false)">Tandai Bayar</button>'
     ) +
     '<button class="btn btn-danger-sm" onclick="onDeleteOrder(\'' + o.id + '\', \'' + esc(o.nama) + '\')">Hapus</button>' +
-    '</div></div>'
-  ).join('');
+    '</div></div>';
+  }).join('');
 }
 
 // -- SETTINGS POPULATE --
@@ -446,9 +451,12 @@ function setupEventListeners() {
     this.setSelectionRange(pos, pos);
   });
 
-  // Digits only
+  // Digits only & NIK Live Parser
   ['inp-kk', 'inp-nik'].forEach(id => {
-    on(id, 'input', function () { this.value = this.value.replace(/\D/g, '').slice(0, 16); });
+    on(id, 'input', function () {
+      this.value = this.value.replace(/\D/g, '').slice(0, 16);
+      if (id === 'inp-nik') updateNIKInfoUI();
+    });
   });
 
   // Form Submit User
@@ -473,6 +481,7 @@ function setupEventListeners() {
   // Alert Modals Close
   on('btn-success-ok', 'click', () => hideModal('modal-success'));
   on('btn-duplicate-ok', 'click', () => hideModal('modal-duplicate'));
+  on('btn-underage-ok', 'click', () => hideModal('modal-underage'));
 }
 
 function switchAdminSection(sectionId) {
@@ -529,6 +538,17 @@ async function handleOrderSubmit(e) {
 
   if (kk.length !== 16 || nik.length !== 16) { toast('KK dan NIK harus 16 digit', 'error'); return; }
 
+  // Validasi Parsing NIK
+  const parsedNIK = parseNIK(nik);
+  if (!parsedNIK.isValid) {
+    toast('NIK tidak valid: ' + parsedNIK.reason, 'error');
+    return;
+  }
+  if (parsedNIK.age < 17) {
+    showModal('modal-underage');
+    return;
+  }
+
   // Client-side Duplicate Check
   const todayOrders = getTodayOrders();
   if (todayOrders.some(o => o.nik === nik)) {
@@ -550,6 +570,9 @@ async function handleOrderSubmit(e) {
       nama: nama,
       kk: kk,
       nik: nik,
+      jenis_kelamin: parsedNIK.gender,
+      tanggal_lahir: parsedNIK.tglFormatted,
+      umur: parsedNIK.age,
       jumlah: 1,
       sudah_bayar: false,
       tanggal: getTodayString(),
@@ -558,6 +581,7 @@ async function handleOrderSubmit(e) {
 
     document.getElementById('order-form').reset();
     document.getElementById('inp-jumlah').value = '1';
+    updateNIKInfoUI();
     showModal('modal-success');
   } catch (error) {
     console.error(error);
@@ -570,12 +594,26 @@ async function handleOrderSubmit(e) {
 
 async function handleConfirmPayment() {
   if (!pendingPaymentId) return;
+
+  if (pendingPaymentState) {
+    const chkKK = document.getElementById('chk-verify-kk');
+    const chkMoney = document.getElementById('chk-verify-money');
+    if (chkKK && !chkKK.checked) {
+      toast('Mohon centang konfirmasi verifikasi fisik KK/KTP', 'warning');
+      return;
+    }
+    if (chkMoney && !chkMoney.checked) {
+      toast('Mohon centang konfirmasi penerimaan uang pembayaran', 'warning');
+      return;
+    }
+  }
+
   const btn = document.getElementById('btn-confirm-paid');
   btn.disabled = true; btn.innerHTML = '<span class="spinner spinner-white"></span>';
 
   try {
     await update(ref(db, `orders/${pendingPaymentId}`), { sudah_bayar: pendingPaymentState });
-    toast(pendingPaymentState ? 'Pembayaran dikonfirmasi' : 'Pembayaran dibatalkan', 'success');
+    toast(pendingPaymentState ? 'Pembayaran & Verifikasi Fisik Dikonfirmasi' : 'Pembayaran dibatalkan', 'success');
     hideModal('modal-verify-payment');
   } catch (error) {
     console.error(error);
@@ -884,3 +922,73 @@ window.onDeleteOrder = (id, nama) => {
   setText('delete-confirm-name', nama);
   showModal('modal-delete-confirm');
 };
+
+// ─────────────────────────────────────────────
+// NIK PARSER & LIVE UI
+// ─────────────────────────────────────────────
+function parseNIK(nik) {
+  if (!nik || typeof nik !== 'string') return { isValid: false, reason: 'NIK kosong' };
+  const clean = nik.replace(/\D/g, '');
+  if (clean.length !== 16) return { isValid: false, reason: 'NIK harus 16 digit' };
+
+  let rawDay = parseInt(clean.substring(6, 8), 10);
+  let month = parseInt(clean.substring(8, 10), 10);
+  let yearTwo = parseInt(clean.substring(10, 12), 10);
+
+  let gender = 'Pria';
+  let day = rawDay;
+  if (rawDay > 40) {
+    gender = 'Wanita';
+    day = rawDay - 40;
+  }
+
+  if (month < 1 || month > 12) {
+    return { isValid: false, reason: 'Bulan lahir di NIK tidak valid' };
+  }
+
+  const now = new Date();
+  const currentTwoDigitYear = now.getFullYear() % 100;
+  const fullYear = (yearTwo > currentTwoDigitYear) ? (1900 + yearTwo) : (2000 + yearTwo);
+
+  const daysInMonth = new Date(fullYear, month, 0).getDate();
+  if (day < 1 || day > daysInMonth) {
+    return { isValid: false, reason: `Tanggal lahir (${day}/${month}/${fullYear}) tidak valid` };
+  }
+
+  const birthDate = new Date(fullYear, month - 1, day);
+  if (isNaN(birthDate.getTime())) {
+    return { isValid: false, reason: 'Tanggal lahir tidak valid' };
+  }
+
+  let age = now.getFullYear() - birthDate.getFullYear();
+  const monthDiff = now.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birthDate.getDate())) {
+    age--;
+  }
+
+  const namaBulan = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ];
+
+  const tglFormatted = `${day} ${namaBulan[month - 1]} ${fullYear}`;
+
+  return {
+    isValid: true,
+    day,
+    month,
+    year: fullYear,
+    gender,
+    age,
+    tglFormatted,
+    birthDate
+  };
+}
+
+function updateNIKInfoUI() {
+  const infoBox = document.getElementById('nik-info-box');
+  if (infoBox) {
+    infoBox.style.display = 'none';
+    infoBox.innerHTML = '';
+  }
+}
