@@ -2537,9 +2537,12 @@ function renderEmpRatings() {
       ratings.map(r => {
         const avg = r.scores ? (Object.values(r.scores).reduce((s, v) => s + v, 0) / Object.values(r.scores).length).toFixed(1) : '0';
         const color = avg >= 4.5 ? 'var(--success)' : avg >= 3.5 ? 'var(--info)' : avg >= 2.5 ? 'var(--warning)' : 'var(--danger)';
-        return `<div class="card" style="margin-bottom:0.75rem">
+        return `<div class="card" style="margin-bottom:0.75rem; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s;" onclick="window._viewRatingDetail('${r._key}')" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <span class="text-muted text-sm">Periode: ${fmtMonthYear(r.date)}</span>
+          <div>
+            <span class="text-muted text-sm" style="font-weight:700;">Periode: ${fmtMonthYear(r.date)}</span>
+            <br><span style="font-size:0.75rem; color:var(--primary); font-weight:700;">👁️ Klik untuk lihat rata-rata per indikator</span>
+          </div>
           <span style="font-size:1.5rem;font-weight:800;color:${color}">${avg}/5</span>
         </div>
         ${r.note ? `<p class="text-xs text-muted mt-2" style="border-top:1px solid var(--border);padding-top:0.5rem">"${esc(r.note)}"</p>` : ''}
@@ -3580,33 +3583,69 @@ window._viewRatingDetail = (key) => {
   const emp = getUserByEmpId(rating.emp_id);
   const empName = emp ? emp.name : rating.emp_id;
   const empPos = emp ? emp.position : '-';
-  const avg = rating.scores ? (Object.values(rating.scores).reduce((s, v) => s + v, 0) / Object.values(rating.scores).length).toFixed(1) : '0';
-  const color = avg >= 4.5 ? 'var(--success)' : avg >= 3.5 ? 'var(--info)' : avg >= 2.5 ? 'var(--warning)' : 'var(--danger)';
+  const overallAvg = rating.scores ? (Object.values(rating.scores).reduce((s, v) => s + v, 0) / Object.values(rating.scores).length).toFixed(1) : '0';
+  const color = overallAvg >= 4.5 ? 'var(--success)' : overallAvg >= 3.5 ? 'var(--info)' : overallAvg >= 2.5 ? 'var(--warning)' : 'var(--danger)';
 
+  // Group criteria by Indicator name and calculate AVERAGE per Indicator
   const posCriteria = getCriteria(empPos);
-  const grouped = {};
+  const groupedIndicatorScores = {};
+
   posCriteria.forEach(c => {
-    const ind = c.indicator || 'Umum';
-    if (!grouped[ind]) grouped[ind] = [];
-    grouped[ind].push(c);
+    const indName = c.indicator || 'Umum';
+    if (!groupedIndicatorScores[indName]) {
+      groupedIndicatorScores[indName] = { sum: 0, count: 0 };
+    }
+    const scoreVal = rating.scores ? Number(rating.scores[c._key] || 0) : 0;
+    if (scoreVal > 0) {
+      groupedIndicatorScores[indName].sum += scoreVal;
+      groupedIndicatorScores[indName].count += 1;
+    }
   });
 
-  let scoresHtml = '';
-  Object.keys(grouped).forEach(ind => {
-    scoresHtml += `<div style="margin-top:0.75rem; background:var(--surface); padding:0.85rem; border-radius:var(--radius-md); border:1px solid var(--border);">
-      <h5 style="font-size:0.8rem; font-weight:800; color:var(--primary); margin-bottom:0.5rem; text-transform:uppercase;">${esc(ind)}</h5>`;
-    grouped[ind].forEach(c => {
-      const val = rating.scores ? (rating.scores[c._key] || '-') : '-';
-      const stars = typeof val === 'number' ? '⭐'.repeat(val) : '';
-      scoresHtml += `<div style="display:flex; justify-content:space-between; align-items:center; padding:0.4rem 0; border-bottom:1px solid var(--border); font-size:0.85rem;">
-        <span>${esc(c.name)}</span>
-        <span style="font-weight:700; color:var(--primary);">${val} / 5 <span style="font-size:0.75rem;">${stars}</span></span>
-      </div>`;
+  // Fallback if position match criteria is empty
+  if (Object.keys(groupedIndicatorScores).length === 0 && rating.scores) {
+    const allCriteria = getCriteria();
+    Object.keys(rating.scores).forEach(key => {
+      const c = allCriteria.find(x => x._key === key);
+      const indName = c ? (c.indicator || 'Umum') : 'Umum';
+      if (!groupedIndicatorScores[indName]) {
+        groupedIndicatorScores[indName] = { sum: 0, count: 0 };
+      }
+      const scoreVal = Number(rating.scores[key] || 0);
+      if (scoreVal > 0) {
+        groupedIndicatorScores[indName].sum += scoreVal;
+        groupedIndicatorScores[indName].count += 1;
+      }
     });
-    scoresHtml += `</div>`;
+  }
+
+  let indicatorRowsHtml = '';
+  Object.keys(groupedIndicatorScores).forEach(indName => {
+    const item = groupedIndicatorScores[indName];
+    const indAvg = item.count > 0 ? (item.sum / item.count).toFixed(1) : '0';
+    const numAvg = parseFloat(indAvg);
+    const indColor = numAvg >= 4.5 ? '#10b981' : numAvg >= 3.5 ? '#3b82f6' : numAvg >= 2.5 ? '#f59e0b' : '#ef4444';
+    const filledStars = '⭐'.repeat(Math.round(numAvg));
+    const percentBar = (numAvg / 5) * 100;
+
+    indicatorRowsHtml += `
+    <div style="margin-top:0.75rem; background:var(--surface); padding:0.9rem 1rem; border-radius:var(--radius-md); border:1px solid var(--border);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+        <span style="font-size:0.85rem; font-weight:800; color:var(--text-main); text-transform:uppercase;">${esc(indName)}</span>
+        <span style="font-size:1.1rem; font-weight:900; color:${indColor};">${indAvg} <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">/ 5.0</span></span>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem;">
+        <div style="flex:1; background:rgba(148, 163, 184, 0.2); height:7px; border-radius:10px; overflow:hidden;">
+          <div style="width:${percentBar}%; background:${indColor}; height:100%; border-radius:10px; transition:width 0.3s ease;"></div>
+        </div>
+        <span style="font-size:0.8rem;">${filledStars}</span>
+      </div>
+    </div>`;
   });
 
-  showModal(`<div class="modal-header"><h3 class="modal-title">👁️ Detail Penilaian Kinerja</h3><button class="modal-close" onclick="window._hideModal()">✕</button></div>
+  const isAdminOrMgr = currentUser && ['admin', 'manager', 'supervisor', 'spv'].includes((currentUser.role || '').toLowerCase());
+
+  showModal(`<div class="modal-header"><h3 class="modal-title">👁️ Rincian Rata-Rata Penilaian Kinerja</h3><button class="modal-close" onclick="window._hideModal()">✕</button></div>
     <div class="modal-body">
       <div style="display:flex; justify-content:space-between; align-items:center; padding:1rem; background:var(--surface); border-radius:8px; border:1px solid var(--border); margin-bottom:1rem;">
         <div>
@@ -3614,18 +3653,21 @@ window._viewRatingDetail = (key) => {
           <span style="font-size:0.8rem; color:var(--text-muted);">${esc(empPos)} • Periode: <strong>${fmtMonthYear(rating.date)}</strong></span>
         </div>
         <div style="text-align:right;">
-          <div style="font-size:1.8rem; font-weight:900; color:${color}; line-height:1;">${avg} <span style="font-size:0.9rem; color:var(--text-muted); font-weight:normal;">/ 5.0</span></div>
-          <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Skor Rata-rata</span>
+          <div style="font-size:1.8rem; font-weight:900; color:${color}; line-height:1;">${overallAvg} <span style="font-size:0.9rem; color:var(--text-muted); font-weight:normal;">/ 5.0</span></div>
+          <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Nilai Total Rata-Rata</span>
         </div>
       </div>
-      ${scoresHtml}
+
+      <div style="font-size:0.8rem; font-weight:800; color:var(--primary); text-transform:uppercase; margin-bottom:0.25rem;">📊 RATA-RATA NILAI PER INDIKATOR:</div>
+      ${indicatorRowsHtml || '<p class="text-muted text-sm py-2">Rincian indikator tidak ditemukan.</p>'}
+
       ${rating.note ? `<div style="margin-top:1rem; padding:0.85rem; background:var(--surface); border-radius:8px; border:1px solid var(--border);">
         <div style="font-size:0.75rem; font-weight:700; color:var(--primary); text-transform:uppercase; margin-bottom:0.25rem;">💬 Catatan & Evaluasi Manajemen:</div>
         <div style="font-size:0.85rem; font-style:italic; color:var(--text-main);">"${esc(rating.note)}"</div>
       </div>` : ''}
     </div>
     <div class="modal-footer">
-      <button class="btn btn-primary" onclick="window._hideModal(); window._editRating('${key}')">✏️ Edit Penilaian</button>
+      ${isAdminOrMgr ? `<button class="btn btn-primary" onclick="window._hideModal(); window._editRating('${key}')">✏️ Edit Penilaian</button>` : ''}
       <button class="btn btn-outline-primary" onclick="window._exportSingleRatingPDF('${key}')">🖨️ Pratinjau PDF</button>
       <button class="btn btn-secondary" onclick="window._hideModal()">Tutup</button>
     </div>`, 'modal-lg');
