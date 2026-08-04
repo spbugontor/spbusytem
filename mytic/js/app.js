@@ -3667,7 +3667,7 @@ window._viewRatingDetail = (key) => {
     <div class="modal-footer">
       ${isAdminOrMgr ? `<button class="btn btn-primary" onclick="window._hideModal(); window._editRating('${key}')">✏️ Edit Penilaian</button>` : ''}
       <button class="btn btn-secondary" onclick="window._hideModal()">Tutup</button>
-    </div>`,StartLine:3668,TargetContent:`, 'modal-lg');
+    </div>`, 'modal-lg');
 };
 
 window._editRating = (key) => {
