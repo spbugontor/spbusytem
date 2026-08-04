@@ -4924,19 +4924,20 @@ function _generateEmployeeKpiRaporContainerHtml(empId, forcedRank, forcedTotalUs
       </div>
     </div>
 
-    <div class="signature-area" style="margin-top:20px; display:flex; justify-content:space-between; align-items:flex-end;">
+    <div class="signature-area" style="margin-top:20px; display:flex; justify-content:space-between; align-items:flex-start;">
       <div class="sig-box" style="width:220px; text-align:center; font-size:11px; color:#0f172a !important;">
         <div style="color:#0f172a !important;">Penerima Rapor (Karyawan),<br>&nbsp;</div>
-        <div class="sig-space" style="height:80px;"></div>
+        <div class="sig-space" style="height:65px;"></div>
         <div><strong style="color:#0f172a !important;">( ______________________ )</strong></div>
         <div style="font-size:10px; font-weight:bold; color:#0f172a !important; margin-top:2px;">${esc(u.name)}</div>
         <div style="font-size:9.5px; color:#64748b !important;">ID: ${esc(u.emp_id)}</div>
       </div>
       <div class="sig-box" style="width:220px; text-align:center; font-size:11px; color:#0f172a !important;">
         <div style="color:#0f172a !important;">Gontor, ${formattedDate}<br><strong style="color:#0f172a !important;">Manager SPBU Gontor</strong>,</div>
-        <div class="sig-space" style="height:80px;"></div>
+        <div class="sig-space" style="height:65px;"></div>
         <div><strong style="color:#0f172a !important;">( ______________________ )</strong></div>
         <div style="font-size:10px; font-weight:bold; color:#0f172a !important; margin-top:2px;">${esc(managerName)}</div>
+        <div style="font-size:9.5px; color:transparent !important; margin-top:2px; user-select:none;">&nbsp;</div>
       </div>
     </div>
   </div>`;
