@@ -4587,13 +4587,26 @@ function _generateEmployeeKpiRaporContainerHtml(empId, forcedRank, forcedTotalUs
   if (!u) return '';
 
   const period = forcedPeriod || window._leaderboardPeriod || 'month';
-  const periodTitles = {
-    'month': 'Bulan Ini (' + new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) + ')',
-    'last_month': 'Bulan Lalu',
-    'quarter': 'Triwulan (3 Bulan)',
-    'year': 'Tahun ' + new Date().getFullYear()
-  };
-  const periodTitle = periodTitles[period] || 'Bulan Ini';
+  const now = new Date();
+  const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastMonthStr = lastMonthDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+  const thisMonthStr = now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+
+  let periodTitle = '';
+  if (period === 'month') {
+    periodTitle = thisMonthStr;
+  } else if (period === 'last_month') {
+    periodTitle = lastMonthStr;
+  } else if (period === 'quarter') {
+    periodTitle = 'Triwulan (3 Bulan)';
+  } else if (period === 'year') {
+    periodTitle = 'Tahun ' + now.getFullYear();
+  } else if (typeof period === 'string' && /^\d{4}-\d{2}$/.test(period)) {
+    const [y, m] = period.split('-').map(Number);
+    periodTitle = new Date(y, m - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+  } else {
+    periodTitle = thisMonthStr;
+  }
 
   let userRank = forcedRank;
   let totalUsers = forcedTotalUsers;
