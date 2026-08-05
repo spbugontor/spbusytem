@@ -9232,6 +9232,17 @@ window._openCertificateModal = (empId) => {
         </div>
       </div>
       <div>
+        <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted,#94a3b8);display:block;margin-bottom:0.3rem;">Font Nama Karyawan</label>
+        <select id="cert-name-font" class="form-input" style="width:100%;padding:0.5rem;font-size:0.85rem;">
+          <option value="Alex Brush">✨ Alex Brush (Kaligrafi Klasik & Rapi - Rekomendasi)</option>
+          <option value="Great Vibes">🖊️ Great Vibes (Kaligrafi Halus)</option>
+          <option value="Playfair Display">📜 Playfair Display (Serif Formal & Wibawa)</option>
+          <option value="Pinyon Script">👑 Pinyon Script (Royal / Luxury Script)</option>
+          <option value="Tangerine">🖋️ Tangerine (Artistic Quill Pen Calligraphy)</option>
+          <option value="Cinzel Decorative">🏛️ Cinzel Decorative (Capital Bold Formal)</option>
+        </select>
+      </div>
+      <div>
         <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted,#94a3b8);display:block;margin-bottom:0.3rem;">Tema Desain Sertifikat</label>
         <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
           <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.82rem;color:var(--text-main,#f1f5f9);">
@@ -9280,6 +9291,7 @@ window._printCertificate = async () => {
   const sign1Title = ($('cert-sign1-title') || {}).value || '';
   const sign2Name = ($('cert-sign2-name') || {}).value || '';
   const sign2Title = ($('cert-sign2-title') || {}).value || '';
+  const nameFont = ($('cert-name-font') || {}).value || 'Alex Brush';
   const themeRadio = document.querySelector('input[name="cert-theme"]:checked');
   const theme = themeRadio ? themeRadio.value : 'gold';
 
@@ -9291,7 +9303,7 @@ window._printCertificate = async () => {
     await set(ref(db, 'certificates/' + certId), {
       reg_no: regNo, emp_name: name, position, title, description: desc,
       period, issue_date: dateStr, sign1_name: sign1Name, sign1_title: sign1Title,
-      sign2_name: sign2Name, sign2_title: sign2Title, theme, created_at: new Date().toISOString()
+      sign2_name: sign2Name, sign2_title: sign2Title, name_font: nameFont, theme, created_at: new Date().toISOString()
     });
   } catch (err) {
     console.error('Failed to save certificate to Firebase:', err);
@@ -9385,7 +9397,7 @@ window._printCertificate = async () => {
   <head>
     <meta charset="UTF-8">
     <title>Sertifikat Penghargaan - ${esc(name)}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700;800;900&family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700;800;900&family=Great+Vibes&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Pinyon+Script&family=Tangerine:wght@700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
       @page { size: A4 landscape; margin: 0; }
       * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -9505,7 +9517,7 @@ window._printCertificate = async () => {
           <!-- Middle recipient section (Highlighted Name) -->
           <div style="display:flex; flex-direction:column; align-items:center; width:100%; margin: 4px 0;">
             <!-- Recipient Name Highlighted -->
-            <div style="font-family:'Great Vibes',cursive;font-size:68px;color:${t.nameColor};margin-bottom:2px;line-height:1.1;font-weight:700;text-shadow:0 3px 12px ${t.borderGrad1}44;">
+            <div style="font-family:'${esc(nameFont)}',cursive,serif;font-size:68px;color:${t.nameColor};margin-bottom:2px;line-height:1.1;font-weight:700;text-shadow:0 3px 12px ${t.borderGrad1}44;">
               ${esc(name)}
             </div>
             <div style="width:280px;height:2px;background:linear-gradient(90deg,transparent,${t.borderGrad1},${t.borderGrad3},${t.borderGrad1},transparent);margin:2px 0 8px;"></div>
