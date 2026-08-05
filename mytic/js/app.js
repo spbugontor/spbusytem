@@ -1985,7 +1985,7 @@ window._printAllKpiRapors = () => {
           <div style="font-size:8.5px; color:#64748b;">ID: ${esc(empId)}</div>
         </div>
         <div class="sig-box">
-          <div>Gontor, ${formattedDate}<br><strong>Manager SPBU Gontor Mlarak</strong>,</div>
+          <div>Gontor, ${formattedDate}<br><strong>Manager SPBU Gontor</strong>,</div>
           <div class="sig-space"></div>
           <div><strong>( ______________________ )</strong></div>
           <div style="font-size:8.5px; color:#64748b;">PT. ESTAFET DWI MASA</div>
@@ -3876,7 +3876,7 @@ window._generateRatingPDFHtml = (key) => {
         <div style="font-size:8.5px; color:#64748b;">ID: ${esc(rating.emp_id)}</div>
       </div>
       <div class="sig-box">
-        <div>Gontor, ${formattedDate}<br><strong>Manager SPBU Gontor Mlarak</strong>,</div>
+        <div>Gontor, ${formattedDate}<br><strong>Manager SPBU Gontor</strong>,</div>
         <div class="sig-space"></div>
         <div><strong>( ______________________ )</strong></div>
         <div style="font-size:8.5px; color:#64748b;">PT. ESTAFET DWI MASA</div>
@@ -4065,7 +4065,7 @@ window._downloadAllRatingsPDF = () => {
           <div style="font-size:8.5px; color:#64748b;">ID: ${esc(r.emp_id)}</div>
         </div>
         <div class="sig-box">
-          <div>Gontor, ${formattedDate}<br><strong>Manager SPBU Gontor Mlarak</strong>,</div>
+          <div>Gontor, ${formattedDate}<br><strong>Manager SPBU Gontor</strong>,</div>
           <div class="sig-space"></div>
           <div><strong>( ______________________ )</strong></div>
           <div style="font-size:8.5px; color:#64748b;">PT. ESTAFET DWI MASA</div>
