@@ -59,10 +59,10 @@ if (localStorage.getItem('spbu_dark_mode') === 'true') document.documentElement.
 // SHIFTS
 // ==========================================
 let SHIFTS = {
-  '1': { start: [4, 45], end: [12, 45], label: 'Shift 1 (04:45–12:45)', tolerance: 5 },
-  '2': { start: [12, 45], end: [21, 15], label: 'Shift 2 (12:45–21:15)', tolerance: 5 },
-  '3': { start: [21, 15], end: [4, 45], label: 'Shift 3 (21:15–04:45)', tolerance: 5 },
-  'admin': { start: [7, 0], end: [15, 0], label: 'Admin (07:00–15:00)', tolerance: 10 }
+  '1': { start: [4, 45], end: [12, 45], label: 'Shift 1 (04:45–12:45)', tolerance: 5, early_window: 10 },
+  '2': { start: [12, 45], end: [21, 15], label: 'Shift 2 (12:45–21:15)', tolerance: 5, early_window: 10 },
+  '3': { start: [21, 15], end: [4, 45], label: 'Shift 3 (21:15–04:45)', tolerance: 5, early_window: 10 },
+  'admin': { start: [7, 0], end: [15, 0], label: 'Admin (07:00–15:00)', tolerance: 10, early_window: 10 }
 };
 const DEFAULT_SHIFTS = JSON.parse(JSON.stringify(SHIFTS));
 
@@ -160,6 +160,11 @@ onValue(ref(db, 'absensi'), snap => {
   
   if (allData.settings.shifts) {
     SHIFTS = allData.settings.shifts;
+    Object.keys(SHIFTS).forEach(k => {
+      if (SHIFTS[k].early_window === undefined) {
+        SHIFTS[k].early_window = 10;
+      }
+    });
   } else {
     SHIFTS = JSON.parse(JSON.stringify(DEFAULT_SHIFTS));
   }
@@ -458,8 +463,36 @@ $('btn-clock-in').addEventListener('click', () => {
   `).join('');
   optContainer.querySelectorAll('.shift-option').forEach(btn => {
     btn.addEventListener('click', () => {
-      $('shift-overlay').classList.remove('active');
       const shiftKey = btn.dataset.shift;
+      const s = SHIFTS[shiftKey];
+      const earlyWindow = s.early_window !== undefined ? s.early_window : 10;
+      
+      const time = nowTime();
+      const [h, m] = time.split(':').map(Number);
+      const currentMin = h * 60 + m;
+      const startMin = s.start[0] * 60 + s.start[1];
+      let diff = currentMin - startMin;
+      if (shiftKey === '3' && diff < -720) diff += 1440;
+      if (shiftKey === '3' && diff > 720) diff -= 1440;
+
+      if (diff < -earlyWindow) {
+        let openMin = startMin - earlyWindow;
+        if (openMin < 0) openMin += 1440;
+        const openH = Math.floor(openMin / 60);
+        const openM = openMin % 60;
+        const openTimeStr = `${String(openH).padStart(2,'0')}:${String(openM).padStart(2,'0')}`;
+        const sName = shiftKey === 'admin' ? 'Admin' : 'Shift ' + shiftKey;
+        
+        $('shift-overlay').classList.remove('active');
+        showModal(
+          'Absen Belum Dibuka',
+          `Absen untuk ${sName} belum dibuka. Absen baru dapat dilakukan mulai pukul ${openTimeStr} (${earlyWindow} menit sebelum shift).`,
+          true
+        );
+        return;
+      }
+
+      $('shift-overlay').classList.remove('active');
       const sName = shiftKey === 'admin' ? 'Admin' : 'Shift ' + shiftKey;
       showConfirm('Konfirmasi Masuk', `Apakah Anda yakin ingin absen masuk untuk ${sName}?`, () => {
         doClockIn(shiftKey);
@@ -1263,9 +1296,15 @@ function renderMessagesForm() {
             <input type="time" id="set-shift-end-${k}" class="form-input" value="${String(s.end[0]).padStart(2,'0')}:${String(s.end[1]).padStart(2,'0')}">
           </div>
         </div>
-        <div class="form-group mt-2 mb-0">
-          <label class="form-label" style="font-size:0.75rem;">Toleransi Keterlambatan (menit)</label>
-          <input type="number" id="set-shift-tol-${k}" class="form-input" value="${s.tolerance}" min="0">
+        <div class="grid-2 mt-2">
+          <div class="form-group mb-0">
+            <label class="form-label" style="font-size:0.75rem;">Buka Absen Sebelum Shift (menit)</label>
+            <input type="number" id="set-shift-early-${k}" class="form-input" value="${s.early_window !== undefined ? s.early_window : 10}" min="0">
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label" style="font-size:0.75rem;">Toleransi Keterlambatan (menit)</label>
+            <input type="number" id="set-shift-tol-${k}" class="form-input" value="${s.tolerance}" min="0">
+          </div>
         </div>
       </div>`;
     });
@@ -1295,7 +1334,8 @@ $('btn-save-messages').addEventListener('click', async () => {
     const s = SHIFTS[k];
     const startTime = $(`set-shift-start-${k}`).value || "00:00";
     const endTime = $(`set-shift-end-${k}`).value || "00:00";
-    const tol = parseInt($(`set-shift-tol-${k}`).value) || 0;
+    const tol = parseInt($(`set-shift-tol-${k}`).value);
+    const early = parseInt($(`set-shift-early-${k}`).value);
     
     const [startH, startM] = startTime.split(':').map(Number);
     const [endH, endM] = endTime.split(':').map(Number);
@@ -1305,7 +1345,8 @@ $('btn-save-messages').addEventListener('click', async () => {
       start: [startH, startM],
       end: [endH, endM],
       label: `${labelPrefix} (${startTime}–${endTime})`,
-      tolerance: tol
+      tolerance: isNaN(tol) ? 5 : tol,
+      early_window: isNaN(early) ? 10 : early
     };
   });
   updates.shifts = newShifts;
