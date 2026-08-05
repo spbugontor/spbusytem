@@ -9335,8 +9335,6 @@ window._printCertificate = async () => {
       </defs>
       <path d="M 8 8 L 130 8 L 130 16 L 16 16 L 16 130 L 8 130 Z" fill="url(#isGrad)" opacity="0.3"/>
       <path d="M 22 22 L 95 22 L 95 25 L 25 25 L 25 95 L 22 95 Z" fill="url(#isGrad)" opacity="0.5"/>
-      <path d="M 22 80 Q 45 45 80 22" fill="none" stroke="url(#isGrad)" stroke-width="1.2"/>
-      <path d="M 22 95 Q 60 60 95 22" fill="none" stroke="url(#isGrad)" stroke-width="0.8" stroke-dasharray="3 3"/>
     </svg>`;
 
   // Build Gold Seal SVG with large, bold, high-contrast SPBU GONTOR 54.634.25 text
