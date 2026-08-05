@@ -9231,16 +9231,28 @@ window._openCertificateModal = (empId) => {
           <input id="cert-sign2-title" class="form-input" style="width:100%;padding:0.5rem;font-size:0.8rem;box-sizing:border-box;margin-top:0.3rem;" value="" placeholder="Jabatan">
         </div>
       </div>
-      <div>
-        <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted,#94a3b8);display:block;margin-bottom:0.3rem;">Font Nama Karyawan</label>
-        <select id="cert-name-font" class="form-input" style="width:100%;padding:0.5rem;font-size:0.85rem;">
-          <option value="Alex Brush">✨ Alex Brush (Kaligrafi Klasik & Rapi - Rekomendasi)</option>
-          <option value="Great Vibes">🖊️ Great Vibes (Kaligrafi Halus)</option>
-          <option value="Playfair Display">📜 Playfair Display (Serif Formal & Wibawa)</option>
-          <option value="Pinyon Script">👑 Pinyon Script (Royal / Luxury Script)</option>
-          <option value="Tangerine">🖋️ Tangerine (Artistic Quill Pen Calligraphy)</option>
-          <option value="Cinzel Decorative">🏛️ Cinzel Decorative (Capital Bold Formal)</option>
-        </select>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+        <div>
+          <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted,#94a3b8);display:block;margin-bottom:0.3rem;">Font Judul Sertifikat</label>
+          <select id="cert-title-font" class="form-input" style="width:100%;padding:0.5rem;font-size:0.85rem;">
+            <option value="Cinzel">🏛️ Cinzel (Clean Roman Capital - Resmi & Wibawa)</option>
+            <option value="Cormorant Garamond">📜 Cormorant Garamond (Classic Diplomatic Serif)</option>
+            <option value="Playfair Display">💼 Playfair Display (High-Contrast Executive)</option>
+            <option value="Bodoni Moda">✨ Bodoni Moda (Modern Premium Luxury)</option>
+            <option value="Cinzel Decorative">🎨 Cinzel Decorative (Ukiran Hiasan)</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted,#94a3b8);display:block;margin-bottom:0.3rem;">Font Nama Karyawan</label>
+          <select id="cert-name-font" class="form-input" style="width:100%;padding:0.5rem;font-size:0.85rem;">
+            <option value="Alex Brush">✨ Alex Brush (Kaligrafi Klasik & Rapi - Rekomendasi)</option>
+            <option value="Great Vibes">🖊️ Great Vibes (Kaligrafi Halus)</option>
+            <option value="Playfair Display">📜 Playfair Display (Serif Formal & Wibawa)</option>
+            <option value="Pinyon Script">👑 Pinyon Script (Royal / Luxury Script)</option>
+            <option value="Tangerine">🖋️ Tangerine (Artistic Quill Pen Calligraphy)</option>
+            <option value="Cinzel Decorative">🏛️ Cinzel Decorative (Capital Bold Formal)</option>
+          </select>
+        </div>
       </div>
       <div>
         <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted,#94a3b8);display:block;margin-bottom:0.3rem;">Tema Desain Sertifikat</label>
@@ -9291,6 +9303,7 @@ window._printCertificate = async () => {
   const sign1Title = ($('cert-sign1-title') || {}).value || '';
   const sign2Name = ($('cert-sign2-name') || {}).value || '';
   const sign2Title = ($('cert-sign2-title') || {}).value || '';
+  const titleFont = ($('cert-title-font') || {}).value || 'Cinzel';
   const nameFont = ($('cert-name-font') || {}).value || 'Alex Brush';
   const themeRadio = document.querySelector('input[name="cert-theme"]:checked');
   const theme = themeRadio ? themeRadio.value : 'gold';
@@ -9303,7 +9316,7 @@ window._printCertificate = async () => {
     await set(ref(db, 'certificates/' + certId), {
       reg_no: regNo, emp_name: name, position, title, description: desc,
       period, issue_date: dateStr, sign1_name: sign1Name, sign1_title: sign1Title,
-      sign2_name: sign2Name, sign2_title: sign2Title, name_font: nameFont, theme, created_at: new Date().toISOString()
+      sign2_name: sign2Name, sign2_title: sign2Title, title_font: titleFont, name_font: nameFont, theme, created_at: new Date().toISOString()
     });
   } catch (err) {
     console.error('Failed to save certificate to Firebase:', err);
@@ -9397,7 +9410,7 @@ window._printCertificate = async () => {
   <head>
     <meta charset="UTF-8">
     <title>Sertifikat Penghargaan - ${esc(name)}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700;800;900&family=Great+Vibes&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Pinyon+Script&family=Tangerine:wght@700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Bodoni+Moda:ital,opsz,wght@0,6..96,700;0,6..96,900;1,6..96,700&family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700;800;900&family=Great+Vibes&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Pinyon+Script&family=Tangerine:wght@700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
       @page { size: A4 landscape; margin: 0; }
       * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -9501,7 +9514,7 @@ window._printCertificate = async () => {
             </svg>
 
             <!-- Title (Highlighted Crisp Metallic Gradient) -->
-            <div style="font-family:'Cinzel Decorative',serif;font-size:46px;font-weight:900;color:${t.headerColor};letter-spacing:6px;line-height:1.25;margin-bottom:4px;background:linear-gradient(135deg, ${t.titleGrad1}, ${t.titleGrad2}, ${t.titleGrad3});-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.15));">
+            <div style="font-family:'${esc(titleFont)}',serif;font-size:44px;font-weight:900;color:${t.headerColor};letter-spacing:6px;line-height:1.25;margin-bottom:4px;background:linear-gradient(135deg, ${t.titleGrad1}, ${t.titleGrad2}, ${t.titleGrad3});-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.15));">
               SERTIFIKAT PENGHARGAAN
             </div>
             <div style="font-family:'Cinzel',serif;font-size:15px;font-weight:800;color:${t.headerColor};letter-spacing:6px;margin-bottom:16px;opacity:0.95;">
