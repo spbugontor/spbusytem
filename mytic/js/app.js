@@ -9488,27 +9488,28 @@ window._printCertificate = async () => {
               </g>
             </svg>
 
-            <!-- Title (Deep Crisp Metallic Gradient) -->
-            <div style="font-family:'Cinzel Decorative',serif;font-size:38px;font-weight:900;color:${t.headerColor};letter-spacing:4px;line-height:1.2;margin-bottom:4px;background:linear-gradient(135deg, ${t.titleGrad1}, ${t.titleGrad2}, ${t.titleGrad3});-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 1px 2px rgba(0,0,0,0.1);">
+            <!-- Title (Highlighted Crisp Metallic Gradient) -->
+            <div style="font-family:'Cinzel Decorative',serif;font-size:46px;font-weight:900;color:${t.headerColor};letter-spacing:6px;line-height:1.25;margin-bottom:4px;background:linear-gradient(135deg, ${t.titleGrad1}, ${t.titleGrad2}, ${t.titleGrad3});-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.15));">
               SERTIFIKAT PENGHARGAAN
             </div>
-            <div style="font-family:'Cinzel',serif;font-size:15px;font-weight:700;color:${t.headerColor};letter-spacing:5px;margin-bottom:16px;opacity:0.9;">
+            <div style="font-family:'Cinzel',serif;font-size:15px;font-weight:800;color:${t.headerColor};letter-spacing:6px;margin-bottom:16px;opacity:0.95;">
               CERTIFICATE OF EXCELLENCE
             </div>
 
             <!-- Subtitle -->
-            <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#334155;font-style:italic;margin-bottom:12px;font-weight:500;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#334155;font-style:italic;margin-bottom:10px;font-weight:600;">
               Diberikan dengan bangga dan penghargaan setinggi-tingginya kepada:
             </div>
           </div>
 
-          <!-- Middle recipient section -->
-          <div style="display:flex; flex-direction:column; align-items:center; width:100%; margin: 6px 0;">
-            <!-- Recipient Name -->
-            <div style="font-family:'Great Vibes',cursive;font-size:60px;color:${t.nameColor};margin-bottom:2px;line-height:1.1;font-weight:600;">
+          <!-- Middle recipient section (Highlighted Name) -->
+          <div style="display:flex; flex-direction:column; align-items:center; width:100%; margin: 4px 0;">
+            <!-- Recipient Name Highlighted -->
+            <div style="font-family:'Great Vibes',cursive;font-size:68px;color:${t.nameColor};margin-bottom:2px;line-height:1.1;font-weight:700;text-shadow:0 3px 12px ${t.borderGrad1}44;">
               ${esc(name)}
             </div>
-            <div style="font-family:'Cinzel',serif;font-size:15px;font-weight:700;color:${t.headerColor};letter-spacing:3.5px;text-transform:uppercase;margin-bottom:14px;">
+            <div style="width:280px;height:2px;background:linear-gradient(90deg,transparent,${t.borderGrad1},${t.borderGrad3},${t.borderGrad1},transparent);margin:2px 0 8px;"></div>
+            <div style="font-family:'Cinzel',serif;font-size:15px;font-weight:800;color:${t.headerColor};letter-spacing:4px;text-transform:uppercase;margin-bottom:12px;">
               ${esc(position)}
             </div>
 
