@@ -1583,6 +1583,7 @@ input, select, textarea { font-family: inherit; }
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 16px;
+  min-height: 0; /* Fix flex overflow */
 }
 
 .kelola-column h4 {
