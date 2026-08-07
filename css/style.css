@@ -1655,6 +1655,10 @@ input, select, textarea { font-family: inherit; }
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .admin-section.active.kelola-section-wrapper {
+    height: auto;
+  }
+
   .kelola-grid {
     grid-template-columns: 1fr;
     overflow-y: visible;
@@ -1662,6 +1666,7 @@ input, select, textarea { font-family: inherit; }
   
   .kelola-column {
     overflow: visible;
+    min-height: min-content;
   }
   
   .kelola-list-container {
