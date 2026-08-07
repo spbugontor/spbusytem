@@ -278,8 +278,9 @@ function setText(id, text) {
 
 // -- ADMIN KELOLA LIST --
 function renderAdminList() {
-  const container = document.getElementById('admin-order-list');
-  if (!container) return;
+  const containerUnpaid = document.getElementById('admin-order-list-unpaid');
+  const containerPaid = document.getElementById('admin-order-list-paid');
+  if (!containerUnpaid || !containerPaid) return;
 
   const search = (document.getElementById('admin-search') || {}).value || '';
   const query = search.toLowerCase();
@@ -290,24 +291,19 @@ function renderAdminList() {
     (o.nik || '').includes(query)
   );
 
-  // Mengurutkan: Lunas di ATAS, Belum Lunas di BAWAH. Masing-masing diurutkan dari aktivitas terbaru.
-  filtered.sort((a, b) => {
-    if (a.sudah_bayar && !b.sudah_bayar) return -1;
-    if (!a.sudah_bayar && b.sudah_bayar) return 1;
-    
+  const unpaid = filtered.filter(o => !o.sudah_bayar);
+  const paid = filtered.filter(o => o.sudah_bayar);
+
+  const sortFn = (a, b) => {
     const timeA = a.sudah_bayar ? ((a.tanggal_bayar || a.tanggal) + ' ' + (a.waktu_bayar || '00:00')) : (a.tanggal + ' ' + (a.waktu || '00:00'));
     const timeB = b.sudah_bayar ? ((b.tanggal_bayar || b.tanggal) + ' ' + (b.waktu_bayar || '00:00')) : (b.tanggal + ' ' + (b.waktu || '00:00'));
     return timeB.localeCompare(timeA);
-  });
+  };
 
-  if (filtered.length === 0) {
-    container.innerHTML =
-      '<div class="empty-state"><div class="empty-state-icon">🔍</div>' +
-      '<p>' + (query ? 'Tidak ditemukan' : 'Belum ada data pesanan hari ini') + '</p></div>';
-    return;
-  }
+  unpaid.sort(sortFn);
+  paid.sort(sortFn);
 
-  container.innerHTML = filtered.map(o => {
+  const renderCard = (o) => {
     const parsed = parseNIK(o.nik || '');
     const gender = o.jenis_kelamin || (parsed.isValid ? parsed.gender : '');
     const age = o.umur || (parsed.isValid ? parsed.age : '');
@@ -330,7 +326,19 @@ function renderAdminList() {
     ) +
     '<button class="btn btn-danger-sm" onclick="onDeleteOrder(\'' + o.id + '\', \'' + esc(o.nama) + '\')">Hapus</button>' +
     '</div></div>';
-  }).join('');
+  };
+
+  if (unpaid.length === 0) {
+    containerUnpaid.innerHTML = '<div class="empty-state"><p>' + (query ? 'Tidak ditemukan' : 'Semua sudah bayar') + '</p></div>';
+  } else {
+    containerUnpaid.innerHTML = unpaid.map(renderCard).join('');
+  }
+
+  if (paid.length === 0) {
+    containerPaid.innerHTML = '<div class="empty-state"><p>' + (query ? 'Tidak ditemukan' : 'Belum ada yang lunas') + '</p></div>';
+  } else {
+    containerPaid.innerHTML = paid.map(renderCard).join('');
+  }
 }
 
 function renderLaporanList() {

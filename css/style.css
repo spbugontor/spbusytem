@@ -1561,6 +1561,39 @@ input, select, textarea { font-family: inherit; }
 .msg-success { color: var(--success); }
 .msg-error { color: var(--error); }
 
+/* ── Kelola Layout ── */
+.kelola-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  flex: 1;
+  min-height: 0; /* Important for flex child to scroll */
+}
+
+.kelola-column {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+.kelola-column h4 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: var(--text);
+  font-size: 15px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 8px;
+}
+
+.kelola-list-container {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
 /* ── Responsive ── */
 @media (max-width: 1023px) {
   .admin-layout {
@@ -1613,6 +1646,19 @@ input, select, textarea { font-family: inherit; }
 
   .dashboard-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .kelola-grid {
+    grid-template-columns: 1fr;
+    overflow-y: visible;
+  }
+  
+  .kelola-column {
+    overflow: visible;
+  }
+  
+  .kelola-list-container {
+    overflow-y: visible;
   }
 
   .settings-row {
