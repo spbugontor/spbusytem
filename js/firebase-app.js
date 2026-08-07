@@ -998,7 +998,7 @@ window.openLaporanDetail = (date) => {
       <div style="border-bottom: 1px solid var(--border-light); padding: 12px 0;">
         <div style="font-weight: 600; font-size: 14px; color: var(--text); display: flex; justify-content: space-between;">
           <span>${idx + 1}. ${esc(o.nama)}</span>
-          <span style="font-size: 12px; color: var(--text-muted);">${esc(o.waktu_bayar || '')}</span>
+          <span style="font-size: 12px; font-weight: 700; color: var(--success);">${o.waktu_bayar ? '✓ ' + esc(o.waktu_bayar) : '✓ Lunas'}</span>
         </div>
         <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
           KK: ${esc(o.kk)} | NIK: ${esc(o.nik)}
