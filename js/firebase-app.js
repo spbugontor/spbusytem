@@ -290,8 +290,11 @@ function renderAdminList() {
     (o.nik || '').includes(query)
   );
 
-  // Mengurutkan berdasarkan waktu aktivitas terakhir (waktu bayar atau waktu pesan) dari yang paling baru
+  // Mengurutkan: Lunas di ATAS, Belum Lunas di BAWAH. Masing-masing diurutkan dari aktivitas terbaru.
   filtered.sort((a, b) => {
+    if (a.sudah_bayar && !b.sudah_bayar) return -1;
+    if (!a.sudah_bayar && b.sudah_bayar) return 1;
+    
     const timeA = a.sudah_bayar ? ((a.tanggal_bayar || a.tanggal) + ' ' + (a.waktu_bayar || '00:00')) : (a.tanggal + ' ' + (a.waktu || '00:00'));
     const timeB = b.sudah_bayar ? ((b.tanggal_bayar || b.tanggal) + ' ' + (b.waktu_bayar || '00:00')) : (b.tanggal + ' ' + (b.waktu || '00:00'));
     return timeB.localeCompare(timeA);
