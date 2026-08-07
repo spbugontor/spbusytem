@@ -1562,6 +1562,12 @@ input, select, textarea { font-family: inherit; }
 .msg-error { color: var(--error); }
 
 /* ── Kelola Layout ── */
+.admin-section.active.kelola-section-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 120px);
+}
+
 .kelola-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
