@@ -1139,7 +1139,6 @@ function initAdminDashboardCharts() {
     const liburData = [];
     const otherData = [];
 
-    const allLeaves = Object.values(allData.leaves || {}).filter(l => l.status === 'Disetujui');
     const allAbsensi = Object.values(allData.absensi_records || {});
 
     const cur = new Date(range.startDate);
@@ -1151,12 +1150,8 @@ function initAdminDashboardCharts() {
 
       const recs = allAbsensi.filter(r => parseToISO(r.date || r.tanggal) === dateStr);
       let onTime = 0, late = 0, sakit = 0, izin = 0, cuti = 0, libur = 0, other = 0;
-      const processedEmps = new Set();
 
       recs.forEach(r => {
-        const empKey = r.emp_id || r.user_id || r.id;
-        if (empKey) processedEmps.add(empKey);
-
         const st = (r.status || r.type || '').toString().toLowerCase();
         if (r.clock_in && r.clock_in !== '-' && !['sakit', 'izin', 'cuti', 'libur', 'off'].includes(st)) {
           if ((r.late_minutes || 0) > 0 || st === 'terlambat') late++;
@@ -1171,22 +1166,6 @@ function initAdminDashboardCharts() {
           libur++;
         } else if (st && st !== 'hadir') {
           other++;
-        }
-      });
-
-      // Count approved leaves active on dateStr ONLY for employees not already counted in absensi
-      allLeaves.forEach(l => {
-        const empKey = l.emp_id || l.user_id;
-        if (empKey && processedEmps.has(empKey)) return;
-
-        if (l.start_date && l.end_date && dateStr >= l.start_date && dateStr <= l.end_date) {
-          if (empKey) processedEmps.add(empKey);
-          const lType = (l.leave_type || '').toString().toLowerCase();
-          if (lType.includes('sakit')) sakit++;
-          else if (lType.includes('izin')) izin++;
-          else if (lType.includes('cuti')) cuti++;
-          else if (lType.includes('libur') || lType.includes('off')) libur++;
-          else other++;
         }
       });
 
