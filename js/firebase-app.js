@@ -358,7 +358,7 @@ function renderLaporanList() {
 
   container.innerHTML = sortedDates.map(date => {
     const g = groups[date];
-    return '<div class="admin-order-card item-enter" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px;">' +
+    return '<div class="admin-order-card item-enter" onclick="openLaporanDetail(\'' + date + '\')" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; cursor: pointer;">' +
       '<div>' +
         '<div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">' + esc(date) + '</div>' +
         '<div style="font-size: 12px; color: var(--text-secondary);">' + g.count + ' Tabung Terjual</div>' +
@@ -978,6 +978,36 @@ window.onDeleteOrder = (id, nama) => {
   pendingDeleteId = id;
   setText('delete-confirm-name', nama);
   showModal('modal-delete-confirm');
+};
+
+window.openLaporanDetail = (date) => {
+  const paidOrders = orders.filter(o => o.sudah_bayar && (o.tanggal_bayar || o.tanggal || "Data Lama") === date);
+  const body = document.getElementById('modal-laporan-body');
+  document.getElementById('modal-laporan-title').textContent = 'Rincian Penjualan ' + date;
+  
+  if (paidOrders.length === 0) {
+    body.innerHTML = '<div class="empty-state">Data tidak ditemukan</div>';
+  } else {
+    paidOrders.sort((a, b) => {
+      const timeA = (a.tanggal_bayar || a.tanggal) + ' ' + (a.waktu_bayar || '00:00');
+      const timeB = (b.tanggal_bayar || b.tanggal) + ' ' + (b.waktu_bayar || '00:00');
+      return timeB.localeCompare(timeA);
+    });
+
+    body.innerHTML = paidOrders.map((o, idx) => `
+      <div style="border-bottom: 1px solid var(--border-light); padding: 12px 0;">
+        <div style="font-weight: 600; font-size: 14px; color: var(--text); display: flex; justify-content: space-between;">
+          <span>${idx + 1}. ${esc(o.nama)}</span>
+          <span style="font-size: 12px; color: var(--text-muted);">${esc(o.waktu_bayar || '')}</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+          KK: ${esc(o.kk)} | NIK: ${esc(o.nik)}
+        </div>
+      </div>
+    `).join('');
+  }
+  
+  showModal('modal-laporan-detail');
 };
 
 // ─────────────────────────────────────────────

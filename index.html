@@ -442,6 +442,22 @@
     </div>
   </div>
 
+  <!-- Modal Rincian Laporan -->
+  <div id="modal-laporan-detail" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-laporan-title">Rincian Penjualan</h3>
+        <button class="modal-close" data-close-modal>×</button>
+      </div>
+      <div class="modal-body" id="modal-laporan-body" style="max-height: 60vh; overflow-y: auto;">
+        <!-- Diisi oleh JS -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="document.getElementById('modal-laporan-detail').classList.remove('show')">Tutup</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Help Modal (Order) -->
   <div id="modal-help-order" class="modal-overlay">
     <div class="modal">
