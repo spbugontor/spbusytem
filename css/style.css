@@ -1488,7 +1488,7 @@ input, select, textarea { font-family: inherit; }
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 24px;
-  max-width: 500px;
+  max-width: 100%;
 }
 
 .settings-title {
@@ -1524,7 +1524,7 @@ input, select, textarea { font-family: inherit; }
   margin-top: 24px;
   padding-top: 20px;
   border-top: 1px solid var(--border);
-  max-width: 500px;
+  max-width: 100%;
 }
 
 .reset-confirm {
@@ -1543,7 +1543,7 @@ input, select, textarea { font-family: inherit; }
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 24px;
-  max-width: 400px;
+  max-width: 100%;
 }
 
 /* ── Msg inline ── */

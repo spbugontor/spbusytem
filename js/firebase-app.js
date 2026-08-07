@@ -110,6 +110,7 @@ function updateAllUI() {
   if (isAdmin) {
     updateDashboard();
     renderAdminList();
+    renderLaporanList();
   }
 }
 
@@ -168,7 +169,8 @@ function isOpen() {
 // Mengambil semua data pesanan yang aktif (belum di-reset oleh admin)
 // Ini memperbaiki masalah data yang hilang pada pergantian hari
 function getTodayOrders() {
-  return orders;
+  const today = getTodayString();
+  return orders.filter(o => o.tanggal === today);
 }
 
 function getQuotaLeft() {
@@ -305,7 +307,7 @@ function renderAdminList() {
     '<div class="admin-order-header">' +
     '<span class="admin-order-name">' + esc(o.nama) + ' ' + badgeHtml + '</span>' +
     '<span class="badge ' + (o.sudah_bayar ? 'badge-success' : 'badge-warning') + '">' +
-    (o.sudah_bayar ? '✓ Lunas' : 'Belum') +
+    (o.sudah_bayar ? '✓ Lunas' + (o.waktu_bayar ? ` (${o.waktu_bayar})` : '') : 'Belum') +
     '</span></div>' +
     '<div class="admin-order-details">' +
     '<span class="admin-order-detail"><strong>KK:</strong> ' + esc(o.kk) + '</span>' +
@@ -318,6 +320,41 @@ function renderAdminList() {
     ) +
     '<button class="btn btn-danger-sm" onclick="onDeleteOrder(\'' + o.id + '\', \'' + esc(o.nama) + '\')">Hapus</button>' +
     '</div></div>';
+  }).join('');
+}
+
+function renderLaporanList() {
+  const container = document.getElementById('laporan-list');
+  if (!container) return;
+
+  const paidOrders = orders.filter(o => o.sudah_bayar && o.tanggal_bayar);
+
+  if (paidOrders.length === 0) {
+    container.innerHTML = '<div class="empty-state" style="padding: 20px;"><div class="empty-state-icon">📊</div><p>Belum ada riwayat penjualan lunas</p></div>';
+    return;
+  }
+
+  const groups = {};
+  paidOrders.forEach(o => {
+    const date = o.tanggal_bayar;
+    if (!groups[date]) groups[date] = { count: 0, revenue: 0 };
+    groups[date].count++;
+    groups[date].revenue += parseInt(settings.harga) || 0;
+  });
+
+  const sortedDates = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+
+  container.innerHTML = sortedDates.map(date => {
+    const g = groups[date];
+    return '<div class="admin-order-card item-enter" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px;">' +
+      '<div>' +
+        '<div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">' + esc(date) + '</div>' +
+        '<div style="font-size: 12px; color: var(--text-secondary);">' + g.count + ' Tabung Terjual</div>' +
+      '</div>' +
+      '<div style="font-weight: 700; color: var(--success);">' +
+        'Rp ' + g.revenue.toLocaleString('id-ID') +
+      '</div>' +
+    '</div>';
   }).join('');
 }
 
@@ -397,7 +434,7 @@ function setupEventListeners() {
   let touchStartX = 0;
   let touchStartY = 0;
   const adminMain = document.querySelector('.admin-main');
-  const sections = ['dashboard', 'kelola', 'pengaturan', 'password'];
+  const sections = ['dashboard', 'kelola', 'laporan', 'pengaturan', 'password'];
 
   if (adminMain) {
     adminMain.addEventListener('touchstart', e => {
@@ -494,7 +531,7 @@ function switchAdminSection(sectionId) {
   const section = document.getElementById('section-' + sectionId);
   if (section) section.classList.add('active');
 
-  const titles = { dashboard: 'Dashboard', kelola: 'Kelola Pesanan', pengaturan: 'Pengaturan', password: 'Ganti Password' };
+  const titles = { dashboard: 'Dashboard', kelola: 'Kelola Pesanan', laporan: 'Riwayat Penjualan', pengaturan: 'Pengaturan', password: 'Ganti Password' };
   setText('admin-page-title', titles[sectionId] || '');
 }
 
@@ -612,7 +649,15 @@ async function handleConfirmPayment() {
   btn.disabled = true; btn.innerHTML = '<span class="spinner spinner-white"></span>';
 
   try {
-    await update(ref(db, `orders/${pendingPaymentId}`), { sudah_bayar: pendingPaymentState });
+    const updateData = { sudah_bayar: pendingPaymentState };
+    if (pendingPaymentState) {
+      updateData.waktu_bayar = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      updateData.tanggal_bayar = getTodayString();
+    } else {
+      updateData.waktu_bayar = null;
+      updateData.tanggal_bayar = null;
+    }
+    await update(ref(db, `orders/${pendingPaymentId}`), updateData);
     toast(pendingPaymentState ? 'Pembayaran & Verifikasi Fisik Dikonfirmasi' : 'Pembayaran dibatalkan', 'success');
     hideModal('modal-verify-payment');
   } catch (error) {
