@@ -45,8 +45,29 @@ function applyTheme(themeKey) {
   metaNav.setAttribute('content', t.primary);
 }
 
-const savedTheme = localStorage.getItem('spbu_theme');
-if (savedTheme) applyTheme(savedTheme);
+const savedTheme = localStorage.getItem('spbu_theme') || 'blue';
+applyTheme(savedTheme);
+
+function populateEmpSelectFromCache() {
+  const empSelect = document.getElementById('inp-emp-username');
+  if (!empSelect) return;
+  try {
+    const raw = localStorage.getItem('mytic_cached_users');
+    if (raw) {
+      const usersList = JSON.parse(raw);
+      if (Array.isArray(usersList) && usersList.length > 0) {
+        empSelect.innerHTML = '<option value="">-- Pilih Nama Anda --</option>' +
+          usersList.map(u => `<option value="${esc(u.username)}">${esc(u.name)} (${esc(u.position)})</option>`).join('');
+      }
+    }
+  } catch (e) { console.warn('Cache load error:', e); }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', populateEmpSelectFromCache);
+} else {
+  populateEmpSelectFromCache();
+}
 
 // Dark Mode Logic
 const savedDarkMode = localStorage.getItem('spbu_dark_mode') === 'true';
@@ -211,7 +232,8 @@ function init() {
       allData[node] = snap.exists() ? snap.val() : {};
 
       if (node === 'settings') {
-        applyTheme(allData.settings.theme || 'orange');
+        const themeToApply = allData.settings.theme || localStorage.getItem('spbu_theme') || 'blue';
+        applyTheme(themeToApply);
       }
 
       if (node === 'users') {
@@ -222,6 +244,7 @@ function init() {
           if (usersList.length === 0) {
             empSelect.innerHTML = '<option value="">-- Belum ada karyawan --</option>';
           } else {
+            localStorage.setItem('mytic_cached_users', JSON.stringify(usersList));
             empSelect.innerHTML = '<option value="">-- Pilih Nama Anda --</option>' +
               usersList.map(u => `<option value="${esc(u.username)}">${esc(u.name)} (${esc(u.position)})</option>`).join('');
           }
