@@ -169,8 +169,8 @@ function isOpen() {
 // Mengambil semua data pesanan yang aktif (belum di-reset oleh admin)
 // Ini memperbaiki masalah data yang hilang pada pergantian hari
 function getTodayOrders() {
-  const today = getTodayString();
-  return orders.filter(o => o.tanggal === today);
+  // Menampilkan semua pesanan yang belum dihapus (tidak dibatasi hari ini saja)
+  return orders;
 }
 
 function getQuotaLeft() {
@@ -327,7 +327,8 @@ function renderLaporanList() {
   const container = document.getElementById('laporan-list');
   if (!container) return;
 
-  const paidOrders = orders.filter(o => o.sudah_bayar && o.tanggal_bayar);
+  // Menampilkan semua pesanan lunas, termasuk data lama yang belum punya tanggal_bayar
+  const paidOrders = orders.filter(o => o.sudah_bayar);
 
   if (paidOrders.length === 0) {
     container.innerHTML = '<div class="empty-state" style="padding: 20px;"><div class="empty-state-icon">📊</div><p>Belum ada riwayat penjualan lunas</p></div>';
@@ -336,7 +337,8 @@ function renderLaporanList() {
 
   const groups = {};
   paidOrders.forEach(o => {
-    const date = o.tanggal_bayar;
+    // Gunakan tanggal_bayar, jika tidak ada (data lama), gunakan tanggal pesanan
+    const date = o.tanggal_bayar || o.tanggal || "Data Lama";
     if (!groups[date]) groups[date] = { count: 0, revenue: 0 };
     groups[date].count++;
     groups[date].revenue += parseInt(settings.harga) || 0;
