@@ -1,40 +1,79 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="default">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Pemesanan LPG Unida</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Login - LPG UNIDA Gontor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <style>
-        body {
-            display: flex; align-items: center; justify-content: center;
-            min-height: 100vh;
-        }
-        .login-box {
-            width: 90%; max-width: 400px;
-            padding: 30px;
-            text-align: center;
-        }
-    </style>
 </head>
 <body>
-    <div class="login-box glass animate-fade-in">
-        <h1 style="margin-bottom: 5px;">Login LPG</h1>
-        <p style="color: var(--text-muted); margin-bottom: 25px; font-size: 0.9rem;">Masukkan Nomor WA dan PIN Anda</p>
-        
-        <form id="loginForm">
-            <div class="form-group" style="text-align: left;">
-                <label>Nomor WhatsApp</label>
-                <input type="tel" id="waInput" required placeholder="081234567890">
+    
+    <div class="auth-wrapper">
+        <!-- LOGIN SECTION -->
+        <div class="auth-card glass animate-fade-in" id="loginSection">
+            <h1>LPG UNIDA</h1>
+            <p>Silakan masuk ke akun Anda</p>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Nama Pelanggan (Username)</label>
+                    <input type="text" id="loginName" required placeholder="Contoh: Keluarga Budi">
+                </div>
+                <div class="form-group">
+                    <label>PIN (6 Digit)</label>
+                    <input type="password" id="loginPin" required maxlength="6" pattern="[0-9]{6}" placeholder="******">
+                </div>
+                <div id="loginError" class="text-danger" style="font-size: 0.85rem; margin-bottom: 15px;"></div>
+                
+                <button type="submit" class="btn">Masuk</button>
+            </form>
+            
+            <div style="margin-top: 20px; font-size: 0.9rem;">
+                Belum punya akun? <a href="#" id="showRegister" style="color: var(--primary); font-weight: 600;">Daftar Sekarang</a>
             </div>
-            <div class="form-group" style="text-align: left;">
-                <label>PIN (6 Angka)</label>
-                <input type="password" id="pinInput" required maxlength="6">
+            
+            <div class="theme-selector" style="margin-top: 30px;">
+                <select id="themeSelect">
+                    <option value="default">Tema Hijau UNIDA</option>
+                    <option value="dark">Tema Gelap (Dark Mode)</option>
+                    <option value="blue">Tema Biru Elegan</option>
+                </select>
             </div>
-            <div id="loginMsg" style="margin-bottom: 15px; font-size: 0.85rem;"></div>
-            <button type="submit" class="btn">Masuk</button>
-        </form>
+        </div>
+
+        <!-- REGISTER SECTION -->
+        <div class="auth-card glass animate-fade-in hidden" id="registerSection">
+            <h1>Daftar Akun Baru</h1>
+            <p>Khusus Keluarga Pondok UNIDA Gontor</p>
+            
+            <form id="registerForm">
+                <div class="form-group">
+                    <label>Nama Keluarga</label>
+                    <input type="text" id="regName" required placeholder="Contoh: Keluarga Budi">
+                </div>
+                <div class="form-group">
+                    <label>Nomor WhatsApp</label>
+                    <input type="tel" id="regWa" required placeholder="08xxxxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label>Lokasi Penurunan</label>
+                    <select id="regLocation" required>
+                        <option value="">Pilih Lokasi...</option>
+                        <!-- Options akan dimuat lewat JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Buat PIN (6 Angka)</label>
+                    <input type="password" id="regPin" required maxlength="6" pattern="[0-9]{6}" placeholder="******">
+                </div>
+                
+                <div id="regMsg" style="font-size: 0.85rem; margin-bottom: 15px;"></div>
+                
+                <button type="submit" class="btn">Daftar Sekarang</button>
+                <button type="button" class="btn btn-secondary" id="showLogin">Batal & Kembali</button>
+            </form>
+        </div>
     </div>
 
     <script type="module" src="js/app.js"></script>
@@ -45,33 +84,94 @@
             if (u) {
                 window.location.href = (u.role === 'admin') ? 'admin.html' : 'customer.html';
             }
+            loadLocationsForSelect('regLocation');
         };
 
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        // UI Logic untuk Auth Page
+        document.getElementById('showRegister').addEventListener('click', (e) => {
             e.preventDefault();
-            const wa = document.getElementById('waInput').value;
-            const pin = document.getElementById('pinInput').value;
-            const msg = document.getElementById('loginMsg');
-            
-            // Bypass khusus admin tanpa DB sementara, atau gunakan DB
-            if (wa === 'admin') {
-                const adminPin = await window.dbApi.getAdminPin();
-                if (pin === adminPin) {
-                    window.setUser({ id: 'admin', name: 'Admin Pusat', role: 'admin' });
-                    window.location.href = 'admin.html';
-                    return;
-                }
-            }
-
-            try {
-                msg.className = ""; msg.innerText = "Mengecek...";
-                const res = await window.apiCall('/login', 'POST', { wa_number: wa, pin });
-                window.setUser(res.user);
-                window.location.href = (res.user.role === 'admin') ? 'admin.html' : 'customer.html';
-            } catch (err) {
-                msg.className = "text-danger"; msg.innerText = err.message;
-            }
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('registerSection').classList.remove('hidden');
         });
+
+        document.getElementById('showLogin').addEventListener('click', () => {
+            document.getElementById('registerSection').classList.add('hidden');
+            document.getElementById('loginSection').classList.remove('hidden');
+        });
+
+        // Login Logic
+        const loginForm = document.getElementById('loginForm');
+        if(loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const wa_number = document.getElementById('loginName').value; // Menggunakan nama sebagai identifier sementara
+                const pin = document.getElementById('loginPin').value;
+                const errDiv = document.getElementById('loginError');
+                
+                if (wa_number === 'admin') {
+                    const adminPin = await window.dbApi.getAdminPin();
+                    if (pin === adminPin) {
+                        window.setUser({ id: 'admin', name: 'Admin Pusat', role: 'admin' });
+                        window.location.href = 'admin.html';
+                        return;
+                    }
+                }
+
+                try {
+                    errDiv.innerText = "Memproses...";
+                    const res = await window.apiCall('/login', 'POST', { wa_number, pin });
+                    window.setUser(res.user);
+                    window.location.href = (res.user.role === 'admin') ? 'admin.html' : 'customer.html';
+                } catch(err) {
+                    errDiv.innerText = err.message;
+                }
+            });
+        }
+
+        // Register Logic
+        const regForm = document.getElementById('registerForm');
+        if(regForm) {
+            regForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('regName').value;
+                const wa_number = document.getElementById('regWa').value;
+                const location_id = document.getElementById('regLocation').value;
+                const pin = document.getElementById('regPin').value;
+                const msgDiv = document.getElementById('regMsg');
+
+                try {
+                    msgDiv.className = ""; msgDiv.innerText = "Mendaftarkan...";
+                    await window.apiCall('/register', 'POST', { name, wa_number, location_id, pin });
+                    msgDiv.className = "text-success"; 
+                    msgDiv.innerText = "Pendaftaran berhasil! Silakan kembali ke halaman Login.";
+                    regForm.reset();
+                } catch(err) {
+                    msgDiv.className = "text-danger"; msgDiv.innerText = err.message;
+                }
+            });
+        }
+
+        async function loadLocationsForSelect(selectId) {
+            try {
+                const locs = await window.apiCall('/locations');
+                const sel = document.getElementById(selectId);
+                sel.innerHTML = '<option value="">Pilih Lokasi...</option>';
+                locs.forEach(l => {
+                    sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
+                });
+            } catch(e) {}
+        }
+        
+        // Theme selector
+        document.getElementById('themeSelect').addEventListener('change', (e) => {
+            document.documentElement.setAttribute('data-theme', e.target.value);
+            localStorage.setItem('lpg_theme', e.target.value);
+        });
+        const savedTheme = localStorage.getItem('lpg_theme');
+        if(savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.getElementById('themeSelect').value = savedTheme;
+        }
     </script>
 </body>
 </html>
