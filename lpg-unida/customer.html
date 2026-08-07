@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script>
-        const initialTheme = localStorage.getItem('theme') || 'default';
+        const initialTheme = localStorage.getItem('lpg_theme') || 'blue';
         document.documentElement.setAttribute('data-theme', initialTheme);
     </script>
     <style>
@@ -43,9 +43,11 @@
             </div>
             
             <div class="sidebar-footer">
-                <button id="themeToggleBtn" class="btn btn-secondary" style="padding: 8px 12px; font-size: 0.85rem; width: 100%; margin-bottom: 10px; border: 1px solid var(--border);">
-                    🌙 Mode Gelap
-                </button>
+                <select id="themeSelect" class="form-group" style="padding: 8px; font-size: 0.85rem; width: 100%; margin-bottom: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: white; border-radius: 8px; outline: none;">
+                    <option value="blue">Tema Biru Elegan</option>
+                    <option value="default">Tema Hijau UNIDA</option>
+                    <option value="dark">Tema Gelap (Dark Mode)</option>
+                </select>
                 <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 0.85rem; width: 100%; border-color: red; color: red;" onclick="logout()">Keluar</button>
             </div>
         </aside>
@@ -317,5 +319,16 @@
             }
         });
     </script>
+
+        // Theme selector
+        const themeSel = document.getElementById('themeSelect');
+        if (themeSel) {
+            themeSel.addEventListener('change', (e) => {
+                document.documentElement.setAttribute('data-theme', e.target.value);
+                localStorage.setItem('lpg_theme', e.target.value);
+            });
+            const savedTheme = localStorage.getItem('lpg_theme') || 'blue';
+            themeSel.value = savedTheme;
+        }
 </body>
 </html>

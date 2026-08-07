@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="default">
+<html lang="id" data-theme="blue">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,35 +10,43 @@
 <body>
     
     <div class="auth-wrapper">
-        <!-- LOGIN SECTION -->
+        
+        <!-- LOGIN TABS -->
         <div class="auth-card glass animate-fade-in" id="loginSection">
             <h1>LPG UNIDA</h1>
             <p>Silakan masuk ke akun Anda</p>
             
-            <form id="loginForm">
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="btn" id="tabPelanggan" style="flex: 1;">Pelanggan</button>
+                <button class="btn btn-secondary" id="tabAdmin" style="flex: 1;">Admin</button>
+            </div>
+
+            <!-- LOGIN PELANGGAN -->
+            <form id="loginPelangganForm">
                 <div class="form-group">
-                    <label>Nama Pelanggan (Username)</label>
-                    <input type="text" id="loginName" required placeholder="Contoh: Keluarga Budi">
+                    <label>Nomor WhatsApp</label>
+                    <input type="text" id="loginName" required placeholder="08xxxxxxxxxx">
                 </div>
                 <div class="form-group">
                     <label>PIN (6 Digit)</label>
                     <input type="password" id="loginPin" required maxlength="6" pattern="[0-9]{6}" placeholder="******">
                 </div>
                 <div id="loginError" class="text-danger" style="font-size: 0.85rem; margin-bottom: 15px;"></div>
-                
-                <button type="submit" class="btn">Masuk</button>
+                <button type="submit" class="btn">Masuk Pelanggan</button>
+            </form>
+
+            <!-- LOGIN ADMIN -->
+            <form id="loginAdminForm" class="hidden">
+                <div class="form-group">
+                    <label>PIN Admin Khusus</label>
+                    <input type="password" id="adminPin" required maxlength="6" pattern="[0-9]{6}" placeholder="Masukkan PIN Admin">
+                </div>
+                <div id="adminError" class="text-danger" style="font-size: 0.85rem; margin-bottom: 15px;"></div>
+                <button type="submit" class="btn">Masuk Admin</button>
             </form>
             
-            <div style="margin-top: 20px; font-size: 0.9rem;">
+            <div style="margin-top: 20px; font-size: 0.9rem;" id="registerLinkDiv">
                 Belum punya akun? <a href="#" id="showRegister" style="color: var(--primary); font-weight: 600;">Daftar Sekarang</a>
-            </div>
-            
-            <div class="theme-selector" style="margin-top: 30px;">
-                <select id="themeSelect">
-                    <option value="default">Tema Hijau UNIDA</option>
-                    <option value="dark">Tema Gelap (Dark Mode)</option>
-                    <option value="blue">Tema Biru Elegan</option>
-                </select>
             </div>
         </div>
 
@@ -99,34 +107,53 @@
             document.getElementById('loginSection').classList.remove('hidden');
         });
 
-        // Login Logic
-        const loginForm = document.getElementById('loginForm');
-        if(loginForm) {
-            loginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const wa_number = document.getElementById('loginName').value; // Menggunakan nama sebagai identifier sementara
-                const pin = document.getElementById('loginPin').value;
-                const errDiv = document.getElementById('loginError');
-                
-                if (wa_number === 'admin') {
-                    const adminPin = await window.dbApi.getAdminPin();
-                    if (pin === adminPin) {
-                        window.setUser({ id: 'admin', name: 'Admin Pusat', role: 'admin' });
-                        window.location.href = 'admin.html';
-                        return;
-                    }
-                }
+        
+        // Tab Logic
+        document.getElementById('tabPelanggan').addEventListener('click', () => {
+            document.getElementById('tabPelanggan').className = 'btn';
+            document.getElementById('tabAdmin').className = 'btn btn-secondary';
+            document.getElementById('loginPelangganForm').classList.remove('hidden');
+            document.getElementById('loginAdminForm').classList.add('hidden');
+            document.getElementById('registerLinkDiv').classList.remove('hidden');
+        });
+        document.getElementById('tabAdmin').addEventListener('click', () => {
+            document.getElementById('tabAdmin').className = 'btn';
+            document.getElementById('tabPelanggan').className = 'btn btn-secondary';
+            document.getElementById('loginAdminForm').classList.remove('hidden');
+            document.getElementById('loginPelangganForm').classList.add('hidden');
+            document.getElementById('registerLinkDiv').classList.add('hidden');
+        });
 
-                try {
-                    errDiv.innerText = "Memproses...";
-                    const res = await window.apiCall('/login', 'POST', { wa_number, pin });
-                    window.setUser(res.user);
-                    window.location.href = (res.user.role === 'admin') ? 'admin.html' : 'customer.html';
-                } catch(err) {
-                    errDiv.innerText = err.message;
-                }
-            });
-        }
+        // Login Pelanggan
+        document.getElementById('loginPelangganForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const wa_number = document.getElementById('loginName').value;
+            const pin = document.getElementById('loginPin').value;
+            const errDiv = document.getElementById('loginError');
+            
+            try {
+                errDiv.innerText = "Memproses...";
+                const res = await window.apiCall('/login', 'POST', { wa_number, pin });
+                window.setUser(res.user);
+                window.location.href = 'customer.html';
+            } catch(err) {
+                errDiv.innerText = err.message;
+            }
+        });
+
+        // Login Admin
+        document.getElementById('loginAdminForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const pin = document.getElementById('adminPin').value;
+            const errDiv = document.getElementById('adminError');
+            
+            if (pin === '901926') {
+                window.setUser({ id: 'admin', name: 'Admin Pusat', role: 'admin' });
+                window.location.href = 'admin.html';
+            } else {
+                errDiv.innerText = 'PIN Admin Salah!';
+            }
+        });
 
         // Register Logic
         const regForm = document.getElementById('registerForm');
@@ -162,16 +189,6 @@
             } catch(e) {}
         }
         
-        // Theme selector
-        document.getElementById('themeSelect').addEventListener('change', (e) => {
-            document.documentElement.setAttribute('data-theme', e.target.value);
-            localStorage.setItem('lpg_theme', e.target.value);
-        });
-        const savedTheme = localStorage.getItem('lpg_theme');
-        if(savedTheme) {
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            document.getElementById('themeSelect').value = savedTheme;
-        }
-    </script>
+        </script>
 </body>
 </html>
