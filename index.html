@@ -209,6 +209,15 @@
               </svg>
               <span>Laporan</span>
             </button>
+            <button class="nav-item" data-section="sampah">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18" />
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+              </svg>
+              <span>Sampah</span>
+            </button>
             <button class="nav-item" data-section="pengaturan">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -335,6 +344,19 @@
                 Daftar ini menunjukkan rekapitulasi jumlah tabung yang berhasil terjual (lunas) setiap harinya berdasarkan riwayat pesanan.
               </div>
               <div id="laporan-list" style="margin-top: 0; display: flex; flex-direction: column; gap: 8px;">
+                <!-- Diisi oleh JS -->
+              </div>
+            </div>
+          </section>
+
+          <!-- Section: Sampah -->
+          <section id="section-sampah" class="admin-section">
+            <div class="settings-card">
+              <div class="settings-title">Keranjang Sampah</div>
+              <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+                Daftar pesanan yang telah dihapus. Anda dapat memulihkannya atau menghapusnya secara permanen.
+              </div>
+              <div id="sampah-list" style="margin-top: 0; display: flex; flex-direction: column; gap: 8px;">
                 <!-- Diisi oleh JS -->
               </div>
             </div>
@@ -672,6 +694,26 @@
       <div class="modal-footer">
         <button id="btn-delete-no" class="btn btn-ghost">Batal</button>
         <button id="btn-delete-yes" class="btn btn-danger">Ya, Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Permanent Delete Confirm Modal -->
+  <div id="modal-permanent-delete-confirm" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Hapus Permanen</h3>
+        <button class="modal-close" data-close-modal>×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-alert modal-alert-error">
+          Anda yakin ingin menghapus pesanan atas nama <strong id="permanent-delete-confirm-name">-</strong> secara permanen dari server?
+          Tindakan ini <strong>tidak dapat dibatalkan</strong> sama sekali.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-permanent-delete-no" class="btn btn-ghost">Batal</button>
+        <button id="btn-permanent-delete-yes" class="btn btn-danger">Hapus Permanen</button>
       </div>
     </div>
   </div>

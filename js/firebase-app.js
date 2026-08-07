@@ -33,6 +33,8 @@ let pendingPaymentId = null;
 let pendingPaymentState = true;
 let pendingDeleteId = null;
 let pendingDeleteName = '';
+let pendingPermDeleteId = null;
+let pendingPermDeleteName = '';
 let isAdmin = false;
 let inactivityTimer = null;
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 Menit
@@ -111,7 +113,33 @@ function updateAllUI() {
     updateDashboard();
     renderAdminList();
     renderLaporanList();
+    renderSampahList();
   }
+}
+
+// -- SAMPAH (TRASH) --
+function renderSampahList() {
+  const container = document.getElementById('sampah-list');
+  if (!container) return;
+
+  const trashedOrders = orders.filter(o => o.is_deleted);
+  
+  if (trashedOrders.length === 0) {
+    container.innerHTML =
+      '<div class="empty-state"><div class="empty-state-icon">🗑️</div>' +
+      '<p>Keranjang sampah kosong</p></div>';
+    return;
+  }
+
+  container.innerHTML = trashedOrders.map(o => {
+    return '<div class="admin-order-card" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px;">' +
+    '<div><div style="font-weight: 700; color: var(--text);">' + esc(o.nama) + '</div>' +
+    '<div style="font-size: 12px; color: var(--text-secondary);">KK: ' + esc(o.kk) + ' | NIK: ' + esc(o.nik) + '</div></div>' +
+    '<div style="display: flex; gap: 8px;">' +
+    '<button class="btn btn-success-sm" onclick="onRestoreOrder(\'' + o.id + '\')">Pulihkan</button>' +
+    '<button class="btn btn-danger-sm" onclick="onPermanentDeleteOrder(\'' + o.id + '\', \'' + esc(o.nama) + '\')">Hapus Permanen</button>' +
+    '</div></div>';
+  }).join('');
 }
 
 // -- COUNTDOWN --
@@ -166,11 +194,9 @@ function isOpen() {
   return new Date() >= target;
 }
 
-// Mengambil semua data pesanan yang aktif (belum di-reset oleh admin)
-// Ini memperbaiki masalah data yang hilang pada pergantian hari
+// Mengambil semua data pesanan yang aktif (belum dihapus ke sampah)
 function getTodayOrders() {
-  // Menampilkan semua pesanan yang belum dihapus (tidak dibatasi hari ini saja)
-  return orders;
+  return orders.filter(o => !o.is_deleted);
 }
 
 function getQuotaLeft() {
@@ -520,10 +546,13 @@ function setupEventListeners() {
   on('order-form', 'submit', handleOrderSubmit);
 
   // Admin Actions
-  on('btn-confirm-paid', 'click', handleConfirmPayment);
   on('btn-cancel-paid', 'click', () => { hideModal('modal-verify-payment'); pendingPaymentId = null; });
+  on('btn-confirm-paid', 'click', handleConfirmPaid);
   on('btn-delete-yes', 'click', handleConfirmDelete);
   on('btn-delete-no', 'click', () => { hideModal('modal-delete-confirm'); pendingDeleteId = null; });
+  
+  on('btn-permanent-delete-yes', 'click', handlePermanentDeleteConfirm);
+  on('btn-permanent-delete-no', 'click', () => { hideModal('modal-permanent-delete-confirm'); pendingPermDeleteId = null; });
 
   on('settings-form', 'submit', handleSaveSettings);
   on('btn-reset', 'click', () => document.getElementById('reset-confirm').classList.add('show'));
@@ -551,7 +580,7 @@ function switchAdminSection(sectionId) {
   const section = document.getElementById('section-' + sectionId);
   if (section) section.classList.add('active');
 
-  const titles = { dashboard: 'Dashboard', kelola: 'Kelola Pesanan', laporan: 'Riwayat Penjualan', pengaturan: 'Pengaturan', password: 'Ganti Password' };
+  const titles = { dashboard: 'Dashboard', kelola: 'Kelola Pesanan', laporan: 'Riwayat Penjualan', sampah: 'Keranjang Sampah', pengaturan: 'Pengaturan', password: 'Ganti Password' };
   setText('admin-page-title', titles[sectionId] || '');
 }
 
@@ -649,7 +678,7 @@ async function handleOrderSubmit(e) {
   }
 }
 
-async function handleConfirmPayment() {
+async function handleConfirmPaid() {
   if (!pendingPaymentId) return;
 
   if (pendingPaymentState) {
@@ -692,17 +721,24 @@ async function handleConfirmPayment() {
 async function handleConfirmDelete() {
   if (!pendingDeleteId) return;
   const btn = document.getElementById('btn-delete-yes');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner spinner-white"></span>';
+  const origText = btn.innerHTML;
+  btn.innerHTML = '<div class="spinner spinner-white"></div>';
+  btn.disabled = true;
 
   try {
-    await remove(ref(db, `orders/${pendingDeleteId}`));
-    toast('Pesanan dihapus', 'success');
+    // Soft delete: set is_deleted = true
+    await update(ref(db, `orders/${pendingDeleteId}`), {
+      is_deleted: true,
+      waktu_hapus: new Date().toISOString()
+    });
+
     hideModal('modal-delete-confirm');
-  } catch (error) {
-    console.error(error);
-    toast('Gagal menghapus', 'error');
+    toast('Pesanan dipindahkan ke keranjang sampah', 'success');
+  } catch (e) {
+    toast('Gagal menghapus: ' + e.message, 'error');
   } finally {
-    btn.disabled = false; btn.textContent = 'Ya, Hapus';
+    btn.innerHTML = origText;
+    btn.disabled = false;
     pendingDeleteId = null;
   }
 }
@@ -987,6 +1023,41 @@ window.onDeleteOrder = (id, nama) => {
   setText('delete-confirm-name', nama);
   showModal('modal-delete-confirm');
 };
+
+window.onRestoreOrder = async (id) => {
+  try {
+    await update(ref(db, `orders/${id}`), { is_deleted: null, waktu_hapus: null });
+    toast('Pesanan berhasil dipulihkan', 'success');
+  } catch (e) {
+    toast('Gagal memulihkan: ' + e.message, 'error');
+  }
+};
+
+window.onPermanentDeleteOrder = (id, nama) => {
+  pendingPermDeleteId = id;
+  setText('permanent-delete-confirm-name', nama);
+  showModal('modal-permanent-delete-confirm');
+};
+
+async function handlePermanentDeleteConfirm() {
+  if (!pendingPermDeleteId) return;
+  const btn = document.getElementById('btn-permanent-delete-yes');
+  const origText = btn.innerHTML;
+  btn.innerHTML = '<div class="spinner spinner-white"></div>';
+  btn.disabled = true;
+
+  try {
+    await remove(ref(db, `orders/${pendingPermDeleteId}`));
+    hideModal('modal-permanent-delete-confirm');
+    toast('Pesanan berhasil dihapus permanen', 'success');
+  } catch (e) {
+    toast('Gagal menghapus: ' + e.message, 'error');
+  } finally {
+    btn.innerHTML = origText;
+    btn.disabled = false;
+    pendingPermDeleteId = null;
+  }
+}
 
 window.openLaporanDetail = (date) => {
   const paidOrders = orders.filter(o => o.sudah_bayar && (o.tanggal_bayar || o.tanggal || "Data Lama") === date);
