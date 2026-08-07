@@ -1,0 +1,1365 @@
+import { db, ref, onValue, set, push, remove, update } from './firebase-config.js?v=1';
+
+// ==========================================
+// STATE
+// ==========================================
+let allData = { employees: {}, records: {}, settings: {}, users: {} };
+let currentEmployee = null; // { _key, name, nickname, position }
+
+const $ = id => document.getElementById(id);
+const esc = s => s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : '';
+
+// ==========================================
+// THEME
+// ==========================================
+const THEME_PALETTES = {
+  orange: { primary: '#F15800', hover: '#D94500', bg: '#FFF0E6', light: '#fed7aa', shadow: 'rgba(241, 88, 0, 0.39)' },
+  blue: { primary: '#2563EB', hover: '#1D4ED8', bg: '#EFF6FF', light: '#93c5fd', shadow: 'rgba(37, 99, 235, 0.39)' },
+  emerald: { primary: '#059669', hover: '#047857', bg: '#ECFDF5', light: '#6ee7b7', shadow: 'rgba(5, 150, 105, 0.39)' },
+  purple: { primary: '#7C3AED', hover: '#6D28D9', bg: '#F5F3FF', light: '#c4b5fd', shadow: 'rgba(124, 58, 237, 0.39)' },
+  red: { primary: '#DC2626', hover: '#B91C1C', bg: '#FEF2F2', light: '#fca5a5', shadow: 'rgba(220, 38, 38, 0.39)' },
+  slate: { primary: '#334155', hover: '#1E293B', bg: '#F1F5F9', light: '#cbd5e1', shadow: 'rgba(51, 65, 85, 0.39)' }
+};
+
+function applyTheme(themeKey) {
+  localStorage.setItem('spbu_theme', themeKey);
+  const t = THEME_PALETTES[themeKey] || THEME_PALETTES['orange'];
+  document.documentElement.style.setProperty('--primary', t.primary);
+  document.documentElement.style.setProperty('--primary-dark', t.hover);
+  document.documentElement.style.setProperty('--primary-hover', t.hover);
+  document.documentElement.style.setProperty('--primary-light', t.light || t.hover);
+  document.documentElement.style.setProperty('--primary-bg', t.bg);
+  document.documentElement.style.setProperty('--primary-shadow', t.shadow || 'rgba(0,0,0,0.2)');
+
+  // Dynamically update status bar / window header title bar color
+  let metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (!metaTheme) {
+    metaTheme = document.createElement('meta');
+    metaTheme.name = 'theme-color';
+    document.head.appendChild(metaTheme);
+  }
+  metaTheme.setAttribute('content', t.primary);
+
+  let metaNav = document.querySelector('meta[name="msapplication-navbutton-color"]');
+  if (!metaNav) {
+    metaNav = document.createElement('meta');
+    metaNav.name = 'msapplication-navbutton-color';
+    document.head.appendChild(metaNav);
+  }
+  metaNav.setAttribute('content', t.primary);
+}
+
+const savedTheme = localStorage.getItem('spbu_theme');
+if (savedTheme) applyTheme(savedTheme);
+
+// Dark Mode (personal, shared via localStorage)
+if (localStorage.getItem('spbu_dark_mode') === 'true') document.documentElement.classList.add('dark-mode');
+
+// ==========================================
+// SHIFTS
+// ==========================================
+let SHIFTS = {
+  '1': { start: [4, 45], end: [12, 45], label: 'Shift 1 (04:45–12:45)', tolerance: 5, early_window: 10 },
+  '2': { start: [12, 45], end: [21, 15], label: 'Shift 2 (12:45–21:15)', tolerance: 5, early_window: 10 },
+  '3': { start: [21, 15], end: [4, 45], label: 'Shift 3 (21:15–04:45)', tolerance: 5, early_window: 10 },
+  'admin': { start: [7, 0], end: [15, 0], label: 'Admin (07:00–15:00)', tolerance: 10, early_window: 10 }
+};
+const DEFAULT_SHIFTS = JSON.parse(JSON.stringify(SHIFTS));
+
+// ==========================================
+// HELPERS
+// ==========================================
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function fmtDateID(dateStr) {
+  if (!dateStr) return '-';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+}
+function nowTime() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+}
+function calcLate(shiftKey, clockInTime) {
+  const [h, m] = clockInTime.split(':').map(Number);
+  const s = SHIFTS[shiftKey];
+  const startMin = s.start[0] * 60 + s.start[1];
+  const currentMin = h * 60 + m;
+  let diff = currentMin - startMin;
+  if (shiftKey === '3' && diff < -720) diff += 1440;
+  if (shiftKey === '3' && diff > 720) diff -= 1440;
+  return diff > s.tolerance ? diff : 0;
+}
+function formatLate(mins) {
+  if (mins <= 0) return 'On Time ✓';
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  let parts = [];
+  if (h > 0) parts.push(`${h} jam`);
+  if (m > 0) parts.push(`${m} menit`);
+  return `Terlambat ${parts.join(' ')}`;
+}
+function showToast(msg, type = 'success') {
+  const c = $('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+function showModal(title, message, isLate) {
+  $('modal-icon').textContent = isLate ? '⚠️' : '✅';
+  $('modal-title').textContent = title;
+  $('modal-message').textContent = message;
+  $('modal-overlay').classList.add('active');
+}
+let confirmCallback = null;
+function showConfirm(title, message, cb, btnText = 'Yakin', isDanger = false) {
+  confirmCallback = cb;
+  $('confirm-title').textContent = title;
+  $('confirm-message').textContent = message;
+  const btn = $('confirm-ok');
+  btn.textContent = btnText;
+  btn.className = isDanger ? 'btn btn-danger' : 'btn btn-primary';
+  $('confirm-overlay').classList.add('active');
+}
+
+function getEmployees() {
+  return Object.entries(allData.users || {}).map(([k, v]) => ({ _key: k, ...v }));
+}
+function getRecords(empName) {
+  const all = Object.entries(allData.records || {}).map(([k, v]) => ({ _key: k, ...v }));
+  if (empName) return all.filter(r => r.emp_name === empName);
+  return all;
+}
+function getMessages() {
+  const s = allData.settings || {};
+  return {
+    onTime: s.msg_on_time || 'MasyaAllah kamu datang tepat waktu, semangat kerjanya {nama}!',
+    late: s.msg_late || 'Astaghfirullah {nama} terlambat {terlambat}, besok datang lebih awal ya',
+    clockOut: s.msg_clock_out || 'Alhamdulillah {nama}, hati-hati di jalan ya, semoga selamat sampai tujuan'
+  };
+}
+function replaceVars(msg, vars) {
+  let r = msg;
+  if (vars.nama) r = r.replace(/{nama}/g, vars.nama);
+  if (vars.waktu) r = r.replace(/{waktu}/g, vars.waktu);
+  if (vars.terlambat) r = r.replace(/{terlambat}/g, vars.terlambat);
+  return r;
+}
+
+// ==========================================
+// FIREBASE LISTENER
+// ==========================================
+onValue(ref(db, 'absensi'), snap => {
+  allData = { ...allData, ...(snap.val() || { employees: {}, records: {}, settings: {} }) };
+  if (!allData.records) allData.records = {};
+  if (!allData.settings) allData.settings = {};
+  
+  if (allData.settings.shifts) {
+    SHIFTS = allData.settings.shifts;
+    Object.keys(SHIFTS).forEach(k => {
+      if (SHIFTS[k].early_window === undefined) {
+        SHIFTS[k].early_window = 10;
+      }
+    });
+  } else {
+    SHIFTS = JSON.parse(JSON.stringify(DEFAULT_SHIFTS));
+  }
+  
+  render();
+});
+
+onValue(ref(db, 'users'), snap => {
+  allData.users = snap.val() || {};
+  render();
+});
+
+onValue(ref(db, 'settings/theme'), snap => {
+  const theme = snap.val();
+  if (theme) applyTheme(theme);
+});
+
+function render() {
+  const activeView = document.querySelector('.view.active');
+  if (!activeView) return;
+  const id = activeView.id;
+  if (id === 'view-select') renderEmployeeList();
+  if (id === 'view-employee') { renderEmpStatus(); renderEmpRecap(); }
+  if (id === 'view-admin') { renderAdminDashboard(); renderAdminEmployees(); renderLeaderboard(); renderReport(); }
+}
+
+// ==========================================
+// VIEW: PILIH KARYAWAN
+// ==========================================
+function renderEmployeeList() {
+  const emps = getEmployees();
+  const list = $('employee-list');
+  const noMsg = $('no-employees');
+  if (emps.length === 0) {
+    list.innerHTML = '';
+    noMsg.classList.remove('hidden');
+    return;
+  }
+  noMsg.classList.add('hidden');
+  list.innerHTML = emps.map(e => `
+    <div class="emp-select-card" data-key="${e._key}">
+      <div class="emp-name">${esc(e.name)}</div>
+      <div class="emp-pos">${esc(e.position)}</div>
+    </div>
+  `).join('');
+  list.querySelectorAll('.emp-select-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const emp = getEmployees().find(e => e._key === card.dataset.key);
+      if (emp) { currentEmployee = emp; openEmployeePanel(); }
+    });
+  });
+  renderLeaderboard();
+}
+
+function renderLeaderboard() {
+  const container = $('leaderboard-list');
+  if (!container) return;
+  const emps = getEmployees();
+  const recs = getRecords();
+  const targetDate = new Date();
+  const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+  const y = targetDate.getFullYear();
+  const d = String(targetDate.getDate()).padStart(2, '0');
+  
+  const startStr = `${y}-${m}-01`;
+  const endStr = `${y}-${m}-${d}`;
+  
+  const monthRecs = recs.filter(r => r.date && r.date >= startStr && r.date <= endStr);
+  
+  const scores = emps.map(emp => {
+    const empRecs = monthRecs.filter(r => r.emp_name === emp.name);
+    let score = 0;
+    let present = 0;
+    let totalSecLate = 0;
+    
+    empRecs.forEach(r => {
+      if (r.clock_in && r.clock_in !== '-') {
+        present++;
+        if ((r.late_minutes || 0) <= 0) score += 10; // Tepat waktu
+        else score += 5; // Terlambat
+        
+        // Tie-breaker: calculate exact seconds relative to shift start
+        let [h, m, s] = r.clock_in.split(':').map(Number);
+        s = s || 0;
+        let sKey = Object.keys(SHIFTS).find(k => SHIFTS[k].label === r.shift);
+        if (sKey) {
+           const sh = SHIFTS[sKey];
+           const startSec = sh.start[0] * 3600 + sh.start[1] * 60;
+           let currentSec = h * 3600 + m * 60 + s;
+           let diffSec = currentSec - startSec;
+           if (sKey === '3' && diffSec < -43200) diffSec += 86400; // cross day threshold
+           if (sKey === '3' && diffSec > 43200) diffSec -= 86400;
+           totalSecLate += diffSec;
+        }
+      } else {
+        if (['Sakit','Izin','Cuti'].includes(r.status)) score += 2; // Keterangan sah
+      }
+    });
+    return { name: emp.name, photo: emp.profile_picture || null, present, totalSecLate };
+  }).filter(e => e.present > 0).sort((a, b) => {
+    return a.totalSecLate - b.totalSecLate; // The lowest total SecLate (most early cumulatively) wins
+  });
+
+  if (scores.length === 0) {
+    container.innerHTML = '<p class="text-center text-sm text-muted">Belum ada data absensi pada periode ini</p>';
+    return;
+  }
+
+  const getRankIcon = (index) => {
+    if (index === 0) return '👑';
+    if (index === 1) return '🥈';
+    if (index === 2) return '🥉';
+    return `#${index + 1}`;
+  };
+
+  const generateListHTML = (list, isTop3) => list.map((s, i) => {
+    const isMedal = i < 3;
+    const isClickable = isTop3 ? (allData.settings.rank_clickable || false) : true;
+    const rankVisual = s.photo
+      ? `<img src="${s.photo}" class="leaderboard-photo" data-name="${esc(s.name)}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; display:block; border: 2px solid ${isMedal ? (i === 0 ? '#F59E0B' : (i === 1 ? '#9CA3AF' : '#B45309')) : 'var(--border)'}; margin: 0 auto; cursor: pointer;">`
+      : getRankIcon(i);
+    return `
+    <div class="leaderboard-item rank-${i + 1}" data-emp="${esc(s.name)}" style="${isClickable ? 'cursor:pointer;' : 'cursor:default;'}${!isTop3 ? 'background:var(--bg);box-shadow:none;border:1px solid var(--border);margin-bottom:0.5rem;' : ''}">
+      <div class="leaderboard-rank" style="${s.photo ? 'background:transparent; display:flex; align-items:center; justify-content:center;' : (isMedal ? 'font-size:1.6rem; background:transparent;' : 'font-size:1.1rem; background:var(--border); color:var(--text); border-radius:var(--radius-sm); height:30px; display:flex; align-items:center; justify-content:center; margin:auto 0;')}">${rankVisual}</div>
+      <div class="leaderboard-info">
+        <div class="leaderboard-name">${esc(s.name)}</div>
+      </div>
+    </div>
+  `}).join('');
+  container.innerHTML = generateListHTML(scores, true);
+
+  if (allData.settings.rank_clickable) {
+    container.querySelectorAll('.leaderboard-item').forEach(item => {
+      item.addEventListener('click', () => showLeaderboardDetail(item.dataset.emp));
+    });
+  }
+
+  const adminContainer = $('admin-leaderboard-list');
+  if (adminContainer) {
+    adminContainer.innerHTML = generateListHTML(scores, false);
+    adminContainer.querySelectorAll('.leaderboard-item').forEach(item => {
+      item.addEventListener('click', () => showLeaderboardDetail(item.dataset.emp));
+    });
+  }
+
+  // Tambahkan listener klik untuk melihat foto profil besar (untuk halaman utama & dashboard admin)
+  document.querySelectorAll('.leaderboard-photo').forEach(img => {
+    img.addEventListener('click', (e) => {
+      e.stopPropagation(); // Agar tidak mentrigger detail absensi
+      $('photo-title').textContent = `Foto Profil: ${img.dataset.name}`;
+      $('photo-img').src = img.src;
+      $('photo-overlay').classList.add('active');
+    });
+  });
+}
+
+function showLeaderboardDetail(empName) {
+  const recs = getRecords(empName);
+  const targetDate = new Date();
+  const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+  const y = targetDate.getFullYear();
+  const d = String(targetDate.getDate()).padStart(2, '0');
+  const startStr = `${y}-${m}-01`;
+  const endStr = `${y}-${m}-${d}`;
+  
+  const monthRecs = recs.filter(r => r.date && r.date >= startStr && r.date <= endStr);
+  
+  let onTime = 0, late = 0, absent = 0, totalLateMins = 0;
+  monthRecs.forEach(r => {
+    if (r.clock_in && r.clock_in !== '-') {
+      if ((r.late_minutes || 0) > 0) { late++; totalLateMins += (r.late_minutes || 0); }
+      else onTime++;
+    } else {
+      absent++;
+    }
+  });
+  
+  $('detail-title').textContent = `📋 Rincian: ${empName}`;
+  
+  let html = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:1rem;">
+      <div class="card" style="text-align:center;padding:0.75rem;">
+        <div style="font-size:1.5rem;font-weight:800;color:var(--success);">${onTime}</div>
+        <div style="font-size:0.75rem;color:var(--text-secondary);">Tepat Waktu</div>
+      </div>
+      <div class="card" style="text-align:center;padding:0.75rem;">
+        <div style="font-size:1.5rem;font-weight:800;color:var(--warning);">${late}</div>
+        <div style="font-size:0.75rem;color:var(--text-secondary);">Terlambat</div>
+      </div>
+      <div class="card" style="text-align:center;padding:0.75rem;">
+        <div style="font-size:1.5rem;font-weight:800;color:var(--info);">${absent}</div>
+        <div style="font-size:0.75rem;color:var(--text-secondary);">Izin/Sakit/Cuti</div>
+      </div>
+      <div class="card" style="text-align:center;padding:0.75rem;">
+        <div style="font-size:1.5rem;font-weight:800;color:var(--danger);">${totalLateMins}m</div>
+        <div style="font-size:0.75rem;color:var(--text-secondary);">Total Telat</div>
+      </div>
+    </div>
+    <h4 style="font-size:0.9rem;margin-bottom:0.5rem;color:var(--text);">Riwayat Bulan Ini</h4>
+  `;
+  
+  if (monthRecs.length === 0) {
+    html += '<p class="text-sm text-muted">Belum ada data bulan ini.</p>';
+  } else {
+    html += '<div style="max-height:250px;overflow-y:auto;">';
+    monthRecs.sort((a, b) => b.date.localeCompare(a.date)).forEach(r => {
+      const statusColor = (!r.clock_in || r.clock_in === '-') ? 'var(--info)' : ((r.late_minutes || 0) > 0 ? 'var(--warning)' : 'var(--success)');
+      const statusText = (!r.clock_in || r.clock_in === '-') ? (r.note || r.status || 'Tidak Hadir') : ((r.late_minutes || 0) > 0 ? `Telat ${r.late_minutes}m` : 'Tepat Waktu');
+      const clockIn = (r.clock_in && r.clock_in !== '-') ? r.clock_in : '-';
+      const clockOut = (r.clock_out && r.clock_out !== '-') ? r.clock_out : '-';
+      
+      html += `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border);font-size:0.8rem;">
+          <div>
+            <div style="font-weight:600;color:var(--text);">${fmtDateID(r.date)}</div>
+            <div style="color:var(--text-muted);font-size:0.7rem;">${r.shift || '-'} | Masuk: ${clockIn} | Pulang: ${clockOut}</div>
+          </div>
+          <span style="color:${statusColor};font-weight:600;font-size:0.75rem;white-space:nowrap;">${statusText}</span>
+        </div>`;
+    });
+    html += '</div>';
+  }
+  
+  $('detail-content').innerHTML = html;
+  $('detail-overlay').classList.add('active');
+}
+
+// ==========================================
+// VIEW: PANEL KARYAWAN
+// ==========================================
+function openEmployeePanel() {
+  $('emp-name').textContent = currentEmployee.name;
+  $('emp-position').textContent = currentEmployee.position;
+  $('emp-date').textContent = fmtDateID(todayStr());
+  showView('view-employee');
+  renderEmpStatus();
+  renderEmpRecap();
+}
+
+function renderEmpStatus() {
+  if (!currentEmployee) return;
+  const today = todayStr();
+  const rec = getRecords(currentEmployee.name).find(r => r.date === today);
+  const statusEl = $('emp-today-status');
+  const textEl = $('emp-status-text');
+  if (rec && rec.clock_in && rec.clock_in !== '-') {
+    statusEl.classList.remove('hidden');
+    textEl.textContent = `Masuk: ${rec.clock_in} | Pulang: ${rec.clock_out || '-'} | ${rec.status || ''}`;
+  } else {
+    statusEl.classList.add('hidden');
+  }
+}
+
+function renderEmpRecap() {
+  if (!currentEmployee) return;
+  const container = $('emp-recap');
+  const recs = getRecords(currentEmployee.name)
+    .filter(r => r.date)
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 15);
+  if (recs.length === 0) {
+    container.innerHTML = '<p class="no-data">Belum ada riwayat absensi</p>';
+    return;
+  }
+  container.innerHTML = recs.map(r => {
+    const isLate = (r.late_minutes || 0) > 0;
+    const isAbsent = r.clock_in === '-';
+    const badgeClass = isAbsent ? 'badge-info' : (isLate ? 'badge-warning' : 'badge-success');
+    return `<div class="record-card">
+      <div class="record-header">
+        <span class="record-date">${fmtDateID(r.date)}</span>
+        <span class="badge ${badgeClass}">${esc(r.status || '-')}</span>
+      </div>
+      <div class="record-detail">${esc(r.shift || '-')} | ${r.clock_in || '-'} – ${r.clock_out || '-'}${r.note ? ' | ' + esc(r.note) : ''}</div>
+    </div>`;
+  }).join('');
+}
+
+// ==========================================
+// CLOCK IN (Shift Selection)
+// ==========================================
+$('btn-clock-in').addEventListener('click', () => {
+  const today = todayStr();
+  const existing = getRecords(currentEmployee.name).find(r => r.date === today && r.clock_in && r.clock_in !== '-');
+  if (existing) { showToast('Sudah absen masuk hari ini', 'warning'); return; }
+  const hasNote = getRecords(currentEmployee.name).find(r => r.date === today && (r.clock_in === '-' || !r.clock_in) && ['Sakit','Izin','Cuti','Libur','Lainnya'].includes(r.status));
+  if (hasNote) { showToast('Manajemen sudah memberikan keterangan hari ini', 'warning'); return; }
+  
+  // Build shift options
+  const optContainer = $('shift-options');
+  optContainer.innerHTML = Object.entries(SHIFTS).map(([key, s]) => `
+    <button class="shift-option" data-shift="${key}">
+      <div class="shift-name">${key === 'admin' ? 'Admin' : 'Shift ' + key}</div>
+      <div class="shift-time">${String(s.start[0]).padStart(2,'0')}:${String(s.start[1]).padStart(2,'0')} – ${String(s.end[0]).padStart(2,'0')}:${String(s.end[1]).padStart(2,'0')}</div>
+    </button>
+  `).join('');
+  optContainer.querySelectorAll('.shift-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const shiftKey = btn.dataset.shift;
+      const s = SHIFTS[shiftKey];
+      const earlyWindow = s.early_window !== undefined ? s.early_window : 10;
+      
+      const time = nowTime();
+      const [h, m] = time.split(':').map(Number);
+      const currentMin = h * 60 + m;
+      const startMin = s.start[0] * 60 + s.start[1];
+      let diff = currentMin - startMin;
+      if (shiftKey === '3' && diff < -720) diff += 1440;
+      if (shiftKey === '3' && diff > 720) diff -= 1440;
+
+      if (diff < -earlyWindow) {
+        let openMin = startMin - earlyWindow;
+        if (openMin < 0) openMin += 1440;
+        const openH = Math.floor(openMin / 60);
+        const openM = openMin % 60;
+        const openTimeStr = `${String(openH).padStart(2,'0')}:${String(openM).padStart(2,'0')}`;
+        const sName = shiftKey === 'admin' ? 'Admin' : 'Shift ' + shiftKey;
+        
+        $('shift-overlay').classList.remove('active');
+        showModal(
+          'Absen Belum Dibuka',
+          `Absen untuk ${sName} belum dibuka. Absen baru dapat dilakukan mulai pukul ${openTimeStr} (${earlyWindow} menit sebelum shift).`,
+          true
+        );
+        return;
+      }
+
+      $('shift-overlay').classList.remove('active');
+      const sName = shiftKey === 'admin' ? 'Admin' : 'Shift ' + shiftKey;
+      showConfirm('Konfirmasi Masuk', `Apakah Anda yakin ingin absen masuk untuk ${sName}?`, () => {
+        doClockIn(shiftKey);
+      });
+    });
+  });
+  $('shift-overlay').classList.add('active');
+});
+
+async function doClockIn(shiftKey) {
+  $('shift-overlay').classList.remove('active');
+  const time = nowTime();
+  const late = calcLate(shiftKey, time);
+  const status = late > 0 ? formatLate(late) : 'On Time ✓';
+  const msgs = getMessages();
+
+  await set(push(ref(db, 'absensi/records')), {
+    emp_name: currentEmployee.name,
+    date: todayStr(),
+    clock_in: time,
+    clock_out: '',
+    shift: SHIFTS[shiftKey].label,
+    status: status,
+    late_minutes: late,
+    note: ''
+  });
+
+  if (late > 0) {
+    const h = Math.floor(late / 60), m = late % 60;
+    let lp = []; if (h > 0) lp.push(`${h} jam`); if (m > 0) lp.push(`${m} menit`);
+    const msg = replaceVars(msgs.late, { nama: currentEmployee.nickname || currentEmployee.name, waktu: time, terlambat: lp.join(' ') });
+    showModal('Astaghfirullah', msg, true);
+  } else {
+    const msg = replaceVars(msgs.onTime, { nama: currentEmployee.nickname || currentEmployee.name, waktu: time });
+    showModal('MasyaAllah', msg, false);
+  }
+}
+
+$('shift-cancel').addEventListener('click', () => $('shift-overlay').classList.remove('active'));
+
+// ==========================================
+// CLOCK OUT
+// ==========================================
+$('btn-clock-out').addEventListener('click', async () => {
+  const today = todayStr();
+  const recs = getRecords(currentEmployee.name);
+  const existing = recs.find(r => r.date === today && r.clock_in && r.clock_in !== '-');
+  if (!existing) { showToast('Belum absen masuk', 'warning'); return; }
+  if (existing.clock_out) { showToast('Sudah absen pulang', 'warning'); return; }
+
+  const time = nowTime();
+  await update(ref(db, 'absensi/records/' + existing._key), { clock_out: time });
+
+  const msgs = getMessages();
+  const msg = replaceVars(msgs.clockOut, { nama: currentEmployee.nickname || currentEmployee.name, waktu: time });
+  showModal('Alhamdulillah', msg, false);
+});
+
+// ==========================================
+// MODALS
+// ==========================================
+$('modal-close').addEventListener('click', () => $('modal-overlay').classList.remove('active'));
+$('detail-close').addEventListener('click', () => $('detail-overlay').classList.remove('active'));
+$('photo-close').addEventListener('click', () => $('photo-overlay').classList.remove('active'));
+$('confirm-ok').addEventListener('click', () => {
+  $('confirm-overlay').classList.remove('active');
+  if (confirmCallback) { confirmCallback(); confirmCallback = null; }
+});
+$('confirm-cancel').addEventListener('click', () => {
+  $('confirm-overlay').classList.remove('active');
+  confirmCallback = null;
+});
+
+// ==========================================
+// NAVIGATION
+// ==========================================
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  $(id).classList.add('active');
+  $('btn-back').classList.toggle('hidden', id === 'view-select');
+  $('btn-admin-lock').classList.toggle('hidden', id !== 'view-select');
+  render();
+}
+$('btn-back').addEventListener('click', () => {
+  showView('view-select');
+  currentEmployee = null;
+});
+
+// Admin trigger: PIN based
+$('btn-admin-lock').addEventListener('click', () => {
+  $('pin-input').value = '';
+  $('pin-overlay').classList.add('active');
+  setTimeout(() => $('pin-input').focus(), 100);
+});
+
+$('pin-cancel').addEventListener('click', () => {
+  $('pin-overlay').classList.remove('active');
+});
+
+$('pin-input').addEventListener('keyup', (e) => {
+  if (e.key === 'Enter') $('pin-submit').click();
+});
+
+$('pin-submit').addEventListener('click', () => {
+  const pin = $('pin-input').value.trim();
+  const correctPin = allData.settings?.admin_pin || '123456'; // Default PIN if not set
+  if (pin === correctPin) {
+    $('pin-overlay').classList.remove('active');
+    showView('view-admin');
+    renderAdminDashboard();
+    renderAdminEmployees();
+    renderMessagesForm();
+    showToast('Akses Admin Diberikan', 'success');
+  } else {
+    showToast('PIN Salah!', 'error');
+  }
+});
+
+// Admin tabs
+document.querySelectorAll('.tab-btn').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+    $('tab-' + tab.dataset.tab).classList.remove('hidden');
+    if (tab.dataset.tab === 'report') renderReport();
+    if (tab.dataset.tab === 'messages') renderMessagesForm();
+  });
+});
+
+// ==========================================
+// ADMIN: DASHBOARD
+// ==========================================
+let disciplineChart = null;
+function renderAdminDashboard() {
+  const today = todayStr();
+  const emps = getEmployees();
+  const recs = getRecords();
+  const clockedIn = recs.filter(r => r.date === today && r.clock_in && r.clock_in !== '-').map(r => r.emp_name);
+  const withNote = recs.filter(r => r.date === today && (r.clock_in === '-' || !r.clock_in) && ['Sakit','Izin','Cuti','Libur','Lainnya'].includes(r.status)).map(r => r.emp_name);
+  const absent = emps.filter(e => !clockedIn.includes(e.name) && !withNote.includes(e.name));
+
+  const container = $('dashboard-absent');
+  const allP = $('all-present');
+  if (absent.length === 0) {
+    container.innerHTML = '';
+    allP.classList.remove('hidden');
+  } else {
+    allP.classList.add('hidden');
+    container.innerHTML = absent.map(e => `
+      <div class="card mb-2 flex items-center justify-between" style="padding:1rem;">
+        <div>
+          <div style="font-weight:700;">${esc(e.name)}</div>
+          <div class="text-xs text-muted">${esc(e.position)}</div>
+        </div>
+        <select class="form-select note-select" style="width:auto;min-width:120px;" data-name="${esc(e.name)}">
+          <option value="">Keterangan</option>
+          <option value="Sakit">Sakit</option>
+          <option value="Izin">Izin</option>
+          <option value="Cuti">Cuti</option>
+          <option value="Libur">Libur</option>
+          <option value="Lainnya">Lainnya</option>
+        </select>
+      </div>
+    `).join('');
+    container.querySelectorAll('.note-select').forEach(sel => {
+      sel.addEventListener('change', async () => {
+        if (!sel.value) return;
+        sel.disabled = true;
+        await set(push(ref(db, 'absensi/records')), {
+          emp_name: sel.dataset.name,
+          date: todayStr(),
+          clock_in: '-',
+          clock_out: '-',
+          shift: '-',
+          status: sel.value,
+          late_minutes: 0,
+          note: sel.value
+        });
+        sel.disabled = false;
+        showToast(`${sel.dataset.name}: ${sel.value}`, 'success');
+      });
+    });
+  }
+
+  // Render Chart
+  const startInput = $('dash-start');
+  const endInput = $('dash-end');
+  
+  if (!startInput.value || !endInput.value) {
+    const todayDate = new Date();
+    const y = todayDate.getFullYear();
+    const m = String(todayDate.getMonth() + 1).padStart(2, '0');
+    const d = String(todayDate.getDate()).padStart(2, '0');
+    startInput.value = `${y}-${m}-01`;
+    endInput.value = `${y}-${m}-${d}`;
+  }
+  
+  const startStr = startInput.value;
+  const endStr = endInput.value;
+  
+  const monthRecs = recs.filter(r => r.date && r.date >= startStr && r.date <= endStr);
+  
+  let onTimeCount = 0, lateCount = 0, absentNoteCount = 0;
+  monthRecs.forEach(r => {
+    if (r.clock_in && r.clock_in !== '-') {
+      if ((r.late_minutes || 0) > 0) lateCount++;
+      else onTimeCount++;
+    } else {
+      absentNoteCount++;
+    }
+  });
+
+  const ctx = $('discipline-chart');
+  if (ctx) {
+    if (disciplineChart) disciplineChart.destroy();
+    disciplineChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Tepat Waktu', 'Terlambat', 'Sakit/Izin/Cuti/Libur'],
+        datasets: [{
+          data: [onTimeCount, lateCount, absentNoteCount],
+          backgroundColor: ['#059669', '#D97706', '#0284C7'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '65%',
+        plugins: {
+          legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+        }
+      }
+    });
+  }
+
+}
+
+// Date filter event listeners for donut chart
+$('dash-start').addEventListener('change', () => renderAdminDashboard());
+$('dash-end').addEventListener('change', () => renderAdminDashboard());
+
+// ==========================================
+// ADMIN: KELOLA KARYAWAN
+// ==========================================
+let selectedPosition = '';
+document.querySelectorAll('.position-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.position-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedPosition = btn.dataset.pos;
+  });
+});
+
+// Add Employee removed, now centralized in MyTIC
+let editingKey = null;
+function renderAdminEmployees() {
+  const container = $('admin-emp-list');
+  const emps = getEmployees();
+  if (emps.length === 0) {
+    container.innerHTML = '<p class="no-data">Belum ada karyawan</p>';
+    return;
+  }
+  container.innerHTML = emps.map(e => `
+    <div class="card mb-2 flex items-center justify-between" style="padding:1rem; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-weight:700;">${esc(e.name)}</div>
+        <div class="text-xs text-muted">${esc(e.position)}${e.nickname ? ' • Panggilan: ' + esc(e.nickname) : ''}</div>
+      </div>
+      <button class="btn btn-secondary edit-emp-btn" data-key="${e._key}" style="padding:0.25rem 0.5rem; font-size:0.75rem;">
+        Edit Panggilan
+      </button>
+    </div>
+  `).join('');
+
+  container.querySelectorAll('.edit-emp-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const emp = getEmployees().find(e => e._key === btn.dataset.key);
+      if (!emp) return;
+      editingKey = emp._key;
+      $('edit-name').value = emp.name;
+      $('edit-nickname').value = emp.nickname || '';
+      $('edit-position').value = emp.position;
+      $('edit-overlay').classList.add('active');
+    });
+  });
+
+  container.querySelectorAll('.del-emp-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.name;
+      showConfirm('Hapus Karyawan', `Hapus ${name} dan semua data absensinya?`, async () => {
+        await remove(ref(db, 'absensi/employees/' + btn.dataset.key));
+        // Delete associated records
+        const recs = getRecords(name);
+        for (const r of recs) { await remove(ref(db, 'absensi/records/' + r._key)); }
+        showToast(`${name} dihapus`, 'success');
+      }, 'Hapus', true);
+    });
+  });
+}
+
+// Edit modal
+$('edit-save').addEventListener('click', async () => {
+  if (!editingKey) return;
+  const newNick = $('edit-nickname').value.trim();
+
+  await update(ref(db, 'users/' + editingKey), { nickname: newNick });
+
+  $('edit-overlay').classList.remove('active');
+  editingKey = null;
+  showToast('Nama panggilan diperbarui!', 'success');
+});
+$('edit-cancel').addEventListener('click', () => { $('edit-overlay').classList.remove('active'); editingKey = null; });
+
+// ==========================================
+// ADMIN: EDIT ABSENSI RECORD
+// ==========================================
+let editingRecordKey = null;
+
+function openEditRecordModal(record) {
+  editingRecordKey = record._key;
+  $('edit-rec-name').value = record.emp_name;
+  $('edit-rec-date').value = record.date;
+  $('edit-rec-date').disabled = true;
+  
+  let shiftKey = '-';
+  if (record.shift && record.shift !== '-') {
+    shiftKey = Object.keys(SHIFTS).find(k => record.shift.startsWith(SHIFTS[k].label.split(' (')[0])) || '-';
+  }
+  $('edit-rec-shift').value = shiftKey;
+  
+  $('edit-rec-in').value = (record.clock_in && record.clock_in !== '-') ? record.clock_in : '-';
+  $('edit-rec-out').value = (record.clock_out && record.clock_out !== '-') ? record.clock_out : '-';
+  
+  const sVal = ['Sakit','Izin','Cuti','Libur','Lainnya'].includes(record.status) ? record.status : 'Hadir';
+  $('edit-rec-status').value = sVal;
+  
+  toggleEditRecordFormFields();
+  $('edit-record-overlay').classList.add('active');
+}
+
+function openNewRecordModal(empName) {
+  editingRecordKey = 'NEW';
+  $('edit-rec-name').value = empName;
+  
+  let dateVal = $('report-date').value;
+  if (!dateVal) {
+    const t = new Date();
+    dateVal = t.toISOString().slice(0, 10);
+  }
+  
+  $('edit-rec-date').value = dateVal;
+  $('edit-rec-date').disabled = false; // Allow changing date for new record
+  
+  $('edit-rec-shift').value = '-';
+  $('edit-rec-in').value = '-';
+  $('edit-rec-out').value = '-';
+  $('edit-rec-status').value = 'Izin';
+  
+  toggleEditRecordFormFields();
+  $('edit-record-overlay').classList.add('active');
+}
+
+function toggleEditRecordFormFields() {
+  const statusVal = $('edit-rec-status').value;
+  const shiftSelect = $('edit-rec-shift');
+  if (statusVal !== 'Hadir') {
+    shiftSelect.value = '-';
+    shiftSelect.disabled = true;
+  } else {
+    shiftSelect.disabled = false;
+    if (shiftSelect.value === '-') {
+      shiftSelect.value = '1';
+    }
+  }
+}
+
+$('edit-rec-status').addEventListener('change', toggleEditRecordFormFields);
+$('edit-rec-shift').addEventListener('change', () => {
+  if ($('edit-rec-shift').value === '-') {
+    $('edit-rec-status').value = 'Izin';
+  } else {
+    $('edit-rec-status').value = 'Hadir';
+  }
+});
+
+$('edit-rec-cancel').addEventListener('click', () => {
+  $('edit-record-overlay').classList.remove('active');
+  editingRecordKey = null;
+});
+
+$('edit-rec-save').addEventListener('click', async () => {
+  if (!editingRecordKey) return;
+  
+  let record = null;
+  if (editingRecordKey !== 'NEW') {
+    record = getRecords().find(r => r._key === editingRecordKey);
+    if (!record) return;
+  }
+  
+  const statusVal = $('edit-rec-status').value;
+  const shiftKey = $('edit-rec-shift').value;
+  
+  let updates = {};
+  
+  if (statusVal !== 'Hadir') {
+    updates = {
+      shift: '-',
+      clock_in: '-',
+      clock_out: '-',
+      status: statusVal,
+      late_minutes: 0,
+      note: statusVal
+    };
+  } else {
+    if (shiftKey === '-') {
+      showToast('Harap pilih shift valid untuk status Hadir', 'warning');
+      return;
+    }
+    
+    
+    const clockIn = (record && record.clock_in && record.clock_in !== '-') ? record.clock_in : nowTime();
+    const clockOut = (record && record.clock_out && record.clock_out !== '-') ? record.clock_out : '';
+    
+    const late = calcLate(shiftKey, clockIn);
+    const statusText = late > 0 ? formatLate(late) : 'On Time ✓';
+    
+    updates = {
+      shift: SHIFTS[shiftKey].label,
+      clock_in: clockIn,
+      clock_out: clockOut,
+      status: statusText,
+      late_minutes: late,
+      note: ''
+    };
+  }
+  
+  if (editingRecordKey === 'NEW') {
+    const targetDate = $('edit-rec-date').value;
+    if (!targetDate) { showToast('Tanggal harus diisi', 'warning'); return; }
+    
+    // Check if record already exists for this date
+    const empName = $('edit-rec-name').value;
+    const existing = getRecords().find(r => r.emp_name === empName && r.date === targetDate);
+    if (existing) { showToast('Karyawan sudah memiliki data pada tanggal ini. Silakan edit data yang ada.', 'warning'); return; }
+    
+    updates.emp_name = empName;
+    updates.date = targetDate;
+    updates.timestamp = Date.now();
+    await push(ref(db, 'absensi/records'), updates);
+  } else {
+    await update(ref(db, 'absensi/records/' + editingRecordKey), updates);
+  }
+  
+  $('edit-record-overlay').classList.remove('active');
+  editingRecordKey = null;
+  showToast('Data absensi diperbarui!', 'success');
+  renderReport();
+  renderLeaderboard();
+  renderAdminDashboard();
+});
+
+function showEmpPeriodDetail(name, empRecs) {
+  $('detail-title').textContent = `📋 Detail Absensi: ${name}`;
+  
+  let html = '<div style="max-height:350px;overflow-y:auto;">';
+  if (empRecs.length === 0) {
+    html += `
+      <div style="text-align:center;padding:1.5rem 1rem;">
+        <p class="text-sm text-muted" style="margin-bottom:1rem;">Tidak ada data absensi untuk periode ini.</p>
+        <button class="btn btn-primary btn-add-record-modal" data-name="${name}" style="padding:0.4rem 0.8rem;font-size:0.8rem;">+ Tambah Absensi Manual</button>
+      </div>`;
+  } else {
+    empRecs.sort((a,b) => b.date.localeCompare(a.date)).forEach(r => {
+      const statusColor = (!r.clock_in || r.clock_in === '-') ? 'var(--info)' : ((r.late_minutes || 0) > 0 ? 'var(--warning)' : 'var(--success)');
+      const clockIn = (r.clock_in && r.clock_in !== '-') ? r.clock_in : '-';
+      const clockOut = (r.clock_out && r.clock_out !== '-') ? r.clock_out : '-';
+      
+      html += `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 0;border-bottom:1px solid var(--border);font-size:0.85rem;">
+          <div>
+            <div style="font-weight:600;color:var(--text);">${fmtDateID(r.date)}</div>
+            <div style="color:var(--text-muted);font-size:0.75rem;">${r.shift || '-'} | Masuk: ${clockIn} | Pulang: ${clockOut}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <span style="color:${statusColor};font-weight:600;font-size:0.75rem;white-space:nowrap;">${r.status || '-'}</span>
+            <button class="btn btn-primary btn-edit-record-modal" data-key="${r._key}" style="padding:0.25rem 0.5rem;font-size:0.7rem;">Edit</button>
+          </div>
+        </div>`;
+    });
+  }
+  html += '</div>';
+  
+  $('detail-content').innerHTML = html;
+  $('detail-overlay').classList.add('active');
+  
+  $('detail-content').querySelectorAll('.btn-edit-record-modal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $('detail-overlay').classList.remove('active');
+      const record = getRecords().find(r => r._key === btn.dataset.key);
+      if (record) {
+        openEditRecordModal(record);
+      }
+    });
+  });
+  
+  $('detail-content').querySelectorAll('.btn-add-record-modal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $('detail-overlay').classList.remove('active');
+      openNewRecordModal(btn.dataset.name);
+    });
+  });
+}
+
+
+
+// ==========================================
+// ADMIN: REKAP
+// ==========================================
+$('report-date').valueAsDate = new Date();
+$('report-period').addEventListener('change', renderReport);
+$('report-date').addEventListener('change', renderReport);
+
+function renderReport() {
+  const period = $('report-period').value;
+  const dateVal = $('report-date').value;
+  const container = $('report-content');
+  if (!dateVal) { container.innerHTML = ''; return; }
+
+  const targetDate = new Date(dateVal);
+  let filtered = getRecords().filter(r => r.date);
+
+  if (period === 'daily') {
+    filtered = filtered.filter(r => r.date === dateVal);
+  } else if (period === 'weekly') {
+    const start = new Date(targetDate);
+    start.setDate(start.getDate() - start.getDay());
+    const end = new Date(start);
+    end.setDate(end.getDate() + 6);
+    const startStr = start.toISOString().slice(0, 10);
+    const endStr = end.toISOString().slice(0, 10);
+    filtered = filtered.filter(r => r.date >= startStr && r.date <= endStr);
+  } else {
+    const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+    const y = targetDate.getFullYear();
+    const prefix = `${y}-${m}`;
+    filtered = filtered.filter(r => r.date.startsWith(prefix));
+  }
+
+  // Group by employee
+  const emps = getEmployees();
+  const grouped = {};
+  emps.forEach(e => { grouped[e.name] = { present: 0, late: 0, sick: 0, leave: 0, off: 0, permit: 0, other: 0 }; });
+  filtered.forEach(r => {
+    if (!grouped[r.emp_name]) grouped[r.emp_name] = { present: 0, late: 0, sick: 0, leave: 0, off: 0, permit: 0, other: 0 };
+    const g = grouped[r.emp_name];
+    if (r.clock_in && r.clock_in !== '-') {
+      g.present++;
+      if ((r.late_minutes || 0) > 0) g.late++;
+    } else {
+      if (r.status === 'Sakit') g.sick++;
+      else if (r.status === 'Izin') g.permit++;
+      else if (r.status === 'Cuti') g.leave++;
+      else if (r.status === 'Libur') g.off++;
+      else g.other++;
+    }
+  });
+
+  const names = Object.keys(grouped).filter(n => {
+    const g = grouped[n];
+    return g.present + g.late + g.sick + g.permit + g.leave + g.off + g.other > 0 || emps.find(e => e.name === n);
+  });
+
+  if (names.length === 0 && filtered.length === 0) {
+    container.innerHTML = '<p class="no-data">Tidak ada data untuk periode ini</p>';
+    return;
+  }
+
+  let reportHtml = names.map(name => {
+    const s = grouped[name];
+    return `<div class="card mb-2" style="padding:1.25rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+        <div style="font-weight:700; font-size:1.05rem;">${esc(name)}</div>
+        <button class="btn btn-primary btn-view-edit-emp-recap" data-name="${esc(name)}" style="padding:0.25rem 0.5rem; font-size:0.75rem; border-radius:var(--radius-sm);">
+          Edit / Detail
+        </button>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-item"><div class="stat-value" style="color:var(--success);">${s.present}</div><div class="stat-label">Hadir</div></div>
+        <div class="stat-item"><div class="stat-value" style="color:var(--warning);">${s.late}</div><div class="stat-label">Terlambat</div></div>
+        <div class="stat-item"><div class="stat-value" style="color:var(--danger);">${s.sick}</div><div class="stat-label">Sakit</div></div>
+        <div class="stat-item"><div class="stat-value" style="color:var(--info);">${s.permit}</div><div class="stat-label">Izin</div></div>
+        <div class="stat-item"><div class="stat-value" style="color:var(--primary);">${s.leave}</div><div class="stat-label">Cuti</div></div>
+        <div class="stat-item"><div class="stat-value" style="color:var(--text-muted);">${s.off}</div><div class="stat-label">Libur</div></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  if (filtered.length > 0) {
+    reportHtml += `
+    <div class="card mt-4">
+      <h4 class="section-title" style="font-size:1.1rem; margin-bottom:1rem;">Detail Log Absensi</h4>
+      <div style="overflow-x:auto;">
+        <table class="report-table" style="width:100%; border-collapse:collapse; font-size:0.85rem; text-align:left;">
+          <thead>
+            <tr style="border-bottom:2px solid var(--border); color:var(--text-secondary);">
+              <th style="padding:0.5rem;">Tanggal</th>
+              <th style="padding:0.5rem;">Nama</th>
+              <th style="padding:0.5rem;">Shift</th>
+              <th style="padding:0.5rem;">Masuk</th>
+              <th style="padding:0.5rem;">Pulang</th>
+              <th style="padding:0.5rem;">Status / Keterangan</th>
+              <th style="padding:0.5rem; text-align:center;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filtered.sort((a,b) => b.date.localeCompare(a.date) || a.emp_name.localeCompare(b.emp_name)).map(r => `
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:0.5rem; white-space:nowrap;">${fmtDateID(r.date)}</td>
+                <td style="padding:0.5rem; font-weight:600;">${esc(r.emp_name)}</td>
+                <td style="padding:0.5rem;">${esc(r.shift || '-')}</td>
+                <td style="padding:0.5rem;">${r.clock_in || '-'}</td>
+                <td style="padding:0.5rem;">${r.clock_out || '-'}</td>
+                <td style="padding:0.5rem;">
+                  <span class="badge ${r.clock_in === '-' ? 'badge-info' : ((r.late_minutes || 0) > 0 ? 'badge-warning' : 'badge-success')}">
+                    ${esc(r.status || '-')}
+                  </span>
+                </td>
+                <td style="padding:0.5rem; text-align:center;">
+                  <button class="btn btn-primary btn-edit-record" data-key="${r._key}" style="padding:0.25rem 0.5rem; font-size:0.75rem; border-radius:var(--radius-sm);">
+                    Edit
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  container.innerHTML = reportHtml;
+
+  container.querySelectorAll('.btn-view-edit-emp-recap').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.name;
+      const empRecs = filtered.filter(r => r.emp_name === name);
+      showEmpPeriodDetail(name, empRecs);
+    });
+  });
+
+  container.querySelectorAll('.btn-edit-record').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const recKey = btn.dataset.key;
+      const record = getRecords().find(r => r._key === recKey);
+      if (record) {
+        openEditRecordModal(record);
+      }
+    });
+  });
+
+
+}
+
+// Unduh PDF
+$('btn-download-pdf').addEventListener('click', () => {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  
+  const period = $('report-period').value;
+  const dateVal = $('report-date').value;
+  if (!dateVal) { showToast('Pilih tanggal/periode terlebih dahulu', 'warning'); return; }
+
+  doc.setFontSize(16);
+  doc.text('Laporan Rekap Absensi SPBU Gontor', 14, 20);
+  doc.setFontSize(10);
+  doc.text(`Periode: ${period === 'daily' ? 'Harian' : (period === 'weekly' ? 'Mingguan' : 'Bulanan')} (${dateVal})`, 14, 28);
+  doc.text(`Dicetak pada: ${fmtDateID(todayStr())}`, 14, 34);
+
+  const emps = getEmployees();
+  const targetDate = new Date(dateVal);
+  let filtered = getRecords().filter(r => r.date);
+
+  if (period === 'daily') {
+    filtered = filtered.filter(r => r.date === dateVal);
+  } else if (period === 'weekly') {
+    const start = new Date(targetDate);
+    start.setDate(start.getDate() - start.getDay());
+    const end = new Date(start);
+    end.setDate(end.getDate() + 6);
+    const startStr = start.toISOString().slice(0, 10);
+    const endStr = end.toISOString().slice(0, 10);
+    filtered = filtered.filter(r => r.date >= startStr && r.date <= endStr);
+  } else {
+    const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+    const y = targetDate.getFullYear();
+    const prefix = `${y}-${m}`;
+    filtered = filtered.filter(r => r.date.startsWith(prefix));
+  }
+
+  const grouped = {};
+  emps.forEach(e => { grouped[e.name] = { present: 0, late: 0, sick: 0, leave: 0, off: 0, permit: 0, other: 0 }; });
+  filtered.forEach(r => {
+    if (!grouped[r.emp_name]) grouped[r.emp_name] = { present: 0, late: 0, sick: 0, leave: 0, off: 0, permit: 0, other: 0 };
+    const g = grouped[r.emp_name];
+    if (r.clock_in && r.clock_in !== '-') {
+      g.present++;
+      if ((r.late_minutes || 0) > 0) g.late++;
+    } else {
+      if (r.status === 'Sakit') g.sick++;
+      else if (r.status === 'Izin') g.permit++;
+      else if (r.status === 'Cuti') g.leave++;
+      else if (r.status === 'Libur') g.off++;
+      else g.other++;
+    }
+  });
+
+  const names = Object.keys(grouped).filter(n => {
+    const g = grouped[n];
+    return g.present + g.late + g.sick + g.permit + g.leave + g.off + g.other > 0 || emps.find(e => e.name === n);
+  });
+
+  const tableData = names.map((name, i) => {
+    const s = grouped[name];
+    return [ i + 1, name, s.present, s.late, s.sick, s.permit, s.leave, s.off ];
+  });
+
+  doc.autoTable({
+    startY: 40,
+    head: [['No', 'Nama Karyawan', 'Hadir', 'Terlambat', 'Sakit', 'Izin', 'Cuti', 'Libur']],
+    body: tableData,
+    theme: 'grid',
+    headStyles: { fillColor: [79, 70, 229] }
+  });
+
+  doc.save(`Rekap_Absensi_${dateVal}.pdf`);
+  showToast('PDF berhasil diunduh', 'success');
+});
+
+// Reset Data
+$('btn-reset-data').addEventListener('click', () => {
+  const period = $('report-period').value;
+  const dateVal = $('report-date').value;
+  if (!dateVal) { showToast('Pilih tanggal terlebih dahulu', 'warning'); return; }
+
+  const targetDate = new Date(dateVal);
+  let toDelete = getRecords().filter(r => r.date);
+
+  if (period === 'daily') {
+    toDelete = toDelete.filter(r => r.date === dateVal);
+  } else if (period === 'weekly') {
+    const start = new Date(targetDate);
+    start.setDate(start.getDate() - start.getDay());
+    const end = new Date(start);
+    end.setDate(end.getDate() + 6);
+    const startStr = start.toISOString().slice(0, 10);
+    const endStr = end.toISOString().slice(0, 10);
+    toDelete = toDelete.filter(r => r.date >= startStr && r.date <= endStr);
+  } else {
+    const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+    const y = targetDate.getFullYear();
+    const prefix = `${y}-${m}`;
+    toDelete = toDelete.filter(r => r.date.startsWith(prefix));
+  }
+
+  if (toDelete.length === 0) { showToast('Tidak ada data untuk dihapus', 'warning'); return; }
+
+  showConfirm('Reset Data', `Hapus ${toDelete.length} data absensi? Aksi ini tidak bisa dibatalkan.`, async () => {
+    for (const r of toDelete) { await remove(ref(db, 'absensi/records/' + r._key)); }
+    showToast(`${toDelete.length} data dihapus`, 'success');
+    renderReport();
+  }, 'Hapus', true);
+});
+
+// ==========================================
+// ADMIN: PESAN
+// ==========================================
+function renderMessagesForm() {
+  const msgs = getMessages();
+  $('msg-on-time').value = msgs.onTime;
+  $('msg-late').value = msgs.late;
+  $('msg-clock-out').value = msgs.clockOut;
+  $('setting-rank-clickable').checked = allData.settings.rank_clickable || false;
+  
+  const shiftContainer = $('shift-settings-container');
+  if (shiftContainer) {
+    let html = '';
+    Object.keys(SHIFTS).forEach(k => {
+      const s = SHIFTS[k];
+      html += `
+      <div class="card mb-3" style="border-left: 4px solid var(--primary); padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <h5 style="margin-bottom: 0.5rem; color: var(--text);">${esc(s.label.split(' (')[0])}</h5>
+        <div class="grid-2">
+          <div class="form-group mb-0">
+            <label class="form-label" style="font-size:0.75rem;">Mulai</label>
+            <input type="time" id="set-shift-start-${k}" class="form-input" value="${String(s.start[0]).padStart(2,'0')}:${String(s.start[1]).padStart(2,'0')}">
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label" style="font-size:0.75rem;">Selesai</label>
+            <input type="time" id="set-shift-end-${k}" class="form-input" value="${String(s.end[0]).padStart(2,'0')}:${String(s.end[1]).padStart(2,'0')}">
+          </div>
+        </div>
+        <div class="grid-2 mt-2">
+          <div class="form-group mb-0">
+            <label class="form-label" style="font-size:0.75rem;">Buka Absen Sebelum Shift (menit)</label>
+            <input type="number" id="set-shift-early-${k}" class="form-input" value="${s.early_window !== undefined ? s.early_window : 10}" min="0">
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label" style="font-size:0.75rem;">Toleransi Keterlambatan (menit)</label>
+            <input type="number" id="set-shift-tol-${k}" class="form-input" value="${s.tolerance}" min="0">
+          </div>
+        </div>
+      </div>`;
+    });
+    shiftContainer.innerHTML = html;
+  }
+}
+
+$('btn-save-messages').addEventListener('click', async () => {
+  const onTime = $('msg-on-time').value.trim() || 'MasyaAllah kamu datang tepat waktu, semangat kerjanya {nama}!';
+  const late = $('msg-late').value.trim() || 'Astaghfirullah {nama} terlambat {terlambat}, besok datang lebih awal ya';
+  const clockOut = $('msg-clock-out').value.trim() || 'Alhamdulillah {nama}, hati-hati di jalan ya, semoga selamat sampai tujuan';
+  
+  const updates = {
+    msg_on_time: onTime,
+    msg_late: late,
+    msg_clock_out: clockOut,
+    rank_clickable: $('setting-rank-clickable').checked
+  };
+  
+  const newPin = $('setting-pin').value.trim();
+  if (newPin && newPin.length <= 6) {
+    updates.admin_pin = newPin;
+  }
+  
+  const newShifts = {};
+  Object.keys(SHIFTS).forEach(k => {
+    const s = SHIFTS[k];
+    const startTime = $(`set-shift-start-${k}`).value || "00:00";
+    const endTime = $(`set-shift-end-${k}`).value || "00:00";
+    const tol = parseInt($(`set-shift-tol-${k}`).value);
+    const early = parseInt($(`set-shift-early-${k}`).value);
+    
+    const [startH, startM] = startTime.split(':').map(Number);
+    const [endH, endM] = endTime.split(':').map(Number);
+    const labelPrefix = s.label.split(' (')[0];
+    
+    newShifts[k] = {
+      start: [startH, startM],
+      end: [endH, endM],
+      label: `${labelPrefix} (${startTime}–${endTime})`,
+      tolerance: isNaN(tol) ? 5 : tol,
+      early_window: isNaN(early) ? 10 : early
+    };
+  });
+  updates.shifts = newShifts;
+
+  await update(ref(db, 'absensi/settings'), updates);
+  
+  $('setting-pin').value = ''; // clear input after saving
+  showToast('Pengaturan berhasil disimpan!', 'success');
+});
+
+// Init
+if (window.location.search.includes('admin=true')) {
+  showView('view-admin');
+} else {
+  renderEmployeeList();
+}
