@@ -290,6 +290,13 @@ function renderAdminList() {
     (o.nik || '').includes(query)
   );
 
+  // Mengurutkan berdasarkan waktu aktivitas terakhir (waktu bayar atau waktu pesan) dari yang paling baru
+  filtered.sort((a, b) => {
+    const timeA = a.sudah_bayar ? ((a.tanggal_bayar || a.tanggal) + ' ' + (a.waktu_bayar || '00:00')) : (a.tanggal + ' ' + (a.waktu || '00:00'));
+    const timeB = b.sudah_bayar ? ((b.tanggal_bayar || b.tanggal) + ' ' + (b.waktu_bayar || '00:00')) : (b.tanggal + ' ' + (b.waktu || '00:00'));
+    return timeB.localeCompare(timeA);
+  });
+
   if (filtered.length === 0) {
     container.innerHTML =
       '<div class="empty-state"><div class="empty-state-icon">🔍</div>' +
