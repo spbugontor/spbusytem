@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Pelanggan - LPG UNIDA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        const initialTheme = localStorage.getItem('theme') || 'default';
+        document.documentElement.setAttribute('data-theme', initialTheme);
+    </script>
+    <style>
+        .clickable-card {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .clickable-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.15);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">LPG UNIDA</div>
+                <div class="sidebar-user" id="custName"></div>
+            </div>
+            
+            <div class="sidebar-menu">
+                <button class="sidebar-item active" onclick="switchView('dashboard', this)">
+                    <span class="sidebar-icon">📊</span>
+                    <span>Dashboard</span>
+                </button>
+                <button class="sidebar-item" onclick="switchView('akun', this)">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span>Akun</span>
+                </button>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button id="themeToggleBtn" class="btn btn-secondary" style="padding: 8px 12px; font-size: 0.85rem; width: 100%; margin-bottom: 10px; border: 1px solid var(--border);">
+                    🌙 Mode Gelap
+                </button>
+                <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 0.85rem; width: 100%; border-color: red; color: red;" onclick="logout()">Keluar</button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            
+            <!-- VIEW: DASHBOARD -->
+            <section id="view-dashboard" class="view-section active">
+                <h2 style="margin-bottom: 20px;">Ringkasan Anda</h2>
+                
+                <div class="dashboard-grid" style="margin-bottom: 30px;">
+                    <!-- Klik Kartu Ini Untuk Lihat Rincian Bon -->
+                    <div class="stat-card glass clickable-card" style="border: 2px solid rgba(239, 68, 68, 0.2);" onclick="showRincianBonModal()">
+                        <h3>Total Bon (Tagihan)</h3>
+                        <div class="value text-danger" id="statBon">Rp 0</div>
+                        <div style="font-size: 0.8rem; margin-top:10px; color:var(--text-muted);">
+                            <i>Klik kartu ini untuk melihat rincian tagihan</i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass" style="padding: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                        <h2 style="font-size:1.2rem; margin: 0;">Riwayat Pesanan</h2>
+                        <button class="btn" style="width: auto; padding: 10px 20px;" onclick="showPesanModal()">+ Pesan Tabung</button>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Waktu Pesan</th>
+                                    <th>Waktu Bayar</th>
+                                    <th>Minta</th>
+                                    <th>Dapat</th>
+                                    <th>Total</th>
+                                    <th>Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody">
+                                <!-- Data orders -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: AKUN -->
+            <section id="view-akun" class="view-section">
+                <div class="glass" style="padding: 25px; max-width: 500px;">
+                    <h2 style="margin-bottom: 20px; font-size:1.2rem;">Keamanan & Profil</h2>
+                    <p style="margin-bottom: 20px; color:var(--text-muted); font-size:0.9rem;">Ubah PIN 6 digit Anda secara rutin untuk menjaga keamanan tagihan Anda.</p>
+                    <form id="pinForm">
+                        <div class="form-group">
+                            <label>PIN Lama</label>
+                            <input type="password" id="pinOld" required maxlength="6" pattern="[0-9]{6}">
+                        </div>
+                        <div class="form-group">
+                            <label>PIN Baru (6 Angka)</label>
+                            <input type="password" id="pinNew" required maxlength="6" pattern="[0-9]{6}">
+                        </div>
+                        <div id="pinMsg" style="font-size: 0.85rem; margin-bottom: 15px;"></div>
+                        <button type="submit" class="btn">Simpan PIN</button>
+                    </form>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODAL: PESAN TABUNG -->
+    <div id="pesanModal" class="modal-overlay hidden">
+        <div class="modal-content glass animate-fade-in">
+            <h2 style="margin-bottom: 15px;">Buat Pesanan Baru</h2>
+            <div style="background: rgba(37, 99, 235, 0.1); border: 1px solid rgba(37, 99, 235, 0.3); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-size: 0.9rem; color: var(--text-muted);">Harga Per Tabung Saat Ini:</span>
+                    <strong id="modalInfoPrice">Rp 0</strong>
+                </div>
+            </div>
+
+            <form id="orderForm">
+                <div class="form-group">
+                    <label>Jumlah Tabung yang Ingin Dipesan (3kg)</label>
+                    <input type="number" id="inpQty" required min="1" max="10" value="1">
+                </div>
+                <div id="orderMsg" style="font-size: 0.85rem; margin-bottom: 15px;"></div>
+                <div style="display:flex; gap:10px;">
+                    <button type="submit" class="btn">Pesan Sekarang</button>
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('pesanModal').classList.add('hidden')">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: RINCIAN BON -->
+    <div id="bonModal" class="modal-overlay hidden">
+        <div class="modal-content glass animate-fade-in" style="max-width: 600px;">
+            <h2 style="margin-bottom: 20px;">Rincian Bon (Tunggakan)</h2>
+            <div class="table-container" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Waktu Pesan</th>
+                            <th>Waktu Bayar</th>
+                            <th>Jml Tabung</th>
+                            <th>Nominal Bon</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rincianBonBody">
+                        <!-- Rincian -->
+                    </tbody>
+                </table>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; border-top: 2px solid var(--border); padding-top: 15px; margin-bottom: 20px;">
+                <span>Total Bon Keseluruhan:</span>
+                <span class="text-danger" id="rincianBonTotal">Rp 0</span>
+            </div>
+            <button class="btn btn-secondary" onclick="document.getElementById('bonModal').classList.add('hidden')">Tutup</button>
+        </div>
+    </div>
+
+
+    <script type="module" src="js/app.js"></script>
+    <script>
+        window.initApp = function() {
+            const user = window.getUser();
+            if(!user || user.role !== 'customer') {
+                window.location.href = 'index.html';
+                return;
+            }
+            document.getElementById('custName').innerText = user.name;
+            loadDashboard();
+        };
+
+        let currentUserOrders = [];
+        let currentTotalBon = 0;
+        let currentLpgPrice = 0;
+        let currentLpgStock = 0;
+
+        // View Switcher Logic
+        function switchView(viewId, btnElement) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('view-' + viewId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        async function loadDashboard() {
+            await loadSettings();
+            await loadOrders();
+        }
+
+        async function loadSettings() {
+            try {
+                const s = await apiCall('/settings');
+                currentLpgPrice = s.lpg_price;
+                currentLpgStock = s.lpg_stock;
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadOrders() {
+            try {
+                const data = await apiCall(`/customer/orders/${user.id}`);
+                currentUserOrders = data.orders;
+                currentTotalBon = data.total_bon;
+                
+                document.getElementById('statBon').innerText = formatRp(currentTotalBon);
+                
+                const tbody = document.getElementById('ordersTableBody');
+                tbody.innerHTML = '';
+                
+                if(data.orders.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada riwayat pesanan</td></tr>';
+                    return;
+                }
+                
+                data.orders.forEach(o => {
+                    let payBadge = o.payment_status.replace(/\s+/g, '').toLowerCase();
+                    
+                    let ketText = (o.qty_approved !== null) ? o.payment_status.toUpperCase() : 'BELUM BAYAR';
+                    if(o.qty_approved == 0 && o.status === 'Selesai') ketText = 'DITOLAK'; // Jika admin acc 0
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><small>${formatDate(o.created_at)}</small></td>
+                            <td><small>${o.paid_at ? formatDate(o.paid_at) : '-'}</small></td>
+                            <td align="center">${o.qty_requested}</td>
+                            <td align="center"><b>${o.qty_approved}</b></td>
+                            <td>${formatRp(o.total_price)}</td>
+                            <td><span class="badge ${payBadge}">${ketText}</span></td>
+                        </tr>
+                    `;
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        function showPesanModal() {
+            document.getElementById('modalInfoPrice').innerText = formatRp(currentLpgPrice);
+            document.getElementById('pesanModal').classList.remove('hidden');
+        }
+
+        function showRincianBonModal() {
+            const tbody = document.getElementById('rincianBonBody');
+            tbody.innerHTML = '';
+            
+            // Filter pesanan yang merupakan bon atau belum bayar, dan sudah disetujui
+            const bonList = currentUserOrders.filter(o => 
+                (o.payment_status === 'bon' || o.payment_status === 'belum bayar') && 
+                (o.status === 'Disetujui' || o.status === 'Sedang Diantar' || o.status === 'Selesai')
+            );
+
+            if(bonList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Tidak ada tunggakan bon.</td></tr>';
+            } else {
+                bonList.forEach(b => {
+                    let payBadge = b.payment_status.replace(/\s+/g, '').toLowerCase();
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><small>${formatDate(b.created_at)}</small></td>
+                            <td><small>${b.paid_at ? formatDate(b.paid_at) : '-'}</small></td>
+                            <td align="center">${b.qty_approved}</td>
+                            <td>${formatRp(b.total_price)}</td>
+                            <td><span class="badge ${payBadge}">${b.payment_status.toUpperCase()}</span></td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            document.getElementById('rincianBonTotal').innerText = formatRp(currentTotalBon);
+            document.getElementById('bonModal').classList.remove('hidden');
+        }
+
+        document.getElementById('orderForm').addEventListener('submit', async(e) => {
+            e.preventDefault();
+            const qty = document.getElementById('inpQty').value;
+            const msg = document.getElementById('orderMsg');
+            
+            try {
+                msg.className = ""; msg.innerText = "Memproses pesanan...";
+                await apiCall('/customer/orders', 'POST', { user_id: user.id, qty_requested: qty });
+                
+                // Success
+                document.getElementById('orderForm').reset();
+                msg.innerText = "";
+                document.getElementById('pesanModal').classList.add('hidden');
+                
+                loadDashboard(); // Refresh data and table
+            } catch(err) {
+                msg.className = "text-danger"; msg.innerText = err.message;
+            }
+        });
+
+        document.getElementById('pinForm').addEventListener('submit', async(e) => {
+            e.preventDefault();
+            const old_pin = document.getElementById('pinOld').value;
+            const new_pin = document.getElementById('pinNew').value;
+            const msg = document.getElementById('pinMsg');
+            
+            try {
+                msg.className = ""; msg.innerText = "Memproses...";
+                await apiCall('/customer/change-pin', 'POST', { user_id: user.id, old_pin, new_pin });
+                document.getElementById('pinForm').reset();
+                msg.className = "text-success"; msg.innerText = "PIN Berhasil diubah!";
+            } catch(err) {
+                msg.className = "text-danger"; msg.innerText = err.message;
+            }
+        });
+    </script>
+</body>
+</html>
