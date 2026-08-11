@@ -3612,20 +3612,11 @@ window._showSectionGuideModal = (secId) => {
     <div class="modal-body" style="max-height:75vh;overflow-y:auto;padding:1.25rem;font-size:0.85rem;line-height:1.6">
       ${g.content}
     </div>
-    <div class="modal-footer" style="display:flex;justify-content:space-between;align-items:center">
-      <button class="btn btn-secondary" style="font-size:0.75rem" onclick="window._showFullGuideModal()">📘 Lihat Semua Panduan</button>
+    <div class="modal-footer" style="display:flex;justify-content:flex-end">
       <button class="btn btn-primary" onclick="window._hideModal()">Tutup Panduan</button>
     </div>
   `;
   showModal(modalHtml, 'modal-wide');
-};
-
-window._showFullGuideModal = () => {
-  if (currentUser && (currentUser.role === 'admin' || isEmpAdminOrSupervisor())) {
-    window._showManagementGuideModal();
-  } else {
-    window._showEmployeeGuideModal();
-  }
 };
 
 window._showUserGuideModal = () => {
