@@ -3125,62 +3125,162 @@ window._showSectionGuideModal = (secId) => {
   
   const sectionGuides = {
     dashboard: {
-      title: '📊 Panduan Halaman Beranda (Dashboard)',
+      title: '📊 Panduan Halaman Beranda (Dashboard Manajemen)',
       color: 'var(--primary)',
       content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Halaman utama ini merangkum seluruh kondisi operasional dan statistik kedisiplinan SPBU Gontor secara real-time.</p>
-        <h5 style="font-weight:700;margin-bottom:0.5rem">📌 Fitur & Cara Penggunaan:</h5>
-        <ul style="padding-left:1.25rem;margin:0 0 1rem 0">
-          <li><strong>Grafik Tren Kehadiran 7 Hari</strong>: Menampilkan tren karyawan On Time (Hijau), Terlambat (Kuning), dan Libur (Abu-abu) yang tersinkronisasi otomatis dengan Sistem Absensi. Sentuh/hover grafik untuk detail angka.</li>
-          <li><strong>Kartu Ringkasan Statistik</strong>:
-            <ul style="padding-left:1rem;margin-top:0.25rem">
-              <li><strong>Total Karyawan</strong>: Menampilkan jumlah staf aktif. Klik untuk navigasi ke menu Karyawan.</li>
-              <li><strong>Tunggakan Aktif</strong>: Menampilkan sisa net saldo tunggakan SPBU. Klik untuk navigasi ke menu Tunggakan.</li>
-              <li><strong>Izin Pending</strong>: Menampilkan pengajuan cuti yang menunggu persetujuan Admin.</li>
-            </ul>
-          </li>
-        </ul>
+        <div style="background:rgba(30,64,175,0.06);border-left:4px solid var(--primary);padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Halaman Beranda adalah pusat pemantauan utama (*control center*) untuk melihat ringkasan performa operasional, statistik kedisiplinan absensi karyawan, dan alert pengajuan pending di SPBU Gontor secara real-time.</p>
+        </div>
+
+        <h4 style="font-weight:800;margin:1rem 0 0.5rem 0">🎛️ Fitur & Tombol-Tombol Utama:</h4>
+        
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem">
+          <h5 style="font-weight:800;color:var(--primary);margin-bottom:0.35rem">1. Grafik Tren Kehadiran 7 Hari</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Setiap hari oleh Manajemen untuk mengevaluasi konsistensi jam masuk seluruh operator & staf.</p>
+          <p style="margin:0 0 0.35rem 0"><strong>Cara Pakai:</strong> Arahkan kursor atau sentuh (tap) pada batang grafik harian. Grafik secara otomatis terbagi menjadi 3 warna: <span style="color:#10b981;font-weight:700">On Time (Hijau)</span>, <span style="color:#f59e0b;font-weight:700">Terlambat (Kuning)</span>, dan <span style="color:#6b7280;font-weight:700">Libur (Abu-abu)</span>.</p>
+          <p style="margin:0"><strong>Efek Sistem:</strong> Data diambil otomatis secara *live* dari Sistem Absensi SPBU.</p>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem">
+          <h5 style="font-weight:800;color:var(--info);margin-bottom:0.35rem">2. Kartu Ringkasan Karyawan</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Untuk melihat total staf aktif SPBU secara sekilas.</p>
+          <p style="margin:0 0 0.35rem 0"><strong>Cara Pakai:</strong> Klik pada kartu <code>Total Karyawan</code> untuk langsung berpindah ke halaman Kelola Karyawan.</p>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem">
+          <h5 style="font-weight:800;color:var(--danger);margin-bottom:0.35rem">3. Kartu Ringkasan Tunggakan Aktif</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Untuk memantau total saldo kasbon/tunggakan seluruh karyawan yang belum lunas.</p>
+          <p style="margin:0 0 0.35rem 0"><strong>Cara Pakai:</strong> Klik pada kartu <code>Tunggakan Aktif</code> untuk langsung berpindah ke halaman Manajemen Tunggakan.</p>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem">
+          <h5 style="font-weight:800;color:var(--warning);margin-bottom:0.35rem">4. Kartu Alert Izin/Cuti Pending</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Ketika ada angka badge merah/kuning yang menunjukkan pengajuan izin karyawan membutuhkan keputusan.</p>
+          <p style="margin:0"><strong>Cara Pakai:</strong> Klik kartu untuk membuka persetujuan izin & Obrolan Cuti.</p>
+        </div>
       `
     },
     employees: {
-      title: '👥 Panduan Menu Kelola Karyawan & Jatah Cuti',
+      title: '👥 Panduan Menu Kelola Karyawan & Jatah Cuti Khusus',
       color: 'var(--info)',
       content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Tempat Manajemen mengelola biodata staf, PIN akses, jenis kontrak kerja, dan kustomisasi jatah cuti.</p>
-        <h5 style="font-weight:700;margin-bottom:0.5rem">📌 Fitur & Cara Penggunaan:</h5>
-        <ul style="padding-left:1.25rem;margin:0 0 1rem 0">
-          <li><strong>+ Tambah Karyawan Baru</strong>: Klik tombol <code>+ Tambah Karyawan</code> di kanan atas, isi Nama Lengkap, Jenis Kelamin, Jabatan (Manager, Admin, Supervisor, Operator, CS), PIN 6-digit rahasia, Tanggal Mulai Kerja, Jenis & Mulai Kontrak, Telepon, Email, dan Tanggal Lahir.</li>
-          <li><strong>Tombol Detail Karyawan</strong>: Klik tombol <code>Detail</code> pada kartu karyawan untuk melihat biodata lengkap dan <strong>Riwayat Perubahan PIN</strong>.</li>
-          <li><strong>✏️ Edit Jatah Cuti Khusus</strong>: Buka modal Detail Karyawan $\\rightarrow$ klik tombol <code>✏️ Edit Jatah Cuti</code> untuk mengubah kuota cuti tahunan individu karyawan jika terdapat komplain atau penyesuaian khusus.</li>
-          <li><strong>🔄 Logika Kontrak & Auto-Reset Cuti</strong>: Saat tanggal kontrak berakhir (<code>contract_end</code>), riwayat cuti lama otomatis di-reset dan kuota kembali utuh 100%. Cuti karyawan yang kontraknya masih AKTIF tetap dijaga utuh.</li>
-        </ul>
+        <div style="background:rgba(14,165,233,0.06);border-left:4px solid var(--info);padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Halaman ini digunakan oleh Admin/Manajemen untuk menambah staf baru, memperbarui PIN akses, mengatur tanggal & masa berlaku kontrak kerja, serta mengkustomisasi jatah cuti khusus per individu.</p>
+        </div>
+
+        <h4 style="font-weight:800;margin:1rem 0 0.5rem 0">🎛️ Fitur & Tombol-Tombol Utama:</h4>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem">
+          <h5 style="font-weight:800;color:var(--info);margin-bottom:0.35rem">1. Tombol "+ Tambah Karyawan Baru" (Pojok Kanan Atas)</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Ketika SPBU merekrut pegawai atau operator shift baru.</p>
+          <p style="margin:0 0 0.35rem 0"><strong>Langkah Penggunaan:</strong>
+            <ol style="padding-left:1.25rem;margin:0.25rem 0">
+              <li>Klik <code>+ Tambah Karyawan</code>.</li>
+              <li>Isi Nama Lengkap, Jenis Kelamin, dan Jabatan (Manager, Admin, Supervisor, Operator, Cleaning Service).</li>
+              <li>Masukkan <strong>PIN 6-digit rahasia</strong> awal untuk login karyawan.</li>
+              <li>Isi Tanggal Mulai Kerja, Jenis Kontrak, Tanggal Mulai Kontrak, & Tanggal Berakhir Kontrak.</li>
+              <li>Klik <code>Simpan Data Karyawan</code>.</li>
+            </ol>
+          </p>
+          <p style="margin:0"><strong>Efek Sistem:</strong> Akun karyawan langsung aktif & terdaftar di seluruh sistem MyTIC dan Absensi.</p>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem">
+          <h5 style="font-weight:800;color:var(--primary);margin-bottom:0.35rem">2. Tombol "Detail" (Pada Kartu Karyawan)</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Saat ingin mengecek biodata, mengubah PIN yang lupa, atau melihat log keamanan perubahan PIN.</p>
+          <p style="margin:0 0 0.35rem 0"><strong>Langkah Penggunaan:</strong> Klik <code>Detail</code> pada kartu nama karyawan. Di dalam modal akan muncul biodata lengkap dan kotak <strong>Riwayat Perubahan PIN</strong>.</p>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem">
+          <h5 style="font-weight:800;color:var(--success);margin-bottom:0.35rem">3. Tombol "✏️ Edit Jatah Cuti Khusus"</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Saat ada penyesuaian/komplain jatah cuti individu, atau jika manajemen memberikan jatah cuti khusus tambahan untuk karyawan tertentu.</p>
+          <p style="margin:0 0 0.35rem 0"><strong>Langkah Penggunaan:</strong>
+            <ol style="padding-left:1.25rem;margin:0.25rem 0">
+              <li>Klik tombol <code>Detail</code> pada nama karyawan.</li>
+              <li>Klik tombol <code>✏️ Edit Jatah Cuti</code> di samping angka jatah cuti.</li>
+              <li>Masukkan total hari cuti khusus yang diinginkan (contoh: 12 hari).</li>
+              <li>Klik <code>Simpan Cuti Khusus</code>.</li>
+            </ol>
+          </p>
+          <p style="margin:0"><strong>Efek Sistem:</strong> Kuota cuti karyawan tersebut langsung diperbarui tanpa mengubah kuota karyawan lain.</p>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem">
+          <h5 style="font-weight:800;color:#8b5cf6;margin-bottom:0.35rem">4. Sistem Otomatis Reset Cuti Masa Kontrak (Auto-Guard)</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Berjalan:</strong> Berjalan otomatis secara individual per tanggal berakhirnya kontrak (<code>contract_end</code>).</p>
+          <p style="margin:0"><strong>Efek Sistem:</strong> Hanya karyawan yang kontraknya resmi BERAKHIR yang riwayat cutinya dibersihkan untuk kontrak baru. <strong>Karyawan lain yang kontraknya MASIH AKTIF jatah cutinya TETAP UTUH DIJAGA SAMPAI KONTRAK MEREKA SELESAI.</strong></p>
+        </div>
       `
     },
     debits: {
-      title: '💳 Panduan Menu Tunggakan (Debit & Kredit)',
+      title: '💳 Panduan Menu Tunggakan (Debit & Kredit Manajemen)',
       color: 'var(--danger)',
       content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Modul pencatatan kewajiban finansial (tunggakan/kasbon) dan pembayaran (pelunasan) karyawan.</p>
-        <h5 style="font-weight:700;margin-bottom:0.5rem">📌 Fitur & Cara Penggunaan:</h5>
-        <ul style="padding-left:1.25rem;margin:0 0 1rem 0">
-          <li><strong>Kartu Overview Total SPBU</strong>: Menampilkan Total Debit (Tunggakan Baru), Total Kredit (Pelunasan), dan Sisa Net Saldo SPBU.</li>
-          <li><strong>+ Debit (Tambah Tunggakan)</strong>: Digunakan Admin/Supervisor untuk mencatat pinjaman/kasbon baru karyawan. Masukkan Jumlah (Rp), Tanggal, dan Catatan.</li>
-          <li><strong>+ Kredit (Pembayaran)</strong>: Digunakan untuk mencatat pembayaran/cicilan pelunasan dari karyawan.</li>
-          <li><strong>Filter Transaksi</strong>: Buka kartu karyawan $\\rightarrow$ gunakan tab filter <code>[Semua]</code>, <code>[🔴 Debit]</code>, dan <code>[🟢 Kredit]</code> untuk memilah jenis transaksi.</li>
-          <li><strong>📋 Lihat Rekap Tabel All Karyawan</strong>: Klik tombol ini di kanan atas untuk membuka modal tabel audit lebar tanpa scroll horizontal di PC.</li>
-          <li><strong>🛡️ Keamanan Saldo (Carry-Over)</strong>: Saldo tunggakan TIDAK AKAN HILANG saat reset periode sampai lunas (Rp 0).</li>
-        </ul>
+        <div style="background:rgba(239,68,68,0.06);border-left:4px solid var(--danger);padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Modul ini digunakan untuk mencatat secara akurat seluruh pinjaman/kasbon baru (Debit) dan pembayaran cicilan/pelunasan (Kredit) karyawan SPBU Gontor dengan jaminan saldo *carry-over* yang aman.</p>
+        </div>
+
+        <h4 style="font-weight:800;margin:1rem 0 0.5rem 0">🎛️ Fitur & Tombol-Tombol Utama:</h4>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem">
+          <h5 style="font-weight:800;color:var(--danger);margin-bottom:0.35rem">1. Tombol "+ Debit" (Tambah Tunggakan / Kasbon Baru)</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Ketika karyawan mengajukan pinjaman/kasbon baru atau terjadi ganti rugi selisih yang harus dicatat.</p>
+          <p style="margin:0 0 0.35rem 0"><strong>Langkah Penggunaan:</strong>
+            <ol style="padding-left:1.25rem;margin:0.25rem 0">
+              <li>Klik tombol <code>+ Debit</code> di kanan atas atau pada kartu karyawan.</li>
+              <li>Pilih Nama Karyawan.</li>
+              <li>Masukkan Jumlah Nominal (Rp) dan Tanggal Transaksi.</li>
+              <li>Isi Keterangan / Alasan Kasbon.</li>
+              <li>Klik <code>Simpan Transaksi Debit</code>.</li>
+            </ol>
+          </p>
+          <p style="margin:0"><strong>Efek Sistem:</strong> Total Debit dan Sisa Saldo Tunggakan karyawan akan bertambah secara otomatis.</p>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem">
+          <h5 style="font-weight:800;color:var(--success);margin-bottom:0.35rem">2. Tombol "+ Kredit" (Pembayaran / Pelunasan)</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Ketika karyawan membayar angsuran/potongan gaji untuk pelunasan kasbon.</p>
+          <p style="margin:0 0 0.35rem 0"><strong>Langkah Penggunaan:</strong>
+            <ol style="padding-left:1.25rem;margin:0.25rem 0">
+              <li>Klik tombol <code>+ Kredit</code>.</li>
+              <li>Pilih Nama Karyawan.</li>
+              <li>Masukkan Nominal Pembayaran (Rp) dan Tanggal.</li>
+              <li>Klik <code>Simpan Transaksi Kredit</code>.</li>
+            </ol>
+          </p>
+          <p style="margin:0"><strong>Efek Sistem:</strong> Total Kredit bertambah dan Sisa Saldo Tunggakan berkurang hingga Lunas (Rp 0).</p>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem">
+          <h5 style="font-weight:800;color:var(--info);margin-bottom:0.35rem">3. Filter Tab Transaksi ([Semua], [🔴 Debit], [🟢 Kredit])</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Saat Admin ingin menyaring riwayat transaksi karyawan tertentu agar tidak membingungkan.</p>
+          <p style="margin:0"><strong>Cara Pakai:</strong> Klik tombol filter <code>[Semua]</code>, <code>[🔴 Debit]</code>, atau <code>[🟢 Kredit]</code> di bagian atas daftar transaksi.</p>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem">
+          <h5 style="font-weight:800;color:#8b5cf6;margin-bottom:0.35rem">4. Tombol "📋 Lihat Rekap Tabel All Karyawan"</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Saat Manajemen atau Auditor ingin melihat audit rekapitulasi tunggakan seluruh karyawan sekaligus dalam tampilan tabel yang sangat luas.</p>
+          <p style="margin:0 0 0.35rem 0"><strong>Cara Pakai:</strong> Klik tombol <code>📋 Lihat Rekap Tabel All Karyawan</code> di bagian atas. Jendela tabel lebar (1050px) akan terbuka rapi tanpa terpotong di layar PC.</p>
+          <p style="margin:0"><strong>Efek Sistem:</strong> Menampilkan ringkasan Total Debit, Total Kredit, dan Net Saldo per karyawan dalam 1 tabel utuh.</p>
+        </div>
       `
     },
     'emp-debits': {
       title: '💳 Panduan Menu Tunggakan Saya',
       color: 'var(--danger)',
       content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Tempat Anda mengecek rincian catatan tunggakan kasbon dan pembayaran pelunasan pribadi.</p>
-        <h5 style="font-weight:700;margin-bottom:0.5rem">📌 Rincian Informasi:</h5>
+        <div style="background:rgba(239,68,68,0.06);border-left:4px solid var(--danger);padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Tempat Anda mengecek rincian catatan tunggakan kasbon dan pembayaran pelunasan pribadi secara transparan.</p>
+        </div>
+
+        <h4 style="font-weight:800;margin:1rem 0 0.5rem 0">📌 Rincian Kartu Informasi:</h4>
         <ul style="padding-left:1.25rem;margin:0 0 1rem 0">
-          <li><strong>Total Debit</strong>: Jumlah akumulasi tunggakan/kasbon Anda.</li>
-          <li><strong>Total Kredit</strong>: Jumlah akumulasi pembayaran/cicilan yang telah diterima Manajemen.</li>
+          <li><strong>Total Debit</strong>: Jumlah akumulasi pinjaman/kasbon yang pernah dicatat.</li>
+          <li><strong>Total Kredit</strong>: Jumlah akumulasi pembayaran/cicilan yang telah diserahkan ke Manajemen.</li>
           <li><strong>Sisa Net Saldo</strong>: Sisa kewajiban saldo yang perlu dilunasi. Saldo ini akan terus terbawa sampai Lunas (Rp 0).</li>
         </ul>
       `
@@ -3189,152 +3289,238 @@ window._showSectionGuideModal = (secId) => {
       title: '🏖️ Panduan Menu Izin & Cuti Manajemen',
       color: 'var(--success)',
       content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Modul persetujuan pengajuan izin/cuti karyawan dan diskusi interaktif.</p>
-        <h5 style="font-weight:700;margin-bottom:0.5rem">📌 Fitur & Cara Penggunaan:</h5>
-        <ul style="padding-left:1.25rem;margin:0 0 1rem 0">
-          <li><strong>Status Pengajuan</strong>: Pengajuan baru bernilai <code>Menunggu</code> (Kuning). Klik tombol <code>Setujui</code> (Hijau) atau <code>Tolak</code> (Merah).</li>
-          <li><strong>💬 Chat Diskusi Cuti</strong>: Klik ikon <code>💬 Chat</code> pada kartu pengajuan untuk berkirim pesan langsung dengan karyawan mengenai izin tersebut.</li>
-          <li><strong>Auto-Deduct Kuota</strong>: Pengajuan yang disetujui akan otomatis memotong jatah cuti tahunan karyawan yang bersangkutan.</li>
-        </ul>
+        <div style="background:rgba(16,185,129,0.06);border-left:4px solid var(--success);padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Halaman ini digunakan Manajemen untuk meninjau, menyetujui, atau menolak pengajuan izin/cuti dari karyawan, serta berdiskusi interaktif via Obrolan Cuti.</p>
+        </div>
+
+        <h4 style="font-weight:800;margin:1rem 0 0.5rem 0">🎛️ Fitur & Tombol-Tombol Utama:</h4>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem">
+          <h5 style="font-weight:800;color:var(--success);margin-bottom:0.35rem">1. Tombol "Setujui" & "Tolak"</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Saat ada pengajuan izin masuk bertanda badge <code>Menunggu</code>.</p>
+          <p style="margin:0 0 0.35rem 0"><strong>Cara Pakai:</strong>
+            <ul style="padding-left:1.25rem;margin:0.25rem 0">
+              <li>Klik <code>Setujui</code> jika izin diizinkan. Kuota cuti karyawan akan otomatis terpotong sesuai jumlah hari.</li>
+              <li>Klik <code>Tolak</code> jika izin tidak disetujui. Kuota cuti karyawan tidak akan terpotong.</li>
+            </ul>
+          </p>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem">
+          <h5 style="font-weight:800;color:var(--primary);margin-bottom:0.35rem">2. Tombol "💬 Chat" (Obrolan Cuti)</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Ketika Admin butuh klarifikasi alasan cuti atau konfirmasi penukaran shift kerja.</p>
+          <p style="margin:0"><strong>Cara Pakai:</strong> Klik ikon <code>💬 Chat</code> pada kartu pengajuan. Jendela pesan interaktif akan terbuka secara real-time.</p>
+        </div>
       `
     },
     'emp-leaves': {
       title: '🏖️ Panduan Menu Izin & Cuti Saya',
       color: 'var(--success)',
       content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Tempat Anda memantau sisa jatah cuti, mengajukan izin baru, dan berdiskusi dengan Admin.</p>
-        <h5 style="font-weight:700;margin-bottom:0.5rem">📌 Fitur & Cara Penggunaan:</h5>
-        <ul style="padding-left:1.25rem;margin:0 0 1rem 0">
-          <li><strong>Kartu Sisa Jatah Cuti</strong>: Memantau sisa hari jatah cuti Anda untuk tahun/periode kontrak berjalan (Cuti Tahunan, Cuti Sakit, dll).</li>
-          <li><strong>+ Ajukan Izin Baru</strong>: Klik <code>+ Ajukan</code>, pilih Jenis Izin, Tanggal Mulai, Tanggal Selesai, dan isi Alasan.</li>
-          <li><strong>💬 Chat Diskusi Admin</strong>: Gunakan tombol <code>💬 Chat</code> pada riwayat pengajuan Anda untuk berdiskusi dengan Manajemen.</li>
-        </ul>
+        <div style="background:rgba(16,185,129,0.06);border-left:4px solid var(--success);padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Tempat Anda memantau sisa jatah cuti pribadi, mengajukan izin baru, dan berdiskusi dengan Admin.</p>
+        </div>
+
+        <h4 style="font-weight:800;margin:1rem 0 0.5rem 0">🎛️ Fitur & Tombol-Tombol Utama:</h4>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem">
+          <h5 style="font-weight:800;color:var(--success);margin-bottom:0.35rem">1. Tombol "+ Ajukan Izin Baru"</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Saat hendak berhalangan hadir (Cuti Tahunan, Cuti Sakit, dll).</p>
+          <p style="margin:0 0 0.35rem 0"><strong>Cara Pakai:</strong> Klik <code>+ Ajukan</code>, pilih Jenis Izin, Tanggal Mulai, Tanggal Selesai, dan tulis Alasan.</p>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem">
+          <h5 style="font-weight:800;color:var(--primary);margin-bottom:0.35rem">2. Tombol "💬 Chat Diskusi"</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Untuk memberikan kabar terbaru kepada Admin mengenai persetujuan izin Anda.</p>
+          <p style="margin:0"><strong>Cara Pakai:</strong> Klik ikon <code>💬 Chat</code> pada riwayat pengajuan izin Anda.</p>
+        </div>
       `
     },
     leaderboard: {
       title: '🏆 Panduan Menu Peringkat & KPI (Cetak Rapor PDF)',
       color: 'var(--warning)',
       content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Modul klasemen peringkat kinerja karyawan dan pencetakan dokumen resmi Rapor KPI PDF.</p>
-        <h5 style="font-weight:700;margin-bottom:0.5rem">📌 Fitur & Cara Penggunaan:</h5>
-        <ul style="padding-left:1.25rem;margin:0 0 1rem 0">
-          <li><strong>Klasemen Peringkat Karyawan</strong>: Menampilkan ranking karyawan terbaik di SPBU berdasarkan rata-rata skor evaluasi KPI.</li>
-          <li><strong>🖨️ Cetak PDF Rapor KPI</strong>: Klik tombol <code>🖨️ Cetak PDF Rapor KPI</code>, pilih ukuran kertas <code>A4</code> atau <code>F4 / Folio</code>, lalu klik cetak resmi lengkap dengan tanda tangan Manajemen.</li>
-        </ul>
+        <div style="background:rgba(245,158,11,0.06);border-left:4px solid var(--warning);padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Modul ini menampilkan pemeringkatan karyawan terbaik berdasarkan penilaian KPI dan fasilitas mencetak **Rapor Kinerja PDF Resmi**.</p>
+        </div>
+
+        <h4 style="font-weight:800;margin:1rem 0 0.5rem 0">🎛️ Fitur & Tombol-Tombol Utama:</h4>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem">
+          <h5 style="font-weight:800;color:var(--warning);margin-bottom:0.35rem">1. Tombol "🖨️ Cetak PDF Rapor KPI"</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Setiap akhir bulan/periode evaluasi saat Manajemen ingin menerbitkan dokumen resmi rapor evaluasi staf.</p>
+          <p style="margin:0 0 0.35rem 0"><strong>Langkah Penggunaan:</strong>
+            <ol style="padding-left:1.25rem;margin:0.25rem 0">
+              <li>Pilih nama karyawan & bulan evaluasi.</li>
+              <li>Pilih Ukuran Kertas: <code>A4</code> atau <code>F4 / Folio</code>.</li>
+              <li>Klik tombol <code>🖨️ Cetak PDF Rapor KPI</code>.</li>
+            </ol>
+          </p>
+          <p style="margin:0"><strong>Efek Sistem:</strong> Menghasilkan file PDF rapor resmi yang siap diprint lengkap dengan area tanda tangan Manajer SPBU & Karyawan.</p>
+        </div>
       `
     },
     payroll: {
       title: '💵 Panduan Menu Gaji & Payroll',
       color: '#10b981',
       content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Modul pengaturan komponen gaji pokok, tunjangan, potongan, dan cetak slip gaji karyawan.</p>
-        <h5 style="font-weight:700;margin-bottom:0.5rem">📌 Fitur & Cara Penggunaan:</h5>
-        <ul style="padding-left:1.25rem;margin:0 0 1rem 0">
-          <li><strong>Atur Komponen Gaji</strong>: Menentukan Gaji Pokok, Tunjangan Jabatan, Uang Makan, Bonus, dan Potongan per karyawan.</li>
-          <li><strong>Cetak Slip Gaji Bulanan</strong>: Menerbitkan dan mencetak rincian slip gaji bulanan resmi karyawan.</li>
-        </ul>
+        <div style="background:rgba(16,185,129,0.06);border-left:4px solid #10b981;padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Digunakan oleh Manajer/Admin Keuangan untuk mengonfigurasi struktur Gaji Pokok, Tunjangan Jabatan, Uang Makan, Bonus, dan Potongan, serta menerbitkan slip gaji resmi.</p>
+        </div>
+
+        <h4 style="font-weight:800;margin:1rem 0 0.5rem 0">🎛️ Fitur & Tombol-Tombol Utama:</h4>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem">
+          <h5 style="font-weight:800;color:#10b981;margin-bottom:0.35rem">1. Tombol "Atur Gaji & Tunjangan"</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Saat menetapkan standar gaji karyawan baru atau saat ada kenaikan jabatan/tunjangan.</p>
+          <p style="margin:0"><strong>Efek Sistem:</strong> Nilai master gaji tersimpan aman di database dan tidak akan terhapus saat reset periode.</p>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem">
+          <h5 style="font-weight:800;color:var(--primary);margin-bottom:0.35rem">2. Tombol "Cetak Slip Gaji PDF"</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Saat penggajian bulanan diterbitkan kepada karyawan.</p>
+          <p style="margin:0"><strong>Cara Pakai:</strong> Klik <code>Cetak Slip Gaji</code> pada nama karyawan untuk mengunduh dokumen slip gaji resmi.</p>
+        </div>
+      `
+    },
+    settings: {
+      title: '⚙️ Panduan Menu Pengaturan, Backup JSON, Audit & Reset',
+      color: '#8b5cf6',
+      content: `
+        <div style="background:rgba(139,92,246,0.06);border-left:4px solid #8b5cf6;padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Pusat kontrol keamanan sistem SPBU untuk mengunduh backup 1-klik, melakukan audit laporan arsip lama, memulihkan database, dan melakukan Tutup Buku (Reset Periode).</p>
+        </div>
+
+        <h4 style="font-weight:800;margin:1rem 0 0.5rem 0">🎛️ Fitur & Tombol-Tombol Utama:</h4>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem">
+          <h5 style="font-weight:800;color:#10b981;margin-bottom:0.35rem">1. Tombol "💾 Download Backup JSON (1-Klik)"</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Wajib dilakukan setiap akhir bulan sebelum Reset Periode atau secara rutin seminggu sekali.</p>
+          <p style="margin:0 0 0.35rem 0"><strong>Cara Pakai:</strong> Klik tombol <code>💾 Download Backup JSON</code>. File cadangan bertanggal otomatis akan langsung terunduh ke komputer/HP Anda.</p>
+          <p style="margin:0"><strong>Efek Sistem:</strong> Menjamin 100% data seluruh SPBU tersimpan aman di penyimpanan lokal Anda.</p>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem">
+          <h5 style="font-weight:800;color:#1e40af;margin-bottom:0.35rem">2. Tombol "🔍 Mode Audit / Preview Arsip JSON"</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Ketika Admin atau Manajer ingin memeriksa laporan arsip bulan/tahun lalu tanpa mengganggu operasional harian real-time hari ini.</p>
+          <p style="margin:0 0 0.35rem 0"><strong>Langkah Penggunaan:</strong>
+            <ol style="padding-left:1.25rem;margin:0.25rem 0">
+              <li>Klik <code>🔍 Buka File Backup (Mode Audit)</code>.</li>
+              <li>Pilih file backup JSON lama yang ingin ditinjau.</li>
+              <li>Banner biru Mode Audit akan aktif di layar atas. Seluruh tampilan aplikasi akan memperlihatkan data arsip lama tersebut.</li>
+              <li>Setelah selesai memeriksa, klik <code>✕ Keluar Mode Audit</code> di banner atas.</li>
+            </ol>
+          </p>
+          <p style="margin:0"><strong>Efek Sistem:</strong> Aman 100%! Data real-time hari ini di background sama sekali tidak terpengaruh atau terhapus.</p>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem">
+          <h5 style="font-weight:800;color:var(--danger);margin-bottom:0.35rem">3. Tombol "📥 Restore Database"</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Hanya dalam keadaan darurat jika terjadi kesalahan fatal data dan ingin mengembalikan database dari file backup JSON.</p>
+          <p style="margin:0"><strong>Efek Sistem:</strong> Memperbarui database live secara keseluruhan dengan isi file backup yang dipilih.</p>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem">
+          <h5 style="font-weight:800;color:#dc2626;margin-bottom:0.35rem">4. Tombol "🧹 Reset Periode / Tutup Buku"</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Setiap pergantian periode penggajian/tutup buku bulanan setelah file backup JSON diunduh.</p>
+          <p style="margin:0 0 0.35rem 0"><strong>Cara Pakai:</strong> Klik tombol <code>🧹 Reset Periode / Tutup Buku</code> $\rightarrow$ konfirmasi dialog.</p>
+          <p style="margin:0"><strong>Efek Sistem:</strong> Log absensi & log transaksi lama dirapikan. <strong>Cuti & jatah cuti karyawan yang masa kontraknya masih AKTIF TETAP DIJAGA UTUH DENGAN AMAN.</strong></p>
+        </div>
       `
     },
     violations: {
-      title: '⚠️ Panduan Menu Pelanggaran Karyawan',
+      title: '⚠️ Panduan Menu Pelanggaran & Disiplin',
       color: '#f97316',
       content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Modul pencatatan kedisiplinan, surat peringatan (SP), dan sanksi karyawan.</p>
-        <h5 style="font-weight:700;margin-bottom:0.5rem">📌 Fitur & Cara Penggunaan:</h5>
-        <ul style="padding-left:1.25rem;margin:0 0 1rem 0">
-          <li><strong>+ Catat Pelanggaran</strong>: Pilih nama karyawan, tanggal, jenis pelanggaran, dan sanksi.</li>
-          <li><strong>Dampak Ke Kedisiplinan</strong>: Catatan pelanggaran menjadi bahan pertimbangan dalam evaluasi KPI bulanan.</li>
-        </ul>
-      `
-    },
-    'emp-violations': {
-      title: '⚠️ Panduan Menu Pelanggaran Saya',
-      color: '#f97316',
-      content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Tempat Anda mengecek catatan kedisiplinan atau surat peringatan (SP) jika ada.</p>
+        <div style="background:rgba(249,115,22,0.06);border-left:4px solid #f97316;padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Digunakan oleh Manajemen untuk mencatat surat peringatan (SP) dan sanksi kedisiplinan karyawan.</p>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem">
+          <h5 style="font-weight:800;color:#f97316;margin-bottom:0.35rem">1. Tombol "+ Catat Pelanggaran"</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Ketika karyawan melakukan pelanggaran SOP atau aturan kedisiplinan SPBU.</p>
+          <p style="margin:0"><strong>Cara Pakai:</strong> Pilih nama karyawan, tanggal, jenis pelanggaran, dan isi sanksi.</p>
+        </div>
       `
     },
     savings: {
       title: '💰 Panduan Menu Tabungan Karyawan',
       color: '#14b8a6',
       content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Modul pencatatan uang simpanan/tabungan karyawan SPBU Gontor.</p>
-        <h5 style="font-weight:700;margin-bottom:0.5rem">📌 Fitur & Cara Penggunaan:</h5>
-        <ul style="padding-left:1.25rem;margin:0 0 1rem 0">
-          <li><strong>+ Setor / Tarik Tabungan</strong>: Mencatat transaksi setoran atau penarikan tabungan karyawan.</li>
-          <li><strong>Keamanan Saldo</strong>: Saldo total uang tabungan karyawan **DIJAMIN 100% UTUH AMAN** saat reset periode.</li>
-        </ul>
-      `
-    },
-    'emp-savings': {
-      title: '💰 Panduan Menu Tabungan Saya',
-      color: '#14b8a6',
-      content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Memantau akumulasi total saldo uang tabungan pribadi Anda di SPBU Gontor beserta histori setorannya.</p>
+        <div style="background:rgba(20,184,166,0.06);border-left:4px solid #14b8a6;padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Modul pencatatan uang simpanan/tabungan karyawan SPBU Gontor dengan jaminan saldo 100% utuh.</p>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem">
+          <h5 style="font-weight:800;color:#14b8a6;margin-bottom:0.35rem">1. Tombol "+ Setor / Tarik Tabungan"</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Saat karyawan menyetorkan tabungan bulanan atau menarik tabungan.</p>
+          <p style="margin:0"><strong>Cara Pakai:</strong> Pilih nama karyawan, jenis transaksi (Setor/Tarik), tanggal, nominal, dan keterangan.</p>
+        </div>
       `
     },
     ratings: {
       title: '⭐ Panduan Menu Penilaian Karyawan (KPI)',
       color: '#eab308',
       content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Menginput nilai skor evaluasi bulanan karyawan (skor 1-5 bintang) berdasarkan kriteria KPI.</p>
-      `
-    },
-    'emp-ratings': {
-      title: '⭐ Panduan Menu Penilaian Saya (KPI)',
-      color: '#eab308',
-      content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Melihat nilai evaluasi kinerja bulanan Anda (bintang 1-5) dan catatan langsung dari Manajemen.</p>
+        <div style="background:rgba(234,179,8,0.06);border-left:4px solid #eab308;padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Tempat Manajemen menginput nilai evaluasi bulanan karyawan berbasis skor bintang 1-5.</p>
+        </div>
       `
     },
     criteria: {
-      title: '📝 Panduan Menu Kriteria Indikator KPI',
+      title: '📝 Panduan Menu Kriteria KPI',
       color: '#6366f1',
       content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Mengatur master indikator penilaian KPI (contoh: Kedisiplinan, Kecepatan Layanan, Kerjasama Tim) per jabatan.</p>
+        <div style="background:rgba(99,102,241,0.06);border-left:4px solid #6366f1;padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Master data untuk mengatur bobot dan kriteria penilaian indikator KPI per posisi/jabatan.</p>
+        </div>
       `
     },
     'leave-types': {
-      title: '📝 Panduan Menu Master Jenis Cuti',
+      title: '📝 Panduan Master Jenis Cuti',
       color: '#06b6d4',
       content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Mengatur master nama jenis cuti (Cuti Tahunan, Cuti Sakit, Cuti Melahirkan) beserta jatah kuota standar tahunan.</p>
+        <div style="background:rgba(6,182,212,0.06);border-left:4px solid #06b6d4;padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Master data untuk menentukan nama jenis cuti dan jatah kuota standar tahunan.</p>
+        </div>
       `
     },
     'internal-chat': {
-      title: '💬 Panduan Menu Diskusi Internal',
+      title: '💬 Panduan Diskusi Internal',
       color: '#8b5cf6',
       content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Wadah komunikasi pesan cepat dan diskusi internal antar staf dan Manajemen SPBU.</p>
-      `
-    },
-    settings: {
-      title: '⚙️ Panduan Menu Pengaturan, Backup & Audit',
-      color: '#8b5cf6',
-      content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Pusat kendali pengaturan sistem, keamanan backup, mode audit arsip, dan reset periode.</p>
-        <h5 style="font-weight:700;margin-bottom:0.5rem">📌 Fitur & Cara Penggunaan:</h5>
-        <ul style="padding-left:1.25rem;margin:0 0 1rem 0">
-          <li><strong>💾 Download Backup JSON (1-Klik)</strong>: Klik tombol ini untuk mengunduh salinan cadangan seluruh data SPBU ke file <code>.json</code>.</li>
-          <li><strong>🔍 Mode Audit / Preview Arsip</strong>: Buka file JSON lama untuk memeriksa/mencetak laporan lama tanpa mengganggu data real-time hari ini.</li>
-          <li><strong>📥 Restore Database</strong>: Memulihkan database jika terjadi keadaan darurat dari file JSON.</li>
-          <li><strong>🧹 Reset Periode / Tutup Buku</strong>: Membersihkan log periode lalu (Cuti & jatah cuti karyawan kontrak AKTIF tetap aman terjaga).</li>
-          <li><strong>Email Manajemen & Edit Profil</strong>: Mengatur daftar email terotorisasi login Manajemen dan izin edit profil mandiri karyawan.</li>
-        </ul>
+        <div style="background:rgba(139,92,246,0.06);border-left:4px solid #8b5cf6;padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Wadah komunikasi pesan instan antar staf dan Manajemen SPBU.</p>
+        </div>
       `
     },
     'emp-history': {
-      title: '⏱️ Panduan Menu Riwayat Harian Saya',
+      title: '⏱️ Panduan Riwayat Harian Karyawan',
       color: 'var(--info)',
       content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Tempat Anda melihat riwayat presensi harian (Jam Masuk, Jam Pulang, Keterlambatan) yang tercatat dari Sistem Absensi.</p>
+        <div style="background:rgba(14,165,233,0.06);border-left:4px solid var(--info);padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Menampilkan histori presensi harian Anda (Clock-In, Clock-Out, & Keterlambatan) dari Sistem Absensi SPBU.</p>
+        </div>
       `
     },
     'emp-profile': {
-      title: '👤 Panduan Menu Profil Saya & PIN',
+      title: '👤 Panduan Profil Saya & Ganti PIN',
       color: '#8b5cf6',
       content: `
-        <p class="mb-3"><strong>Fungsi Halaman:</strong> Tempat Anda melihat biodata pribadi, memperbarui foto profil, dan mengganti PIN 6-digit rahasia.</p>
+        <div style="background:rgba(139,92,246,0.06);border-left:4px solid #8b5cf6;padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Tempat mengunggah foto profil pribadi dan memperbarui PIN 6-digit rahasia akun Anda.</p>
+        </div>
       `
     }
   };
