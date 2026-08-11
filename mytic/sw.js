@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mytic-cache-v143';
+const CACHE_NAME = 'mytic-cache-v144';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
