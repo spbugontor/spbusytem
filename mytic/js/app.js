@@ -2225,6 +2225,17 @@ function renderSettings() {
       </div>
     </div>
 
+    <div class="card mb-4" style="border:1.5px solid var(--primary)">
+      <h3 class="card-title mb-2">💾 Manajemen Backup, Audit & Tutup Buku SPBU</h3>
+      <p class="text-xs text-muted mb-4">Kelola cadangan data JSON, jalankan mode audit arsip lama tanpa mengganggu operasional harian, serta lakukan pembersihan periode.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:0.75rem">
+        <button class="btn btn-primary" style="padding:0.65rem;font-size:0.8rem" onclick="window._exportDatabaseBackup()">💾 Download Backup JSON (1-Klik)</button>
+        <button class="btn btn-secondary" style="padding:0.65rem;font-size:0.8rem;background:var(--info);color:#fff;border:none" onclick="window._startAuditModeWithFile()">🔍 Mode Audit / Preview Arsip JSON</button>
+        <button class="btn btn-secondary" style="padding:0.65rem;font-size:0.8rem" onclick="window._importDatabaseRestore()">📥 Restore Database dari JSON</button>
+        <button class="btn btn-outline-danger" style="padding:0.65rem;font-size:0.8rem" onclick="window._resetPeriodData()">🧹 Reset Periode / Tutup Buku</button>
+      </div>
+    </div>
+
     <div style="margin-top:2rem;">
       <button class="btn btn-primary" onclick="window._saveSettings()">Simpan Pengaturan</button>
     </div>
@@ -2932,6 +2943,163 @@ window._saveCustomLeaveQuota = async (key) => {
   showToast(`Jatah cuti khusus untuk ${emp.name} berhasil diperbarui!`, 'success');
   window._hideModal();
   if (currentUser) renderCurrentSection();
+};
+
+function autoResetLeaveOnContractEnd() {
+  if (window._isAuditMode) return;
+  const users = getUsers();
+  const todayStr = new Date().toISOString().split('T')[0];
+  const leaves = getLeaves();
+
+  users.forEach(async (u) => {
+    if (!u.contract_end) return;
+    if (todayStr > u.contract_end) {
+      const expiredLeaves = leaves.filter(l => (l.emp_id === u.emp_id || l.username === u.username) && (l.start_date <= u.contract_end || l.created_at <= u.contract_end));
+      if (expiredLeaves.length > 0) {
+        expiredLeaves.forEach(async (l) => {
+          if (l._key) {
+            await remove(ref(db, 'leaves/' + l._key)).catch(console.error);
+          }
+        });
+      }
+      if (u.custom_quota) {
+        await update(ref(db, 'users/' + u._key), { custom_quota: null }).catch(console.error);
+      }
+    }
+  });
+}
+
+window._realAllDataBackup = null;
+window._isAuditMode = false;
+window._auditFileName = '';
+
+window._exportDatabaseBackup = () => {
+  try {
+    const backupData = {
+      app: 'MyTIC SPBU Gontor',
+      exported_at: new Date().toISOString(),
+      data: allData
+    };
+    const jsonStr = JSON.stringify(backupData, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const todayStr = new Date().toISOString().split('T')[0];
+    a.href = url;
+    a.download = `mytic_backup_spbu_gontor_${todayStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Backup database berhasil diunduh!', 'success');
+  } catch (e) {
+    showToast('Gagal mengunduh backup: ' + e.message, 'error');
+  }
+};
+
+window._importDatabaseRestore = () => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,application/json';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const parsed = JSON.parse(evt.target.result);
+        const dataToRestore = parsed.data || parsed;
+        if (!dataToRestore || typeof dataToRestore !== 'object') {
+          showToast('Format file backup JSON tidak valid!', 'error');
+          return;
+        }
+        showConfirm('RESTORE DATABASE', 'Apakah Anda yakin ingin memulihkan database dari file backup ini? Data saat ini akan diperbarui dengan isi file backup.', async () => {
+          await set(ref(db, '/'), dataToRestore);
+          showToast('Database berhasil dipulihkan 100%!', 'success');
+          location.reload();
+        }, 'Ya, Pulihkan Database', true);
+      } catch (err) {
+        showToast('Gagal membaca file JSON: ' + err.message, 'error');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+};
+
+window._startAuditModeWithFile = () => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,application/json';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const parsed = JSON.parse(evt.target.result);
+        const auditData = parsed.data || parsed;
+        if (!auditData || typeof auditData !== 'object') {
+          showToast('Format file JSON tidak valid!', 'error');
+          return;
+        }
+        window._realAllDataBackup = JSON.parse(JSON.stringify(allData));
+        window._auditFileName = file.name;
+        allData = auditData;
+        window._isAuditMode = true;
+        renderAuditModeBanner();
+        showToast(`Mode Audit Aktif: ${file.name}`, 'info');
+        renderCurrentSection();
+      } catch (err) {
+        showToast('Gagal membuka file audit: ' + err.message, 'error');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+};
+
+window._exitAuditMode = () => {
+  if (window._realAllDataBackup) {
+    allData = JSON.parse(JSON.stringify(window._realAllDataBackup));
+  }
+  window._isAuditMode = false;
+  const banner = document.getElementById('audit-mode-banner');
+  if (banner) banner.remove();
+  showToast('Keluar dari Mode Audit. Kembali ke data real-time hari ini.', 'success');
+  renderCurrentSection();
+};
+
+function renderAuditModeBanner() {
+  let banner = document.getElementById('audit-mode-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'audit-mode-banner';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#1e40af;color:#ffffff;padding:0.6rem 1.25rem;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 12px rgba(0,0,0,0.3);font-size:0.85rem;font-weight:700;';
+    document.body.prepend(banner);
+  }
+  banner.innerHTML = `
+    <div style="display:flex;align-items:center;gap:0.6rem">
+      <span style="font-size:1.1rem">🔍</span>
+      <span>MODE AUDIT & PREVIEW ARSIP: <span style="color:#fde047;text-decoration:underline">${esc(window._auditFileName || 'File Backup')}</span></span>
+      <span style="font-size:0.75rem;opacity:0.85;font-weight:normal">(Data real-time hari ini aman di background)</span>
+    </div>
+    <button class="btn btn-secondary" style="padding:0.25rem 0.75rem;font-size:0.75rem;background:#ffffff;color:#1e40af;font-weight:800;border:none;cursor:pointer" onclick="window._exitAuditMode()">✕ Keluar Mode Audit</button>
+  `;
+}
+
+window._resetPeriodData = () => {
+  showConfirm('RESET PERIODE / TUTUP BUKU', 'Pastikan Anda SUDAH mem-backup database sebelum melakukan reset! Semua log absensi & transaksi lama akan dibersihkan untuk menyambut periode baru. Lanjutkan?', async () => {
+    try {
+      await set(ref(db, 'absensi/records'), null);
+      await set(ref(db, 'transactions'), null);
+      await set(ref(db, 'leaves'), null);
+      showToast('Reset periode berhasil! Riwayat lama telah dibersihkan.', 'success');
+      location.reload();
+    } catch (err) {
+      showToast('Gagal reset: ' + err.message, 'error');
+    }
+  }, 'Ya, Reset Periode', true);
 };
 
 window._showEmpDetail = (key) => {
