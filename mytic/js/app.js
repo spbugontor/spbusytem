@@ -1176,7 +1176,9 @@ function initAdminDashboardCharts() {
       let onTime = 0, late = 0, sakit = 0, izin = 0, cuti = 0, libur = 0, other = 0;
 
       recs.forEach(r => {
-        const st = (r.status || r.type || '').toString().toLowerCase();
+        const st = (r.status || r.type || '').toString().toLowerCase().trim();
+        const lateMins = Number(r.late_minutes || 0);
+
         if (st.includes('sakit')) {
           sakit++;
         } else if (st.includes('izin')) {
@@ -1186,7 +1188,7 @@ function initAdminDashboardCharts() {
         } else if (st.includes('libur') || st.includes('off')) {
           libur++;
         } else if (r.clock_in && r.clock_in !== '-') {
-          if ((r.late_minutes || 0) > 0 || st.includes('terlambat') || st.includes('menit') || st.includes('jam')) {
+          if (lateMins > 0 || st.startsWith('terlambat')) {
             late++;
           } else {
             onTime++;
