@@ -1169,7 +1169,7 @@ function initAdminDashboardCharts() {
     const endLimit = new Date(Math.min(range.endDate.getTime(), Date.now()));
 
     while (cur <= endLimit) {
-      const dateStr = cur.toISOString().split('T')[0];
+      const dateStr = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, '0')}-${String(cur.getDate()).padStart(2, '0')}`;
       days.push(cur.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
 
       const recs = allAbsensi.filter(r => parseToISO(r.date || r.tanggal) === dateStr);
