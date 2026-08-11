@@ -161,6 +161,11 @@
             <span id="badge-bell-count" class="hidden"
               style="position:absolute;top:-3px;right:-3px;background:var(--danger);color:#fff;font-size:0.55rem;font-weight:800;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 6px var(--danger);">1</span>
           </button>
+          <button id="btn-user-guide-mobile" onclick="window._showUserGuideModal && window._showUserGuideModal()"
+            title="Panduan Sistem"
+            style="background: rgba(255,255,255,0.2); border: none; padding: 0.4rem 0.6rem; border-radius: 12px; color: white; cursor:pointer; font-size:0.75rem; font-weight:700; display:flex; align-items:center; gap:0.25rem;">
+            ❓ Panduan
+          </button>
           <button id="btn-dark-mode-mobile" onclick="window.toggleDarkMode()"
             style="background: rgba(255,255,255,0.15); border: none; padding: 0.5rem; border-radius: 50%; color: white; cursor:pointer;">
             <svg id="icon-moon-mobile" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
@@ -209,29 +214,35 @@
             </button>
             <h2 id="topbar-title" class="page-title">Dashboard</h2>
           </div>
-          <button id="btn-dark-mode"
-            style="background:none; border:none; color:var(--text-muted); cursor:pointer; padding:0.5rem;"
-            onclick="window.toggleDarkMode()">
-            <!-- Moon Icon by default -->
-            <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-            </svg>
-            <!-- Sun Icon -->
-            <svg id="icon-sun" class="hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round">
-              <circle cx="12" cy="12" r="5"></circle>
-              <line x1="12" y1="1" x2="12" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="23"></line>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line>
-              <line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-            </svg>
-          </button>
+          <div style="display:flex;align-items:center;gap:0.75rem;">
+            <button class="btn btn-secondary" onclick="window._showUserGuideModal && window._showUserGuideModal()"
+              style="padding:0.4rem 0.8rem;font-size:0.8rem;font-weight:700;display:flex;align-items:center;gap:0.35rem;border-radius:var(--radius-md)">
+              <span>❓ Panduan Penggunaan</span>
+            </button>
+            <button id="btn-dark-mode"
+              style="background:none; border:none; color:var(--text-muted); cursor:pointer; padding:0.5rem;"
+              onclick="window.toggleDarkMode()">
+              <!-- Moon Icon by default -->
+              <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+              <!-- Sun Icon -->
+              <svg id="icon-sun" class="hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+            </button>
+          </div>
         </header>
 
         <main id="content-wrapper" class="content-wrapper">
@@ -250,7 +261,7 @@
 
   <!-- MODULES (Firebase + App Logic) -->
   <script type="module" src="js/firebase-config.js?v=20260720a"></script>
-  <script type="module" src="js/app.js?v=20260812_active_contract_leave_guard_v142"></script>
+  <script type="module" src="js/app.js?v=20260812_help_guides_v143"></script>
 
   <!-- Service Worker Registration -->
   <script>
