@@ -3121,7 +3121,12 @@ window._resetPeriodData = () => {
 };
 
 window._showSectionGuideModal = (secId) => {
-  const targetSec = secId || currentSection || 'dashboard';
+  let targetSec = secId || currentSection || 'dashboard';
+  
+  const isMgmt = currentUser && (currentUser.role === 'admin' || isEmpAdminOrSupervisor());
+  if (!isMgmt && (targetSec === 'dashboard' || targetSec === 'emp-dashboard')) {
+    targetSec = 'emp-dashboard';
+  }
   
   const sectionGuides = {
     dashboard: {
@@ -3158,6 +3163,33 @@ window._showSectionGuideModal = (secId) => {
           <h5 style="font-weight:800;color:var(--warning);margin-bottom:0.35rem">4. Kartu Alert Izin/Cuti Pending</h5>
           <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Ketika ada angka badge merah/kuning yang menunjukkan pengajuan izin karyawan membutuhkan keputusan.</p>
           <p style="margin:0"><strong>Cara Pakai:</strong> Klik kartu untuk membuka persetujuan izin & Obrolan Cuti.</p>
+        </div>
+      `
+    },
+    'emp-dashboard': {
+      title: '🏠 Panduan Halaman Beranda Karyawan',
+      color: 'var(--primary)',
+      content: `
+        <div style="background:rgba(30,64,175,0.06);border-left:4px solid var(--primary);padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Halaman utama Beranda Karyawan ini merangkum seluruh status kehadiran pribadi Anda, statistik jam kerja harian, pengumuman dari Manajemen SPBU, dan saldo cepat Anda secara real-time.</p>
+        </div>
+
+        <h4 style="font-weight:800;margin:1rem 0 0.5rem 0">🎛️ Fitur & Informasi Utama:</h4>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem">
+          <h5 style="font-weight:800;color:var(--primary);margin-bottom:0.35rem">1. Ringkasan Kehadiran Saya</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Kapan Digunakan:</strong> Setiap hari untuk memantau akumulasi total jam kerja, hari masuk, dan catatan ketepatan waktu Anda bulan ini.</p>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem">
+          <h5 style="font-weight:800;color:var(--info);margin-bottom:0.35rem">2. Kartu Informasi Cepat (Saldo & Cuti)</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Fungsi:</strong> Menampilkan sisa jatah cuti tahunan, sisa saldo tunggakan/kasbon, dan saldo tabungan pribadi Anda secara sekilas.</p>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem">
+          <h5 style="font-weight:800;color:var(--success);margin-bottom:0.35rem">3. Pintasan Sistem Absensi</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Fungsi:</strong> Pintasan untuk langsung membuka aplikasi Sistem Absensi SPBU saat hendak presensi Clock-In / Clock-Out.</p>
         </div>
       `
     },
@@ -3448,6 +3480,20 @@ window._showSectionGuideModal = (secId) => {
         </div>
       `
     },
+    'emp-violations': {
+      title: '⚠️ Panduan Menu Pelanggaran Saya',
+      color: '#f97316',
+      content: `
+        <div style="background:rgba(249,115,22,0.06);border-left:4px solid #f97316;padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Tempat Anda mengecek riwayat catatan kedisiplinan, sanksi, atau Surat Peringatan (SP) yang dicatat oleh Manajemen SPBU.</p>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem">
+          <h5 style="font-weight:800;color:#f97316;margin-bottom:0.35rem">1. Kartu Catatan Kedisiplinan</h5>
+          <p style="margin:0">Menampilkan tanggal kejadian, jenis pelanggaran, dan deskripsi sanksi. Catatan ini dijadikan acuan evaluasi KPI bulanan Anda.</p>
+        </div>
+      `
+    },
     savings: {
       title: '💰 Panduan Menu Tabungan Karyawan',
       color: '#14b8a6',
@@ -3463,6 +3509,20 @@ window._showSectionGuideModal = (secId) => {
         </div>
       `
     },
+    'emp-savings': {
+      title: '💰 Panduan Menu Tabungan Saya',
+      color: '#14b8a6',
+      content: `
+        <div style="background:rgba(20,184,166,0.06);border-left:4px solid #14b8a6;padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Memantau akumulasi total saldo uang tabungan pribadi Anda di SPBU Gontor beserta histori rincian setorannya.</p>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem">
+          <h5 style="font-weight:800;color:#14b8a6;margin-bottom:0.35rem">1. Keamanan Saldo Tabungan</h5>
+          <p style="margin:0">Saldo tabungan Anda tersimpan secara 100% aman dan <strong>TIDAK AKAN BERKURANG / HILANG saat ada Reset Periode Tutup Buku</strong>.</p>
+        </div>
+      `
+    },
     ratings: {
       title: '⭐ Panduan Menu Penilaian Karyawan (KPI)',
       color: '#eab308',
@@ -3470,6 +3530,16 @@ window._showSectionGuideModal = (secId) => {
         <div style="background:rgba(234,179,8,0.06);border-left:4px solid #eab308;padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
           <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
           <p style="margin:0;font-size:0.85rem">Tempat Manajemen menginput nilai evaluasi bulanan karyawan berbasis skor bintang 1-5.</p>
+        </div>
+      `
+    },
+    'emp-ratings': {
+      title: '⭐ Panduan Menu Penilaian Saya (KPI)',
+      color: '#eab308',
+      content: `
+        <div style="background:rgba(234,179,8,0.06);border-left:4px solid #eab308;padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
+          <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
+          <p style="margin:0;font-size:0.85rem">Melihat hasil nilai evaluasi kinerja bulanan Anda (skor bintang 1-5) dan saran/catatan langsung dari Manajemen SPBU Gontor.</p>
         </div>
       `
     },
@@ -3504,17 +3574,24 @@ window._showSectionGuideModal = (secId) => {
       `
     },
     'emp-history': {
-      title: '⏱️ Panduan Riwayat Harian Karyawan',
+      title: '⏱️ Panduan Menu Riwayat Harian Saya',
       color: 'var(--info)',
       content: `
         <div style="background:rgba(14,165,233,0.06);border-left:4px solid var(--info);padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
           <h4 style="font-weight:800;margin-bottom:0.25rem">🔍 Apa Fungsi Halaman Ini?</h4>
-          <p style="margin:0;font-size:0.85rem">Menampilkan histori presensi harian Anda (Clock-In, Clock-Out, & Keterlambatan) dari Sistem Absensi SPBU.</p>
+          <p style="margin:0;font-size:0.85rem">Halaman ini menampilkan histori catatan absensi presensi harian Anda (Jam Masuk, Jam Pulang, Lokasi, dan Menit Keterlambatan) yang diambil langsung dari Sistem Absensi SPBU Gontor.</p>
+        </div>
+
+        <h4 style="font-weight:800;margin:1rem 0 0.5rem 0">🎛️ Fitur & Cara Membaca Informasi:</h4>
+
+        <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem">
+          <h5 style="font-weight:800;color:var(--info);margin-bottom:0.35rem">1. Tabel Riwayat Presensi</h5>
+          <p style="margin:0 0 0.35rem 0"><strong>Informasi:</strong> Menampilkan Tanggal, Jam Masuk (Clock-In), Jam Pulang (Clock-Out), dan Status Kehadiran (On Time / Terlambat X Menit).</p>
+          <p style="margin:0"><strong>Guna:</strong> Untuk memverifikasi catatan jam hadir Anda agar sesuai dengan jadwal shift kerja yang ditentukan Manajemen.</p>
         </div>
       `
     },
     'emp-profile': {
-      title: '👤 Panduan Profil Saya & Ganti PIN',
       color: '#8b5cf6',
       content: `
         <div style="background:rgba(139,92,246,0.06);border-left:4px solid #8b5cf6;padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem">
