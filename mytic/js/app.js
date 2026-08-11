@@ -226,10 +226,11 @@ function init() {
   });
 
   // Global real-time listeners per node
-  const nodes = ['users', 'transactions', 'leaves', 'savings', 'violations', 'ratings', 'criteria', 'leave_types', 'settings', 'pin_history', 'internal_chats', 'payroll', 'payroll_settings'];
+  const nodes = ['users', 'transactions', 'leaves', 'savings', 'violations', 'ratings', 'criteria', 'leave_types', 'settings', 'pin_history', 'internal_chats', 'payroll', 'payroll_settings', 'absensi/records'];
   nodes.forEach(node => {
     onValue(ref(db, node), snap => {
-      allData[node] = snap.exists() ? snap.val() : {};
+      const dataKey = node === 'absensi/records' ? 'absensi_records' : node;
+      allData[dataKey] = snap.exists() ? snap.val() : {};
 
       if (node === 'settings') {
         const themeToApply = allData.settings.theme || localStorage.getItem('spbu_theme') || 'blue';
@@ -1176,18 +1177,21 @@ function initAdminDashboardCharts() {
 
       recs.forEach(r => {
         const st = (r.status || r.type || '').toString().toLowerCase();
-        if (r.clock_in && r.clock_in !== '-' && !['sakit', 'izin', 'cuti', 'libur', 'off'].includes(st)) {
-          if ((r.late_minutes || 0) > 0 || st === 'terlambat') late++;
-          else onTime++;
-        } else if (st === 'sakit') {
+        if (st.includes('sakit')) {
           sakit++;
-        } else if (st === 'izin') {
+        } else if (st.includes('izin')) {
           izin++;
-        } else if (st === 'cuti') {
+        } else if (st.includes('cuti')) {
           cuti++;
-        } else if (st === 'libur' || st === 'off') {
+        } else if (st.includes('libur') || st.includes('off')) {
           libur++;
-        } else if (st && st !== 'hadir') {
+        } else if (r.clock_in && r.clock_in !== '-') {
+          if ((r.late_minutes || 0) > 0 || st.includes('terlambat') || st.includes('menit') || st.includes('jam')) {
+            late++;
+          } else {
+            onTime++;
+          }
+        } else if (st && !st.includes('on time') && !st.includes('hadir')) {
           other++;
         }
       });
