@@ -1390,27 +1390,93 @@ function canAddCredit() {
 // ==========================================
 // DEBITS (ADMIN & SUPERVISOR)
 // ==========================================
+function renderTxnListItems(txns, empId) {
+  if (!txns || txns.length === 0) return '<p class="text-xs text-muted" style="text-align:center;padding:0.5rem">Belum ada transaksi pada kategori ini.</p>';
+  return txns.map(t => {
+    const adder = t.added_by || 'Manajemen';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0.75rem;background:var(--bg-color);border-radius:var(--radius-md);margin-bottom:0.35rem;font-size:0.8rem">
+    <div>
+      <strong style="color:${t.type === 'debit' ? 'var(--danger)' : 'var(--success)'}">${t.type === 'debit' ? '+' : '-'}${fmt(t.amount)}</strong> 
+      <span class="text-muted">${esc(t.note || '')}</span>
+      <span class="text-xs text-muted" style="display:block;margin-top:3px;font-size:0.72rem;">✍️ Ditambahkan oleh: <strong style="color:var(--text-main)">${esc(adder)}</strong></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.5rem">
+      <span class="text-muted" style="font-size:0.75rem">${fmtDate(t.date)}</span>
+      ${currentUser && currentUser.role === 'admin' ? `<button style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:0.7rem" onclick="window._deleteTxn('${t._key}')">✕</button>` : ''}
+    </div>
+  </div>`;
+  }).join('');
+}
+
 function renderDebits() {
   const users = getUsers();
   const allowCredit = canAddCredit();
   const allowDebit = canAddDebit();
 
+  let grandTotalDebit = 0;
+  let grandTotalCredit = 0;
+
+  const allTxns = Object.values(allData.transactions || {});
+  allTxns.forEach(t => {
+    if (t.type === 'debit') grandTotalDebit += (t.amount || 0);
+    else if (t.type === 'credit') grandTotalCredit += (t.amount || 0);
+  });
+  const grandNetBalance = grandTotalDebit - grandTotalCredit;
+
   return `<div class="fade-in">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-      <h3 class="text-xl font-bold">Tunggakan Karyawan</h3>
-      ${isEmpAdminOrSupervisor() ? '<span class="badge badge-warning">Akses Tambah Debit (Admin/Supervisor)</span>' : ''}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem">
+      <div>
+        <h3 class="text-xl font-bold">Tunggakan & Pelunasan Karyawan</h3>
+        <p class="text-xs text-muted">Rekapitulasi transaksi debit (tunggakan) dan kredit (pembayaran) per karyawan</p>
+      </div>
+      <div style="display:flex;gap:0.5rem;align-items:center">
+        <button class="btn btn-secondary" style="padding:0.4rem 0.8rem;font-size:0.75rem" onclick="window._showDebitCreditSummaryModal()">📋 Lihat Rekap Tabel All Karyawan</button>
+        ${isEmpAdminOrSupervisor() ? '<span class="badge badge-warning">Akses Tambah Debit</span>' : ''}
+      </div>
     </div>
+
+    <!-- Overview Cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:0.75rem;margin-bottom:1.25rem">
+      <div class="card" style="padding:1rem;border-left:4px solid var(--danger);background:var(--card-bg)">
+        <p class="text-xs text-muted font-semibold">🔴 TOTAL DEBIT (TUNGGAKAN)</p>
+        <p style="font-size:1.25rem;font-weight:800;color:var(--danger);margin-top:0.25rem">${fmt(grandTotalDebit)}</p>
+      </div>
+      <div class="card" style="padding:1rem;border-left:4px solid var(--success);background:var(--card-bg)">
+        <p class="text-xs text-muted font-semibold">🟢 TOTAL KREDIT (PEMBAYARAN)</p>
+        <p style="font-size:1.25rem;font-weight:800;color:var(--success);margin-top:0.25rem">${fmt(grandTotalCredit)}</p>
+      </div>
+      <div class="card" style="padding:1rem;border-left:4px solid var(--primary);background:var(--card-bg)">
+        <p class="text-xs text-muted font-semibold">⚖️ SISA NET SALDO TUNGGAKAN</p>
+        <p style="font-size:1.25rem;font-weight:800;color:${grandNetBalance > 0 ? 'var(--danger)' : 'var(--success)'};margin-top:0.25rem">${fmt(grandNetBalance)}</p>
+      </div>
+    </div>
+
     ${users.length === 0 ? '<div class="card"><p class="text-muted">Tambahkan karyawan dahulu.</p></div>' :
       users.map(e => {
-        const bal = calcBalance(e.emp_id);
         const txns = getTxns(e.emp_id);
+        const empDebit = txns.filter(t => t.type === 'debit').reduce((sum, t) => sum + (t.amount || 0), 0);
+        const empCredit = txns.filter(t => t.type === 'credit').reduce((sum, t) => sum + (t.amount || 0), 0);
+        const bal = empDebit - empCredit;
+
         return `<div class="card" style="margin-bottom:0.75rem">
-        <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="document.getElementById('txn-${e.emp_id}').classList.toggle('hidden')">
+        <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;flex-wrap:wrap;gap:0.75rem" onclick="document.getElementById('txn-${e.emp_id}').classList.toggle('hidden')">
           <div style="display:flex;align-items:center;gap:0.75rem">
-            <div style="width:40px;height:40px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:800">${(e.name || '?')[0]}</div>
-            <div><strong>${esc(e.name)}</strong><br><span class="text-xs text-muted">${esc(e.position)}</span></div>
+            <div style="width:42px;height:42px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:800">${(e.name || '?')[0]}</div>
+            <div>
+              <strong>${esc(e.name)}</strong><br>
+              <span class="text-xs text-muted">${esc(e.position)} • ${txns.length} Transaksi</span>
+            </div>
           </div>
-          <div style="text-align:right"><strong style="color:${bal > 0 ? 'var(--danger)' : bal < 0 ? 'var(--success)' : 'var(--text-muted)'}">${fmt(bal)}</strong><br><span class="text-xs text-muted">${txns.length} transaksi</span></div>
+          <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+            <div style="text-align:right;font-size:0.75rem;border-right:1px solid var(--border);padding-right:0.75rem">
+              <span style="color:var(--danger);font-weight:700">Debit: ${fmt(empDebit)}</span><br>
+              <span style="color:var(--success);font-weight:700">Kredit: ${fmt(empCredit)}</span>
+            </div>
+            <div style="text-align:right">
+              <span class="text-xs text-muted">Sisa Saldo</span><br>
+              <strong style="font-size:1.05rem;color:${bal > 0 ? 'var(--danger)' : bal < 0 ? 'var(--success)' : 'var(--text-muted)'}">${fmt(bal)}</strong>
+            </div>
+          </div>
         </div>
         <div id="txn-${e.emp_id}" class="hidden" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1rem">
           ${(allowDebit || allowCredit) ? `
@@ -1419,21 +1485,17 @@ function renderDebits() {
             ${allowCredit ? `<button class="btn btn-primary" style="flex:1;padding:0.5rem;font-size:0.75rem;background:var(--success)" onclick="window._showTxnForm('${e.emp_id}','credit')">+ Kredit (Pembayaran)</button>` : ''}
           </div>` : ''}
           <div id="txn-form-${e.emp_id}"></div>
-          ${txns.length === 0 ? '<p class="text-xs text-muted" style="text-align:center">Belum ada transaksi.</p>' :
-            txns.map(t => {
-              const adder = t.added_by || 'Manajemen';
-              return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0.75rem;background:var(--bg-color);border-radius:var(--radius-md);margin-bottom:0.35rem;font-size:0.8rem">
-              <div>
-                <strong style="color:${t.type === 'debit' ? 'var(--danger)' : 'var(--success)'}">${t.type === 'debit' ? '+' : '-'}${fmt(t.amount)}</strong> 
-                <span class="text-muted">${esc(t.note || '')}</span>
-                <span class="text-xs text-muted" style="display:block;margin-top:3px;font-size:0.72rem;">✍️ Ditambahkan oleh: <strong style="color:var(--text-main)">${esc(adder)}</strong></span>
-              </div>
-              <div style="display:flex;align-items:center;gap:0.5rem">
-                <span class="text-muted" style="font-size:0.75rem">${fmtDate(t.date)}</span>
-                ${currentUser.role === 'admin' ? `<button style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:0.7rem" onclick="window._deleteTxn('${t._key}')">✕</button>` : ''}
-              </div>
-            </div>`;
-            }).join('')}
+
+          <!-- Transaction Filter Tabs -->
+          <div style="display:flex;gap:0.4rem;margin-bottom:0.75rem;border-bottom:1px solid var(--border);padding-bottom:0.5rem">
+            <button class="btn btn-secondary btn-txn-filter active" style="padding:0.25rem 0.6rem;font-size:0.7rem" onclick="window._filterTxns('${e.emp_id}', 'all', this)">Semua (${txns.length})</button>
+            <button class="btn btn-secondary btn-txn-filter" style="padding:0.25rem 0.6rem;font-size:0.7rem" onclick="window._filterTxns('${e.emp_id}', 'debit', this)">🔴 Debit (${txns.filter(t=>t.type==='debit').length})</button>
+            <button class="btn btn-secondary btn-txn-filter" style="padding:0.25rem 0.6rem;font-size:0.7rem" onclick="window._filterTxns('${e.emp_id}', 'credit', this)">🟢 Kredit (${txns.filter(t=>t.type==='credit').length})</button>
+          </div>
+
+          <div id="txn-list-${e.emp_id}">
+            ${renderTxnListItems(txns, e.emp_id)}
+          </div>
         </div>
       </div>`;
       }).join('')}
@@ -2478,12 +2540,40 @@ function renderEmpLeaves() {
   const emp = getUserByUsername(currentUser.username);
   if (!emp) return '<div class="card"><p class="text-muted">Data tidak ditemukan.</p></div>';
   const leaves = getLeaves(emp.emp_id);
-  const leaveTypes = getLeaveTypes();
+  const leaveTypes = getLeaveTypes().filter(t => !t.gender || t.gender === 'Semua' || t.gender === emp.gender);
+  const currentYear = new Date().getFullYear();
+  const empLeaves = leaves.filter(l => l.status !== 'Ditolak' && new Date(l.start_date).getFullYear() === currentYear);
+
+  let quotaSummaryCardsHtml = '';
+  if (leaveTypes.length > 0) {
+    quotaSummaryCardsHtml = `<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:0.75rem;margin-bottom:1.25rem">`;
+    leaveTypes.forEach(t => {
+      let taken = 0;
+      empLeaves.filter(l => l.leave_type === t.name).forEach(l => {
+        const d1 = new Date(l.start_date);
+        const d2 = new Date(l.end_date);
+        taken += Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+      });
+      const totalQuota = (emp.custom_quota && emp.custom_quota[t.name] !== undefined) ? Number(emp.custom_quota[t.name]) : Number(t.quota || 0);
+      const remaining = totalQuota - taken;
+
+      quotaSummaryCardsHtml += `<div class="card" style="padding:0.75rem;text-align:center">
+        <p class="text-xs text-muted mb-1">${esc(t.name)}</p>
+        <p class="font-bold text-lg" style="color:${remaining <= 0 ? 'var(--danger)' : 'var(--success)'}">${remaining} <span class="text-xs font-normal text-muted">/ ${totalQuota} hari</span></p>
+      </div>`;
+    });
+    quotaSummaryCardsHtml += `</div>`;
+  }
+
   return `<div class="fade-in">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
-      <h3 class="text-xl font-bold">Izin/Cuti Saya</h3>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+      <div>
+        <h3 class="text-xl font-bold">Izin/Cuti Saya</h3>
+        <p class="text-xs text-muted">Sisa jatah cuti & riwayat pengajuan izin (${currentYear})</p>
+      </div>
       <button class="btn btn-primary" onclick="window._showEmpLeaveForm()">+ Ajukan</button>
     </div>
+    ${quotaSummaryCardsHtml}
     <div id="emp-leave-form-area"></div>
     ${leaves.length === 0 ? '<div class="card"><p class="text-muted">Belum ada pengajuan.</p></div>' :
       leaves.map(l => {
@@ -2714,6 +2804,136 @@ window._saveEmp = async (key) => {
   $('emp-form-area').innerHTML = '';
 };
 
+window._filterTxns = (empId, type, btnEl) => {
+  const container = document.getElementById('txn-list-' + empId);
+  if (!container) return;
+  const txns = getTxns(empId);
+  let filtered = txns;
+  if (type === 'debit') filtered = txns.filter(t => t.type === 'debit');
+  else if (type === 'credit') filtered = txns.filter(t => t.type === 'credit');
+
+  const parent = btnEl.parentElement;
+  if (parent) {
+    parent.querySelectorAll('.btn-txn-filter').forEach(b => b.classList.remove('active'));
+    btnEl.classList.add('active');
+  }
+
+  container.innerHTML = renderTxnListItems(filtered, empId);
+};
+
+window._showDebitCreditSummaryModal = () => {
+  const users = getUsers();
+  let totalD = 0, totalC = 0;
+
+  const rowsHtml = users.map((e, idx) => {
+    const txns = getTxns(e.emp_id);
+    const empDebit = txns.filter(t => t.type === 'debit').reduce((sum, t) => sum + (t.amount || 0), 0);
+    const empCredit = txns.filter(t => t.type === 'credit').reduce((sum, t) => sum + (t.amount || 0), 0);
+    const bal = empDebit - empCredit;
+    totalD += empDebit;
+    totalC += empCredit;
+
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:0.5rem;text-align:center">${idx + 1}</td>
+      <td style="padding:0.5rem"><strong>${esc(e.name)}</strong><br><span class="text-xs text-muted">${esc(e.position)} (${esc(e.emp_id)})</span></td>
+      <td style="padding:0.5rem;text-align:right;color:var(--danger);font-weight:700">${fmt(empDebit)}</td>
+      <td style="padding:0.5rem;text-align:right;color:var(--success);font-weight:700">${fmt(empCredit)}</td>
+      <td style="padding:0.5rem;text-align:right;font-weight:800;color:${bal > 0 ? 'var(--danger)' : 'var(--success)'}">${fmt(bal)}</td>
+    </tr>`;
+  }).join('');
+
+  const modalHtml = `
+    <div class="modal-header">
+      <h3 class="modal-title">📋 Tabel Rekapitulasi Debit & Kredit Karyawan</h3>
+      <button class="modal-close" onclick="window._hideModal()">✕</button>
+    </div>
+    <div class="modal-body" style="max-height:70vh;overflow-y:auto;padding:1rem">
+      <table style="width:100%;border-collapse:collapse;font-size:0.85rem">
+        <thead>
+          <tr style="border-bottom:2px solid var(--border);background:var(--bg-color);text-align:left">
+            <th style="padding:0.5rem;text-align:center;width:40px">#</th>
+            <th style="padding:0.5rem">Nama Karyawan</th>
+            <th style="padding:0.5rem;text-align:right">Total Debit (Tunggakan)</th>
+            <th style="padding:0.5rem;text-align:right">Total Kredit (Pembayaran)</th>
+            <th style="padding:0.5rem;text-align:right">Sisa Net Saldo</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHtml || '<tr><td colspan="5" style="text-align:center;padding:1rem" class="text-muted">Belum ada data.</td></tr>'}
+        </tbody>
+        <tfoot>
+          <tr style="border-top:2px solid var(--border);background:var(--bg-color);font-weight:bold">
+            <td colspan="2" style="padding:0.6rem;text-align:right">GRAND TOTAL SPBU:</td>
+            <td style="padding:0.6rem;text-align:right;color:var(--danger)">${fmt(totalD)}</td>
+            <td style="padding:0.6rem;text-align:right;color:var(--success)">${fmt(totalC)}</td>
+            <td style="padding:0.6rem;text-align:right;color:${(totalD - totalC) > 0 ? 'var(--danger)' : 'var(--success)'}">${fmt(totalD - totalC)}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="modal-footer" style="display:flex;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window._hideModal()">Tutup</button>
+    </div>
+  `;
+  showModal(modalHtml);
+};
+
+window._showEditLeaveQuotaModal = (key) => {
+  const emp = getUserByKey(key);
+  if (!emp) return;
+
+  const leaveTypes = getLeaveTypes().filter(t => !t.gender || t.gender === 'Semua' || t.gender === emp.gender);
+  if (leaveTypes.length === 0) {
+    showToast('Belum ada Master Jenis Cuti yang dikonfigurasi di sistem.', 'warning');
+    return;
+  }
+
+  const inputsHtml = leaveTypes.map(t => {
+    const defaultQuota = Number(t.quota || 0);
+    const currentCustom = (emp.custom_quota && emp.custom_quota[t.name] !== undefined) ? emp.custom_quota[t.name] : defaultQuota;
+
+    return `<div class="form-group" style="margin-bottom:0.75rem">
+      <label class="form-label" style="font-size:0.8rem">${esc(t.name)} <span class="text-xs text-muted">(Standar: ${defaultQuota} hari/tahun)</span></label>
+      <input type="number" min="0" max="365" class="form-input inp-custom-quota" data-typename="${esc(t.name)}" value="${currentCustom}">
+    </div>`;
+  }).join('');
+
+  const modalHtml = `
+    <div class="modal-header">
+      <h3 class="modal-title">✏️ Edit Jatah Cuti: ${esc(emp.name)}</h3>
+      <button class="modal-close" onclick="window._hideModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:1rem">
+      <p class="text-xs text-muted mb-3">Sesuaikan total jatah cuti khusus untuk karyawan ini jika terdapat perbedaan atau penyesuaian khusus.</p>
+      ${inputsHtml}
+    </div>
+    <div class="modal-footer" style="display:flex;gap:0.5rem;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window._hideModal()">Batal</button>
+      <button class="btn btn-primary" onclick="window._saveCustomLeaveQuota('${emp._key}')">Simpan Jatah Cuti</button>
+    </div>
+  `;
+  showModal(modalHtml);
+};
+
+window._saveCustomLeaveQuota = async (key) => {
+  const emp = getUserByKey(key);
+  if (!emp) return;
+
+  const inputs = document.querySelectorAll('.inp-custom-quota');
+  const customQuotaObj = { ...(emp.custom_quota || {}) };
+
+  inputs.forEach(inp => {
+    const typeName = inp.dataset.typename;
+    const val = Number(inp.value || 0);
+    customQuotaObj[typeName] = val;
+  });
+
+  await update(ref(db, 'users/' + key), { custom_quota: customQuotaObj });
+  showToast(`Jatah cuti khusus untuk ${emp.name} berhasil diperbarui!`, 'success');
+  window._hideModal();
+  if (currentUser) renderCurrentSection();
+};
+
 window._showEmpDetail = (key) => {
   const emp = getUserByKey(key); if (!emp) return;
   const bal = calcBalance(emp.emp_id);
@@ -2732,10 +2952,17 @@ window._showEmpDetail = (key) => {
 
   let leaveQuotaHtml = '';
   if (leaveTypes.length > 0) {
-    leaveQuotaHtml = `<div class="mt-4"><p class="form-label mb-2">Sisa Jatah Cuti (${currentYear})</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">`;
+    leaveQuotaHtml = `<div class="mt-4">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+        <p class="form-label mb-0">Sisa Jatah Cuti (${currentYear})</p>
+        ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-secondary" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="window._showEditLeaveQuotaModal('${emp._key}')">✏️ Edit Jatah Cuti</button>` : ''}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">`;
     let hasQuota = false;
     leaveTypes.forEach(t => {
-      if (t.quota > 0) {
+      const defaultQuota = Number(t.quota || 0);
+      const totalQuota = (emp.custom_quota && emp.custom_quota[t.name] !== undefined) ? Number(emp.custom_quota[t.name]) : defaultQuota;
+      if (totalQuota > 0) {
         hasQuota = true;
         let taken = 0;
         empLeaves.filter(l => l.leave_type === t.name).forEach(l => {
@@ -2743,10 +2970,15 @@ window._showEmpDetail = (key) => {
           const d2 = new Date(l.end_date);
           taken += Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
         });
-        const remaining = t.quota - taken;
+        const remaining = totalQuota - taken;
+        const isCustom = emp.custom_quota && emp.custom_quota[t.name] !== undefined;
+
         leaveQuotaHtml += `<div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.5rem">
-          <p class="text-xs text-muted">${esc(t.name)}</p>
-          <p class="font-bold text-sm" style="color:${remaining <= 0 ? 'var(--danger)' : 'var(--success)'}">${remaining} <span class="text-xs font-normal text-muted">dari ${t.quota} hari</span></p>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <p class="text-xs text-muted mb-1">${esc(t.name)}</p>
+            ${isCustom ? '<span class="badge badge-warning" style="font-size:0.6rem;padding:1px 4px">Kustom</span>' : ''}
+          </div>
+          <p class="font-bold text-sm" style="color:${remaining <= 0 ? 'var(--danger)' : 'var(--success)'}">${remaining} <span class="text-xs font-normal text-muted">dari ${totalQuota} hari</span></p>
         </div>`;
       }
     });
