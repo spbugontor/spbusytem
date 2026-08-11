@@ -2875,7 +2875,7 @@ window._showDebitCreditSummaryModal = () => {
       <button class="btn btn-secondary" onclick="window._hideModal()">Tutup</button>
     </div>
   `;
-  showModal(modalHtml);
+  showModal(modalHtml, 'modal-wide');
 };
 
 window._showEditLeaveQuotaModal = (key) => {
