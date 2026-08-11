@@ -3089,15 +3089,33 @@ function renderAuditModeBanner() {
 }
 
 window._resetPeriodData = () => {
-  showConfirm('RESET PERIODE / TUTUP BUKU', 'Pastikan Anda SUDAH mem-backup database sebelum melakukan reset! Semua log absensi & transaksi lama akan dibersihkan untuk menyambut periode baru. Lanjutkan?', async () => {
+  showConfirm('RESET PERIODE / TUTUP BUKU', 'Pastikan Anda SUDAH mem-backup database sebelum melakukan reset! Log absensi & transaksi periode lalu akan dibersihkan. Cuti & jatah cuti karyawan yang kontraknya masih AKTIF akan TETAP DIJAGA UTUH. Lanjutkan?', async () => {
     try {
+      // 1. Reset absensi records
       await set(ref(db, 'absensi/records'), null);
-      await set(ref(db, 'transactions'), null);
-      await set(ref(db, 'leaves'), null);
-      showToast('Reset periode berhasil! Riwayat lama telah dibersihkan.', 'success');
+
+      // 2. Clean leaves safely: KEEP leaves for employees whose contract is STILL ACTIVE
+      const todayStr = today();
+      const users = getUsers();
+      const allLeaves = Object.entries(allData.leaves || {});
+
+      for (const [k, l] of allLeaves) {
+        const emp = users.find(u => u.emp_id === l.emp_id || u.username === l.username);
+        if (emp && emp.contract_start && emp.contract_end) {
+          const isActiveContract = (todayStr <= emp.contract_end) && (l.start_date >= emp.contract_start);
+          if (isActiveContract) {
+            // Active contract leave: KEEP INTACT!
+            continue;
+          }
+        }
+        // Delete expired/past contract leave record
+        await remove(ref(db, 'leaves/' + k)).catch(console.error);
+      }
+
+      showToast('Reset periode berhasil! Cuti karyawan kontrak aktif tetap aman utuh!', 'success');
       location.reload();
     } catch (err) {
-      showToast('Gagal reset: ' + err.message, 'error');
+      showToast('Gagal reset periode: ' + err.message, 'error');
     }
   }, 'Ya, Reset Periode', true);
 };
