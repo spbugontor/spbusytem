@@ -3218,39 +3218,6 @@ window._resetLeaveQuota = async (empId, empName) => {
   hideModal();
 };
 
-// --- AUTO-RESET LEAVE WHEN CONTRACT ENDS ---
-async function autoResetLeaveOnContractEnd() {
-  const todayStr = today();
-  const currentYear = new Date().getFullYear();
-  const users = getUsers();
-
-  for (const emp of users) {
-    if (!emp.contract_end) continue;
-
-    // Check if contract has ended (contract_end <= today)
-    if (emp.contract_end <= todayStr) {
-      // Check if already reset this cycle (store marker in user data)
-      const resetMarker = emp.leave_reset_date;
-      if (resetMarker === emp.contract_end) continue; // Already reset for this contract end
-
-      // Delete all leaves for this employee in the current year
-      let deleted = 0;
-      for (const [k, v] of Object.entries(allData.leaves)) {
-        if (v.emp_id === emp.emp_id && new Date(v.start_date).getFullYear() === currentYear) {
-          await remove(ref(db, 'leaves/' + k));
-          deleted++;
-        }
-      }
-
-      // Mark as reset so it doesn't re-trigger
-      if (deleted > 0) {
-        await update(ref(db, 'users/' + emp._key), { leave_reset_date: emp.contract_end });
-        console.log(`[Auto-Reset] Cuti ${emp.name} direset (kontrak berakhir: ${emp.contract_end}). ${deleted} record dihapus.`);
-      }
-    }
-  }
-}
-
 // --- TRANSACTION CRUD ---
 window._showTxnForm = (empId, type) => {
   const area = $('txn-form-' + empId); if (!area) return;
