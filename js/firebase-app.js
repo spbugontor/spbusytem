@@ -944,8 +944,8 @@ function handleExportPDF() {
   const opt = {
     margin:       10,
     filename:     `Rekap_Pemesanan_LPG_${getTodayString()}.pdf`,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true },
+    image:        { type: 'jpeg', quality: 1.0 },
+    html2canvas:  { scale: 4, useCORS: true, letterRendering: true },
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
     pagebreak:    { mode: 'css', avoid: 'tr' }
   };
