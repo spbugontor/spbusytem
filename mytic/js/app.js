@@ -2262,41 +2262,34 @@ function renderEmpDashboard() {
   const currentYear = new Date().getFullYear();
   const empApprovedLeaves = getLeaves(emp.emp_id).filter(l => l.status === 'Disetujui' && new Date(l.start_date).getFullYear() === currentYear);
 
-  let totalQuota = 0;
-  let totalTaken = 0;
+  let totalRemaining = 0;
   let leaveQuotaBreakdownHtml = '';
 
   leaveTypes.forEach(t => {
-    if (t.quota > 0) {
-      totalQuota += t.quota;
-      let taken = 0;
-      empApprovedLeaves.filter(l => l.leave_type === t.name).forEach(l => {
-        const d1 = new Date(l.start_date);
-        const d2 = new Date(l.end_date);
-        taken += Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
-      });
-      totalTaken += taken;
-      const remaining = Math.max(0, t.quota - taken);
-      const pct = Math.min(100, Math.round((remaining / t.quota) * 100));
+    const balInfo = getEmpLeaveBalance(emp, t, empApprovedLeaves);
+    if (balInfo.totalQuota > 0) {
+      totalRemaining += balInfo.remaining;
+      const pct = Math.min(100, Math.round((balInfo.remaining / balInfo.totalQuota) * 100));
 
       leaveQuotaBreakdownHtml += `
         <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.85rem;background:var(--surface)">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem">
-            <strong class="text-sm">${esc(t.name)}</strong>
-            <span class="badge ${remaining > 0 ? 'badge-success' : 'badge-danger'}">${remaining} hari tersisa</span>
+            <div style="display:flex;align-items:center;gap:0.4rem">
+              <strong class="text-sm">${esc(t.name)}</strong>
+              ${balInfo.isCustom ? '<span class="badge badge-warning" style="font-size:0.6rem;padding:1px 5px">Disesuaikan</span>' : ''}
+            </div>
+            <span class="badge ${balInfo.remaining > 0 ? 'badge-success' : 'badge-danger'}">${balInfo.remaining} hari tersisa</span>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-muted);margin-bottom:0.4rem">
-            <span>Terpakai: ${taken} hari</span>
-            <span>Total Jatah: ${t.quota} hari</span>
+            <span>Terpakai: ${balInfo.taken} hari</span>
+            <span>Total Jatah: ${balInfo.totalQuota} hari</span>
           </div>
           <div style="width:100%;height:6px;background:var(--border);border-radius:4px;overflow:hidden">
-            <div style="width:${pct}%;height:100%;background:${remaining > 0 ? 'var(--success)' : 'var(--danger)'}"></div>
+            <div style="width:${pct}%;height:100%;background:${balInfo.remaining > 0 ? 'var(--success)' : 'var(--danger)'}"></div>
           </div>
         </div>`;
     }
   });
-
-  const totalRemaining = Math.max(0, totalQuota - totalTaken);
 
   setTimeout(() => initEmpDashboardCharts(), 50);
 
