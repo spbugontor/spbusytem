@@ -520,8 +520,9 @@ function setupEventListeners() {
     }, { passive: true });
   }
 
-  // Export PDF
+  // Export PDF & Excel
   on('btn-export-pdf', 'click', handleExportPDF);
+  on('btn-export-excel', 'click', handleExportExcel);
 
   // Theme Toggles
   on('btn-theme-toggle-user', 'click', toggleTheme);
@@ -951,11 +952,53 @@ function handleExportPDF() {
 
   // Generate and download PDF
   html2pdf().set(opt).from(element).save().then(() => {
-    toast('Unduhan PDF berhasil!', 'success');
+    toast('PDF berhasil diunduh', 'success');
   }).catch(err => {
     console.error(err);
-    toast('Gagal mengunduh PDF', 'error');
+    toast('Gagal mengekspor PDF', 'error');
   });
+}
+
+function handleExportExcel() {
+  const todayOrders = getTodayOrders();
+  if (todayOrders.length === 0) {
+    toast('Tidak ada data untuk diunduh', 'error');
+    return;
+  }
+
+  // Header CSV
+  let csvContent = "No;Nama Pemesan;L/P;Tempat, Tgl Lahir;Nomor KK;NIK KTP;Status\r\n";
+
+  todayOrders.forEach((o, idx) => {
+    const status = o.sudah_bayar ? "Lunas" : "Belum Bayar";
+    
+    const parsed = parseNIK(o.nik || '');
+    const jk = parsed.isValid ? (parsed.gender === 'Pria' ? 'L' : 'P') : '-';
+    const tglLahir = parsed.isValid ? `${String(parsed.day).padStart(2,'0')}/${String(parsed.month).padStart(2,'0')}/${parsed.year}` : '-';
+    const ttl = o.tempat_lahir ? `${o.tempat_lahir}, ${tglLahir}` : tglLahir;
+    
+    // Wrap NIK & KK in ="..." so Excel interprets them as text rather than huge numbers
+    const csvRow = [
+      idx + 1,
+      `"${String(o.nama || '').replace(/"/g, '""')}"`,
+      jk,
+      `"${String(ttl).replace(/"/g, '""')}"`,
+      `="${o.kk || ''}"`,
+      `="${o.nik || ''}"`,
+      status
+    ].join(';');
+    
+    csvContent += csvRow + "\r\n";
+  });
+
+  const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `Rekap_Pemesanan_LPG_${getTodayString()}.csv`;
+  link.style.display = "none";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 // ─────────────────────────────────────────────
