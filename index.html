@@ -201,11 +201,11 @@
             <button class="nav-item" data-section="laporan">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-                <polyline points="10 9 9 9 8 9"/>
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
               </svg>
               <span>Laporan</span>
             </button>
@@ -255,13 +255,25 @@
                   <path d="M12 17h.01" />
                 </svg>
               </button>
-              <button id="btn-home" class="btn-icon" aria-label="Ke Halaman Depan" title="Ke Halaman Depan" style="color: var(--primary); border-color: var(--primary-bg);">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <button id="btn-home" class="btn-icon" aria-label="Ke Halaman Depan" title="Ke Halaman Depan"
+                style="color: var(--primary); border-color: var(--primary-bg);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
               </button>
-              <button id="btn-export-pdf" class="btn-icon" aria-label="Unduh PDF" title="Unduh PDF" style="color: var(--error); border-color: var(--error-bg);">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+              <button id="btn-export-pdf" class="btn-icon" aria-label="Unduh PDF" title="Unduh PDF"
+                style="color: var(--error); border-color: var(--error-bg);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" x2="12" y1="15" y2="3" />
+                </svg>
               </button>
-              <button id="btn-logout" class="btn-icon" aria-label="Keluar" title="Keluar" style="color: var(--error); border-color: var(--error-bg);">
+              <button id="btn-logout" class="btn-icon" aria-label="Keluar" title="Keluar"
+                style="color: var(--error); border-color: var(--error-bg);">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -319,7 +331,7 @@
               </svg>
               <input id="admin-search" class="search-input" type="text" placeholder="Cari nama pemesan...">
             </div>
-            
+
             <div class="kelola-grid">
               <div class="kelola-column">
                 <h4>Menunggu Pembayaran</h4>
@@ -341,7 +353,8 @@
             <div class="settings-card">
               <div class="settings-title">Riwayat Penjualan Harian</div>
               <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
-                Daftar ini menunjukkan rekapitulasi jumlah tabung yang berhasil terjual (lunas) setiap harinya berdasarkan riwayat pesanan.
+                Daftar ini menunjukkan rekapitulasi jumlah tabung yang berhasil terjual (lunas) setiap harinya
+                berdasarkan riwayat pesanan.
               </div>
               <div id="laporan-list" style="margin-top: 0; display: flex; flex-direction: column; gap: 8px;">
                 <!-- Diisi oleh JS -->
@@ -487,7 +500,8 @@
         <!-- Diisi oleh JS -->
       </div>
       <div class="modal-footer">
-        <button class="btn btn-primary" onclick="document.getElementById('modal-laporan-detail').classList.remove('show')">Tutup</button>
+        <button class="btn btn-primary"
+          onclick="document.getElementById('modal-laporan-detail').classList.remove('show')">Tutup</button>
       </div>
     </div>
   </div>
@@ -515,7 +529,8 @@
             <li>Pemesan wajib berusia minimal <strong>17 tahun</strong> (memiliki KTP).</li>
             <li>Satu NIK hanya bisa memesan 1x dalam sehari (1 pesanan = 1 tabung).</li>
             <li>Satu KK dibatasi kuotanya sesuai pengaturan agen (umumnya maks 2 tabung).</li>
-            <li>Wajib membawa bukti fisik KK (foto di HP atau fotokopi) dan uang tunai saat pengambilan di pangkalan.</li>
+            <li>Wajib membawa bukti fisik KK (foto di HP atau fotokopi) dan uang tunai saat pengambilan di pangkalan.
+            </li>
           </ul>
         </div>
       </div>
@@ -544,22 +559,26 @@
           <div class="help-section-title">Kelola Pesanan</div>
           <ul class="help-list">
             <li>Daftar terbagi dua: <strong>Menunggu Pembayaran</strong> dan <strong>Sudah Lunas</strong>.</li>
-            <li>Klik "Tandai Bayar", maka data otomatis melompat ke urutan atas di kolom <strong>Sudah Lunas</strong>.</li>
+            <li>Klik "Tandai Bayar", maka data otomatis melompat ke urutan atas di kolom <strong>Sudah Lunas</strong>.
+            </li>
             <li>Tombol "Hapus" akan menyembunyikan pesanan dan memindahkannya ke menu <strong>Sampah</strong>.</li>
           </ul>
         </div>
         <div class="help-section">
           <div class="help-section-title">Laporan & Sampah</div>
           <ul class="help-list">
-            <li><strong>Laporan:</strong> Klik pada baris tanggal untuk melihat daftar rincian pemesan yang telah lunas.</li>
-            <li><strong>Sampah:</strong> Anda dapat memulihkan (Restore) data yang tidak sengaja terhapus, atau menghapusnya secara permanen.</li>
+            <li><strong>Laporan:</strong> Klik pada baris tanggal untuk melihat daftar rincian pemesan yang telah lunas.
+            </li>
+            <li><strong>Sampah:</strong> Anda dapat memulihkan (Restore) data yang tidak sengaja terhapus, atau
+              menghapusnya secara permanen.</li>
           </ul>
         </div>
         <div class="help-section">
           <div class="help-section-title">Pengaturan</div>
           <ul class="help-list">
             <li>Atur jadwal pendaftaran, kuota, harga, dan batasan KK harian.</li>
-            <li><strong>Reset Semua Data:</strong> Akan menghapus bersih <em>seluruh</em> pesanan (termasuk yang di keranjang sampah) tanpa sisa.</li>
+            <li><strong>Reset Semua Data:</strong> Akan menghapus bersih <em>seluruh</em> pesanan (termasuk yang di
+              keranjang sampah) tanpa sisa.</li>
           </ul>
         </div>
       </div>
@@ -668,8 +687,10 @@
             <span id="verify-nik" class="modal-data-value">-</span>
           </div>
         </div>
-        <div class="mt-3 p-3" style="background: var(--bg); border: 1px dashed var(--primary); border-radius: var(--radius-sm); font-size: 13px;">
-          <div style="font-weight: 700; margin-bottom: 6px; color: var(--primary);">📋 Checklist Verifikasi Fisik Dokumen:</div>
+        <div class="mt-3 p-3"
+          style="background: var(--bg); border: 1px dashed var(--primary); border-radius: var(--radius-sm); font-size: 13px;">
+          <div style="font-weight: 700; margin-bottom: 6px; color: var(--primary);">📋 Checklist Verifikasi Fisik
+            Dokumen:</div>
           <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; cursor: pointer;">
             <input type="checkbox" id="chk-verify-kk" checked style="accent-color: var(--primary);">
             <span>Bukti fisik KK/KTP telah diperiksa & cocok dengan NIK/KK</span>
@@ -716,7 +737,8 @@
       </div>
       <div class="modal-body">
         <div class="modal-alert modal-alert-error">
-          Anda yakin ingin menghapus pesanan atas nama <strong id="permanent-delete-confirm-name">-</strong> secara permanen dari server?
+          Anda yakin ingin menghapus pesanan atas nama <strong id="permanent-delete-confirm-name">-</strong> secara
+          permanen dari server?
           Tindakan ini <strong>tidak dapat dibatalkan</strong> sama sekali.
         </div>
       </div>

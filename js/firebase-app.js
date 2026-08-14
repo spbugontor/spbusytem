@@ -829,10 +829,17 @@ function handleExportPDF() {
   let tableRows = todayOrders.map((o, idx) => {
     const status = o.sudah_bayar ? "Lunas" : "Belum Bayar";
     const statusStyle = o.sudah_bayar ? "background-color: #DEF7EC; color: #03543F; border: 1px solid #86EFAC;" : "background-color: #FDE8E8; color: #9B1C1C; border: 1px solid #FCA5A5;";
+    
+    const parsed = parseNIK(o.nik || '');
+    const jk = parsed.isValid ? (parsed.gender === 'Pria' ? 'L' : 'P') : '-';
+    const tglLahir = parsed.isValid ? `${String(parsed.day).padStart(2,'0')}/${String(parsed.month).padStart(2,'0')}/${parsed.year}` : '-';
+    
     return `
       <tr>
         <td style="text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${idx + 1}</td>
         <td style="border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${esc(o.nama)}</td>
+        <td style="text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${jk}</td>
+        <td style="text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${tglLahir}</td>
         <td style="text-align: center; font-family: monospace; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${esc(o.kk)}</td>
         <td style="text-align: center; font-family: monospace; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${esc(o.nik)}</td>
         <td style="text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">
@@ -854,12 +861,14 @@ function handleExportPDF() {
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
         <thead>
           <tr>
-            <th style="width: 40px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">No</th>
+            <th style="width: 30px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 5px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">No</th>
             <th style="border: 1px solid #D1D5DB; padding: 8px 10px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">Nama Pemesan</th>
-            <th style="width: 130px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">Nomor KK</th>
-            <th style="width: 130px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">NIK KTP</th>
-            <th style="width: 100px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">Status Bayar</th>
-            <th style="width: 60px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">Ceklis</th>
+            <th style="width: 35px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 5px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">L/P</th>
+            <th style="width: 75px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 5px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">Tgl Lahir</th>
+            <th style="width: 110px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 5px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">Nomor KK</th>
+            <th style="width: 110px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 5px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">NIK KTP</th>
+            <th style="width: 80px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 5px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">Status</th>
+            <th style="width: 45px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 5px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">Ceklis</th>
           </tr>
         </thead>
         <tbody>
