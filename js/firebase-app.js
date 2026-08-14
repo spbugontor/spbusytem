@@ -966,35 +966,51 @@ function handleExportExcel() {
     return;
   }
 
-  // Header CSV
-  let csvContent = "No;Nama Pemesan;L/P;Tempat, Tgl Lahir;Nomor KK;NIK KTP;Status\r\n";
+  let tableHTML = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head><meta charset="utf-8"></head>
+    <body>
+      <table border="1">
+        <thead>
+          <tr>
+            <th style="background-color: #0D9488; color: white;">No</th>
+            <th style="background-color: #0D9488; color: white;">Nama Pemesan</th>
+            <th style="background-color: #0D9488; color: white;">L/P</th>
+            <th style="background-color: #0D9488; color: white;">Tempat, Tgl Lahir</th>
+            <th style="background-color: #0D9488; color: white;">Nomor KK</th>
+            <th style="background-color: #0D9488; color: white;">NIK KTP</th>
+            <th style="background-color: #0D9488; color: white;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
 
   todayOrders.forEach((o, idx) => {
     const status = o.sudah_bayar ? "Lunas" : "Belum Bayar";
-    
     const parsed = parseNIK(o.nik || '');
     const jk = parsed.isValid ? (parsed.gender === 'Pria' ? 'L' : 'P') : '-';
     const tglLahir = parsed.isValid ? `${String(parsed.day).padStart(2,'0')}/${String(parsed.month).padStart(2,'0')}/${parsed.year}` : '-';
-    const ttl = o.tempat_lahir ? `${o.tempat_lahir}, ${tglLahir}` : tglLahir;
+    const ttl = o.tempat_lahir ? `${esc(o.tempat_lahir)}, ${tglLahir}` : tglLahir;
     
-    // Wrap NIK & KK in ="..." so Excel interprets them as text rather than huge numbers
-    const csvRow = [
-      idx + 1,
-      `"${String(o.nama || '').replace(/"/g, '""')}"`,
-      jk,
-      `"${String(ttl).replace(/"/g, '""')}"`,
-      `="${o.kk || ''}"`,
-      `="${o.nik || ''}"`,
-      status
-    ].join(';');
-    
-    csvContent += csvRow + "\r\n";
+    tableHTML += `
+          <tr>
+            <td style="text-align: center;">${idx + 1}</td>
+            <td>${esc(o.nama || '')}</td>
+            <td style="text-align: center;">${jk}</td>
+            <td>${ttl}</td>
+            <td style="mso-number-format:'\\@'; text-align: center;">${esc(o.kk || '')}</td>
+            <td style="mso-number-format:'\\@'; text-align: center;">${esc(o.nik || '')}</td>
+            <td style="text-align: center;">${status}</td>
+          </tr>
+    `;
   });
 
-  const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+  tableHTML += `</tbody></table></body></html>`;
+
+  const blob = new Blob([tableHTML], { type: 'application/vnd.ms-excel' });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = `Rekap_Pemesanan_LPG_${getTodayString()}.csv`;
+  link.download = `Rekap_Pemesanan_LPG_${getTodayString()}.xls`;
   link.style.display = "none";
   document.body.appendChild(link);
   link.click();
