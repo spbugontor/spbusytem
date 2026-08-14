@@ -3644,7 +3644,7 @@ window._showEmpDetail = (key) => {
     leaveQuotaHtml = `<div class="mt-4">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
         <p class="form-label mb-0">Sisa Jatah Cuti (${currentYear})</p>
-        ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-secondary" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="window._showEditLeaveQuotaModal('${emp._key}')">✏️ Edit Jatah Cuti</button>` : ''}
+        ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-secondary" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="window._showEditLeaveBalanceModal('${emp._key}')">✏️ Edit Sisa Cuti</button>` : ''}
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">`;
     let hasQuota = false;
@@ -3665,7 +3665,7 @@ window._showEmpDetail = (key) => {
         leaveQuotaHtml += `<div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.5rem">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <p class="text-xs text-muted mb-1">${esc(t.name)}</p>
-            ${isCustom ? '<span class="badge badge-warning" style="font-size:0.6rem;padding:1px 4px">Kustom</span>' : ''}
+            ${isCustom ? '<span class="badge badge-warning" style="font-size:0.6rem;padding:1px 4px">Disesuaikan</span>' : ''}
           </div>
           <p class="font-bold text-sm" style="color:${remaining <= 0 ? 'var(--danger)' : 'var(--success)'}">${remaining} <span class="text-xs font-normal text-muted">dari ${totalQuota} hari</span></p>
         </div>`;
@@ -3705,6 +3705,110 @@ window._showEmpDetail = (key) => {
       ${leaveQuotaHtml ? `<button class="btn btn-warning" style="margin-right:auto" onclick="window._resetLeaveQuota('${emp.emp_id}','${esc(emp.name)}')">⟲ Perbarui Cuti</button>` : ''}
       <button class="btn btn-secondary" onclick="window._hideModal()">Tutup</button>
     </div>`);
+};
+
+window._showEditLeaveBalanceModal = (key) => {
+  const emp = getUserByKey(key);
+  if (!emp) return;
+
+  const leaveTypes = getLeaveTypes().filter(t => !t.gender || t.gender === 'Semua' || t.gender === emp.gender);
+  const currentYear = new Date().getFullYear();
+  const empLeaves = getLeaves(emp.emp_id).filter(l => l.status !== 'Ditolak' && new Date(l.start_date).getFullYear() === currentYear);
+
+  let formHtml = '';
+  leaveTypes.forEach(t => {
+    const defaultQuota = Number(t.quota || 0);
+    const totalQuota = (emp.custom_quota && emp.custom_quota[t.name] !== undefined) ? Number(emp.custom_quota[t.name]) : defaultQuota;
+    
+    let taken = 0;
+    empLeaves.filter(l => l.leave_type === t.name).forEach(l => {
+      const d1 = new Date(l.start_date);
+      const d2 = new Date(l.end_date);
+      taken += Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+    });
+
+    const currentRemaining = totalQuota - taken;
+    const isCustom = emp.custom_quota && emp.custom_quota[t.name] !== undefined;
+
+    formHtml += `
+      <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem;background:var(--bg-color)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+          <strong style="font-size:0.85rem">${esc(t.name)}</strong>
+          ${isCustom ? '<span class="badge badge-warning" style="font-size:0.65rem;padding:2px 6px">Disesuaikan</span>' : '<span class="badge badge-info" style="font-size:0.65rem;padding:2px 6px">Standar ('+defaultQuota+' Hari)</span>'}
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-size:0.75rem;margin-bottom:0.5rem;color:var(--text-muted)">
+          <div>Sudah Terpakai: <strong style="color:var(--danger)">${taken} Hari</strong></div>
+          <div>Sisa Cuti Saat Ini: <strong style="color:${currentRemaining <= 0 ? 'var(--danger)' : 'var(--success)'}">${currentRemaining} Hari</strong></div>
+        </div>
+        <div>
+          <label class="form-label" style="font-size:0.75rem;margin-bottom:0.25rem;display:block">Ubah Sisa Cuti Baru (Hari):</label>
+          <input type="number" id="edit-rem-${t.name.replace(/\s+/g, '_')}" data-type-name="${esc(t.name)}" data-taken="${taken}" value="${currentRemaining}" min="0" max="365" class="form-input" style="font-size:0.85rem;padding:0.4rem 0.6rem">
+        </div>
+      </div>
+    `;
+  });
+
+  const modalContent = `
+    <div class="modal-header">
+      <h3 class="modal-title">✏️ Edit Sisa Cuti - ${esc(emp.name)}</h3>
+      <button class="modal-close" onclick="window._hideModal()">✕</button>
+    </div>
+    <div class="modal-body" style="max-height:70vh;overflow-y:auto">
+      <p class="text-xs text-muted mb-3">Masukkan jumlah <strong>Sisa Cuti (Hari)</strong> yang seharusnya dimiliki oleh <strong>${esc(emp.name)}</strong>. Kuota sistem akan disesuaikan otomatis secara tepat.</p>
+      ${formHtml || '<p class="text-xs text-muted">Tidak ada jenis cuti yang tersedia.</p>'}
+    </div>
+    <div class="modal-footer" style="display:flex;justify-content:space-between;align-items:center">
+      <button class="btn btn-secondary" style="font-size:0.75rem" onclick="window._resetEmpLeaveCustom('${emp._key}')">⟲ Reset ke Standar</button>
+      <div style="display:flex;gap:0.5rem">
+        <button class="btn btn-secondary" style="font-size:0.75rem" onclick="window._hideModal()">Batal</button>
+        <button class="btn btn-primary" style="font-size:0.75rem" onclick="window._saveLeaveBalance('${emp._key}')">💾 Simpan Sisa Cuti</button>
+      </div>
+    </div>
+  `;
+
+  showModal(modalContent, 'modal-md');
+};
+
+window._saveLeaveBalance = async (key) => {
+  const emp = getUserByKey(key);
+  if (!emp) return;
+
+  const leaveTypes = getLeaveTypes().filter(t => !t.gender || t.gender === 'Semua' || t.gender === emp.gender);
+  const newCustomQuota = { ...(emp.custom_quota || {}) };
+
+  leaveTypes.forEach(t => {
+    const inputId = `edit-rem-${t.name.replace(/\s+/g, '_')}`;
+    const inputEl = document.getElementById(inputId);
+    if (inputEl) {
+      const desiredRemaining = Math.max(0, parseInt(inputEl.value) || 0);
+      const taken = parseInt(inputEl.getAttribute('data-taken')) || 0;
+      newCustomQuota[t.name] = taken + desiredRemaining;
+    }
+  });
+
+  try {
+    await update(ref(db, `users/${key}`), { custom_quota: newCustomQuota });
+    showToast(`Sisa cuti ${emp.name} berhasil diperbarui!`, 'success');
+    hideModal();
+    window._showEmpDetail(key);
+  } catch (err) {
+    showToast('Gagal menyimpan sisa cuti: ' + err.message, 'error');
+  }
+};
+
+window._resetEmpLeaveCustom = async (key) => {
+  const emp = getUserByKey(key);
+  if (!emp) return;
+  if (!confirm(`Kembalikan sisa cuti ${emp.name} ke perhitungan standar sistem?`)) return;
+
+  try {
+    await update(ref(db, `users/${key}`), { custom_quota: null });
+    showToast(`Cuti ${emp.name} kembali ke perhitungan standar!`, 'success');
+    hideModal();
+    window._showEmpDetail(key);
+  } catch (err) {
+    showToast('Gagal me-reset cuti: ' + err.message, 'error');
+  }
 };
 
 window._deleteEmp = async (key) => {
