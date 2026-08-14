@@ -2559,18 +2559,10 @@ function renderEmpLeaves() {
   if (leaveTypes.length > 0) {
     quotaSummaryCardsHtml = `<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:0.75rem;margin-bottom:1.25rem">`;
     leaveTypes.forEach(t => {
-      let taken = 0;
-      empLeaves.filter(l => l.leave_type === t.name).forEach(l => {
-        const d1 = new Date(l.start_date);
-        const d2 = new Date(l.end_date);
-        taken += Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
-      });
-      const totalQuota = (emp.custom_quota && emp.custom_quota[t.name] !== undefined) ? Number(emp.custom_quota[t.name]) : Number(t.quota || 0);
-      const remaining = totalQuota - taken;
-
+      const balInfo = getEmpLeaveBalance(emp, t, empLeaves);
       quotaSummaryCardsHtml += `<div class="card" style="padding:0.75rem;text-align:center">
         <p class="text-xs text-muted mb-1">${esc(t.name)}</p>
-        <p class="font-bold text-lg" style="color:${remaining <= 0 ? 'var(--danger)' : 'var(--success)'}">${remaining} <span class="text-xs font-normal text-muted">/ ${totalQuota} hari</span></p>
+        <p class="font-bold text-lg" style="color:${balInfo.remaining <= 0 ? 'var(--danger)' : 'var(--success)'}">${balInfo.remaining} <span class="text-xs font-normal text-muted">/ ${balInfo.totalQuota} hari</span></p>
       </div>`;
     });
     quotaSummaryCardsHtml += `</div>`;
@@ -3639,6 +3631,64 @@ window._showEmpDetail = (key) => {
   const currentYear = new Date().getFullYear();
   const empLeaves = getLeaves(emp.emp_id).filter(l => l.status !== 'Ditolak' && new Date(l.start_date).getFullYear() === currentYear);
 
+function getEmpLeaveBalance(emp, t, empLeaves) {
+  const defaultQuota = Number(t.quota || 0);
+  const totalQuota = (emp.custom_quota && emp.custom_quota[t.name] !== undefined)
+    ? Number(emp.custom_quota[t.name])
+    : defaultQuota;
+
+  let taken = 0;
+  if (empLeaves) {
+    empLeaves.filter(l => l.leave_type === t.name).forEach(l => {
+      const d1 = new Date(l.start_date);
+      const d2 = new Date(l.end_date);
+      taken += Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+    });
+  }
+
+  let remaining = totalQuota - taken;
+  let isCustom = false;
+
+  if (emp.custom_remaining && emp.custom_remaining[t.name] !== undefined) {
+    isCustom = true;
+    const cData = emp.custom_remaining[t.name];
+    if (typeof cData === 'object' && cData !== null && cData.remaining !== undefined) {
+      const setRem = Number(cData.remaining || 0);
+      const takenAtSet = Number(cData.taken_at_set || 0);
+      const takenDelta = Math.max(0, taken - takenAtSet);
+      remaining = Math.max(0, setRem - takenDelta);
+    } else {
+      remaining = Math.max(0, Number(cData || 0));
+    }
+  } else if (emp.custom_quota && emp.custom_quota[t.name] !== undefined) {
+    isCustom = true;
+  }
+
+  return {
+    defaultQuota,
+    totalQuota,
+    taken,
+    remaining,
+    isCustom
+  };
+}
+
+window._showEmpDetail = (key) => {
+  const emp = getUserByKey(key); if (!emp) return;
+  const bal = calcBalance(emp.emp_id);
+  const pinHist = getPinHistory(emp.emp_id);
+  const pinHistHtml = pinHist.length === 0 ? '<p class="text-xs text-muted">Belum ada riwayat perubahan PIN.</p>' :
+    `<div style="max-height:150px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-md);padding:0.5rem">
+       ${pinHist.map(h => `<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:0.25rem 0;font-size:0.75rem">
+         <span>${new Date(h.timestamp).toLocaleString('id-ID')}</span>
+         <span><span style="text-decoration:line-through;color:var(--danger)">${esc(h.old_pin)}</span> ➔ <strong style="color:var(--success)">${esc(h.new_pin)}</strong></span>
+       </div>`).join('')}
+     </div>`;
+
+  const leaveTypes = getLeaveTypes().filter(t => !t.gender || t.gender === 'Semua' || t.gender === emp.gender);
+  const currentYear = new Date().getFullYear();
+  const empLeaves = getLeaves(emp.emp_id).filter(l => l.status !== 'Ditolak' && new Date(l.start_date).getFullYear() === currentYear);
+
   let leaveQuotaHtml = '';
   if (leaveTypes.length > 0) {
     leaveQuotaHtml = `<div class="mt-4">
@@ -3649,25 +3699,15 @@ window._showEmpDetail = (key) => {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">`;
     let hasQuota = false;
     leaveTypes.forEach(t => {
-      const defaultQuota = Number(t.quota || 0);
-      const totalQuota = (emp.custom_quota && emp.custom_quota[t.name] !== undefined) ? Number(emp.custom_quota[t.name]) : defaultQuota;
-      if (totalQuota > 0) {
+      const balInfo = getEmpLeaveBalance(emp, t, empLeaves);
+      if (balInfo.totalQuota > 0) {
         hasQuota = true;
-        let taken = 0;
-        empLeaves.filter(l => l.leave_type === t.name).forEach(l => {
-          const d1 = new Date(l.start_date);
-          const d2 = new Date(l.end_date);
-          taken += Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
-        });
-        const remaining = totalQuota - taken;
-        const isCustom = emp.custom_quota && emp.custom_quota[t.name] !== undefined;
-
         leaveQuotaHtml += `<div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.5rem">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <p class="text-xs text-muted mb-1">${esc(t.name)}</p>
-            ${isCustom ? '<span class="badge badge-warning" style="font-size:0.6rem;padding:1px 4px">Disesuaikan</span>' : ''}
+            ${balInfo.isCustom ? '<span class="badge badge-warning" style="font-size:0.6rem;padding:1px 4px">Disesuaikan</span>' : ''}
           </div>
-          <p class="font-bold text-sm" style="color:${remaining <= 0 ? 'var(--danger)' : 'var(--success)'}">${remaining} <span class="text-xs font-normal text-muted">dari ${totalQuota} hari</span></p>
+          <p class="font-bold text-sm" style="color:${balInfo.remaining <= 0 ? 'var(--danger)' : 'var(--success)'}">${balInfo.remaining} <span class="text-xs font-normal text-muted">dari ${balInfo.totalQuota} hari</span></p>
         </div>`;
       }
     });
@@ -3717,32 +3757,22 @@ window._showEditLeaveBalanceModal = (key) => {
 
   let formHtml = '';
   leaveTypes.forEach(t => {
-    const defaultQuota = Number(t.quota || 0);
-    const totalQuota = (emp.custom_quota && emp.custom_quota[t.name] !== undefined) ? Number(emp.custom_quota[t.name]) : defaultQuota;
-    
-    let taken = 0;
-    empLeaves.filter(l => l.leave_type === t.name).forEach(l => {
-      const d1 = new Date(l.start_date);
-      const d2 = new Date(l.end_date);
-      taken += Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
-    });
-
-    const currentRemaining = totalQuota - taken;
-    const isCustom = emp.custom_quota && emp.custom_quota[t.name] !== undefined;
+    const balInfo = getEmpLeaveBalance(emp, t, empLeaves);
 
     formHtml += `
       <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:0.75rem;margin-bottom:0.75rem;background:var(--bg-color)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
           <strong style="font-size:0.85rem">${esc(t.name)}</strong>
-          ${isCustom ? '<span class="badge badge-warning" style="font-size:0.65rem;padding:2px 6px">Disesuaikan</span>' : '<span class="badge badge-info" style="font-size:0.65rem;padding:2px 6px">Standar ('+defaultQuota+' Hari)</span>'}
+          ${balInfo.isCustom ? '<span class="badge badge-warning" style="font-size:0.65rem;padding:2px 6px">Disesuaikan</span>' : '<span class="badge badge-info" style="font-size:0.65rem;padding:2px 6px">Standar ('+balInfo.totalQuota+' Hari)</span>'}
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-size:0.75rem;margin-bottom:0.5rem;color:var(--text-muted)">
-          <div>Sudah Terpakai: <strong style="color:var(--danger)">${taken} Hari</strong></div>
-          <div>Sisa Cuti Saat Ini: <strong style="color:${currentRemaining <= 0 ? 'var(--danger)' : 'var(--success)'}">${currentRemaining} Hari</strong></div>
+          <div>Sudah Terpakai: <strong style="color:var(--danger)">${balInfo.taken} Hari</strong></div>
+          <div>Sisa Cuti Saat Ini: <strong style="color:${balInfo.remaining <= 0 ? 'var(--danger)' : 'var(--success)'}">${balInfo.remaining} dari ${balInfo.totalQuota} Hari</strong></div>
         </div>
         <div>
           <label class="form-label" style="font-size:0.75rem;margin-bottom:0.25rem;display:block">Ubah Sisa Cuti Baru (Hari):</label>
-          <input type="number" id="edit-rem-${t.name.replace(/\s+/g, '_')}" data-type-name="${esc(t.name)}" data-taken="${taken}" value="${currentRemaining}" min="0" max="365" class="form-input" style="font-size:0.85rem;padding:0.4rem 0.6rem">
+          <input type="number" id="edit-rem-${t.name.replace(/\s+/g, '_')}" data-type-name="${esc(t.name)}" data-taken="${balInfo.taken}" value="${balInfo.remaining}" min="0" max="365" class="form-input" style="font-size:0.85rem;padding:0.4rem 0.6rem">
+          <span class="text-xs text-muted" style="font-size:0.7rem;display:block;margin-top:0.25rem">Akan ditampilkan sebagai <strong>X dari ${balInfo.totalQuota} hari</strong></span>
         </div>
       </div>
     `;
@@ -3754,7 +3784,7 @@ window._showEditLeaveBalanceModal = (key) => {
       <button class="modal-close" onclick="window._hideModal()">✕</button>
     </div>
     <div class="modal-body" style="max-height:70vh;overflow-y:auto">
-      <p class="text-xs text-muted mb-3">Masukkan jumlah <strong>Sisa Cuti (Hari)</strong> yang seharusnya dimiliki oleh <strong>${esc(emp.name)}</strong>. Kuota sistem akan disesuaikan otomatis secara tepat.</p>
+      <p class="text-xs text-muted mb-3">Masukkan jumlah <strong>Sisa Cuti (Hari)</strong> yang seharusnya dimiliki oleh <strong>${esc(emp.name)}</strong>. Total kuota (${leaveTypes[0]?.quota || 3} hari) akan tetap utuh.</p>
       ${formHtml || '<p class="text-xs text-muted">Tidak ada jenis cuti yang tersedia.</p>'}
     </div>
     <div class="modal-footer" style="display:flex;justify-content:space-between;align-items:center">
@@ -3774,7 +3804,7 @@ window._saveLeaveBalance = async (key) => {
   if (!emp) return;
 
   const leaveTypes = getLeaveTypes().filter(t => !t.gender || t.gender === 'Semua' || t.gender === emp.gender);
-  const newCustomQuota = { ...(emp.custom_quota || {}) };
+  const newCustomRemaining = { ...(emp.custom_remaining || {}) };
 
   leaveTypes.forEach(t => {
     const inputId = `edit-rem-${t.name.replace(/\s+/g, '_')}`;
@@ -3782,12 +3812,15 @@ window._saveLeaveBalance = async (key) => {
     if (inputEl) {
       const desiredRemaining = Math.max(0, parseInt(inputEl.value) || 0);
       const taken = parseInt(inputEl.getAttribute('data-taken')) || 0;
-      newCustomQuota[t.name] = taken + desiredRemaining;
+      newCustomRemaining[t.name] = {
+        remaining: desiredRemaining,
+        taken_at_set: taken
+      };
     }
   });
 
   try {
-    await update(ref(db, `users/${key}`), { custom_quota: newCustomQuota });
+    await update(ref(db, `users/${key}`), { custom_remaining: newCustomRemaining });
     showToast(`Sisa cuti ${emp.name} berhasil diperbarui!`, 'success');
     hideModal();
     window._showEmpDetail(key);
@@ -3802,7 +3835,7 @@ window._resetEmpLeaveCustom = async (key) => {
   if (!confirm(`Kembalikan sisa cuti ${emp.name} ke perhitungan standar sistem?`)) return;
 
   try {
-    await update(ref(db, `users/${key}`), { custom_quota: null });
+    await update(ref(db, `users/${key}`), { custom_remaining: null, custom_quota: null });
     showToast(`Cuti ${emp.name} kembali ke perhitungan standar!`, 'success');
     hideModal();
     window._showEmpDetail(key);
