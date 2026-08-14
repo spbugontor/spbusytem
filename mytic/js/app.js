@@ -3629,22 +3629,6 @@ window._showUserGuideModal = () => {
   window._showSectionGuideModal(currentSection || 'dashboard');
 };
 
-window._showEmpDetail = (key) => {
-  const emp = getUserByKey(key); if (!emp) return;
-  const bal = calcBalance(emp.emp_id);
-  const pinHist = getPinHistory(emp.emp_id);
-  const pinHistHtml = pinHist.length === 0 ? '<p class="text-xs text-muted">Belum ada riwayat perubahan PIN.</p>' :
-    `<div style="max-height:150px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-md);padding:0.5rem">
-       ${pinHist.map(h => `<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:0.25rem 0;font-size:0.75rem">
-         <span>${new Date(h.timestamp).toLocaleString('id-ID')}</span>
-         <span><span style="text-decoration:line-through;color:var(--danger)">${esc(h.old_pin)}</span> ➔ <strong style="color:var(--success)">${esc(h.new_pin)}</strong></span>
-       </div>`).join('')}
-     </div>`;
-
-  const leaveTypes = getLeaveTypes().filter(t => !t.gender || t.gender === 'Semua' || t.gender === emp.gender);
-  const currentYear = new Date().getFullYear();
-  const empLeaves = getLeaves(emp.emp_id).filter(l => l.status !== 'Ditolak' && new Date(l.start_date).getFullYear() === currentYear);
-
 function getEmpLeaveBalance(emp, t, empLeaves) {
   const defaultQuota = Number(t.quota || 0);
   const totalQuota = (emp.custom_quota && emp.custom_quota[t.name] !== undefined)
