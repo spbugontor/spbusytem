@@ -2556,17 +2556,30 @@ function renderEmpLeaves() {
   const empLeaves = leaves.filter(l => l.status !== 'Ditolak' && new Date(l.start_date).getFullYear() === currentYear);
 
   let quotaSummaryCardsHtml = '';
+  let hasAnyCustom = false;
   if (leaveTypes.length > 0) {
     quotaSummaryCardsHtml = `<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:0.75rem;margin-bottom:1.25rem">`;
     leaveTypes.forEach(t => {
       const balInfo = getEmpLeaveBalance(emp, t, empLeaves);
+      if (balInfo.isCustom) hasAnyCustom = true;
       quotaSummaryCardsHtml += `<div class="card" style="padding:0.75rem;text-align:center">
         <p class="text-xs text-muted mb-1">${esc(t.name)}</p>
         <p class="font-bold text-lg" style="color:${balInfo.remaining <= 0 ? 'var(--danger)' : 'var(--success)'}">${balInfo.remaining} <span class="text-xs font-normal text-muted">/ ${balInfo.totalQuota} hari</span></p>
+        ${balInfo.isCustom ? '<span class="badge badge-warning" style="font-size:0.6rem;padding:2px 6px;margin-top:2px;display:inline-block">Disesuaikan</span>' : ''}
       </div>`;
     });
     quotaSummaryCardsHtml += `</div>`;
   }
+
+  const customNoticeHtml = hasAnyCustom ? `
+    <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-left:4px solid #f59e0b;padding:0.75rem 1rem;border-radius:var(--radius-md);margin-bottom:1.25rem;font-size:0.825rem;display:flex;align-items:center;gap:0.75rem;">
+      <div style="background:#f59e0b;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0;font-size:0.8rem">ℹ️</div>
+      <div>
+        <strong style="color:#b45309;display:block;margin-bottom:0.1rem">Informasi Penyesuaian Cuti:</strong>
+        <span style="color:var(--text-main)">Telah dilakukan penyesuaian sisa cuti oleh Manajemen untuk akun Anda.</span>
+      </div>
+    </div>
+  ` : '';
 
   return `<div class="fade-in">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
@@ -2576,7 +2589,9 @@ function renderEmpLeaves() {
       </div>
       <button class="btn btn-primary" onclick="window._showEmpLeaveForm()">+ Ajukan</button>
     </div>
-    ${quotaSummaryCardsHtml}
+    ${customNoticeHtml}
+    ${quotaSummaryCardsHtml}`
+,StartLine:2558,TargetContent:
     <div id="emp-leave-form-area"></div>
     ${leaves.length === 0 ? '<div class="card"><p class="text-muted">Belum ada pengajuan.</p></div>' :
       leaves.map(l => {
