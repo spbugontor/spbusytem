@@ -2590,8 +2590,7 @@ function renderEmpLeaves() {
       <button class="btn btn-primary" onclick="window._showEmpLeaveForm()">+ Ajukan</button>
     </div>
     ${customNoticeHtml}
-    ${quotaSummaryCardsHtml}`
-,StartLine:2558,TargetContent:
+    ${quotaSummaryCardsHtml}
     <div id="emp-leave-form-area"></div>
     ${leaves.length === 0 ? '<div class="card"><p class="text-muted">Belum ada pengajuan.</p></div>' :
       leaves.map(l => {
