@@ -4149,11 +4149,17 @@ window._showEmpLeaveForm = () => {
   const emp = getUserByUsername(currentUser.username); if (!emp) return;
   const area = $('emp-leave-form-area'); if (!area) return;
   const types = getLeaveTypes().filter(t => !t.gender || t.gender === 'Semua' || t.gender === emp.gender);
+  const currentYear = new Date().getFullYear();
+  const empLeaves = getLeaves(emp.emp_id).filter(l => l.status !== 'Ditolak' && new Date(l.start_date).getFullYear() === currentYear);
+
   area.innerHTML = `<div class="card mb-4 fade-in" style="border:2px solid var(--primary)">
     <h3 class="card-title mb-4">Ajukan Izin/Cuti</h3>
     <div class="form-group"><label class="form-label">Jenis</label><select id="lf-type" class="form-input form-select">
       <option value="Izin">Izin (Umum)</option>
-      ${types.map(t => `<option value="${esc(t.name)}">${esc(t.name)} (${t.quota} hari)</option>`).join('')}
+      ${types.map(t => {
+        const balInfo = getEmpLeaveBalance(emp, t, empLeaves);
+        return `<option value="${esc(t.name)}">${esc(t.name)} (Sisa: ${balInfo.remaining} dari ${balInfo.totalQuota} hari)</option>`;
+      }).join('')}
     </select></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
       <div class="form-group"><label class="form-label">Mulai</label><input id="lf-start" type="date" class="form-input" value="${today()}"></div>
@@ -4185,15 +4191,11 @@ window._saveEmpLeave = async () => {
     const typeObj = types.find(t => t.name === leaveType);
     if (typeObj && typeObj.quota > 0) {
       const currentYear = new Date().getFullYear();
-      const userLeaves = getLeaves(emp.emp_id).filter(l => l.leave_type === leaveType && l.status !== 'Ditolak' && new Date(l.start_date).getFullYear() === currentYear);
-      let takenDays = 0;
-      userLeaves.forEach(l => {
-        const ld1 = new Date(l.start_date);
-        const ld2 = new Date(l.end_date);
-        takenDays += Math.round((ld2 - ld1) / (1000 * 60 * 60 * 24)) + 1;
-      });
-      if (takenDays + requestedDays > typeObj.quota) {
-        showToast(`Jatah ${leaveType} tidak cukup! (Sisa: ${typeObj.quota - takenDays} hari)`, 'error');
+      const userLeaves = getLeaves(emp.emp_id).filter(l => l.status !== 'Ditolak' && new Date(l.start_date).getFullYear() === currentYear);
+      const balInfo = getEmpLeaveBalance(emp, typeObj, userLeaves);
+
+      if (requestedDays > balInfo.remaining) {
+        showToast(`Sisa jatah ${leaveType} tidak mencukupi! (Sisa Anda: ${balInfo.remaining} hari, diminta: ${requestedDays} hari)`, 'error');
         return;
       }
     }
@@ -4210,11 +4212,17 @@ window._editEmpLeaveForm = (key) => {
   const emp = getUserByUsername(currentUser.username); if (!emp) return;
   const area = $('emp-leave-form-area'); if (!area) return;
   const types = getLeaveTypes().filter(t => !t.gender || t.gender === 'Semua' || t.gender === emp.gender);
+  const currentYear = new Date().getFullYear();
+  const empLeaves = getLeaves(emp.emp_id).filter(leave => leave._key !== key && leave.status !== 'Ditolak' && new Date(leave.start_date).getFullYear() === currentYear);
+
   area.innerHTML = `<div class="card mb-4 fade-in" style="border:2px solid var(--warning)">
     <h3 class="card-title mb-4">Edit Pengajuan Izin/Cuti</h3>
     <div class="form-group"><label class="form-label">Jenis</label><select id="lf-type-edit" class="form-input form-select">
       <option value="Izin" ${l.leave_type === 'Izin' ? 'selected' : ''}>Izin (Umum)</option>
-      ${types.map(t => `<option value="${esc(t.name)}" ${l.leave_type === t.name ? 'selected' : ''}>${esc(t.name)} (${t.quota} hari)</option>`).join('')}
+      ${types.map(t => {
+        const balInfo = getEmpLeaveBalance(emp, t, empLeaves);
+        return `<option value="${esc(t.name)}" ${l.leave_type === t.name ? 'selected' : ''}>${esc(t.name)} (Sisa: ${balInfo.remaining} dari ${balInfo.totalQuota} hari)</option>`;
+      }).join('')}
     </select></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
       <div class="form-group"><label class="form-label">Mulai</label><input id="lf-start-edit" type="date" class="form-input" value="${l.start_date}"></div>
@@ -4253,15 +4261,11 @@ window._updateEmpLeave = async (key) => {
     if (typeObj && typeObj.quota > 0) {
       const currentYear = new Date().getFullYear();
       // Exclude the current leave request being edited from the taken count
-      const userLeaves = getLeaves(emp.emp_id).filter(leave => leave._key !== key && leave.leave_type === leaveType && leave.status !== 'Ditolak' && new Date(leave.start_date).getFullYear() === currentYear);
-      let takenDays = 0;
-      userLeaves.forEach(leave => {
-        const ld1 = new Date(leave.start_date);
-        const ld2 = new Date(leave.end_date);
-        takenDays += Math.round((ld2 - ld1) / (1000 * 60 * 60 * 24)) + 1;
-      });
-      if (takenDays + requestedDays > typeObj.quota) {
-        showToast(`Jatah ${leaveType} tidak cukup! (Sisa: ${typeObj.quota - takenDays} hari)`, 'error');
+      const userLeaves = getLeaves(emp.emp_id).filter(leave => leave._key !== key && leave.status !== 'Ditolak' && new Date(leave.start_date).getFullYear() === currentYear);
+      const balInfo = getEmpLeaveBalance(emp, typeObj, userLeaves);
+
+      if (requestedDays > balInfo.remaining) {
+        showToast(`Sisa jatah ${leaveType} tidak mencukupi! (Sisa Anda: ${balInfo.remaining} hari, diminta: ${requestedDays} hari)`, 'error');
         return;
       }
     }
