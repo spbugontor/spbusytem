@@ -894,7 +894,7 @@ function handleExportPDF() {
     const ttl = o.tempat_lahir ? `${esc(o.tempat_lahir)}, ${tglLahir}` : tglLahir;
     
     return `
-      <tr>
+      <tr style="page-break-inside: avoid; break-inside: avoid;">
         <td style="text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${idx + 1}</td>
         <td style="border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${esc(o.nama)}</td>
         <td style="text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${jk}</td>
@@ -945,7 +945,8 @@ function handleExportPDF() {
     filename:     `Rekap_Pemesanan_LPG_${getTodayString()}.pdf`,
     image:        { type: 'jpeg', quality: 0.98 },
     html2canvas:  { scale: 2, useCORS: true },
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak:    { mode: 'css', avoid: 'tr' }
   };
 
   // Generate and download PDF
