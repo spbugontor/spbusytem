@@ -347,8 +347,8 @@ function renderAdminList() {
     '</div>' +
     '<div class="admin-order-actions">' +
     (o.sudah_bayar
-      ? '<button class="btn btn-success-sm" onclick="onMarkPaid(\'' + o.id + '\', \'' + esc(o.nama) + '\', \'' + esc(o.kk) + '\', \'' + esc(o.nik) + '\', true)">✓ Lunas (Ubah)</button>'
-      : '<button class="btn btn-warning-sm" onclick="onMarkPaid(\'' + o.id + '\', \'' + esc(o.nama) + '\', \'' + esc(o.kk) + '\', \'' + esc(o.nik) + '\', false)">Tandai Bayar</button>'
+      ? '<button class="btn btn-success-sm" onclick="onMarkPaid(\'' + o.id + '\')">✓ Lunas (Ubah)</button>'
+      : '<button class="btn btn-warning-sm" onclick="onMarkPaid(\'' + o.id + '\')">Tandai Bayar</button>'
     ) +
     '<button class="btn btn-danger-sm" onclick="onDeleteOrder(\'' + o.id + '\', \'' + esc(o.nama) + '\')">Hapus</button>' +
     '</div></div>';
@@ -548,6 +548,20 @@ function setupEventListeners() {
   // Admin Actions
   on('btn-cancel-paid', 'click', () => { hideModal('modal-verify-payment'); pendingPaymentId = null; });
   on('btn-confirm-paid', 'click', handleConfirmPaid);
+  
+  on('btn-edit-order', 'click', () => {
+    hideModal('modal-verify-payment');
+    const o = orders.find(x => x.id === pendingPaymentId);
+    if (!o) return;
+    document.getElementById('edit-order-id').value = o.id;
+    document.getElementById('edit-nama').value = o.nama;
+    document.getElementById('edit-tempat-lahir').value = o.tempat_lahir || '';
+    document.getElementById('edit-kk').value = o.kk;
+    document.getElementById('edit-nik').value = o.nik;
+    showModal('modal-edit-order');
+  });
+  on('edit-order-form', 'submit', handleEditOrderSubmit);
+
   on('btn-delete-yes', 'click', handleConfirmDelete);
   on('btn-delete-no', 'click', () => { hideModal('modal-delete-confirm'); pendingDeleteId = null; });
   
@@ -677,6 +691,48 @@ async function handleOrderSubmit(e) {
   } finally {
     btn.disabled = false;
     btn.innerHTML = 'Pesan Sekarang';
+  }
+}
+
+async function handleEditOrderSubmit(e) {
+  e.preventDefault();
+  const id = document.getElementById('edit-order-id').value;
+  const nama = document.getElementById('edit-nama').value.trim();
+  const tempatLahir = document.getElementById('edit-tempat-lahir').value.trim();
+  const kk = document.getElementById('edit-kk').value.trim();
+  const nik = document.getElementById('edit-nik').value.trim();
+
+  if (kk.length !== 16 || nik.length !== 16) { toast('KK dan NIK harus 16 digit', 'error'); return; }
+
+  const parsedNIK = parseNIK(nik);
+  if (!parsedNIK.isValid) {
+    toast('NIK tidak valid: ' + parsedNIK.reason, 'error');
+    return;
+  }
+
+  const btn = e.target.querySelector('button[type="submit"]');
+  const origText = btn.innerHTML;
+  btn.innerHTML = '<span class="spinner spinner-white"></span> Menyimpan...';
+  btn.disabled = true;
+
+  try {
+    await update(ref(db, `orders/${id}`), {
+      nama: nama,
+      tempat_lahir: tempatLahir,
+      kk: kk,
+      nik: nik,
+      jenis_kelamin: parsedNIK.gender,
+      tanggal_lahir: parsedNIK.tglFormatted,
+      umur: parsedNIK.age
+    });
+    hideModal('modal-edit-order');
+    toast('Data berhasil diperbarui', 'success');
+  } catch (error) {
+    console.error(error);
+    toast('Gagal memperbarui data', 'error');
+  } finally {
+    btn.innerHTML = origText;
+    btn.disabled = false;
   }
 }
 
@@ -1000,9 +1056,12 @@ function resetInactivityTimer() {
 }
 
 // Global functions for inline onclick in HTML string renders
-window.onMarkPaid = (id, nama, kk, nik, currentState) => {
+window.onMarkPaid = (id) => {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+
   pendingPaymentId = id;
-  pendingPaymentState = !currentState;
+  pendingPaymentState = !o.sudah_bayar;
 
   const title = document.querySelector('#modal-verify-payment .modal-title');
   const alertBox = document.querySelector('#modal-verify-payment .modal-alert');
@@ -1024,9 +1083,15 @@ window.onMarkPaid = (id, nama, kk, nik, currentState) => {
     if (confirmBtn) confirmBtn.textContent = 'Ya, Batalkan Lunas';
   }
 
-  setText('verify-nama', nama);
-  setText('verify-kk', kk);
-  setText('verify-nik', nik);
+  setText('verify-nama', o.nama);
+  setText('verify-kk', o.kk);
+  setText('verify-nik', o.nik);
+
+  const parsed = parseNIK(o.nik || '');
+  const tglLahir = parsed.isValid ? `${String(parsed.day).padStart(2,'0')}/${String(parsed.month).padStart(2,'0')}/${parsed.year}` : '-';
+  const ttl = o.tempat_lahir ? `${esc(o.tempat_lahir)}, ${tglLahir}` : tglLahir;
+  setText('verify-ttl', ttl);
+
   showModal('modal-verify-payment');
 };
 
