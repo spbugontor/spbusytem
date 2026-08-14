@@ -206,7 +206,7 @@ function getQuotaLeft() {
 
 function updateFormLock() {
   const canOrder = isOpen() && getQuotaLeft() > 0;
-  const inputs = ['inp-nama', 'inp-kk', 'inp-nik'];
+  const inputs = ['inp-nama', 'inp-tempat-lahir', 'inp-kk', 'inp-nik'];
 
   inputs.forEach(id => {
     const el = document.getElementById(id);
@@ -619,6 +619,7 @@ async function handleOrderSubmit(e) {
   if (getQuotaLeft() <= 0) { toast('Kuota habis', 'error'); return; }
 
   const nama = document.getElementById('inp-nama').value.trim();
+  const tempatLahir = document.getElementById('inp-tempat-lahir').value.trim();
   const kk = document.getElementById('inp-kk').value.trim();
   const nik = document.getElementById('inp-nik').value.trim();
 
@@ -654,6 +655,7 @@ async function handleOrderSubmit(e) {
     const newOrderRef = push(ref(db, 'orders'));
     await set(newOrderRef, {
       nama: nama,
+      tempat_lahir: tempatLahir,
       kk: kk,
       nik: nik,
       jenis_kelamin: parsedNIK.gender,
@@ -833,13 +835,14 @@ function handleExportPDF() {
     const parsed = parseNIK(o.nik || '');
     const jk = parsed.isValid ? (parsed.gender === 'Pria' ? 'L' : 'P') : '-';
     const tglLahir = parsed.isValid ? `${String(parsed.day).padStart(2,'0')}/${String(parsed.month).padStart(2,'0')}/${parsed.year}` : '-';
+    const ttl = o.tempat_lahir ? `${esc(o.tempat_lahir)}, ${tglLahir}` : tglLahir;
     
     return `
       <tr>
         <td style="text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${idx + 1}</td>
         <td style="border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${esc(o.nama)}</td>
         <td style="text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${jk}</td>
-        <td style="text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${tglLahir}</td>
+        <td style="text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${ttl}</td>
         <td style="text-align: center; font-family: monospace; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${esc(o.kk)}</td>
         <td style="text-align: center; font-family: monospace; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">${esc(o.nik)}</td>
         <td style="text-align: center; border: 1px solid #D1D5DB; padding: 8px 10px; font-size: 11px;">
@@ -864,7 +867,7 @@ function handleExportPDF() {
             <th style="width: 30px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 5px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">No</th>
             <th style="border: 1px solid #D1D5DB; padding: 8px 10px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">Nama Pemesan</th>
             <th style="width: 35px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 5px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">L/P</th>
-            <th style="width: 75px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 5px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">Tgl Lahir</th>
+            <th style="width: 100px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 5px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">Tempat, Tgl Lahir</th>
             <th style="width: 110px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 5px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">Nomor KK</th>
             <th style="width: 110px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 5px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">NIK KTP</th>
             <th style="width: 80px; text-align: center; border: 1px solid #D1D5DB; padding: 8px 5px; background-color: #F3F4F6; color: #1F2937; font-weight: 700; text-transform: uppercase; font-size: 10px;">Status</th>
@@ -1089,7 +1092,7 @@ window.openLaporanDetail = (date) => {
           <span style="font-size: 12px; font-weight: 700; color: var(--success);">${o.waktu_bayar ? '✓ ' + esc(o.waktu_bayar) : '✓ Lunas'}</span>
         </div>
         <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
-          KK: ${esc(o.kk)} | NIK: ${esc(o.nik)}
+          ${o.tempat_lahir ? esc(o.tempat_lahir) + ' | ' : ''}KK: ${esc(o.kk)} | NIK: ${esc(o.nik)}
         </div>
       </div>
     `).join('');
