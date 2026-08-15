@@ -985,11 +985,18 @@ function handleExportExcel() {
         <tbody>
   `;
 
+  const namaBulan = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ];
+
   todayOrders.forEach((o, idx) => {
     const status = o.sudah_bayar ? "Lunas" : "Belum Bayar";
     const parsed = parseNIK(o.nik || '');
     const jk = parsed.isValid ? (parsed.gender === 'Pria' ? 'L' : 'P') : '-';
-    const tglLahir = parsed.isValid ? `${String(parsed.day).padStart(2,'0')}/${String(parsed.month).padStart(2,'0')}/${parsed.year}` : '-';
+    const tglLahir = parsed.isValid 
+      ? `${String(parsed.day).padStart(2, '0')} ${namaBulan[parsed.month - 1]} ${parsed.year}` 
+      : (o.tanggal_lahir || '-');
     const ttl = o.tempat_lahir ? `${esc(o.tempat_lahir)}, ${tglLahir}` : tglLahir;
     
     tableHTML += `
