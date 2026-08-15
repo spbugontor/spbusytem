@@ -966,30 +966,70 @@ function handleExportExcel() {
     return;
   }
 
-  let tableHTML = `
-    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-    <head><meta charset="utf-8"></head>
-    <body>
-      <table border="1">
-        <thead>
-          <tr>
-            <th style="background-color: #0D9488; color: white;">No</th>
-            <th style="background-color: #0D9488; color: white;">Nama Pemesan</th>
-            <th style="background-color: #0D9488; color: white;">L/P</th>
-            <th style="background-color: #0D9488; color: white;">Tempat, Tgl Lahir</th>
-            <th style="background-color: #0D9488; color: white;">Nomor KK</th>
-            <th style="background-color: #0D9488; color: white;">NIK KTP</th>
-            <th style="background-color: #0D9488; color: white;">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-  `;
-
   const namaBulan = [
     'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
     'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
   ];
 
+  if (typeof XLSX !== 'undefined') {
+    const data = [
+      ['No', 'Nama Pemesan', 'L/P', 'Tempat, Tgl Lahir', 'Nomor KK', 'NIK KTP', 'Status']
+    ];
+
+    todayOrders.forEach((o, idx) => {
+      const status = o.sudah_bayar ? "Lunas" : "Belum Bayar";
+      const parsed = parseNIK(o.nik || '');
+      const jk = parsed.isValid ? (parsed.gender === 'Pria' ? 'L' : 'P') : '-';
+      const tglLahir = parsed.isValid 
+        ? `${String(parsed.day).padStart(2, '0')} ${namaBulan[parsed.month - 1]} ${parsed.year}` 
+        : (o.tanggal_lahir || '-');
+      const ttl = o.tempat_lahir ? `${o.tempat_lahir}, ${tglLahir}` : tglLahir;
+
+      data.push([
+        idx + 1,
+        o.nama || '',
+        jk,
+        ttl,
+        String(o.kk || ''),
+        String(o.nik || ''),
+        status
+      ]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(data);
+
+    // Atur lebar kolom otomatis rapi
+    ws['!cols'] = [
+      { wch: 6 },   // No
+      { wch: 28 },  // Nama Pemesan
+      { wch: 6 },   // L/P
+      { wch: 28 },  // Tempat, Tgl Lahir
+      { wch: 22 },  // Nomor KK
+      { wch: 22 },  // NIK KTP
+      { wch: 14 }   // Status
+    ];
+
+    // Format sel teks murni agar tidak terpotong atau terkonversi angka
+    for (let r = 1; r < data.length; r++) {
+      ['B', 'C', 'D', 'E', 'F', 'G'].forEach(col => {
+        const cellRef = col + (r + 1);
+        if (ws[cellRef]) {
+          ws[cellRef].t = 's';
+          ws[cellRef].z = '@';
+        }
+      });
+    }
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Rekap Pemesanan");
+
+    XLSX.writeFile(wb, `Rekap_Pemesanan_LPG_${getTodayString()}.xlsx`);
+    toast('Excel (.xlsx) berhasil diunduh', 'success');
+    return;
+  }
+
+  // Fallback jika library belum termuat
+  let csvContent = "No;Nama Pemesan;L/P;Tempat, Tgl Lahir;Nomor KK;NIK KTP;Status\r\n";
   todayOrders.forEach((o, idx) => {
     const status = o.sudah_bayar ? "Lunas" : "Belum Bayar";
     const parsed = parseNIK(o.nik || '');
@@ -997,31 +1037,18 @@ function handleExportExcel() {
     const tglLahir = parsed.isValid 
       ? `${String(parsed.day).padStart(2, '0')} ${namaBulan[parsed.month - 1]} ${parsed.year}` 
       : (o.tanggal_lahir || '-');
-    const ttl = o.tempat_lahir ? `${esc(o.tempat_lahir)}, ${tglLahir}` : tglLahir;
-    
-    tableHTML += `
-          <tr>
-            <td style="text-align: center;">${idx + 1}</td>
-            <td style="mso-number-format:'\\@';">${esc(o.nama || '')}</td>
-            <td style="text-align: center;">${jk}</td>
-            <td style="mso-number-format:'\\@';">${ttl}</td>
-            <td style="mso-number-format:'\\@'; text-align: center;">${esc(o.kk || '')}</td>
-            <td style="mso-number-format:'\\@'; text-align: center;">${esc(o.nik || '')}</td>
-            <td style="text-align: center;">${status}</td>
-          </tr>
-    `;
+    const ttl = o.tempat_lahir ? `${o.tempat_lahir}, ${tglLahir}` : tglLahir;
+    csvContent += `${idx + 1};"${(o.nama||'').replace(/"/g, '""')}";${jk};"${ttl.replace(/"/g, '""')}";'${o.kk||''}';'${o.nik||''}';${status}\r\n`;
   });
-
-  tableHTML += `</tbody></table></body></html>`;
-
-  const blob = new Blob([tableHTML], { type: 'application/vnd.ms-excel' });
+  const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = `Rekap_Pemesanan_LPG_${getTodayString()}.xls`;
+  link.download = `Rekap_Pemesanan_LPG_${getTodayString()}.csv`;
   link.style.display = "none";
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  toast('File CSV berhasil diunduh', 'success');
 }
 
 // ─────────────────────────────────────────────
