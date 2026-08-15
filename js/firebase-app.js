@@ -1002,9 +1002,9 @@ function handleExportExcel() {
     tableHTML += `
           <tr>
             <td style="text-align: center;">${idx + 1}</td>
-            <td>${esc(o.nama || '')}</td>
+            <td style="mso-number-format:'\\@';">${esc(o.nama || '')}</td>
             <td style="text-align: center;">${jk}</td>
-            <td>${ttl}</td>
+            <td style="mso-number-format:'\\@';">${ttl}</td>
             <td style="mso-number-format:'\\@'; text-align: center;">${esc(o.kk || '')}</td>
             <td style="mso-number-format:'\\@'; text-align: center;">${esc(o.nik || '')}</td>
             <td style="text-align: center;">${status}</td>
