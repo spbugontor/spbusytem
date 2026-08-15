@@ -585,7 +585,6 @@ function setupEventListeners() {
   on('btn-underage-ok', 'click', () => hideModal('modal-underage'));
 
   // PWA Install Handlers
-  on('btn-pwa-install-header', 'click', () => openPwaInstallModal());
   on('btn-pwa-install-action', 'click', handlePwaInstallAction);
   initPwaInstallPrompt();
 }
