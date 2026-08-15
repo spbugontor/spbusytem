@@ -583,6 +583,64 @@ function setupEventListeners() {
   on('btn-success-ok', 'click', () => hideModal('modal-success'));
   on('btn-duplicate-ok', 'click', () => hideModal('modal-duplicate'));
   on('btn-underage-ok', 'click', () => hideModal('modal-underage'));
+
+  // PWA Install Handlers
+  on('btn-pwa-install-header', 'click', () => openPwaInstallModal());
+  on('btn-pwa-install-action', 'click', handlePwaInstallAction);
+  initPwaInstallPrompt();
+}
+
+let deferredInstallPrompt = null;
+
+function initPwaInstallPrompt() {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    
+    // Auto show install modal after 2 seconds if not installed or dismissed in this session
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if (!isStandalone && !sessionStorage.getItem('pwa_install_dismissed')) {
+      setTimeout(() => {
+        openPwaInstallModal();
+      }, 2000);
+    }
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    toast('Aplikasi LPG 3 KG berhasil dipasang!', 'success');
+  });
+}
+
+function openPwaInstallModal() {
+  const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+  const iosInstructions = document.getElementById('pwa-ios-instructions');
+  const installActionBtn = document.getElementById('btn-pwa-install-action');
+
+  if (isIos && !deferredInstallPrompt) {
+    if (iosInstructions) iosInstructions.style.display = 'block';
+    if (installActionBtn) installActionBtn.style.display = 'none';
+  } else {
+    if (iosInstructions) iosInstructions.style.display = 'none';
+    if (installActionBtn) installActionBtn.style.display = 'inline-flex';
+  }
+
+  showModal('modal-pwa-install');
+}
+
+async function handlePwaInstallAction() {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    if (outcome === 'accepted') {
+      toast('Aplikasi sedang dipasang ke HP Anda...', 'success');
+    }
+    deferredInstallPrompt = null;
+  } else {
+    toast('Untuk memasang: Buka menu browser lalu pilih "Instal Aplikasi" / "Tambahkan ke Layar Utama"', 'info');
+  }
+  hideModal('modal-pwa-install');
+  sessionStorage.setItem('pwa_install_dismissed', 'true');
 }
 
 function switchAdminSection(sectionId) {
